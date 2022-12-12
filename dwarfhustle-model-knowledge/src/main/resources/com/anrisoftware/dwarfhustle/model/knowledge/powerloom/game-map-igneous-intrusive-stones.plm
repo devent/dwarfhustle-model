@@ -1,0 +1,38 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Author: Erwin Mueller
+;;; Version: game-map-igneous-intrusive-stones.plm,v 1.0
+;;; Desciptions used from https://geology.com/
+;;; Specific heat capacity taken from http://www.endmemo.com/chem/specificheatsearch.php
+
+;;; Using Modules
+
+(defmodule "GAME-MAP-IGNEOUS-INTRUSIVE-STONES"
+  :documentation "Defines the map where buildings are placed."
+  :includes ("PL-USER")
+  :uses ("LOGIC" "STELLA" "GAME-MAP")
+  )
+
+(in-module "GAME-MAP-IGNEOUS-INTRUSIVE-STONES")
+
+;; clear any info from previous runs:
+(clear-module "GAME-MAP-IGNEOUS-INTRUSIVE-STONES")
+(reset-features)
+
+(assert (GAME-MAP/Igneous-Intrusive Diorite)) :documentation "Coarse-grained igneous rocks with a composition between that of granite and basalt. It usually occurs as large intrusions, dikes, and sills within continental crust. These often form above a convergent plate boundary where an oceanic plate subducts beneath a continental plate."
+(assert (= (GAME-MAP/melting-point-material Diorite) 1612.00))
+(assert (= (GAME-MAP/density-of-material Diorite) 2.50))
+(assert (= (GAME-MAP/specific-heat-capacity-of-material Diorite) 0.90))
+(assert (= (GAME-MAP/thermal-conductivity-of-material Diorite) 0.09))
+
+(assert (GAME-MAP/Igneous-Intrusive Gabbro)) :documentation "Coarse-grained, dark-colored, intrusive igneous rock. It is usually black or dark green in color and composed mainly of the minerals plagioclase and augite. It is the most abundant rock in the deep oceanic crust. Gabbro has a variety of uses in the construction industry. It is used for everything from crushed stone base materials at construction sites to polished stone counter tops and floor tiles."
+(assert (= (GAME-MAP/melting-point-material Gabbro) 1612.00))
+(assert (= (GAME-MAP/density-of-material Gabbro) 2.50))
+(assert (= (GAME-MAP/specific-heat-capacity-of-material Gabbro) 0.90))
+(assert (= (GAME-MAP/thermal-conductivity-of-material Gabbro) 0.09))
+
+(assert (GAME-MAP/Igneous-Intrusive Granite)) :documentation "Light-colored igneous rock with grains large enough to be visible with the unaided eye. It forms from the slow crystallization of magma below Earth's surface."
+(assert (= (GAME-MAP/melting-point-material Granite) 1612.00))
+(assert (= (GAME-MAP/density-of-material Granite) 2.50))
+(assert (= (GAME-MAP/specific-heat-capacity-of-material Granite) 0.90))
+(assert (= (GAME-MAP/thermal-conductivity-of-material Granite) 0.09))

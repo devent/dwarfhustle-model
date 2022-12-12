@@ -1,0 +1,50 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Author: Erwin Mueller
+;;; Version: game-map-igneous-extrusive-stones.plm,v 1.0
+;;; Desciptions used from https://geology.com/
+;;; Specific heat capacity taken from http://www.endmemo.com/chem/specificheatsearch.php
+
+;;; Using Modules
+
+(defmodule "GAME-MAP-IGNEOUS-EXTRUSIVE-STONE"
+  :documentation "Defines the map where buildings are placed."
+  :includes ("PL-USER")
+  :uses ("LOGIC" "STELLA" "GAME-MAP")
+  )
+
+(in-module "GAME-MAP-IGNEOUS-EXTRUSIVE-STONE")
+
+;; clear any info from previous runs:
+(clear-module "GAME-MAP-IGNEOUS-EXTRUSIVE-STONE")
+(reset-features)
+
+(assert (GAME-MAP/Igneous-Extrusive Andesite)) :documentation "Fine-grained, extrusive igneous rocks that are usually light to dark gray in color. They have a mineral composition that is intermediate between granite and basalt. Andesite is a rock typically found in volcanoes above convergent plate boundaries between continental and oceanic plates."
+(assert (= (GAME-MAP/melting-point-material Andesite) 1533.00))
+(assert (= (GAME-MAP/density-of-material Andesite) 2.77))
+(assert (= (GAME-MAP/specific-heat-capacity-of-material Andesite) 0.00))
+(assert (= (GAME-MAP/thermal-conductivity-of-material Andesite) 0.09))
+
+(assert (GAME-MAP/Igneous-Extrusive Basalt)) :documentation "Dark-colored, fine-grained, igneous rock composed mainly of plagioclase and pyroxene minerals. It most commonly forms as an extrusive rock, such as a lava flow."
+(assert (= (GAME-MAP/melting-point-material Basalt) 1723.00))
+(assert (= (GAME-MAP/density-of-material Basalt) 2.50))
+(assert (= (GAME-MAP/specific-heat-capacity-of-material Basalt) 0.84))
+(assert (= (GAME-MAP/thermal-conductivity-of-material Basalt) 2.71))
+
+(assert (GAME-MAP/Igneous-Extrusive Dacite)) :documentation "Fine-grained igneous rock that is normally light in color. It is often porphyritic. Dacite is found in lava flows, lava domes, dikes, sills, and pyroclastic debris. It is a rock type usually found on continental crust above subduction zones, where a relatively young oceanic plate has melted below."
+(assert (= (GAME-MAP/melting-point-material Dacite) 1612.00))
+(assert (= (GAME-MAP/density-of-material Dacite) 2.50))
+(assert (= (GAME-MAP/specific-heat-capacity-of-material Dacite) 0.90))
+(assert (= (GAME-MAP/thermal-conductivity-of-material Dacite) 0.09))
+
+(assert (GAME-MAP/Igneous-Extrusive Obsidian)) :documentation "Igneous rock that forms when molten rock material cools so rapidly that atoms are unable to arrange themselves into a crystalline structure. It is an amorphous material known as a mineraloid. The result is a volcanic glass with a smooth uniform texture that breaks with a conchoidal fracture."
+(assert (= (GAME-MAP/melting-point-material Obsidian) 2573.00))
+(assert (= (GAME-MAP/density-of-material Obsidian) 2.50))
+(assert (= (GAME-MAP/specific-heat-capacity-of-material Obsidian) 0.90))
+(assert (= (GAME-MAP/thermal-conductivity-of-material Obsidian) 0.09))
+
+(assert (GAME-MAP/Igneous-Extrusive Rhyolite)) :documentation "Extrusive igneous rock with a very high silica content. It is usually pink or gray in color with grains so small that they are difficult to observe without a hand lens. Rhyolite is made up of quartz, plagioclase, and sanidine, with minor amounts of hornblende and biotite. Trapped gases often produce vugs in the rock. These often contain crystals, opal, or glassy material."
+(assert (= (GAME-MAP/melting-point-material Rhyolite) 973.00))
+(assert (= (GAME-MAP/density-of-material Rhyolite) 2.50))
+(assert (= (GAME-MAP/specific-heat-capacity-of-material Rhyolite) 0.90))
+(assert (= (GAME-MAP/thermal-conductivity-of-material Rhyolite) 0.09))

@@ -1,0 +1,38 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.anrisoftware.dwarfhustle</groupId>
+        <artifactId>dwarfhustle-model</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>dwarfhustle-model-knowledge</artifactId>
+
+	<dependencies>
+        <dependency>
+            <groupId>com.anrisoftware.globalpom</groupId>
+            <artifactId>globalpom-groovytestutils</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Compile dependencies -->
+		<dependency>
+			<groupId>edu.isi</groupId>
+			<artifactId>powerloom</artifactId>
+			<version>4.0.10-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>edu.isi</groupId>
+			<artifactId>stella</artifactId>
+			<version>4.0.10-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
+</project>

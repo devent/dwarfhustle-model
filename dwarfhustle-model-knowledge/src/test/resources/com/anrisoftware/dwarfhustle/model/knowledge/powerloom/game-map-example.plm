@@ -1,0 +1,18 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Author: Erwin Mueller
+;;; Version: game-map-example.plm,v 1.0
+;;; Desciptions used from https://geology.com/
+
+;;; Using Modules
+
+(defmodule "GAME-MAP-EXAMPLE"
+  :documentation "Roleplaying system VERS."
+  :includes ("GAME-MAP" "GAME-MAP-SEDIMENTARY-STONE" "GAME-MAP-IGNEOUS-INTRUSIVE-STONES" "GAME-MAP-IGNEOUS-EXTRUSIVE-STONE" "GAME-MAP-METAMORPHIC-STONE")
+  )
+
+(in-module "GAME-MAP-EXAMPLE")
+
+;; clear any info from previous runs:
+(clear-module "GAME-MAP-EXAMPLE")
+(reset-features)

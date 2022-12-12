@@ -1,0 +1,165 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.anrisoftware.dwarfhustle</groupId>
+        <artifactId>dwarfhustle-parent</artifactId>
+        <version>0.1.0</version>
+    </parent>
+
+    <artifactId>dwarfhustle-model</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>Dwarf Hustle Model</name>
+    <description>Manages the compile dependencies for the model.</description>
+    <inceptionYear>2022</inceptionYear>
+
+    <properties>
+        <globalpom.custom.home>https://project.anrisoftware.com/projects/dwarfhustle-model</globalpom.custom.home>
+        <license.custom.license.template>src/main/resources/AGPL-3.txt</license.custom.license.template>
+        <globalpom.custom.year>2022</globalpom.custom.year>
+        <!-- Versions -->
+        <globalpom.custom.anrisoftware.version>4.6.3</globalpom.custom.anrisoftware.version>
+    </properties>
+
+    <licenses>
+        <license>
+            <name>GNU Affero General Public License (AGPLv3)</name>
+            <url>https://www.gnu.org/licenses/agpl-3.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>EM</id>
+            <name>Erwin Müller</name>
+            <email>erwin@muellerpublic.de</email>
+            <organization>Advanced Natural Research Institute</organization>
+            <roles>
+                <role>Owner</role>
+                <role>Developer</role>
+            </roles>
+            <timezone>Europe/Berlin</timezone>
+        </developer>
+    </developers>
+
+    <profiles>
+        <profile>
+            <id>private-repository</id>
+            <distributionManagement>
+                <site>
+                    <id>site-distribution-id</id>
+                    <url>${site.distribution.url}</url>
+                </site>
+                <repository>
+                    <id>private_repo_releases</id>
+                    <url>https://maven.anrisoftware.com/repository/internal/</url>
+                </repository>
+                <snapshotRepository>
+                    <id>private_repo_snapshots</id>
+                    <url>https://maven.anrisoftware.com/repository/snapshots/</url>
+                </snapshotRepository>
+            </distributionManagement>
+        </profile>
+
+        <profile>
+            <id>osssonatype</id>
+            <distributionManagement>
+                <site>
+                    <id>site-distribution-id</id>
+                    <url>${site.distribution.url}</url>
+                </site>
+                <repository>
+                    <id>osssonatype_releases</id>
+                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+                </repository>
+                <snapshotRepository>
+                    <id>osssonatype_snapshots</id>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                </snapshotRepository>
+            </distributionManagement>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>osssonatype_releases</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <!-- Activate profile with -Psign-artifact -->
+            <id>sign-artifact</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <!-- Skip signing -Pno-sign -->
+            <id>no-sign</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <!-- De-lombok with -Pdelombok -->
+            <id>delombok</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.projectlombok</groupId>
+                        <artifactId>lombok-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>delombok</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+    </profiles>
+
+    <modules>
+        <module>dwarfhustle-model-api</module>
+        <module>dwarfhustle-model-knowledge</module>
+    </modules>
+</project>

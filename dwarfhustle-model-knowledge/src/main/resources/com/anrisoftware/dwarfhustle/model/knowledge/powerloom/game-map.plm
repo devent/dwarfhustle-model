@@ -1,0 +1,72 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Author: Erwin Mueller
+;;; Version: game-map.plm,v 1.0
+
+;;; Using Modules
+
+(defmodule "GAME-MAP"
+  :documentation "Defines the map where buildings are placed."
+  :includes ("PL-USER")
+  :uses ("LOGIC" "STELLA")
+  )
+
+(in-module "GAME-MAP")
+
+;; clear any info from previous runs:
+(clear-module "GAME-MAP")
+(reset-features)
+
+(defrelation Tile ((?x NUMBER) (?y NUMBER) (?z NUMBER) (?h NUMBER) (?type Material) (?light LightType) (?roof RoofType) (?floor FloorType))
+  :documentation "Defines one tile on the game map.")
+
+(defconcept LightType (?type)
+  :documentation "Light type.")
+
+(assert (LightType Dark)) :documentation "Dark is where no sun light can reach."
+(assert (LightType NaturalLight)) :documentation "Natural light is light from the sun."
+(assert (LightType ArtificialLight)) :documentation "Artificial light is light from some light source other than the sun."
+
+(defconcept RoofType (?type)
+  :documentation "Roof type.")
+
+(assert (RoofType NoRoof)) :documentation "No roof."
+(assert (RoofType NaturalRoof)) :documentation "Natural roof."
+(assert (RoofType ConstructuredRoof)) :documentation "Constructed roof."
+
+(defconcept FloorType (?type)
+  :documentation "Floor type.")
+
+(assert (FloorType NoFloor)) :documentation "No Floor."
+(assert (FloorType NaturalFloor)) :documentation "Natural Floor."
+(assert (FloorType ConstructuredFloor)) :documentation "Constructed Floor."
+
+(defconcept Material (?material)
+  :documentation "Material type.")
+
+(deffunction melting-point-material ((?material Material)) :-> (?temperature NUMBER))
+  :documentation "Melting point of a material in °K."
+
+(deffunction density-of-material ((?material Material)) :-> (?density NUMBER))
+  :documentation "Density of a material in g⋅cm−3."
+
+(deffunction specific-heat-capacity-of-material ((?material Material)) :-> (?capacity NUMBER))
+  :documentation "Specific heat capacity of a material in J⋅g−1⋅K−1."
+
+(deffunction thermal-conductivity-of-material ((?material Material)) :-> (?conductivity NUMBER))
+  :documentation "Thermal conductivity of a material in W·m−1·K−1."
+
+(defconcept Stone (?material Material)
+  :documentation "Stone material.")
+
+(defconcept Sedimentary (?stone Stone)
+  :documentation "Sedimentary stone material.")
+
+(defconcept Igneous-Intrusive (?stone Stone)
+  :documentation "Igneous intrusive stone material.")
+
+(defconcept Igneous-Extrusive (?stone Stone)
+  :documentation "Igneous extrusive stone material.")
+
+(defconcept Metamorphic (?stone Stone)
+  :documentation "Metamorphic stone material.")
