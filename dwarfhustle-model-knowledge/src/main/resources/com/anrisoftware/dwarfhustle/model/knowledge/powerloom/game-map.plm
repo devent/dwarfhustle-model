@@ -5,19 +5,19 @@
 
 ;;; Using Modules
 
-(defmodule "GAME-MAP"
+(defmodule "DWARFHUSTLE-GAME-MAP"
   :documentation "Defines the map where buildings are placed."
   :includes ("PL-USER")
-  :uses ("LOGIC" "STELLA")
+  :uses ("LOGIC" "STELLA" "DWARFHUSTLE-MATERIALS")
   )
 
-(in-module "GAME-MAP")
+(in-module "DWARFHUSTLE-GAME-MAP")
 
 ;; clear any info from previous runs:
-(clear-module "GAME-MAP")
+(clear-module "DWARFHUSTLE-GAME-MAP")
 (reset-features)
 
-(defrelation Tile ((?x NUMBER) (?y NUMBER) (?z NUMBER) (?h NUMBER) (?type Material) (?light LightType) (?roof RoofType) (?floor FloorType))
+(defrelation Tile ((?x NUMBER) (?y NUMBER) (?z NUMBER) (?h NUMBER) (?type DWARFHUSTLE-MATERIALS/Material) (?light LightType) (?roof RoofType) (?floor FloorType))
   :documentation "Defines one tile on the game map.")
 
 (defconcept LightType (?type)
@@ -40,33 +40,3 @@
 (assert (FloorType NoFloor)) :documentation "No Floor."
 (assert (FloorType NaturalFloor)) :documentation "Natural Floor."
 (assert (FloorType ConstructuredFloor)) :documentation "Constructed Floor."
-
-(defconcept Material (?material)
-  :documentation "Material type.")
-
-(deffunction melting-point-material ((?material Material)) :-> (?temperature NUMBER))
-  :documentation "Melting point of a material in °K."
-
-(deffunction density-of-material ((?material Material)) :-> (?density NUMBER))
-  :documentation "Density of a material in g⋅cm−3."
-
-(deffunction specific-heat-capacity-of-material ((?material Material)) :-> (?capacity NUMBER))
-  :documentation "Specific heat capacity of a material in J⋅g−1⋅K−1."
-
-(deffunction thermal-conductivity-of-material ((?material Material)) :-> (?conductivity NUMBER))
-  :documentation "Thermal conductivity of a material in W·m−1·K−1."
-
-(defconcept Stone (?material Material)
-  :documentation "Stone material.")
-
-(defconcept Sedimentary (?stone Stone)
-  :documentation "Sedimentary stone material.")
-
-(defconcept Igneous-Intrusive (?stone Stone)
-  :documentation "Igneous intrusive stone material.")
-
-(defconcept Igneous-Extrusive (?stone Stone)
-  :documentation "Igneous extrusive stone material.")
-
-(defconcept Metamorphic (?stone Stone)
-  :documentation "Metamorphic stone material.")

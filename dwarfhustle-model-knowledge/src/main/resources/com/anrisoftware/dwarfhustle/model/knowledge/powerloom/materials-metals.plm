@@ -1,0 +1,52 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Author: Erwin Mueller
+;;; Version: materials-metals.plm,v 0.1.0
+;;; Desciptions used from https://en.wikipedia.org/
+;;; Specific heat capacity taken from http://www.endmemo.com/chem/specificheatsearch.php
+;;; Properties taken from https://www.chemicalbook.com/
+;;; Properties taken from https://www.periodic-table.org/
+
+;;; Using Modules
+
+(defmodule "DWARFHUSTLE-MATERIALS-METALS"
+  :documentation "Defines the map where buildings are placed."
+  :includes ("PL-USER")
+  :uses ("LOGIC" "STELLA" "DWARFHUSTLE-MATERIALS")
+  )
+
+(in-module "DWARFHUSTLE-MATERIALS-METALS")
+
+;; clear any info from previous runs:
+(clear-module "DWARFHUSTLE-MATERIALS-METALS")
+(reset-features)
+
+(assert (DWARFHUSTLE-MATERIALS/Metal Aluminium)) :documentation "Has a density lower than those of other common metals, at approximately one third that of steel. Aluminium visually resembles silver, both in its color and in its great ability to reflect light. It is soft, non-magnetic and ductile."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Aluminium) 660.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Aluminium) 2.70))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Aluminium) 0.9))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Aluminium) 237))
+
+(assert (DWARFHUSTLE-MATERIALS/Metal Bismuth)) :documentation "Elemental bismuth occurs naturally, and its sulfide and oxide forms are important commercial ores. The free element is 86% as dense as lead. It is a brittle metal with a silvery-white color when freshly produced."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Bismuth) 271))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Bismuth) 9.78))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Bismuth) 0.12))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Bismuth) 7.97))
+
+(assert (DWARFHUSTLE-MATERIALS/Metal Copper)) :documentation "It is a soft, malleable, and ductile metal with very high thermal and electrical conductivity. A freshly exposed surface of pure copper has a pinkish-orange color."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Copper) 1358.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Copper) 8.96))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Copper) 0.38))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Copper) 401))
+
+(assert (DWARFHUSTLE-MATERIALS/Metal Gold)) :documentation "It is a bright, slightly orange-yellow, dense, soft, malleable, and ductile metal in a pure form."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Gold) 1064))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Gold) 19.3))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Gold) 0.13))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Gold) 318))
+
+(assert (DWARFHUSTLE-MATERIALS/Metal Iron)) :documentation "Iron has been known to mankind from early civilization. In fact, a period of history, the “iron age,” is named for the widespread use of this metal. For almost a thousand years, it remained as the single most-used metal, and its use in mechanization made the industrial revolution possible."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Iron) 1538))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Iron) 7.87))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Iron) 0.44))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Iron) 80.2))

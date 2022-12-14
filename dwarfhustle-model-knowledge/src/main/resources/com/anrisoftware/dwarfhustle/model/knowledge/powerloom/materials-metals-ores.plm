@@ -1,0 +1,67 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Author: Erwin Mueller
+;;; Version: materials-metals-ores.plm,v 0.1.0
+;;; Desciptions used from https://en.wikipedia.org/
+;;; Properties taken from https://www.chemicalbook.com/
+;;; Specific heat capacity taken from http://www.endmemo.com/chem/specificheatsearch.php
+;;; Properties taken from http://www.webmineral.com/
+
+;;; Using Modules
+
+(defmodule "DWARFHUSTLE-MATERIALS-METALS-ORES"
+  :documentation "Defines the map where buildings are placed."
+  :includes ("PL-USER")
+  :uses ("LOGIC" "STELLA" "DWARFHUSTLE-MATERIALS" "DWARFHUSTLE-MATERIALS-METALS")
+  )
+
+(in-module "DWARFHUSTLE-MATERIALS-METALS-ORES")
+
+;; clear any info from previous runs:
+(clear-module "DWARFHUSTLE-MATERIALS-METALS-ORES")
+(reset-features)
+
+(assert (DWARFHUSTLE-MATERIALS/Metal-Ore Aluminium-Ore)) :documentation "Because extraction of aluminium from Bauxite is a complex chemical process that also requires electrolysis we will just use pure aluminium."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Aluminium-Ore) 660.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Aluminium-Ore) 2.70))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Aluminium-Ore) 0.9))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Aluminium-Ore) 237))
+(assert (metal-ore-product Aluminium-Ore 1.00 DWARFHUSTLE-MATERIALS-METALS/Aluminium))
+
+(assert (DWARFHUSTLE-MATERIALS/Metal-Ore Bismuthinite)) :documentation "It is an important ore for bismuth. The crystals are steel-grey to off-white with a metallic luster. It is soft enough to be scratched with a fingernail and rather dense."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Bismuthinite) 775))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Bismuthinite) 7.00))
+(assert (metal-ore-product Bismuthinite 1.00 DWARFHUSTLE-MATERIALS-METALS/Bismuth))
+
+(assert (DWARFHUSTLE-MATERIALS/Metal-Ore Bismite)) :documentation "It is a monoclinic mineral, but the typical form of occurrence is massive and clay-like with no macroscopic crystals. The color varies from green to yellow."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Bismite) 825))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Bismite) 8.90))
+(assert (metal-ore-product Bismite 1.00 DWARFHUSTLE-MATERIALS-METALS/Bismuth))
+
+(assert (DWARFHUSTLE-MATERIALS/Metal-Ore Chalcopyrite)) :documentation "Chalcopyrite is a copper iron sulfide mineral and the most abundant copper ore mineral. It has the chemical formula CuFeS2 and crystallizes in the tetragonal system. It has a brassy to golden yellow color and a hardness of 3.5 to 4 on the Mohs scale. Its streak is diagnostic as green-tinged black."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Chalcopyrite) 950.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Chalcopyrite) 4.20))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Chalcopyrite) 0.54))
+(assert (metal-ore-product Chalcopyrite 1.00 DWARFHUSTLE-MATERIALS-METALS/Copper))
+
+(assert (DWARFHUSTLE-MATERIALS/Metal-Ore Chalcocite)) :documentation "Chalcocite is an important copper ore mineral. It is opaque and dark gray to black, with a metallic luster."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Chalcocite) 1100.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Chalcocite) 5.60))
+(assert (metal-ore-product Chalcocite 1.00 DWARFHUSTLE-MATERIALS-METALS/Copper))
+
+(assert (DWARFHUSTLE-MATERIALS/Metal-Ore Tetrahedrite)) :documentation "Tetrahedrite is a copper antimony sulfosalt mineral. It is the antimony endmember of the continuous solid solution series with arsenic-bearing tennantite."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Tetrahedrite) 1100.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Tetrahedrite) 4.90))
+(assert (metal-ore-product Tetrahedrite 0.80 DWARFHUSTLE-MATERIALS-METALS/Copper))
+(assert (metal-ore-product Tetrahedrite 0.20 DWARFHUSTLE-MATERIALS-METALS/Silver))
+
+(assert (DWARFHUSTLE-MATERIALS/Metal-Ore Malachite)) :documentation "Malachite is a copper carbonate hydroxide mineral. This opaque, green-banded mineral crystallizes in the monoclinic crystal system, and most often forms botryoidal, fibrous, or stalagmitic masses, in fractures and deep, underground spaces, where the water table and hydrothermal fluids provide the means for chemical precipitation."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Malachite) 110.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Malachite) 2.28))
+(assert (metal-ore-product Malachite 1.00 DWARFHUSTLE-MATERIALS-METALS/Copper))
+
+(assert (DWARFHUSTLE-MATERIALS/Metal Gold-Ore)) :documentation "Gold most often occurs as a native metal."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Gold-Ore) 1064))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Gold-Ore) 19.3))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Gold-Ore) 0.13))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Gold-Ore) 318))

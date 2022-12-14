@@ -1,0 +1,32 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Author: Erwin Mueller
+;;; Version: materials-metals.plm,v 0.1.0
+;;; Desciptions used from https://en.wikipedia.org/
+;;; Specific heat capacity taken from http://www.endmemo.com/chem/specificheatsearch.php
+;;; Properties taken from https://pubmed.ncbi.nlm.nih.gov/26605557/
+;;; Properties taken from https://oxygennotincluded.fandom.com/wiki/Electrum
+
+;;; Using Modules
+
+(defmodule "DWARFHUSTLE-MATERIALS-METALS-ALLOYS"
+  :documentation "Metals alloys."
+  :includes ("PL-USER")
+  :uses ("LOGIC" "STELLA" "DWARFHUSTLE-MATERIALS")
+  )
+
+(in-module "DWARFHUSTLE-MATERIALS-METALS-ALLOYS")
+
+;; clear any info from previous runs:
+(clear-module "DWARFHUSTLE-MATERIALS-METALS-ALLOYS")
+(reset-features)
+
+(assert (DWARFHUSTLE-MATERIALS/Metal-Alloy Electrum)) :documentation "Electrum is a naturally occurring alloy of gold and silver, with trace amounts of copper and other metals. Its color ranges from pale to bright yellow, depending on the proportions of gold and silver."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Electrum) 1310))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Electrum) 13.75))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Electrum) 0.15))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Electrum) 2))
+(assert (metal-ore-product Electrum 0.50 DWARFHUSTLE-MATERIALS-METALS/Gold))
+(assert (metal-ore-product Electrum 0.50 DWARFHUSTLE-MATERIALS-METALS/Silver))
+(assert (metal-alloy-material Gold 0.50 Electrum))
+(assert (metal-alloy-material Silver 0.50 Electrum))

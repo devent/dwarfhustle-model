@@ -1,0 +1,28 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Author: Erwin Mueller
+;;; Version: game-map-example.plm,v 1.0
+;;; Desciptions used from https://geology.com/
+
+;;; Using Modules
+
+(defmodule "DWARFHUSTLE-EXAMPLE"
+  :documentation "Example knowledge base."
+  :includes (
+"DWARFHUSTLE-GAME-MAP"
+"DWARFHUSTLE-MATERIALS"
+"DWARFHUSTLE-MATERIALS-SEDIMENTARY-STONE"
+"DWARFHUSTLE-MATERIALS-IGNEOUS-INTRUSIVE-STONES"
+"DWARFHUSTLE-MATERIALS-IGNEOUS-EXTRUSIVE-STONES"
+"DWARFHUSTLE-MATERIALS-METAMORPHIC-STONES"
+"DWARFHUSTLE-MATERIALS-METALS"
+"DWARFHUSTLE-MATERIALS-METALS-ORES"
+"DWARFHUSTLE-MATERIALS-METALS-ALLOYS"
+)
+  )
+
+(in-module "DWARFHUSTLE-EXAMPLE")
+
+;; clear any info from previous runs:
+(clear-module "DWARFHUSTLE-EXAMPLE")
+(reset-features)

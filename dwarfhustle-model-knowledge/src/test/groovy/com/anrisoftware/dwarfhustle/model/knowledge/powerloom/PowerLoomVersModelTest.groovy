@@ -27,21 +27,34 @@ class PowerLoomVersModelTest {
     @BeforeAll
     public static void setupLoom() throws IOException {
         PLI.initialize();
+        PLI.loadStream(InputStringStream.newInputStringStream(IOUtils.toString(PowerLoomVersModelTest.class.getResourceAsStream("materials.plm"), UTF_8)), null);
         PLI.loadStream(InputStringStream.newInputStringStream(IOUtils.toString(PowerLoomVersModelTest.class.getResourceAsStream("game-map.plm"), UTF_8)), null);
-        PLI.loadStream(InputStringStream.newInputStringStream(IOUtils.toString(PowerLoomVersModelTest.class.getResourceAsStream("game-map-sedimentary-stones.plm"), UTF_8)), null);
-        PLI.loadStream(InputStringStream.newInputStringStream(IOUtils.toString(PowerLoomVersModelTest.class.getResourceAsStream("game-map-igneous-intrusive-stones.plm"), UTF_8)), null);
-        PLI.loadStream(InputStringStream.newInputStringStream(IOUtils.toString(PowerLoomVersModelTest.class.getResourceAsStream("game-map-igneous-extrusive-stones.plm"), UTF_8)), null);
-        PLI.loadStream(InputStringStream.newInputStringStream(IOUtils.toString(PowerLoomVersModelTest.class.getResourceAsStream("game-map-metamorphic-stones.plm"), UTF_8)), null);
-        PLI.loadStream(InputStringStream.newInputStringStream(IOUtils.toString(PowerLoomVersModelTest.class.getResourceAsStream("game-map-example.plm"), UTF_8)), null);
-        this.workingModule = "GAME-MAP-EXAMPLE";
+        PLI.loadStream(InputStringStream.newInputStringStream(IOUtils.toString(PowerLoomVersModelTest.class.getResourceAsStream("materials-sedimentary-stones.plm"), UTF_8)), null);
+        PLI.loadStream(InputStringStream.newInputStringStream(IOUtils.toString(PowerLoomVersModelTest.class.getResourceAsStream("materials-igneous-intrusive-stones.plm"), UTF_8)), null);
+        PLI.loadStream(InputStringStream.newInputStringStream(IOUtils.toString(PowerLoomVersModelTest.class.getResourceAsStream("materials-igneous-extrusive-stones.plm"), UTF_8)), null);
+        PLI.loadStream(InputStringStream.newInputStringStream(IOUtils.toString(PowerLoomVersModelTest.class.getResourceAsStream("materials-metamorphic-stones.plm"), UTF_8)), null);
+        PLI.loadStream(InputStringStream.newInputStringStream(IOUtils.toString(PowerLoomVersModelTest.class.getResourceAsStream("materials-metals.plm"), UTF_8)), null);
+        PLI.loadStream(InputStringStream.newInputStringStream(IOUtils.toString(PowerLoomVersModelTest.class.getResourceAsStream("materials-metals-ores.plm"), UTF_8)), null);
+        PLI.loadStream(InputStringStream.newInputStringStream(IOUtils.toString(PowerLoomVersModelTest.class.getResourceAsStream("materials-metals-alloys.plm"), UTF_8)), null);
+        PLI.loadStream(InputStringStream.newInputStringStream(IOUtils.toString(PowerLoomVersModelTest.class.getResourceAsStream("example.plm"), UTF_8)), null);
+        this.workingModule = "DWARFHUSTLE-EXAMPLE";
     }
 
     @ParameterizedTest
     @ValueSource(strings = [
         "all (Stone ?type)",
+        "all (Metal-Ore ?type)",
+        "all (metal-ore-product ?x ?y Copper)",
+        "all ?x (and (melting-point-material ?x ?t) (> ?t 2000))",
     ])
     void "test retrieve"(String retrieve) {
         printPowerLoomRetrieve(retrieve, workingModule, null);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = [""])
+    void "test ask"(String ask) {
+        //printPowerLoomAsk(ask, workingModule, null);
     }
 
     static void printPowerLoomRetrieve(String query, String module, Environment env) {

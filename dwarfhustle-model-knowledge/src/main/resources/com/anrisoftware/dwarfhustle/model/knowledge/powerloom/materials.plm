@@ -1,0 +1,63 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Author: Erwin Mueller
+;;; Version: materials.plm,v 0.1.0
+
+;;; Using Modules
+
+(defmodule "DWARFHUSTLE-MATERIALS"
+  :documentation "Materials definitions."
+  :includes ("PL-USER")
+  :uses ("LOGIC" "STELLA")
+  )
+
+(in-module "DWARFHUSTLE-MATERIALS")
+
+;; clear any info from previous runs:
+(clear-module "DWARFHUSTLE-MATERIALS")
+(reset-features)
+
+(defconcept Material (?material)
+  :documentation "Material type.")
+
+(deffunction melting-point-material ((?material Material)) :-> (?temperature NUMBER))
+  :documentation "Melting point of a material in °C."
+
+(deffunction density-of-material ((?material Material)) :-> (?density NUMBER))
+  :documentation "Density of a material in g⋅cm−3."
+
+(deffunction specific-heat-capacity-of-material ((?material Material)) :-> (?capacity NUMBER))
+  :documentation "Specific heat capacity of a material in J⋅g−1⋅K−1."
+
+(deffunction thermal-conductivity-of-material ((?material Material)) :-> (?conductivity NUMBER))
+  :documentation "Thermal conductivity of a material in W·m−1·K−1."
+
+(defconcept Metal (?material)
+  :documentation "Metal material type.")
+
+(defconcept Metal-Ore (?material)
+  :documentation "Metal ore material type.")
+
+(defrelation metal-ore-product ((?material Material) (?chance NUMBER) (?metal Material)))
+  :documentation "Product of a metal ore with a specific chance to get the product. One ore can have multiple products."
+
+(defconcept Metal-Alloy (?material)
+  :documentation "Metal alloy material type.")
+
+(defrelation metal-alloy-material ((?material Material) (?ratio NUMBER) (?alloy Material)))
+  :documentation "Material needed with the specified ratio to produce the alloy."
+
+(defconcept Stone (?material Material)
+  :documentation "Stone material.")
+
+(defconcept Sedimentary (?stone Stone)
+  :documentation "Sedimentary stone material.")
+
+(defconcept Igneous-Intrusive (?stone Stone)
+  :documentation "Igneous intrusive stone material.")
+
+(defconcept Igneous-Extrusive (?stone Stone)
+  :documentation "Igneous extrusive stone material.")
+
+(defconcept Metamorphic (?stone Stone)
+  :documentation "Metamorphic stone material.")

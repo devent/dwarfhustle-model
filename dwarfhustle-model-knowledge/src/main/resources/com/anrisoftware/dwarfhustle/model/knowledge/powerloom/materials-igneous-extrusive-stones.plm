@@ -1,0 +1,50 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Author: Erwin Mueller
+;;; Version: materials-igneous-extrusive-stones.plm,v 0.1.0
+;;; Desciptions used from https://geology.com/
+;;; Specific heat capacity taken from http://www.endmemo.com/chem/specificheatsearch.php
+
+;;; Using Modules
+
+(defmodule "DWARFHUSTLE-MATERIALS-IGNEOUS-EXTRUSIVE-STONES"
+  :documentation "Igneous extrusive stones."
+  :includes ("PL-USER")
+  :uses ("LOGIC" "STELLA" "DWARFHUSTLE-MATERIALS")
+  )
+
+(in-module "DWARFHUSTLE-MATERIALS-IGNEOUS-EXTRUSIVE-STONES")
+
+;; clear any info from previous runs:
+(clear-module "DWARFHUSTLE-MATERIALS-IGNEOUS-EXTRUSIVE-STONES")
+(reset-features)
+
+(assert (DWARFHUSTLE-MATERIALS/Igneous-Extrusive Andesite)) :documentation "Fine-grained, extrusive igneous rocks that are usually light to dark gray in color. They have a mineral composition that is intermediate between granite and basalt. Andesite is a rock typically found in volcanoes above convergent plate boundaries between continental and oceanic plates."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Andesite) 1260.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Andesite) 2.77))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Andesite) 0.00))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Andesite) 0.09))
+
+(assert (DWARFHUSTLE-MATERIALS/Igneous-Extrusive Basalt)) :documentation "Dark-colored, fine-grained, igneous rock composed mainly of plagioclase and pyroxene minerals. It most commonly forms as an extrusive rock, such as a lava flow."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Basalt) 1450.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Basalt) 2.50))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Basalt) 0.84))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Basalt) 2.71))
+
+(assert (DWARFHUSTLE-MATERIALS/Igneous-Extrusive Dacite)) :documentation "Fine-grained igneous rock that is normally light in color. It is often porphyritic. Dacite is found in lava flows, lava domes, dikes, sills, and pyroclastic debris. It is a rock type usually found on continental crust above subduction zones, where a relatively young oceanic plate has melted below."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Dacite) 1260.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Dacite) 2.50))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Dacite) 0.90))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Dacite) 0.09))
+
+(assert (DWARFHUSTLE-MATERIALS/Igneous-Extrusive Obsidian)) :documentation "Igneous rock that forms when molten rock material cools so rapidly that atoms are unable to arrange themselves into a crystalline structure. It is an amorphous material known as a mineraloid. The result is a volcanic glass with a smooth uniform texture that breaks with a conchoidal fracture."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Obsidian) 2300.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Obsidian) 2.50))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Obsidian) 0.90))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Obsidian) 0.09))
+
+(assert (DWARFHUSTLE-MATERIALS/Igneous-Extrusive Rhyolite)) :documentation "Extrusive igneous rock with a very high silica content. It is usually pink or gray in color with grains so small that they are difficult to observe without a hand lens. Rhyolite is made up of quartz, plagioclase, and sanidine, with minor amounts of hornblende and biotite. Trapped gases often produce vugs in the rock. These often contain crystals, opal, or glassy material."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Rhyolite) 700.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Rhyolite) 2.50))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Rhyolite) 0.90))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Rhyolite) 0.09))
