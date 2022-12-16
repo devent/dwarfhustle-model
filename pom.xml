@@ -50,6 +50,18 @@
         </license>
     </licenses>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.anrisoftware.dwarfhustle</groupId>
+                <artifactId>dwarfhustle-orientdb-dependencies</artifactId>
+                <version>0.1.0-SNAPSHOT</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <developers>
         <developer>
             <id>EM</id>
@@ -180,5 +192,6 @@
         <module>dwarfhustle-model-api</module>
         <module>dwarfhustle-model-knowledge</module>
         <module>dwarfhustle-model-actor</module>
+        <module>dwarfhustle-model-db</module>
     </modules>
 </project>

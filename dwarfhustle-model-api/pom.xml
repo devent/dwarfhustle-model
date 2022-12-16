@@ -32,12 +32,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.anrisoftware.dwarfhustle</groupId>
-            <artifactId>dwarfhustle-orientdb-dependencies</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <type>pom</type>
-        </dependency>
-        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>

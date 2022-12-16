@@ -1,5 +1,5 @@
 /*
- * dwarfhustle-model-api - Manages the compile dependencies for the model.
+ * dwarfhustle-model-actor - Manages the compile dependencies for the model.
  * Copyright © 2022 Erwin Müller (erwin.mueller@anrisoftware.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,24 +15,21 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api;
+package com.anrisoftware.dwarfhustle.model.knowledge.db.orientdb;
 
-import java.io.Serializable;
-
-import lombok.Data;
+import com.anrisoftware.dwarfhustle.model.knowledge.db.orientdb.OrientDbActor.OrientDbActorFactory;
+import com.google.inject.AbstractModule;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 
 /**
- * Game object on the game map.
- *
- * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+ * @author Erwin Müller
  */
-@Data
-public class GameObject implements Serializable {
+public class OrientDbModule extends AbstractModule {
 
-    private int x;
-
-    private int y;
-
-    private int z;
+    @Override
+    protected void configure() {
+        install(new FactoryModuleBuilder().implement(OrientDbActor.class, OrientDbActor.class)
+                .build(OrientDbActorFactory.class));
+    }
 
 }
