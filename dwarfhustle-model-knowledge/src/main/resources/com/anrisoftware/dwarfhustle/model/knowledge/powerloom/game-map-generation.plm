@@ -1,0 +1,20 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Author: Erwin Mueller
+;;; Version: game-map-generation.plm,v 1.0
+
+;;; Using Modules
+
+(defmodule "DWARFHUSTLE-GAME-MAP-GENERATION"
+  :documentation "Defines the map where buildings are placed."
+  :includes ("PL-USER")
+  :uses ("LOGIC" "STELLA" "DWARFHUSTLE-MATERIALS")
+  )
+
+(in-module "DWARFHUSTLE-GAME-MAP-GENERATION")
+
+;; clear any info from previous runs:
+(clear-module "DWARFHUSTLE-GAME-MAP-GENERATION")
+(reset-features)
+
+

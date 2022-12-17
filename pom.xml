@@ -193,5 +193,6 @@
         <module>dwarfhustle-model-knowledge</module>
         <module>dwarfhustle-model-actor</module>
         <module>dwarfhustle-model-db</module>
+        <module>dwarfhustle-model-generate-map</module>
     </modules>
 </project>

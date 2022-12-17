@@ -2,6 +2,7 @@
 
 ;;; Author: Erwin Mueller
 ;;; Version: materials.plm,v 0.1.0
+;;; Desciptions used from https://en.wikipedia.org/
 
 ;;; Using Modules
 
@@ -46,6 +47,21 @@
 
 (defrelation metal-alloy-material ((?material Material) (?ratio NUMBER) (?alloy Material)))
   :documentation "Material needed with the specified ratio to produce the alloy."
+
+(defconcept Soil (?material Material)
+  :documentation "Soil material.")
+
+(defconcept Topsoil (?material Soil)
+  :documentation "Upper layer of soil. It has the highest concentration of organic matter and microorganisms and is where most of the Earth's biological soil activity occurs.")
+
+(defconcept Seabed (?material Soil)
+  :documentation "The bottom of the ocean. All floors of the ocean are known as seabeds.")
+
+(defconcept Sand (?material Soil)
+  :documentation "Granular material composed of finely divided mineral particles. Sand has various compositions but is defined by its grain size. Sand grains are smaller than gravel and coarser than silt.")
+
+(defconcept Clay (?material Soil)
+  :documentation "Fine-grained natural soil material containing clay minerals.")
 
 (defconcept Stone (?material Material)
   :documentation "Stone material.")

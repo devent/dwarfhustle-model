@@ -1,0 +1,34 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Author: Erwin Mueller
+;;; Version: materials-seabeds.plm,v 0.1.0
+;;; Descriptions used from https://www.chemeurope.com/en/encyclopedia/Pelagic_sediments.html
+;;; Specific heat capacity taken from http://www.endmemo.com/chem/specificheatsearch.php
+;;; Properties taken from https://www.chemicalbook.com/
+;;; Properties taken from https://www.periodic-table.org/
+
+;;; Using Modules
+
+(defmodule "DWARFHUSTLE-MATERIALS-SEABEDS"
+  :documentation "Defines seabed materials."
+  :includes ("PL-USER")
+  :uses ("LOGIC" "STELLA" "DWARFHUSTLE-MATERIALS")
+  )
+
+(in-module "DWARFHUSTLE-MATERIALS-SEABEDS")
+
+;; clear any info from previous runs:
+(clear-module "DWARFHUSTLE-MATERIALS-SEABEDS")
+(reset-features)
+
+(assert (DWARFHUSTLE-MATERIALS/Seabed Pelagic-Clay)) :documentation "Accumulates in the deepest and most remote areas of the ocean. Containing less than 30% biogenic material, its composition is a varied mix of very fine quartz and clay minerals, authigenic deposits precipitated directly from seawater, and micrometeorites."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Pelagic-Clay) 660.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Pelagic-Clay) 1.30))
+
+(assert (DWARFHUSTLE-MATERIALS/Seabed Siliceous-Ooze)) :documentation "Composed of the debris of plankton with silica shells, such as diatoms and radiolaria. This ooze is limited to areas with high biological productivity, such as the polar oceans, and upwelling zones near the equator."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Siliceous-Ooze) 660.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Siliceous-Ooze) 1.30))
+
+(assert (DWARFHUSTLE-MATERIALS/Seabed Calcareous-Ooze)) :documentation "Composed primarily of the shells--also known as tests--of foraminifera, coccolithophores, and pteropods. This is the most common pelagic sediment by area, covering 48% of the world ocean's floor. This type of ooze is limited to depths above the Carbonate Compensation Depth at time of burial."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Calcareous-Ooze) 660.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Calcareous-Ooze) 1.30))

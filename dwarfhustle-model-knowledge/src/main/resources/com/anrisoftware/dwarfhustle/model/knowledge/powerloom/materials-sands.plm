@@ -1,0 +1,42 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Author: Erwin Mueller
+;;; Version: materials-sands.plm,v 0.1.0
+;;; Descriptions used from https://en.wikipedia.org/
+;;; Specific heat capacity taken from http://www.endmemo.com/chem/specificheatsearch.php
+;;; Properties taken from https://www.chemicalbook.com/
+;;; Properties taken from https://www.periodic-table.org/
+
+;;; Using Modules
+
+(defmodule "DWARFHUSTLE-MATERIALS-SANDS"
+  :documentation "Defines sand materials."
+  :includes ("PL-USER")
+  :uses ("LOGIC" "STELLA" "DWARFHUSTLE-MATERIALS")
+  )
+
+(in-module "DWARFHUSTLE-MATERIALS-SANDS")
+
+;; clear any info from previous runs:
+(clear-module "DWARFHUSTLE-MATERIALS-SANDS")
+(reset-features)
+
+(assert (DWARFHUSTLE-MATERIALS/Sand Sand)) :documentation "Most common constituent of sand in inland continental settings and non-tropical coastal settings is silica (silicon dioxide, or SiO2), usually in the form of quartz."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Sand) 1670))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Sand) 1.60))
+
+(assert (DWARFHUSTLE-MATERIALS/Sand Black-Sand)) :documentation "One type of black sand is a heavy, glossy, partly magnetic mixture of usually fine sands containing minerals such as magnetite, found as part of a placer deposit. Another type of black sand, found on beaches near a volcano, consists of tiny fragments of basalt."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Black-Sand) 1670))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Black-Sand) 1.60))
+
+(assert (DWARFHUSTLE-MATERIALS/Sand Red-Sand)) :documentation "Most common constituent of sand in inland continental settings and non-tropical coastal settings is silica (silicon dioxide, or SiO2), usually in the form of quartz."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Red-Sand) 1670))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Red-Sand) 1.60))
+
+(assert (DWARFHUSTLE-MATERIALS/Sand White-Sand)) :documentation "Most common constituent of sand in inland continental settings and non-tropical coastal settings is silica (silicon dioxide, or SiO2), usually in the form of quartz."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material White-Sand) 1670))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material White-Sand) 1.60))
+
+(assert (DWARFHUSTLE-MATERIALS/Sand Yellow-Sand)) :documentation "Most common constituent of sand in inland continental settings and non-tropical coastal settings is silica (silicon dioxide, or SiO2), usually in the form of quartz."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Yellow-Sand) 1670))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Yellow-Sand) 1.60))
