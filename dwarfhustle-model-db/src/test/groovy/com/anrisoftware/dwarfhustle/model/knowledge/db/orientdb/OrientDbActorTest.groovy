@@ -55,27 +55,49 @@ class OrientDbActorTest {
                 testKit.scheduler())
         def lock = new CountDownLatch(1)
         result.whenComplete( {reply, failure ->
-            log.info "reply {} failure", reply, failure
+            log.info "Connect database reply {} failure {}", reply, failure
             switch (reply) {
                 case ConnectDbSuccessMessage:
-                    def lock1 = new CountDownLatch(1)
-                    def result1 =
-                            AskPattern.ask(
-                            orientDbActor,
-                            {replyTo -> new CreateDbMessage(replyTo, "test", ODatabaseType.PLOCAL)},
-                            Duration.ofSeconds(10),
-                            testKit.scheduler())
-                    result1.whenComplete( {reply1, failure1 ->
-                        log.info "reply1 {} failure1", reply1, failure1
-                        lock1.countDown()
-                    })
-                    lock1.await()
+                    createDatabase(lock)
                     break
                 case ConnectDbErrorMessage:
                     break
             }
-            lock.countDown()
         })
         lock.await()
+    }
+
+    void createDatabase(def lock) {
+        def result =
+                AskPattern.ask(
+                orientDbActor,
+                {replyTo -> new CreateDbMessage(replyTo, "test", ODatabaseType.PLOCAL)},
+                Duration.ofSeconds(10),
+                testKit.scheduler())
+        result.whenComplete( {reply, failure ->
+            log.info "Create database reply {} failure {}", reply, failure
+            executeCommand(lock)
+        })
+    }
+
+    void executeCommand(def lock) {
+        def result =
+                AskPattern.ask(
+                orientDbActor, {replyTo ->
+                    new DbCommandMessage(replyTo, "test", "root", "admin", { db ->
+                        def cl = db.createClassIfNotExist("Person", "V")
+                        db.begin();
+                        def doc = db.newVertex(cl);
+                        doc.setProperty("name", "John");
+                        doc.save();
+                        db.commit()
+                    })
+                },
+                Duration.ofSeconds(10),
+                testKit.scheduler())
+        result.whenComplete( {reply, failure ->
+            log.info "Execute command reply {} failure {}", reply, failure
+            lock.countDown()
+        })
     }
 }

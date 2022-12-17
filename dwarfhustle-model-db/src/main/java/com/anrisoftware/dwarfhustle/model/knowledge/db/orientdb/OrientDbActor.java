@@ -80,6 +80,8 @@ import com.anrisoftware.dwarfhustle.model.knowledge.db.orientdb.ConnectDbMessage
 import com.anrisoftware.dwarfhustle.model.knowledge.db.orientdb.CreateDbMessage.CreateDbErrorMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.db.orientdb.CreateDbMessage.CreateDbSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.db.orientdb.CreateDbMessage.DbAlreadyExistMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.db.orientdb.DbCommandMessage.DbCommandErrorMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.db.orientdb.DbCommandMessage.DbCommandSuccessMessage;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
 import com.orientechnologies.orient.core.db.OrientDB;
@@ -136,11 +138,26 @@ public class OrientDbActor {
 
     private Optional<OrientDB> orientdb;
 
+    /**
+     * Initial behavior. Returns a behavior for the messages:
+     *
+     * <ul>
+     * <li>{@link ConnectDbMessage}
+     * </ul>
+     */
     public Behavior<Message> start() {
         this.orientdb = Optional.empty();
         return getInitialBehavior().build();
     }
 
+    /**
+     * Reacts to {@link ConnectDbMessage}. Returns a behavior for the messages:
+     *
+     * <ul>
+     * <li>{@link CloseDbMessage}
+     * <li>{@link CreateDbMessage}
+     * </ul>
+     */
     private Behavior<Message> onConnectDb(ConnectDbMessage m) {
         log.debug("onConnectDb {}", m);
         try {
@@ -153,6 +170,13 @@ public class OrientDbActor {
         return getConnectedBehavior().build();
     }
 
+    /**
+     * Reacts to {@link CloseDbMessage}. Returns a behavior for the messages:
+     *
+     * <ul>
+     * <li>{@link ConnectDbMessage}
+     * </ul>
+     */
     private Behavior<Message> onCloseDb(CloseDbMessage m) {
         log.debug("onCloseDb {}", m);
         if (orientdb.isPresent()) {
@@ -161,6 +185,15 @@ public class OrientDbActor {
         return getInitialBehavior().build();
     }
 
+    /**
+     * Reacts to {@link ConnectDbMessage}. Returns a behavior for the messages:
+     *
+     * <ul>
+     * <li>{@link CloseDbMessage}
+     * <li>{@link CreateDbMessage}
+     * <li>{@link DbCommandMessage}
+     * </ul>
+     */
     private Behavior<Message> onCreateDb(CreateDbMessage m) {
         log.debug("onCreateDb {}", m);
         try {
@@ -177,6 +210,29 @@ public class OrientDbActor {
         return Behaviors.same();
     }
 
+    /**
+     * Reacts to {@link DbCommandMessage}. Returns a behavior for the messages:
+     *
+     * <ul>
+     * <li>{@link CloseDbMessage}
+     * <li>{@link CreateDbMessage}
+     * <li>{@link DbCommandMessage}
+     * </ul>
+     */
+    private Behavior<Message> onDbCommand(DbCommandMessage m) {
+        log.debug("onDbCommand {}", m);
+        try {
+            var database = orientdb.get().open(m.database, m.user, m.password);
+            try (database) {
+                m.command.accept(database);
+            }
+            m.replyTo.tell(new DbCommandSuccessMessage(m));
+        } catch (Exception e) {
+            m.replyTo.tell(new DbCommandErrorMessage(m, e));
+        }
+        return Behaviors.same();
+    }
+
     private BehaviorBuilder<Message> getInitialBehavior() {
         return Behaviors.receive(Message.class)//
                 .onMessage(ConnectDbMessage.class, this::onConnectDb)//
@@ -187,6 +243,7 @@ public class OrientDbActor {
         return Behaviors.receive(Message.class)//
                 .onMessage(CloseDbMessage.class, this::onCloseDb)//
                 .onMessage(CreateDbMessage.class, this::onCreateDb)//
+                .onMessage(DbCommandMessage.class, this::onDbCommand)//
         ;
     }
 
