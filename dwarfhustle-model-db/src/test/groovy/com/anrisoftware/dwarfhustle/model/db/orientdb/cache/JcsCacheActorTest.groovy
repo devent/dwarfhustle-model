@@ -21,6 +21,8 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CreateDbMessage
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DeleteDbMessage
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbModule
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.CreateSchemasMessage
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsActor
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsModule
 import com.google.inject.Guice
 import com.google.inject.Injector
@@ -46,11 +48,14 @@ class JcsCacheActorTest {
 
 	static ActorRef<Message> jcsCacheActor
 
+	static ActorRef<Message> objectsActor
+
 	@BeforeAll
 	static void setupActor() {
 		injector = Guice.createInjector(new MainActorsModule(), new OrientDbModule(), new JcsCacheModule(), new ObjectsModule())
 		orientDbActor = testKit.spawn(OrientDbActor.create(injector), "OrientDbActor");
 		jcsCacheActor = testKit.spawn(JcsCacheActor.create(injector, orientDbActor), "JcsCacheActor");
+		objectsActor = testKit.spawn(ObjectsActor.create(injector, orientDbActor), "objectsActor");
 		connectCreateDatabase()
 	}
 
@@ -76,6 +81,7 @@ class JcsCacheActorTest {
 					createDatabase(lock)
 					break
 				case DbErrorMessage:
+					lock.countDown()
 					break
 			}
 		})
@@ -87,10 +93,23 @@ class JcsCacheActorTest {
 				AskPattern.ask(
 				orientDbActor,
 				{replyTo -> new CreateDbMessage(replyTo, ODatabaseType.PLOCAL)},
+				Duration.ofSeconds(60),
+				testKit.scheduler())
+		result.whenComplete( {reply, failure ->
+			log.info "Create database reply ${reply} failure ${failure}"
+			createSchemas(lock)
+		})
+	}
+
+	static void createSchemas(def lock) {
+		def result =
+				AskPattern.ask(
+				objectsActor,
+				{replyTo -> new CreateSchemasMessage(replyTo)},
 				Duration.ofSeconds(15),
 				testKit.scheduler())
 		result.whenComplete( {reply, failure ->
-			log.info "Create database reply {} failure {}", reply, failure
+			log.info "Create schemas reply {} failure {}", reply, failure
 			lock.countDown()
 		})
 	}

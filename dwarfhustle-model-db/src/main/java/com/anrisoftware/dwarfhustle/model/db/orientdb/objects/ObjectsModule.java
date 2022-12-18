@@ -17,14 +17,18 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.objects;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Singleton;
 
 import com.anrisoftware.dwarfhustle.model.api.GameObjectStorage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsActor.ObjectsActorFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 
 /**
  *
@@ -33,9 +37,11 @@ import com.google.inject.Provides;
  */
 public class ObjectsModule extends AbstractModule {
 
-    @Override
-    protected void configure() {
-    }
+	@Override
+	protected void configure() {
+		install(new FactoryModuleBuilder().implement(ObjectsActor.class, ObjectsActor.class)
+				.build(ObjectsActorFactory.class));
+	}
 
 	@Singleton
 	@Provides
@@ -43,5 +49,14 @@ public class ObjectsModule extends AbstractModule {
 		var map = new HashMap<String, GameObjectStorage>();
 		map.put("MapTile", new MapTileStorage());
 		return map;
+	}
+
+	@Singleton
+	@Provides
+	public List<GameObjectSchema> getSchemas() {
+		var list = new ArrayList<GameObjectSchema>();
+		list.add(new GameObjectSchemaSchema());
+		list.add(new MapTileSchema());
+		return list;
 	}
 }
