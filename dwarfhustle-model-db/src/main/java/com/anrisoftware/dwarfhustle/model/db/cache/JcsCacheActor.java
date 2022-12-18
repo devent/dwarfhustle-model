@@ -74,9 +74,9 @@ import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
 
-import org.apache.commons.jcs.JCS;
-import org.apache.commons.jcs.access.CacheAccess;
-import org.apache.commons.jcs.access.exception.CacheException;
+import org.apache.commons.jcs3.JCS;
+import org.apache.commons.jcs3.access.CacheAccess;
+import org.apache.commons.jcs3.access.exception.CacheException;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
@@ -84,10 +84,12 @@ import com.anrisoftware.dwarfhustle.model.api.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.GameObjectStorage;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractCacheReplyMessage.CacheErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractCacheReplyMessage.CacheSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.AbstractDbReplyMessage.DbErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.AbstractDbReplyMessage.DbResponseMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
+import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 import com.orientechnologies.orient.core.id.ORID;
 
 import akka.actor.typed.ActorRef;
@@ -132,6 +134,8 @@ public class JcsCacheActor {
 	@ToString(callSuper = true)
 	private static class RequestErrorMessage extends Message {
 
+		public final AbstractCacheReplyMessage originalMessage;
+
 		public final Throwable cause;
 	}
 
@@ -140,7 +144,7 @@ public class JcsCacheActor {
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
-	public interface OrientDbActorFactory {
+	public interface JcsCacheActorFactory {
 
 		JcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, ActorRef<Message> db);
 	}
@@ -148,7 +152,7 @@ public class JcsCacheActor {
 	public static Behavior<Message> create(Injector injector, ActorRef<Message> db) {
 		return Behaviors.withStash(100, stash -> Behaviors.setup((context) -> {
 			initCache(injector, context);
-			return injector.getInstance(OrientDbActorFactory.class).create(context, stash, db).start();
+			return injector.getInstance(JcsCacheActorFactory.class).create(context, stash, db).start();
 		}));
 	}
 
@@ -180,7 +184,7 @@ public class JcsCacheActor {
 		return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, db));
 	}
 
-	private final Duration timeout = Duration.ofMillis(100);
+	private final Duration timeout = Duration.ofSeconds(300);
 
 	@Inject
 	@Assisted
@@ -225,6 +229,7 @@ public class JcsCacheActor {
 	 *
 	 * <ul>
 	 * <li>{@link PutMessage}
+	 * <li>{@link RequestErrorMessage}
 	 * </ul>
 	 */
 	private Behavior<Message> onInitialState(InitialStateMessage m) {
@@ -248,18 +253,15 @@ public class JcsCacheActor {
 		if (id == null) {
 			context.ask(DbResponseMessage.class, db, timeout,
 					(ActorRef<DbResponseMessage> ref) -> new DbCommandMessage(ref, db -> {
-						db.begin();
-						var doc = db.newVertex(m.go.getType());
-						storages.get(m.go.type).save(doc, m.go);
-						doc.save();
-						db.commit();
+						createNewVertex(m, db);
 					}), (response, throwable) -> {
-						if (response != null) {
-							return m;
+						if (throwable != null) {
+							return new RequestErrorMessage(m, throwable);
 						} else {
-							return new RequestErrorMessage(throwable);
+							return translateDbResponse(response, m);
 						}
 					});
+			return Behaviors.same();
 		}
 		try {
 			cache.put(id, m.go);
@@ -270,18 +272,34 @@ public class JcsCacheActor {
 		return Behaviors.same();
 	}
 
+	private void createNewVertex(PutMessage m, ODatabaseDocument db) {
+		var doc = db.newVertex(m.go.getType());
+		db.begin();
+		storages.get(m.go.type).save(doc, m.go);
+		doc.save();
+		db.commit();
+	}
+
+	private Message translateDbResponse(DbResponseMessage response, PutMessage m) {
+		if (response instanceof DbErrorMessage) {
+			var dm = (DbErrorMessage) response;
+			return new RequestErrorMessage(m, dm.error);
+		}
+		return m;
+	}
+
 	/**
 	 * There was an error with a request. Stops the actor.
 	 */
 	private Behavior<Message> onRequestError(RequestErrorMessage m) {
 		log.debug("onRequestError {}", m);
+		m.originalMessage.replyTo.tell(new CacheErrorMessage(m.originalMessage, m.cause));
 		return Behaviors.stopped();
 	}
 
 	private BehaviorBuilder<Message> getInitialBehavior() {
 		return Behaviors.receive(Message.class)//
 				.onMessage(PutMessage.class, this::onPut)//
-				.onMessage(RequestErrorMessage.class, this::onRequestError)
-		;
+				.onMessage(RequestErrorMessage.class, this::onRequestError);
 	}
 }

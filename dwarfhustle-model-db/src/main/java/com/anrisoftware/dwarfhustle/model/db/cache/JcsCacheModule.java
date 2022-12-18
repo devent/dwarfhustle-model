@@ -17,7 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.cache;
 
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor.OrientDbActorFactory;
+import com.anrisoftware.dwarfhustle.model.db.cache.JcsCacheActor.JcsCacheActorFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 
@@ -29,7 +29,7 @@ public class JcsCacheModule extends AbstractModule {
     @Override
     protected void configure() {
         install(new FactoryModuleBuilder().implement(JcsCacheActor.class, JcsCacheActor.class)
-                .build(OrientDbActorFactory.class));
+				.build(JcsCacheActorFactory.class));
     }
 
 }

@@ -197,6 +197,7 @@ public class OrientDbActor {
 	 * <ul>
 	 * <li>{@link CloseDbMessage}
 	 * <li>{@link CreateDbMessage}
+	 * <li>{@link DeleteDbMessage}
 	 * <li>{@link DbCommandMessage}
 	 * </ul>
 	 */
@@ -255,8 +256,7 @@ public class OrientDbActor {
 	private Behavior<Message> onDbCommand(DbCommandMessage m) {
 		log.debug("onDbCommand {}", m);
 		try {
-			var db = orientdb.get().open(database, user, password);
-			try (db) {
+			try (var db = orientdb.get().open(database, user, password)) {
 				m.command.accept(db);
 			}
 			m.replyTo.tell(new DbSuccessMessage(m));

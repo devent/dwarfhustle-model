@@ -35,7 +35,7 @@ public class AbstractCacheReplyMessage extends Message {
 
 		public final AbstractCacheReplyMessage originalMessage;
 
-		public final Exception error;
+		public final Throwable error;
 	}
 
 	/**
