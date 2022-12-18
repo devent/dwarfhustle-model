@@ -20,6 +20,7 @@ package com.anrisoftware.dwarfhustle.model.api;
 import java.io.Serializable;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * Game object on the game map.
@@ -27,12 +28,42 @@ import lombok.Data;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class GameObject implements Serializable {
 
-    private int x;
+	private static final long serialVersionUID = 8715034096848467783L;
 
-    private int y;
+	public String type = "GameObject";
 
-    private int z;
+	@EqualsAndHashCode.Include
+	public Object id;
 
+	public boolean dirty = false;
+
+	public int x;
+
+	public int y;
+
+	public int z;
+
+	public void setX(int x) {
+		if (this.x != x) {
+			setDirty(true);
+			this.x = x;
+		}
+	}
+
+	public void setY(int y) {
+		if (this.y != y) {
+			setDirty(true);
+			this.y = y;
+		}
+	}
+
+	public void setZ(int z) {
+		if (this.z != z) {
+			setDirty(true);
+			this.z = z;
+		}
+	}
 }

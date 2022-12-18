@@ -1,5 +1,5 @@
 /*
- * dwarfhustle-model-api - Manages the compile dependencies for the model.
+ * dwarfhustle-model-actor - Manages the compile dependencies for the model.
  * Copyright © 2022 Erwin Müller (erwin.mueller@anrisoftware.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,34 +15,21 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api;
+package com.anrisoftware.dwarfhustle.model.db.cache;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor.OrientDbActorFactory;
+import com.google.inject.AbstractModule;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 
 /**
- * Tile on the game map.
- *
- * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+ * @author Erwin Müller
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
-public class MapTile extends GameObject {
+public class JcsCacheModule extends AbstractModule {
 
-	private static final long serialVersionUID = -6027695018525898404L;
-
-	public String material;
-
-	@Override
-	public String getType() {
-		return "MapTile";
-	}
-
-	public void setMaterial(String material) {
-		if (this.material != material) {
-			setDirty(true);
-			this.material = material;
-		}
-	}
+    @Override
+    protected void configure() {
+        install(new FactoryModuleBuilder().implement(JcsCacheActor.class, JcsCacheActor.class)
+                .build(OrientDbActorFactory.class));
+    }
 
 }

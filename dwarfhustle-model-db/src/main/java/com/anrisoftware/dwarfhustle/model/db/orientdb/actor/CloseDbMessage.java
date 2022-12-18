@@ -1,4 +1,4 @@
-package com.anrisoftware.dwarfhustle.model.db.orientdb;
+package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 

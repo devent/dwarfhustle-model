@@ -15,21 +15,21 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.db.orientdb;
+package com.anrisoftware.dwarfhustle.model.knowledge.generate;
 
-import com.anrisoftware.dwarfhustle.model.db.orientdb.OrientDbActor.OrientDbActorFactory;
+import com.anrisoftware.dwarfhustle.model.knowledge.db.orientdb.OrientDbActor.OrientDbActorFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 
 /**
  * @author Erwin Müller
  */
-public class OrientDbModule extends AbstractModule {
+public class GenerateModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        install(new FactoryModuleBuilder().implement(OrientDbActor.class, OrientDbActor.class)
-                .build(OrientDbActorFactory.class));
+        install(new FactoryModuleBuilder().implement(GenerateMapActor.class, GenerateMapActor.class)
+                .build(GenerateMapActorFactory.class));
     }
 
 }

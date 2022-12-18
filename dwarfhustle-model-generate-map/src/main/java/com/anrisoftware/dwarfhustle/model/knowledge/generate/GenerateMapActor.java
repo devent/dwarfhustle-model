@@ -63,7 +63,7 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.anrisoftware.dwarfhustle.model.db.orientdb;
+package com.anrisoftware.dwarfhustle.model.knowledge.generate;
 
 import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
 
@@ -75,17 +75,8 @@ import javax.inject.Inject;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.ConnectDbMessage.ConnectDbErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.ConnectDbMessage.ConnectDbSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.CreateDbMessage.CreateDbErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.CreateDbMessage.CreateDbSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.CreateDbMessage.DbAlreadyExistMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.DbCommandMessage.DbCommandErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.DbCommandMessage.DbCommandSuccessMessage;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
-import com.orientechnologies.orient.core.db.OrientDB;
-import com.orientechnologies.orient.core.db.OrientDBConfig;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -100,32 +91,32 @@ import lombok.extern.slf4j.Slf4j;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
-public class OrientDbActor {
+public class GenerateMapActor {
 
-    public static final ServiceKey<Message> KEY = ServiceKey.create(Message.class, OrientDbActor.class.getSimpleName());
+    public static final ServiceKey<Message> KEY = ServiceKey.create(Message.class, GenerateMapActor.class.getSimpleName());
 
-    public static final String NAME = OrientDbActor.class.getSimpleName();
+    public static final String NAME = GenerateMapActor.class.getSimpleName();
 
     public static final int ID = KEY.hashCode();
 
     /**
-     * Factory to create {@link OrientDbActor}.
+     * Factory to create {@link GenerateMapActor}.
      *
      * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
      */
-    public interface OrientDbActorFactory {
+    public interface GenerateMapActorFactory {
 
-        OrientDbActor create(ActorContext<Message> context);
+        GenerateMapActor create(ActorContext<Message> context);
     }
 
     public static Behavior<Message> create(Injector injector) {
         return Behaviors.setup((context) -> {
-            return injector.getInstance(OrientDbActorFactory.class).create(context).start();
+            return injector.getInstance(GenerateMapActorFactory.class).create(context).start();
         });
     }
 
     /**
-     * Creates the {@link OrientDbActor}.
+     * Creates the {@link GenerateMapActor}.
      */
     public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout) {
         var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
@@ -136,8 +127,6 @@ public class OrientDbActor {
     @Assisted
     private ActorContext<Message> context;
 
-    private Optional<OrientDB> orientdb;
-
     /**
      * Initial behavior. Returns a behavior for the messages:
      *
@@ -146,7 +135,6 @@ public class OrientDbActor {
      * </ul>
      */
     public Behavior<Message> start() {
-        this.orientdb = Optional.empty();
         return getInitialBehavior().build();
     }
 
@@ -191,7 +179,7 @@ public class OrientDbActor {
      * <ul>
      * <li>{@link CloseDbMessage}
      * <li>{@link CreateDbMessage}
-     * <li>{@link DbCommandMessage}
+     * <li>{@link GenerateMessage}
      * </ul>
      */
     private Behavior<Message> onCreateDb(CreateDbMessage m) {
@@ -211,24 +199,24 @@ public class OrientDbActor {
     }
 
     /**
-     * Reacts to {@link DbCommandMessage}. Returns a behavior for the messages:
+     * Reacts to {@link GenerateMessage}. Returns a behavior for the messages:
      *
      * <ul>
      * <li>{@link CloseDbMessage}
      * <li>{@link CreateDbMessage}
-     * <li>{@link DbCommandMessage}
+     * <li>{@link GenerateMessage}
      * </ul>
      */
-    private Behavior<Message> onDbCommand(DbCommandMessage m) {
+    private Behavior<Message> onDbCommand(GenerateMessage m) {
         log.debug("onDbCommand {}", m);
         try {
             var database = orientdb.get().open(m.database, m.user, m.password);
             try (database) {
                 m.command.accept(database);
             }
-            m.replyTo.tell(new DbCommandSuccessMessage(m));
+            m.replyTo.tell(new GenerateSuccessMessage(m));
         } catch (Exception e) {
-            m.replyTo.tell(new DbCommandErrorMessage(m, e));
+            m.replyTo.tell(new GenerateErrorMessage(m, e));
         }
         return Behaviors.same();
     }
@@ -243,7 +231,7 @@ public class OrientDbActor {
         return Behaviors.receive(Message.class)//
                 .onMessage(CloseDbMessage.class, this::onCloseDb)//
                 .onMessage(CreateDbMessage.class, this::onCreateDb)//
-                .onMessage(DbCommandMessage.class, this::onDbCommand)//
+                .onMessage(GenerateMessage.class, this::onDbCommand)//
         ;
     }
 

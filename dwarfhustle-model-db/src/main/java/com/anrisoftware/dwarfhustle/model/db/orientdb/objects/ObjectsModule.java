@@ -1,5 +1,5 @@
 /*
- * dwarfhustle-model-api - Manages the compile dependencies for the model.
+ * dwarfhustle-model-actor - Manages the compile dependencies for the model.
  * Copyright © 2022 Erwin Müller (erwin.mueller@anrisoftware.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,34 +15,33 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api;
+package com.anrisoftware.dwarfhustle.model.db.orientdb.objects;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.inject.Singleton;
+
+import com.anrisoftware.dwarfhustle.model.api.GameObjectStorage;
+import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
 
 /**
- * Tile on the game map.
+ *
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
-public class MapTile extends GameObject {
+public class ObjectsModule extends AbstractModule {
 
-	private static final long serialVersionUID = -6027695018525898404L;
+    @Override
+    protected void configure() {
+    }
 
-	public String material;
-
-	@Override
-	public String getType() {
-		return "MapTile";
+	@Singleton
+	@Provides
+	public Map<String, GameObjectStorage> getStorages() {
+		var map = new HashMap<String, GameObjectStorage>();
+		map.put("MapTile", new MapTileStorage());
+		return map;
 	}
-
-	public void setMaterial(String material) {
-		if (this.material != material) {
-			setDirty(true);
-			this.material = material;
-		}
-	}
-
 }
