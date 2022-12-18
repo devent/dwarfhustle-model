@@ -15,9 +15,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.knowledge.db.orientdb;
+package com.anrisoftware.dwarfhustle.model.db.orientdb;
 
-import com.anrisoftware.dwarfhustle.model.knowledge.db.orientdb.OrientDbActor.OrientDbActorFactory;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.OrientDbActor.OrientDbActorFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 

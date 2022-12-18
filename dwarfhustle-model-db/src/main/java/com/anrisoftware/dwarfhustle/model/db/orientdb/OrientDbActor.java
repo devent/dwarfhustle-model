@@ -63,7 +63,7 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.anrisoftware.dwarfhustle.model.knowledge.db.orientdb;
+package com.anrisoftware.dwarfhustle.model.db.orientdb;
 
 import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
 
@@ -75,13 +75,13 @@ import javax.inject.Inject;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.knowledge.db.orientdb.ConnectDbMessage.ConnectDbErrorMessage;
-import com.anrisoftware.dwarfhustle.model.knowledge.db.orientdb.ConnectDbMessage.ConnectDbSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.knowledge.db.orientdb.CreateDbMessage.CreateDbErrorMessage;
-import com.anrisoftware.dwarfhustle.model.knowledge.db.orientdb.CreateDbMessage.CreateDbSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.knowledge.db.orientdb.CreateDbMessage.DbAlreadyExistMessage;
-import com.anrisoftware.dwarfhustle.model.knowledge.db.orientdb.DbCommandMessage.DbCommandErrorMessage;
-import com.anrisoftware.dwarfhustle.model.knowledge.db.orientdb.DbCommandMessage.DbCommandSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.ConnectDbMessage.ConnectDbErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.ConnectDbMessage.ConnectDbSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.CreateDbMessage.CreateDbErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.CreateDbMessage.CreateDbSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.CreateDbMessage.DbAlreadyExistMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.DbCommandMessage.DbCommandErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.DbCommandMessage.DbCommandSuccessMessage;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
 import com.orientechnologies.orient.core.db.OrientDB;

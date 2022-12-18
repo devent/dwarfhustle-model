@@ -1,4 +1,4 @@
-package com.anrisoftware.dwarfhustle.model.knowledge.db.orientdb
+package com.anrisoftware.dwarfhustle.model.db.orientdb
 
 import java.time.Duration
 import java.util.concurrent.CountDownLatch
@@ -9,8 +9,14 @@ import org.junit.jupiter.api.Test
 
 import com.anrisoftware.dwarfhustle.model.actor.MainActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
-import com.anrisoftware.dwarfhustle.model.knowledge.db.orientdb.ConnectDbMessage.ConnectDbErrorMessage
-import com.anrisoftware.dwarfhustle.model.knowledge.db.orientdb.ConnectDbMessage.ConnectDbSuccessMessage
+import com.anrisoftware.dwarfhustle.model.db.orientdb.CloseDbMessage
+import com.anrisoftware.dwarfhustle.model.db.orientdb.ConnectDbMessage
+import com.anrisoftware.dwarfhustle.model.db.orientdb.ConnectDbMessage.ConnectDbErrorMessage
+import com.anrisoftware.dwarfhustle.model.db.orientdb.ConnectDbMessage.ConnectDbSuccessMessage
+import com.anrisoftware.dwarfhustle.model.db.orientdb.CreateDbMessage
+import com.anrisoftware.dwarfhustle.model.db.orientdb.DbCommandMessage
+import com.anrisoftware.dwarfhustle.model.db.orientdb.OrientDbActor
+import com.anrisoftware.dwarfhustle.model.db.orientdb.OrientDbModule
 import com.google.inject.Guice
 import com.google.inject.Injector
 import com.orientechnologies.orient.core.db.ODatabaseType
@@ -24,10 +30,7 @@ import groovy.util.logging.Slf4j
  * @see OrientDbActor
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@Slf4j
-class OrientDbActorTest {
-
-    static final ActorTestKit testKit = ActorTestKit.create()
+com.anrisoftware.dwarfhustle.model.db.orientdbTestKit testKit = ActorTestKit.create()
 
     static Injector injector
 

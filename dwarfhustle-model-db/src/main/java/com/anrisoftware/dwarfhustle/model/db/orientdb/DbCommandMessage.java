@@ -1,4 +1,4 @@
-package com.anrisoftware.dwarfhustle.model.knowledge.db.orientdb;
+package com.anrisoftware.dwarfhustle.model.db.orientdb;
 
 import java.util.function.Consumer;
 

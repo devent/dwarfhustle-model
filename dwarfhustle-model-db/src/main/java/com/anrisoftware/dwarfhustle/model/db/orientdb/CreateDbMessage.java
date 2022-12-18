@@ -1,4 +1,4 @@
-package com.anrisoftware.dwarfhustle.model.knowledge.db.orientdb;
+package com.anrisoftware.dwarfhustle.model.db.orientdb;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.orientechnologies.orient.core.db.ODatabaseType;
