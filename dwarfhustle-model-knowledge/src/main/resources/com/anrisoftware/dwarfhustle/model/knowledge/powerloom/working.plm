@@ -1,13 +1,12 @@
 ;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
 
 ;;; Author: Erwin Mueller
-;;; Version: game-map-example.plm,v 1.0
-;;; Desciptions used from https://geology.com/
+;;; Version: working.plm,v 1.0
 
 ;;; Using Modules
 
-(defmodule "DWARFHUSTLE-EXAMPLE"
-  :documentation "Example knowledge base."
+(defmodule "DWARFHUSTLE-WORKING"
+  :documentation "Working knowledge base."
   :includes (
 "DWARFHUSTLE-GAME-MAP"
 "DWARFHUSTLE-MATERIALS"
@@ -18,11 +17,15 @@
 "DWARFHUSTLE-MATERIALS-METALS"
 "DWARFHUSTLE-MATERIALS-METALS-ORES"
 "DWARFHUSTLE-MATERIALS-METALS-ALLOYS"
+"DWARFHUSTLE-MATERIALS-CLAYS"
+"DWARFHUSTLE-MATERIALS-SANDS"
+"DWARFHUSTLE-MATERIALS-SEABEDS"
+"DWARFHUSTLE-MATERIALS-TOPSOILS"
 )
   )
 
-(in-module "DWARFHUSTLE-EXAMPLE")
+(in-module "DWARFHUSTLE-WORKING")
 
 ;; clear any info from previous runs:
-(clear-module "DWARFHUSTLE-EXAMPLE")
+(clear-module "DWARFHUSTLE-WORKING")
 (reset-features)

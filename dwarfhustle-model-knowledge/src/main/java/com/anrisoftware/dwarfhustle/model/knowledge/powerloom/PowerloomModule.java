@@ -1,5 +1,5 @@
 /*
- * dwarfhustle-model-knowledge - Manages the compile dependencies for the model.
+ * dwarfhustle-model-actor - Manages the compile dependencies for the model.
  * Copyright © 2022 Erwin Müller (erwin.mueller@anrisoftware.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,11 +17,19 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom;
 
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.PowerLoomKnowledgeActor.PowerLoomKnowledgeActorFactory;
+import com.google.inject.AbstractModule;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
+
 /**
- * Loads the knowledge base.
- *
- * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+ * @author Erwin Müller
  */
-public class PowerLoomKnowledgeBase {
+public class PowerloomModule extends AbstractModule {
+
+    @Override
+    protected void configure() {
+        install(new FactoryModuleBuilder().implement(PowerLoomKnowledgeActor.class, PowerLoomKnowledgeActor.class)
+                .build(PowerLoomKnowledgeActorFactory.class));
+    }
 
 }

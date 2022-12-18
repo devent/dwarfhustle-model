@@ -42,8 +42,18 @@
             <artifactId>junit-jupiter-params</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-actor-testkit-typed_${scala.binary.version}</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <!-- Compile dependencies -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
 		<dependency>
 			<groupId>edu.isi</groupId>
 			<artifactId>powerloom</artifactId>
@@ -51,6 +61,10 @@
 		<dependency>
 			<groupId>edu.isi</groupId>
 			<artifactId>stella</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>commons-io</groupId>
+		    <artifactId>commons-io</artifactId>
 		</dependency>
 
         <!-- Own modules dependencies -->

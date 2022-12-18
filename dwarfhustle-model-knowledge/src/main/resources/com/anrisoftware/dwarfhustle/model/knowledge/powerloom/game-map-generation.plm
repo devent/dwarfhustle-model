@@ -17,4 +17,32 @@
 (clear-module "DWARFHUSTLE-GAME-MAP-GENERATION")
 (reset-features)
 
+(deffunction layer-start-depth ((?material Material)) :-> (?depth NUMBER))
+  :documentation "Start depth of a layer."
 
+(deffunction layer-maximum-depth ((?material Material)) :-> (?depth NUMBER))
+  :documentation "Maximum depth of a layer."
+
+(assert (= (layer-start-depth Topsoil) 0))
+(assert (= (layer-maximum-depth Topsoil) 3))
+
+(assert (= (layer-start-depth Seabed) 0))
+(assert (= (layer-maximum-depth Seabed) 3))
+
+(assert (= (layer-start-depth Sand) 0))
+(assert (= (layer-maximum-depth Sand) 3))
+
+(assert (= (layer-start-depth Clay) 0))
+(assert (= (layer-maximum-depth Clay) 3))
+
+(assert (= (layer-start-depth Sedimentary) 0))
+(assert (= (layer-maximum-depth Sedimentary) 14))
+
+(assert (= (layer-start-depth Igneous-Intrusive) 14))
+(assert (= (layer-maximum-depth Igneous-Intrusive) 99))
+
+(assert (= (layer-start-depth Igneous-Extrusive) 0))
+(assert (= (layer-maximum-depth Igneous-Extrusive) 10))
+
+(assert (= (layer-start-depth Metamorphic) 0))
+(assert (= (layer-maximum-depth Metamorphic) 99))
