@@ -33,11 +33,13 @@ public class MapTile extends GameObject {
 
 	private static final long serialVersionUID = -6027695018525898404L;
 
+	public static final String TYPE = "MapTile";
+
 	public String material;
 
 	@Override
 	public String getType() {
-		return "MapTile";
+		return TYPE;
 	}
 
 	public void setMaterial(String material) {

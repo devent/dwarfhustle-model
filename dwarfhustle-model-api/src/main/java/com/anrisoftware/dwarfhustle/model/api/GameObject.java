@@ -33,7 +33,7 @@ public class GameObject implements Serializable {
 
 	private static final long serialVersionUID = 8715034096848467783L;
 
-	public String type = "GameObject";
+	public static final String TYPE = "GameObject";
 
 	@EqualsAndHashCode.Include
 	public Object id;
@@ -45,6 +45,10 @@ public class GameObject implements Serializable {
 	public int y;
 
 	public int z;
+
+	public String getType() {
+		return TYPE;
+	}
 
 	public void setX(int x) {
 		if (this.x != x) {

@@ -275,9 +275,10 @@ public class JcsCacheActor {
 	private void createNewVertex(PutMessage m, ODatabaseDocument db) {
 		var doc = db.newVertex(m.go.getType());
 		db.begin();
-		storages.get(m.go.type).save(doc, m.go);
+		storages.get(m.go.getType()).save(doc, m.go);
 		doc.save();
 		db.commit();
+		m.go.id = doc.getIdentity();
 	}
 
 	private Message translateDbResponse(DbResponseMessage response, PutMessage m) {
