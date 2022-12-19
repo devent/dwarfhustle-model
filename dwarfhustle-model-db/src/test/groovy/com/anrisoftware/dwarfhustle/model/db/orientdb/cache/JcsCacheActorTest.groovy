@@ -6,9 +6,11 @@ import java.util.concurrent.CountDownLatch
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.lable.oss.uniqueid.IDGenerator
 
 import com.anrisoftware.dwarfhustle.model.actor.MainActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
+import com.anrisoftware.dwarfhustle.model.api.ApiModule
 import com.anrisoftware.dwarfhustle.model.api.MapTile
 import com.anrisoftware.dwarfhustle.model.db.cache.JcsCacheActor
 import com.anrisoftware.dwarfhustle.model.db.cache.JcsCacheModule
@@ -50,12 +52,15 @@ class JcsCacheActorTest {
 
 	static ActorRef<Message> objectsActor
 
+	static IDGenerator generator
+
 	@BeforeAll
 	static void setupActor() {
-		injector = Guice.createInjector(new MainActorsModule(), new OrientDbModule(), new JcsCacheModule(), new ObjectsModule())
+		injector = Guice.createInjector(new MainActorsModule(), new OrientDbModule(), new JcsCacheModule(), new ObjectsModule(), new ApiModule())
 		orientDbActor = testKit.spawn(OrientDbActor.create(injector), "OrientDbActor");
 		jcsCacheActor = testKit.spawn(JcsCacheActor.create(injector, orientDbActor), "JcsCacheActor");
 		objectsActor = testKit.spawn(ObjectsActor.create(injector, orientDbActor), "objectsActor");
+		generator = injector.getInstance(IDGenerator.class)
 		connectCreateDatabase()
 	}
 
@@ -92,7 +97,7 @@ class JcsCacheActorTest {
 		def result =
 				AskPattern.ask(
 				orientDbActor,
-				{replyTo -> new CreateDbMessage(replyTo, ODatabaseType.PLOCAL)},
+				{replyTo -> new CreateDbMessage(replyTo, ODatabaseType.MEMORY)},
 				Duration.ofSeconds(60),
 				testKit.scheduler())
 		result.whenComplete( {reply, failure ->
@@ -131,7 +136,7 @@ class JcsCacheActorTest {
 
 	@Test
 	void put_map_tile() {
-		def go = new MapTile()
+		def go = new MapTile(generator.generate())
 		go.x = 10
 		go.y = 20
 		go.z = 1

@@ -35,16 +35,59 @@ public class GameObject implements Serializable {
 
 	public static final String TYPE = "GameObject";
 
+	/**
+	 * Converts the byte array to an Id.
+	 */
+	public static long toId(byte[] buf) {
+		return ((buf[7] & 0xFFL) << 56) | //
+				((buf[6] & 0xFFL) << 48) | //
+				((buf[5] & 0xFFL) << 40) | //
+				((buf[4] & 0xFFL) << 32) | //
+				((buf[3] & 0xFFL) << 24) | //
+				((buf[2] & 0xFFL) << 16) | //
+				((buf[1] & 0xFFL) << 8) | //
+				((buf[0] & 0xFFL) << 0);
+	}
+
+	/**
+	 * Unique ID of the object.
+	 */
 	@EqualsAndHashCode.Include
-	public Object id;
+	private final long id;
 
-	public boolean dirty = false;
+	/**
+	 * Record ID set after the object was once stored in the database.
+	 */
+	private Serializable rid;
 
-	public int x;
+	/**
+	 * Set to true if the object had changed state and should be stored in the
+	 * database.
+	 */
+	private boolean dirty = false;
 
-	public int y;
+	/**
+	 * X position on the game map
+	 */
+	private int x;
 
-	public int z;
+	/**
+	 * Y position on the game map
+	 */
+	private int y;
+
+	/**
+	 * Z position on the game map
+	 */
+	private int z;
+
+	public GameObject(long id) {
+		this.id = id;
+	}
+
+	public GameObject(byte[] idbuf) {
+		this(toId(idbuf));
+	}
 
 	public String getType() {
 		return TYPE;

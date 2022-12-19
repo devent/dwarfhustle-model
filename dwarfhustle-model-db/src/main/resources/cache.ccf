@@ -25,3 +25,12 @@ jcs.region.testCache1.cacheattributes.ShrinkerIntervalSeconds=60
 jcs.region.testCache1.cacheattributes.MaxSpoolPerRun=500
 jcs.region.testCache1.elementattributes=org.apache.commons.jcs3.engine.ElementAttributes
 jcs.region.testCache1.elementattributes.IsEternal=false
+
+# AVAILABLE AUXILIARY CACHES
+jcs.auxiliary.DC=org.apache.commons.jcs3.auxiliary.disk.indexed.IndexedDiskCacheFactory
+jcs.auxiliary.DC.attributes=org.apache.commons.jcs3.auxiliary.disk.indexed.IndexedDiskCacheAttributes
+jcs.auxiliary.DC.attributes.DiskPath=${user.dir}/.dwarfhustle_jcs_swap
+jcs.auxiliary.DC.attributes.MaxPurgatorySize=10000000
+jcs.auxiliary.DC.attributes.MaxKeySize=1000000
+jcs.auxiliary.DC.attributes.OptimizeAtRemoveCount=300000
+jcs.auxiliary.DC.attributes.ShutdownSpoolTimeLimit=60

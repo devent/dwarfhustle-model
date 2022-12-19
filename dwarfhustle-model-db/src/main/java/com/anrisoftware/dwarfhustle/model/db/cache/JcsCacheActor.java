@@ -68,6 +68,7 @@ package com.anrisoftware.dwarfhustle.model.db.cache;
 import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
 
 import java.time.Duration;
+import java.util.EventObject;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -77,6 +78,9 @@ import javax.inject.Inject;
 import org.apache.commons.jcs3.JCS;
 import org.apache.commons.jcs3.access.CacheAccess;
 import org.apache.commons.jcs3.access.exception.CacheException;
+import org.apache.commons.jcs3.engine.CacheElement;
+import org.apache.commons.jcs3.engine.control.event.behavior.IElementEvent;
+import org.apache.commons.jcs3.engine.control.event.behavior.IElementEventHandler;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
@@ -84,6 +88,7 @@ import com.anrisoftware.dwarfhustle.model.api.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.GameObjectStorage;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractCacheReplyMessage.CacheErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractCacheReplyMessage.CacheSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.GetMessage.GetSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.AbstractDbReplyMessage.DbErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.AbstractDbReplyMessage.DbResponseMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage;
@@ -91,6 +96,7 @@ import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 import com.orientechnologies.orient.core.id.ORID;
+import com.orientechnologies.orient.core.record.OVertex;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -108,7 +114,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
-public class JcsCacheActor {
+public class JcsCacheActor implements IElementEventHandler {
 
 	public static final ServiceKey<Message> KEY = ServiceKey.create(Message.class, JcsCacheActor.class.getSimpleName());
 
@@ -120,7 +126,7 @@ public class JcsCacheActor {
 	@ToString(callSuper = true)
 	private static class InitialStateMessage extends Message {
 
-		public final CacheAccess<ORID, GameObject> cache;
+		public final CacheAccess<Object, GameObject> cache;
 	}
 
 	@RequiredArgsConstructor
@@ -133,8 +139,6 @@ public class JcsCacheActor {
 	@RequiredArgsConstructor
 	@ToString(callSuper = true)
 	private static class RequestErrorMessage extends Message {
-
-		public final AbstractCacheReplyMessage originalMessage;
 
 		public final Throwable cause;
 	}
@@ -166,7 +170,7 @@ public class JcsCacheActor {
 		});
 	}
 
-	private static CompletionStage<CacheAccess<ORID, GameObject>> initCache0(Injector injector) {
+	private static CompletionStage<CacheAccess<Object, GameObject>> initCache0(Injector injector) {
 		return CompletableFuture.supplyAsync(() -> {
 			try {
 				return JCS.getInstance("default");
@@ -201,7 +205,7 @@ public class JcsCacheActor {
 	@Inject
 	private Map<String, GameObjectStorage> storages;
 
-	private CacheAccess<ORID, GameObject> cache;
+	private CacheAccess<Object, GameObject> cache;
 
 	/**
 	 * Stash behavior. Returns a behavior for the messages:
@@ -229,14 +233,29 @@ public class JcsCacheActor {
 	 *
 	 * <ul>
 	 * <li>{@link PutMessage}
+	 * <li>{@link GetMessage}
 	 * <li>{@link RequestErrorMessage}
 	 * </ul>
 	 */
 	private Behavior<Message> onInitialState(InitialStateMessage m) {
 		log.debug("onInitialState");
 		this.cache = m.cache;
+		var attributes = cache.getDefaultElementAttributes();
+		attributes.addElementEventHandler(this);
+		cache.setDefaultElementAttributes(attributes);
 		return buffer.unstashAll(getInitialBehavior()//
 				.build());
+	}
+
+	@Override
+	public <T> void handleElementEvent(IElementEvent<T> event) {
+		System.out.println(event);
+		@SuppressWarnings("unchecked")
+		var e = (CacheElement<Long, GameObject>) ((EventObject) event).getSource();
+		var go = e.getVal();
+		if (go.isDirty()) {
+			context.getSelf().tell(new StoreMessage(go));
+		}
 	}
 
 	/**
@@ -244,27 +263,18 @@ public class JcsCacheActor {
 	 *
 	 * <ul>
 	 * <li>{@link PutMessage}
-	 * <li>{@link RequestErrorMessage}
+	 * <li>{@link GetMessage}
+	 * <li>{@link StoreMessage}
 	 * </ul>
 	 */
 	private Behavior<Message> onPut(PutMessage m) {
 		log.debug("onPut {}", m);
-		var id = (ORID) m.go.id;
-		if (id == null) {
-			context.ask(DbResponseMessage.class, db, timeout,
-					(ActorRef<DbResponseMessage> ref) -> new DbCommandMessage(ref, db -> {
-						createNewVertex(m, db);
-					}), (response, throwable) -> {
-						if (throwable != null) {
-							return new RequestErrorMessage(m, throwable);
-						} else {
-							return translateDbResponse(response, m);
-						}
-					});
-			return Behaviors.same();
-		}
+		var id = m.go.getId();
 		try {
 			cache.put(id, m.go);
+			if (m.go.isDirty()) {
+				context.getSelf().tell(new StoreMessage(m.go));
+			}
 			m.replyTo.tell(new CacheSuccessMessage(m));
 		} catch (CacheException e) {
 			m.replyTo.tell(new CacheErrorMessage(m, e));
@@ -272,19 +282,71 @@ public class JcsCacheActor {
 		return Behaviors.same();
 	}
 
-	private void createNewVertex(PutMessage m, ODatabaseDocument db) {
-		var doc = db.newVertex(m.go.getType());
+	/**
+	 * Returns a behavior for the messages:
+	 *
+	 * <ul>
+	 * <li>{@link PutMessage}
+	 * <li>{@link GetMessage}
+	 * <li>{@link StoreMessage}
+	 * </ul>
+	 */
+	private Behavior<Message> onGet(GetMessage m) {
+		log.debug("onGet {}", m);
+		try {
+			var go = cache.get(m.key);
+			m.replyTo.tell(new GetSuccessMessage(m, go));
+		} catch (CacheException e) {
+			m.replyTo.tell(new CacheErrorMessage(m, e));
+		}
+		return Behaviors.same();
+	}
+
+	/**
+	 * Stores the game object in the database. Returns a behavior for the messages:
+	 *
+	 * <ul>
+	 * <li>{@link PutMessage}
+	 * <li>{@link GetMessage}
+	 * <li>{@link StoreMessage}
+	 * </ul>
+	 */
+	private Behavior<Message> onStore(StoreMessage m) {
+		log.debug("onStore {}", m);
+		context.ask(DbResponseMessage.class, db, timeout,
+				(ActorRef<DbResponseMessage> ref) -> new DbCommandMessage(ref, db -> {
+					storeGameObject(m, db);
+				}), (response, throwable) -> {
+					if (throwable != null) {
+						return new RequestErrorMessage(throwable);
+					} else {
+						return translateDbResponse(response, m);
+					}
+				});
+		return Behaviors.same();
+	}
+
+	private void storeGameObject(StoreMessage m, ODatabaseDocument db) {
+		OVertex doc = null;
+		var rid = m.go.getRid();
+		if (rid == null) {
+			doc = db.newVertex(m.go.getType());
+		} else {
+			doc = db.load((ORID) m.go.getRid());
+		}
 		db.begin();
 		storages.get(m.go.getType()).save(doc, m.go);
 		doc.save();
 		db.commit();
-		m.go.id = doc.getIdentity();
+		if (rid == null) {
+			m.go.setRid(doc.getIdentity());
+		}
 	}
 
-	private Message translateDbResponse(DbResponseMessage response, PutMessage m) {
+	private Message translateDbResponse(DbResponseMessage response, StoreMessage m) {
 		if (response instanceof DbErrorMessage) {
 			var dm = (DbErrorMessage) response;
-			return new RequestErrorMessage(m, dm.error);
+			return new RequestErrorMessage(dm.error);
 		}
 		return m;
 	}
@@ -294,13 +356,15 @@ public class JcsCacheActor {
 	 */
 	private Behavior<Message> onRequestError(RequestErrorMessage m) {
 		log.debug("onRequestError {}", m);
-		m.originalMessage.replyTo.tell(new CacheErrorMessage(m.originalMessage, m.cause));
 		return Behaviors.stopped();
 	}
 
 	private BehaviorBuilder<Message> getInitialBehavior() {
 		return Behaviors.receive(Message.class)//
 				.onMessage(PutMessage.class, this::onPut)//
-				.onMessage(RequestErrorMessage.class, this::onRequestError);
+				.onMessage(GetMessage.class, this::onGet)//
+				.onMessage(StoreMessage.class, this::onStore)//
+				.onMessage(RequestErrorMessage.class, this::onRequestError)//
+		;
 	}
 }

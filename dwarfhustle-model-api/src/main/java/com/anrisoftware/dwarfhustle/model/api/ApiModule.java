@@ -1,5 +1,5 @@
 /*
- * dwarfhustle-model-api - Manages the compile dependencies for the model.
+ * dwarfhustle-model-actor - Manages the compile dependencies for the model.
  * Copyright © 2022 Erwin Müller (erwin.mueller@anrisoftware.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,44 +17,18 @@
  */
 package com.anrisoftware.dwarfhustle.model.api;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import org.lable.oss.uniqueid.IDGenerator;
+
+import com.google.inject.AbstractModule;
 
 /**
- * Tile on the game map.
- *
- * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+ * @author Erwin Müller
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class MapTile extends GameObject {
+public class ApiModule extends AbstractModule {
 
-	private static final long serialVersionUID = -6027695018525898404L;
-
-	public static final String TYPE = "MapTile";
-
-	private String material;
-
-	public MapTile(long id) {
-		super(id);
-	}
-
-	public MapTile(byte[] idbuf) {
-		super(idbuf);
-	}
-
-	@Override
-	public String getType() {
-		return TYPE;
-	}
-
-	public void setMaterial(String material) {
-		if (this.material != material) {
-			setDirty(true);
-			this.material = material;
-		}
-	}
+    @Override
+    protected void configure() {
+		bind(IDGenerator.class).toProvider(IdGeneratorProvider.class).asEagerSingleton();
+    }
 
 }
