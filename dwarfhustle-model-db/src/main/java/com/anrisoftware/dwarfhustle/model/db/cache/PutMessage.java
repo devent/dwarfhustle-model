@@ -15,10 +15,13 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class PutMessage extends AbstractCacheReplyMessage {
 
+	public final Object key;
+
 	public final GameObject go;
 
-	public PutMessage(ActorRef<CacheResponseMessage> replyTo, GameObject go) {
+	public PutMessage(ActorRef<CacheResponseMessage> replyTo, Object key, GameObject go) {
 		super(replyTo);
+		this.key = key;
 		this.go = go;
 	}
 

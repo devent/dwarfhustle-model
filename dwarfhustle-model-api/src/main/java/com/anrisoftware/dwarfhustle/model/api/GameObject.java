@@ -67,19 +67,9 @@ public class GameObject implements Serializable {
 	private boolean dirty = false;
 
 	/**
-	 * X position on the game map
+	 * X, Y and Z position of a {@link GameObject} on the game map.
 	 */
-	private int x;
-
-	/**
-	 * Y position on the game map
-	 */
-	private int y;
-
-	/**
-	 * Z position on the game map
-	 */
-	private int z;
+	private GameMapPosition pos = new GameMapPosition(-1, -1, -1);
 
 	public GameObject(long id) {
 		this.id = id;
@@ -93,24 +83,10 @@ public class GameObject implements Serializable {
 		return TYPE;
 	}
 
-	public void setX(int x) {
-		if (this.x != x) {
+	public void setPos(GameMapPosition pos) {
+		if (!this.pos.equals(pos)) {
 			setDirty(true);
-			this.x = x;
-		}
-	}
-
-	public void setY(int y) {
-		if (this.y != y) {
-			setDirty(true);
-			this.y = y;
-		}
-	}
-
-	public void setZ(int z) {
-		if (this.z != z) {
-			setDirty(true);
-			this.z = z;
+			this.pos = pos;
 		}
 	}
 }

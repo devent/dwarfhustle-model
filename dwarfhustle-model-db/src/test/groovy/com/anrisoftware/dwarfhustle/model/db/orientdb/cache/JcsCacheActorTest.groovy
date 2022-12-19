@@ -5,13 +5,17 @@ import java.util.concurrent.CountDownLatch
 
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.lable.oss.uniqueid.IDGenerator
 
 import com.anrisoftware.dwarfhustle.model.actor.MainActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.api.ApiModule
+import com.anrisoftware.dwarfhustle.model.api.GameMapPosition
+import com.anrisoftware.dwarfhustle.model.api.GameObjectPositionIndex
 import com.anrisoftware.dwarfhustle.model.api.MapTile
+import com.anrisoftware.dwarfhustle.model.db.cache.GetMessage
 import com.anrisoftware.dwarfhustle.model.db.cache.JcsCacheActor
 import com.anrisoftware.dwarfhustle.model.db.cache.JcsCacheModule
 import com.anrisoftware.dwarfhustle.model.db.cache.PutMessage
@@ -135,21 +139,57 @@ class JcsCacheActorTest {
 	}
 
 	@Test
-	void put_map_tile() {
+	@Order(1)
+	void put_map_tile_by_id() {
 		def go = new MapTile(generator.generate())
-		go.x = 10
-		go.y = 20
-		go.z = 1
+		go.pos = new GameMapPosition(10, 20, 1)
 		go.material = "Sandstone"
 		def result =
 				AskPattern.ask(
 				jcsCacheActor,
-				{replyTo -> new PutMessage(replyTo, go)},
+				{replyTo -> new PutMessage(replyTo, go.id, go)},
 				Duration.ofSeconds(300),
 				testKit.scheduler())
 		def lock = new CountDownLatch(1)
 		result.whenComplete( {reply, failure ->
 			log.info "Put map tile reply {} failure {}", reply, failure
+			lock.countDown()
+		})
+		lock.await()
+	}
+
+	@Test
+	@Order(2)
+	void put_map_tile_by_pos_index() {
+		def go = new MapTile(generator.generate())
+		go.pos = new GameMapPosition(11, 20, 1)
+		go.material = "Sandstone"
+		def result =
+				AskPattern.ask(
+				jcsCacheActor,
+				{replyTo -> new PutMessage(replyTo, new GameObjectPositionIndex(MapTile.TYPE, go.pos), go)},
+				Duration.ofSeconds(300),
+				testKit.scheduler())
+		def lock = new CountDownLatch(1)
+		result.whenComplete( {reply, failure ->
+			log.info "Put map tile reply {} failure {}", reply, failure
+			lock.countDown()
+		})
+		lock.await()
+	}
+
+	@Test
+	@Order(10)
+	void get_map_tile_by_pos_index() {
+		def result =
+				AskPattern.ask(
+				jcsCacheActor,
+				{replyTo -> new GetMessage(replyTo, new GameObjectPositionIndex(MapTile.TYPE, new GameMapPosition(11, 20, 1)))},
+				Duration.ofSeconds(300),
+				testKit.scheduler())
+		def lock = new CountDownLatch(1)
+		result.whenComplete( {reply, failure ->
+			log.info "Get map tile reply {} failure {}", reply, failure
 			lock.countDown()
 		})
 		lock.await()

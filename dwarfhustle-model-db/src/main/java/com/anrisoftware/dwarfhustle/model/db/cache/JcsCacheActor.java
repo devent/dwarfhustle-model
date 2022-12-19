@@ -89,6 +89,7 @@ import com.anrisoftware.dwarfhustle.model.api.GameObjectStorage;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractCacheReplyMessage.CacheErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractCacheReplyMessage.CacheSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.GetMessage.GetSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.StoreMessage.StoreDoneMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.AbstractDbReplyMessage.DbErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.AbstractDbReplyMessage.DbResponseMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage;
@@ -234,6 +235,8 @@ public class JcsCacheActor implements IElementEventHandler {
 	 * <ul>
 	 * <li>{@link PutMessage}
 	 * <li>{@link GetMessage}
+	 * <li>{@link StoreDoneMessage}
+	 * <li>{@link RequestErrorMessage}
 	 * <li>{@link RequestErrorMessage}
 	 * </ul>
 	 */
@@ -251,10 +254,10 @@ public class JcsCacheActor implements IElementEventHandler {
 	public <T> void handleElementEvent(IElementEvent<T> event) {
 		System.out.println(event);
 		@SuppressWarnings("unchecked")
-		var e = (CacheElement<Long, GameObject>) ((EventObject) event).getSource();
+		var e = (CacheElement<Object, GameObject>) ((EventObject) event).getSource();
 		var go = e.getVal();
 		if (go.isDirty()) {
-			context.getSelf().tell(new StoreMessage(go));
+			context.getSelf().tell(new StoreMessage(e.getKey(), go));
 		}
 	}
 
@@ -265,15 +268,16 @@ public class JcsCacheActor implements IElementEventHandler {
 	 * <li>{@link PutMessage}
 	 * <li>{@link GetMessage}
 	 * <li>{@link StoreMessage}
+	 * <li>{@link StoreDoneMessage}
+	 * <li>{@link RequestErrorMessage}
 	 * </ul>
 	 */
 	private Behavior<Message> onPut(PutMessage m) {
 		log.debug("onPut {}", m);
-		var id = m.go.getId();
 		try {
-			cache.put(id, m.go);
+			cache.put(m.key, m.go);
 			if (m.go.isDirty()) {
-				context.getSelf().tell(new StoreMessage(m.go));
+				context.getSelf().tell(new StoreMessage(m.key, m.go));
 			}
 			m.replyTo.tell(new CacheSuccessMessage(m));
 		} catch (CacheException e) {
@@ -289,6 +293,8 @@ public class JcsCacheActor implements IElementEventHandler {
 	 * <li>{@link PutMessage}
 	 * <li>{@link GetMessage}
 	 * <li>{@link StoreMessage}
+	 * <li>{@link StoreDoneMessage}
+	 * <li>{@link RequestErrorMessage}
 	 * </ul>
 	 */
 	private Behavior<Message> onGet(GetMessage m) {
@@ -309,6 +315,8 @@ public class JcsCacheActor implements IElementEventHandler {
 	 * <li>{@link PutMessage}
 	 * <li>{@link GetMessage}
 	 * <li>{@link StoreMessage}
+	 * <li>{@link StoreDoneMessage}
+	 * <li>{@link RequestErrorMessage}
 	 * </ul>
 	 */
 	private Behavior<Message> onStore(StoreMessage m) {
@@ -340,6 +348,7 @@ public class JcsCacheActor implements IElementEventHandler {
 		db.commit();
 		if (rid == null) {
 			m.go.setRid(doc.getIdentity());
+			cache.put(m.key, m.go);
 		}
 	}
 
@@ -348,7 +357,7 @@ public class JcsCacheActor implements IElementEventHandler {
 			var dm = (DbErrorMessage) response;
 			return new RequestErrorMessage(dm.error);
 		}
-		return m;
+		return new StoreDoneMessage();
 	}
 
 	/**
@@ -359,11 +368,20 @@ public class JcsCacheActor implements IElementEventHandler {
 		return Behaviors.stopped();
 	}
 
+	/**
+	 * Store game object was done successfully.
+	 */
+	private Behavior<Message> onStoreDone(StoreDoneMessage m) {
+		log.debug("onStoreDone {}", m);
+		return Behaviors.same();
+	}
+
 	private BehaviorBuilder<Message> getInitialBehavior() {
 		return Behaviors.receive(Message.class)//
 				.onMessage(PutMessage.class, this::onPut)//
 				.onMessage(GetMessage.class, this::onGet)//
 				.onMessage(StoreMessage.class, this::onStore)//
+				.onMessage(StoreDoneMessage.class, this::onStoreDone)//
 				.onMessage(RequestErrorMessage.class, this::onRequestError)//
 		;
 	}

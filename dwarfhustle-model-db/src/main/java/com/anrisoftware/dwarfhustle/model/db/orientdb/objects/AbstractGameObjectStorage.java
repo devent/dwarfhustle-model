@@ -1,5 +1,6 @@
 package com.anrisoftware.dwarfhustle.model.db.orientdb.objects;
 
+import com.anrisoftware.dwarfhustle.model.api.GameMapPosition;
 import com.anrisoftware.dwarfhustle.model.api.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.GameObjectStorage;
 import com.orientechnologies.orient.core.record.OVertex;
@@ -17,18 +18,16 @@ public class AbstractGameObjectStorage implements GameObjectStorage {
 			return;
 		}
 		var v = (OVertex) o;
-		v.setProperty("x", go.getX());
-		v.setProperty("y", go.getY());
-		v.setProperty("z", go.getZ());
+		v.setProperty("x", go.getPos().getX());
+		v.setProperty("y", go.getPos().getY());
+		v.setProperty("z", go.getPos().getZ());
 		go.setDirty(false);
 	}
 
 	@Override
 	public void load(Object o, GameObject go) {
 		var v = (OVertex) o;
-		go.setX(v.getProperty("x"));
-		go.setY(v.getProperty("y"));
-		go.setZ(v.getProperty("z"));
+		go.setPos(new GameMapPosition(v.getProperty("x"), v.getProperty("y"), v.getProperty("z")));
 		go.setDirty(false);
 	}
 

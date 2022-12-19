@@ -15,6 +15,13 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class StoreMessage extends Message {
 
+	public final Object key;
+
 	public final GameObject go;
 
+	@Data
+	@EqualsAndHashCode(callSuper = false)
+	public static class StoreDoneMessage extends Message {
+
+	}
 }
