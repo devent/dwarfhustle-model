@@ -74,12 +74,18 @@ import javax.inject.Inject;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+import com.anrisoftware.dwarfhustle.model.db.cache.AbstractJcsCacheActor.SetupErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.MapTilesJcsCacheActor.MapTilesInitialLoadDoneMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.AbstractDbReplyMessage.DbErrorMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandMessage.KnowledgeCommandResponseMessage;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.ActorContext;
+import akka.actor.typed.javadsl.AskPattern;
 import akka.actor.typed.javadsl.BehaviorBuilder;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.receptionist.ServiceKey;
@@ -92,54 +98,63 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class GenerateMapActor {
 
-    public static final ServiceKey<Message> KEY = ServiceKey.create(Message.class, GenerateMapActor.class.getSimpleName());
+	public static final ServiceKey<Message> KEY = ServiceKey.create(Message.class,
+			GenerateMapActor.class.getSimpleName());
 
-    public static final String NAME = GenerateMapActor.class.getSimpleName();
+	public static final String NAME = GenerateMapActor.class.getSimpleName();
 
-    public static final int ID = KEY.hashCode();
+	public static final int ID = KEY.hashCode();
 
-    /**
-     * Factory to create {@link GenerateMapActor}.
-     *
-     * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
-     */
-    public interface GenerateMapActorFactory {
+	/**
+	 * Factory to create {@link GenerateMapActor}.
+	 *
+	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+	 */
+	public interface GenerateMapActorFactory {
 
-		GenerateMapActor create(ActorContext<Message> context, ActorRef<Message> db);
-    }
+		GenerateMapActor create(ActorContext<Message> context, @Assisted("db") ActorRef<Message> db,
+				@Assisted("knowledge") ActorRef<Message> knowledge);
+	}
 
-	public static Behavior<Message> create(Injector injector, ActorRef<Message> db) {
-        return Behaviors.setup((context) -> {
-			return injector.getInstance(GenerateMapActorFactory.class).create(context, db).start();
-        });
-    }
+	public static Behavior<Message> create(Injector injector, ActorRef<Message> db, ActorRef<Message> knowledge) {
+		return Behaviors.setup((context) -> {
+			return injector.getInstance(GenerateMapActorFactory.class).create(context, db, knowledge).start();
+		});
+	}
 
-    /**
-     * Creates the {@link GenerateMapActor}.
-     */
-	public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout, ActorRef<Message> db) {
-        var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
-		return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, db));
-    }
-
-    @Inject
-    @Assisted
-    private ActorContext<Message> context;
+	/**
+	 * Creates the {@link GenerateMapActor}.
+	 */
+	public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout, ActorRef<Message> db,
+			ActorRef<Message> knowledge) {
+		var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
+		return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, db, knowledge));
+	}
 
 	@Inject
 	@Assisted
+	private ActorContext<Message> context;
+
+	@Inject
+	@Assisted("db")
 	private ActorRef<Message> db;
 
-    /**
+	@Inject
+	@Assisted("knowledge")
+	private ActorRef<Message> knowledge;
+
+	private final Duration timeout = Duration.ofSeconds(300);
+
+	/**
 	 * Initial behavior. Returns a behavior for the messages:
 	 *
 	 * <ul>
 	 * <li>{@link GenerateMessage}
 	 * </ul>
 	 */
-    public Behavior<Message> start() {
-        return getInitialBehavior().build();
-    }
+	public Behavior<Message> start() {
+		return getInitialBehavior().build();
+	}
 
 	/**
 	 * Handle {@link GenerateMessage}. Returns a behavior for the messages:
@@ -150,13 +165,34 @@ public class GenerateMapActor {
 	 */
 	protected Behavior<Message> onGenerate(GenerateMessage m) {
 		log.debug("onGenerate {}", m);
+		retrieveMapTileMaterials();
 		return Behaviors.same();
 	}
 
-    private BehaviorBuilder<Message> getInitialBehavior() {
-        return Behaviors.receive(Message.class)//
+	private void retrieveMapTileMaterials() {
+		CompletionStage<KnowledgeCommandResponseMessage> stage = AskPattern.ask(db,
+				replyTo -> new KnowledgeCommandMessage(replyTo, () -> {
+					return null;
+				}), timeout, context.getSystem().scheduler());
+		context.pipeToSelf(stage, (result, cause) -> {
+			if (cause != null) {
+				return new SetupErrorMessage(cause);
+			} else {
+				if (result instanceof DbErrorMessage) {
+					DbErrorMessage m = (DbErrorMessage) result;
+					return new SetupErrorMessage(m.error);
+				} else {
+					return new MapTilesInitialLoadDoneMessage();
+				}
+			}
+		});
+	}
+
+
+	private BehaviorBuilder<Message> getInitialBehavior() {
+		return Behaviors.receive(Message.class)//
 				.onMessage(GenerateMessage.class, this::onGenerate)//
-        ;
-    }
+		;
+	}
 
 }

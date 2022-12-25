@@ -39,4 +39,11 @@ public class GenerateMessage extends Message {
 
     public final ActorRef<GenerateResponseMessage> replyTo;
 
+	public final int mapid;
+
+	public final int width;
+
+	public final int height;
+
+	public final int depth;
 }

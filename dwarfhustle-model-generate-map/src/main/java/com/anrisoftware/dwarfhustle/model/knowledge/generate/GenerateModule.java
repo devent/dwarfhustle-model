@@ -17,7 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.generate;
 
-import com.anrisoftware.dwarfhustle.model.knowledge.db.orientdb.OrientDbActor.OrientDbActorFactory;
+import com.anrisoftware.dwarfhustle.model.knowledge.generate.GenerateMapActor.GenerateMapActorFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 

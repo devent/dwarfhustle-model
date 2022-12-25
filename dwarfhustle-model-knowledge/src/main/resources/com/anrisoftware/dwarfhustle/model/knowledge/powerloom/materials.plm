@@ -19,7 +19,7 @@
 (reset-features)
 
 (defconcept Material (?material)
-  :documentation "Material type.")
+  :documentation "Material what stuff is made of.")
 
 (deffunction melting-point-material ((?material Material)) :-> (?temperature NUMBER))
   :documentation "Melting point of a material in °C."
@@ -66,14 +66,17 @@
 (defconcept Stone (?material Material)
   :documentation "Stone material.")
 
-(defconcept Sedimentary (?stone Stone)
+(defconcept Stone-Layer (?stone Stone)
+  :documentation "Stone that creates entire layers.")
+
+(defconcept Sedimentary (?stone Stone-Layer)
   :documentation "Sedimentary stone material.")
 
-(defconcept Igneous-Intrusive (?stone Stone)
+(defconcept Igneous-Intrusive (?stone Stone-Layer)
   :documentation "Igneous intrusive stone material.")
 
-(defconcept Igneous-Extrusive (?stone Stone)
+(defconcept Igneous-Extrusive (?stone Stone-Layer)
   :documentation "Igneous extrusive stone material.")
 
-(defconcept Metamorphic (?stone Stone)
+(defconcept Metamorphic (?stone Stone-Layer)
   :documentation "Metamorphic stone material.")

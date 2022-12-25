@@ -66,54 +66,59 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom;
 
 import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
-import static edu.isi.stella.InputStringStream.newInputStringStream;
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.PowerLoomKnowledgeActor.WORKING_MODULE;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
 
-import org.apache.commons.io.IOUtils;
+import org.eclipse.collections.api.map.primitive.IntObjectMap;
+import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
+import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandMessage.KnowledgeCommandErrorMessage;
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandMessage.KnowledgeCommandSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.api.Material;
+import com.anrisoftware.dwarfhustle.model.api.Sedimentary;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.SedimentaryMaterialsMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.SedimentaryMaterialsSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandMessage.KnowledgeCommandResponseMessage;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.ActorContext;
+import akka.actor.typed.javadsl.AskPattern;
 import akka.actor.typed.javadsl.BehaviorBuilder;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.StashBuffer;
 import akka.actor.typed.receptionist.ServiceKey;
 import edu.isi.powerloom.PLI;
+import edu.isi.powerloom.logic.LogicObject;
+import edu.isi.stella.FloatWrapper;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
+ * Provides specific knowledge.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
-public class PowerLoomKnowledgeActor {
+public class KnowledgeBaseActor {
 
 	public static final ServiceKey<Message> KEY = ServiceKey.create(Message.class,
-			PowerLoomKnowledgeActor.class.getSimpleName());
+			KnowledgeBaseActor.class.getSimpleName());
 
-	public static final String NAME = PowerLoomKnowledgeActor.class.getSimpleName();
+	public static final String NAME = KnowledgeBaseActor.class.getSimpleName();
 
 	public static final int ID = KEY.hashCode();
 
-	public static final String WORKING_MODULE = "DWARFHUSTLE-WORKING";
+	public static IntObjectMap<Material> sedimentary;
 
 	@RequiredArgsConstructor
 	@ToString(callSuper = true)
@@ -128,24 +133,24 @@ public class PowerLoomKnowledgeActor {
 	}
 
 	/**
-	 * Factory to create {@link PowerLoomKnowledgeActor}.
+	 * Factory to create {@link KnowledgeBaseActor}.
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
-	public interface PowerLoomKnowledgeActorFactory {
+	public interface KnowledgeBaseActorFactory {
 
-		PowerLoomKnowledgeActor create(ActorContext<Message> context, StashBuffer<Message> stash);
+		KnowledgeBaseActor create(ActorContext<Message> context, StashBuffer<Message> stash);
 	}
 
-	public static Behavior<Message> create(Injector injector) {
+	public static Behavior<Message> create(Injector injector, ActorRef<Message> knowledge) {
 		return Behaviors.withStash(100, stash -> Behaviors.setup((context) -> {
-			loadKnowledgeBase(injector, context);
-			return injector.getInstance(PowerLoomKnowledgeActorFactory.class).create(context, stash).start();
+			loadKnowledgeBase(context, knowledge);
+			return injector.getInstance(KnowledgeBaseActorFactory.class).create(context, stash).start();
 		}));
 	}
 
-	private static void loadKnowledgeBase(Injector injector, ActorContext<Message> context) {
-		context.pipeToSelf(loadKnowledgeBase0(injector), (result, cause) -> {
+	private static void loadKnowledgeBase(ActorContext<Message> context, ActorRef<Message> knowledge) {
+		context.pipeToSelf(loadKnowledgeBase0(context, knowledge), (result, cause) -> {
 			if (cause == null) {
 				return new InitialStateMessage();
 			} else {
@@ -154,41 +159,59 @@ public class PowerLoomKnowledgeActor {
 		});
 	}
 
-	private static CompletionStage<Boolean> loadKnowledgeBase0(Injector injector) {
-		return CompletableFuture.supplyAsync(() -> {
-			var resources = new ArrayList<InputStream>();
-			resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials.plm"));
-			resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("game-map.plm"));
-			resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-sedimentary-stones.plm"));
-			resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-igneous-intrusive-stones.plm"));
-			resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-igneous-extrusive-stones.plm"));
-			resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-metamorphic-stones.plm"));
-			resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-metals.plm"));
-			resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-metals-ores.plm"));
-			resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-metals-alloys.plm"));
-			resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-clays.plm"));
-			resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-sands.plm"));
-			resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-seabeds.plm"));
-			resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-topsoils.plm"));
-			resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("working.plm"));
-			PLI.initialize();
-			for (InputStream res : resources) {
-				try {
-					PLI.loadStream(newInputStringStream(IOUtils.toString(res, UTF_8)), null);
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
-			}
-			return true;
-		});
+	private static CompletionStage<KnowledgeCommandResponseMessage> loadKnowledgeBase0(ActorContext<Message> context,
+			ActorRef<Message> knowledge) {
+		Duration timeout = Duration.ofSeconds(30);
+		return AskPattern.ask(knowledge, replyTo -> new KnowledgeCommandMessage(replyTo, () -> {
+			retrieveMaterials();
+			return null;
+		}), timeout, context.getSystem().scheduler());
+	}
+
+	private static void retrieveMaterials() {
+		sedimentary = retrieveMaterials("Sedimentary", Sedimentary.class);
+	}
+
+	@SneakyThrows
+	private static IntObjectMap<Material> retrieveMaterials(String type, Class<? extends Material> matType) {
+		var answer = PLI.sRetrieve("all (" + type + " ?x)", WORKING_MODULE, null);
+		MutableIntObjectMap<Material> map = IntObjectMaps.mutable.empty();
+		LogicObject next;
+		while ((next = (LogicObject) answer.pop()) != null) {
+			int id = next.surrogateValueInverse.symbolId;
+			String name = next.surrogateValueInverse.symbolName;
+			float meltingPoint = retrieveFloat("melting-point-material", name);
+			float density = retrieveFloat("density-of-material", name);
+			float shc = retrieveFloat("specific-heat-capacity-of-material", name);
+			float tc = retrieveFloat("thermal-conductivity-of-material", name);
+			var material = matType.getConstructors()[0].newInstance(id, name, meltingPoint, density, shc, tc);
+			map.put(id, (Material) material);
+		}
+		return map.asUnmodifiable();
+	}
+
+	private static float retrieveFloat(String function, String name) {
+		var buff = new StringBuilder();
+		buff.append("?x (");
+		buff.append(function);
+		buff.append(" ");
+		buff.append(name);
+		buff.append(" ?x)");
+		var answer = PLI.sRetrieve(buff.toString(), WORKING_MODULE, null);
+		FloatWrapper next;
+		while ((next = (FloatWrapper) answer.pop()) != null) {
+			return (float) next.wrapperValue;
+		}
+		return -1;
 	}
 
 	/**
-	 * Creates the {@link PowerLoomKnowledgeActor}.
+	 * Creates the {@link KnowledgeBaseActor}.
 	 */
-	public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout) {
+	public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout,
+			ActorRef<Message> knowledge) {
 		var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
-		return createNamedActor(system, timeout, ID, KEY, NAME, create(injector));
+		return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, knowledge));
 	}
 
 	@Inject
@@ -234,27 +257,22 @@ public class PowerLoomKnowledgeActor {
 	}
 
 	/**
-	 * Reacts to {@link KnowledgeCommandMessage}. Returns a behavior for the
+	 * Reacts to {@link SedimentaryMaterialsMessage}. Returns a behavior for the
 	 * messages:
 	 *
 	 * <ul>
-	 * <li>{@link KnowledgeCommandMessage}
+	 * <li>{@link SedimentaryMaterialsMessage}
 	 * </ul>
 	 */
-	private Behavior<Message> onKnowledgeCommand(KnowledgeCommandMessage m) {
-		log.debug("onKnowledgeCommand {}", m);
-		try {
-			var res = m.command.get();
-			m.replyTo.tell(new KnowledgeCommandSuccessMessage(m, res));
-		} catch (Exception e) {
-			m.replyTo.tell(new KnowledgeCommandErrorMessage(m, e));
-		}
+	private Behavior<Message> onSedimentaryMaterials(SedimentaryMaterialsMessage m) {
+		log.debug("onSedimentaryMaterials {}", m);
+		m.replyTo.tell(new SedimentaryMaterialsSuccessMessage(sedimentary));
 		return Behaviors.same();
 	}
 
 	private BehaviorBuilder<Message> getInitialBehavior() {
 		return Behaviors.receive(Message.class)//
-				.onMessage(KnowledgeCommandMessage.class, this::onKnowledgeCommand)//
+				.onMessage(SedimentaryMaterialsMessage.class, this::onSedimentaryMaterials)//
 		;
 	}
 

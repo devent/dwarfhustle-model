@@ -17,6 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom;
 
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseActor.KnowledgeBaseActorFactory;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.PowerLoomKnowledgeActor.PowerLoomKnowledgeActorFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
@@ -30,6 +31,8 @@ public class PowerloomModule extends AbstractModule {
     protected void configure() {
         install(new FactoryModuleBuilder().implement(PowerLoomKnowledgeActor.class, PowerLoomKnowledgeActor.class)
                 .build(PowerLoomKnowledgeActorFactory.class));
+		install(new FactoryModuleBuilder().implement(KnowledgeBaseActor.class, KnowledgeBaseActor.class)
+				.build(KnowledgeBaseActorFactory.class));
     }
 
 }
