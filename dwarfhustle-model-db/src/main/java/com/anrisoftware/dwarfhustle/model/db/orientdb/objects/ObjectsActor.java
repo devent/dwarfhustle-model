@@ -169,7 +169,7 @@ public class ObjectsActor {
 		log.debug("onCreateSchemas {}", m);
 		context.ask(DbResponseMessage.class, db, timeout,
 				(ActorRef<DbResponseMessage> ref) -> new DbCommandMessage(ref, db -> {
-					createSchemas(db);
+					return createSchemas(db);
 				}), (response, throwable) -> {
 					if (throwable != null) {
 						return new ObjectsErrorMessage(m, throwable);
@@ -180,10 +180,11 @@ public class ObjectsActor {
 		return Behaviors.same();
 	}
 
-	private void createSchemas(ODatabaseDocument db) {
+	private Void createSchemas(ODatabaseDocument db) {
 		for (GameObjectSchema schema : schemas) {
 			schema.createSchema(db);
 		}
+		return null;
 	}
 
 	private Message translateDbResponse(DbResponseMessage response, CreateSchemasMessage m) {

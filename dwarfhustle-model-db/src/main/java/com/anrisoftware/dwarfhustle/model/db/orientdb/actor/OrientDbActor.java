@@ -78,6 +78,7 @@ import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.AbstractDbReplyMessage.DbErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.AbstractDbReplyMessage.DbSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CreateDbMessage.DbAlreadyExistMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage.DbCommandSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DeleteDbMessage.DbNotExistMessage;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
@@ -256,10 +257,11 @@ public class OrientDbActor {
 	private Behavior<Message> onDbCommand(DbCommandMessage m) {
 		log.debug("onDbCommand {}", m);
 		try {
+			Object ret = null;
 			try (var db = orientdb.get().open(database, user, password)) {
-				m.command.accept(db);
+				ret = m.command.apply(db);
 			}
-			m.replyTo.tell(new DbSuccessMessage(m));
+			m.replyTo.tell(new DbCommandSuccessMessage(m, ret));
 		} catch (Exception e) {
 			m.replyTo.tell(new DbErrorMessage(m, e));
 		}

@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * Message to get a {@link GameObject} from the cache.
+ * Message to get {@link GameObject} game objects from the cache.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
@@ -24,19 +24,22 @@ public class GetMessage extends AbstractCacheReplyMessage {
 	@EqualsAndHashCode(callSuper = false)
 	public static class GetSuccessMessage extends CacheSuccessMessage {
 
-		public final GameObject go;
+		public final Object go;
 
-		public GetSuccessMessage(AbstractCacheReplyMessage originalMessage, GameObject go) {
+		public GetSuccessMessage(AbstractCacheReplyMessage originalMessage, Object go) {
 			super(originalMessage);
 			this.go = go;
 		}
 
 	}
 
+	public final String type;
+
 	public final Object key;
 
-	public GetMessage(ActorRef<CacheResponseMessage> replyTo, Object key) {
+	public GetMessage(ActorRef<CacheResponseMessage> replyTo, String type, Object key) {
 		super(replyTo);
+		this.type = type;
 		this.key = key;
 	}
 

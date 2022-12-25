@@ -9,5 +9,7 @@ public interface GameObjectStorage {
 
 	void save(Object o, GameObject go);
 
-	void load(Object o, GameObject go);
+	GameObject load(Object o, GameObject go);
+
+	GameObject create();
 }

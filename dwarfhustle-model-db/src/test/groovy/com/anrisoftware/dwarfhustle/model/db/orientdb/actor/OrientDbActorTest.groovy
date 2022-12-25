@@ -1,7 +1,6 @@
 package com.anrisoftware.dwarfhustle.model.db.orientdb.actor
 
 import java.time.Duration
-import java.util.concurrent.CountDownLatch
 
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -33,6 +32,8 @@ class OrientDbActorTest {
 
 	static ActorRef<Message> orientDbActor
 
+	static timeout = Duration.ofMinutes(10)
+
 	@BeforeAll
 	static void setupActor() {
 		injector = Guice.createInjector(new MainActorsModule(), new OrientDbModule())
@@ -43,7 +44,7 @@ class OrientDbActorTest {
 	static void closeDb() {
 		deleteDatabase()
 		orientDbActor.tell(new CloseDbMessage())
-		testKit.shutdown(testKit.system(), Duration.ofMinutes(1))
+		testKit.shutdown(testKit.system(), timeout)
 	}
 
 	@Test
@@ -51,34 +52,36 @@ class OrientDbActorTest {
 		def result =
 				AskPattern.ask(
 				orientDbActor,
-				{replyTo -> new ConnectDbMessage(replyTo, "remote:172.20.0.2", "test", "root", "admin")},
-				Duration.ofSeconds(3),
+				{replyTo -> new ConnectDbMessage(replyTo, "remote:172.21.0.2", "test", "root", "admin")},
+				timeout,
 				testKit.scheduler())
-		def lock = new CountDownLatch(1)
+		def future = result.toCompletableFuture()
 		result.whenComplete( {reply, failure ->
 			log.info "Connect database reply {} failure {}", reply, failure
 			switch (reply) {
 				case DbSuccessMessage:
-					createDatabase(lock)
+					createDatabase()
 					break
 				case DbErrorMessage:
 					break
 			}
 		})
-		lock.await()
+		future.join()
 	}
 
-	void createDatabase(def lock) {
+	void createDatabase() {
 		def result =
 				AskPattern.ask(
 				orientDbActor,
-				{replyTo -> new CreateDbMessage(replyTo, ODatabaseType.PLOCAL)},
-				Duration.ofSeconds(10),
+				{replyTo -> new CreateDbMessage(replyTo, ODatabaseType.MEMORY)},
+				timeout,
 				testKit.scheduler())
+		def future = result.toCompletableFuture()
 		result.whenComplete( {reply, failure ->
 			log.info "Create database reply {} failure {}", reply, failure
-			executeCommand(lock)
+			executeCommand()
 		})
+		future.join()
 	}
 
 	static void deleteDatabase() {
@@ -86,17 +89,16 @@ class OrientDbActorTest {
 				AskPattern.ask(
 				orientDbActor,
 				{replyTo -> new DeleteDbMessage(replyTo)},
-				Duration.ofSeconds(3),
+				timeout,
 				testKit.scheduler())
-		def lock = new CountDownLatch(1)
+		def future = result.toCompletableFuture()
 		result.whenComplete( {reply, failure ->
 			log.info "Delete database reply {} failure {}", reply, failure
-			lock.countDown()
 		})
-		lock.await()
+		future.join()
 	}
 
-	void executeCommand(def lock) {
+	void executeCommand() {
 		def result =
 				AskPattern.ask(
 				orientDbActor, {replyTo ->
@@ -109,11 +111,12 @@ class OrientDbActorTest {
 						db.commit()
 					})
 				},
-				Duration.ofSeconds(10),
+				timeout,
 				testKit.scheduler())
+		def future = result.toCompletableFuture()
 		result.whenComplete( {reply, failure ->
 			log.info "Execute command reply {} failure {}", reply, failure
-			lock.countDown()
 		})
+		future.join()
 	}
 }

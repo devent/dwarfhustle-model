@@ -1,6 +1,6 @@
 package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
-import java.util.function.Consumer;
+import java.util.function.Function;
 
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 
@@ -17,9 +17,26 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class DbCommandMessage extends AbstractDbReplyMessage {
 
-	public final Consumer<ODatabaseDocument> command;
+	/**
+	 * Database command success response with return value.
+	 *
+	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+	 */
+	@Data
+	@EqualsAndHashCode(callSuper = false)
+	public static class DbCommandSuccessMessage extends DbSuccessMessage {
 
-	public DbCommandMessage(ActorRef<DbResponseMessage> replyTo, Consumer<ODatabaseDocument> command) {
+		public final Object value;
+
+		public DbCommandSuccessMessage(AbstractDbReplyMessage originalMessage, Object value) {
+			super(originalMessage);
+			this.value = value;
+		}
+	}
+
+	public final Function<ODatabaseDocument, Object> command;
+
+	public DbCommandMessage(ActorRef<DbResponseMessage> replyTo, Function<ODatabaseDocument, Object> command) {
 		super(replyTo);
 		this.command = command;
 	}

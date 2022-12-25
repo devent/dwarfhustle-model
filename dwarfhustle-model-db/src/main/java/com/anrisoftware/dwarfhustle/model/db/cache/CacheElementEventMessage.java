@@ -1,5 +1,7 @@
 package com.anrisoftware.dwarfhustle.model.db.cache;
 
+import org.apache.commons.jcs3.engine.CacheElement;
+
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.GameObject;
 
@@ -7,21 +9,15 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * Message to store a {@link GameObject} in the database.
+ * Message to handle a cache event.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class StoreMessage extends Message {
+public class CacheElementEventMessage extends Message {
 
-	public final Object key;
+	public final CacheElement<Object, GameObject> e;
 
-	public final GameObject go;
-
-	@Data
-	@EqualsAndHashCode(callSuper = false)
-	public static class StoreDoneMessage extends Message {
-
-	}
+	public final GameObject val;
 }

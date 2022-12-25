@@ -21,6 +21,7 @@ import java.io.Serializable;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 /**
  * Game object on the game map.
@@ -29,6 +30,7 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@NoArgsConstructor
 public class GameObject implements Serializable {
 
 	private static final long serialVersionUID = 8715034096848467783L;
@@ -53,7 +55,7 @@ public class GameObject implements Serializable {
 	 * Unique ID of the object.
 	 */
 	@EqualsAndHashCode.Include
-	private final long id;
+	private long id;
 
 	/**
 	 * Record ID set after the object was once stored in the database.
@@ -69,7 +71,7 @@ public class GameObject implements Serializable {
 	/**
 	 * X, Y and Z position of a {@link GameObject} on the game map.
 	 */
-	private GameMapPosition pos = new GameMapPosition(-1, -1, -1);
+	private GameMapPosition pos = new GameMapPosition();
 
 	public GameObject(long id) {
 		this.id = id;

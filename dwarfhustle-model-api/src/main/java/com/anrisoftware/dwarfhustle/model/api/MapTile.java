@@ -19,6 +19,7 @@ package com.anrisoftware.dwarfhustle.model.api;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -29,6 +30,7 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
+@NoArgsConstructor
 public class MapTile extends GameObject {
 
 	private static final long serialVersionUID = -6027695018525898404L;
