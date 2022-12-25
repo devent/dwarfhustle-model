@@ -68,7 +68,6 @@ package com.anrisoftware.dwarfhustle.model.knowledge.generate;
 import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
 
 import java.time.Duration;
-import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
@@ -106,132 +105,57 @@ public class GenerateMapActor {
      */
     public interface GenerateMapActorFactory {
 
-        GenerateMapActor create(ActorContext<Message> context);
+		GenerateMapActor create(ActorContext<Message> context, ActorRef<Message> db);
     }
 
-    public static Behavior<Message> create(Injector injector) {
+	public static Behavior<Message> create(Injector injector, ActorRef<Message> db) {
         return Behaviors.setup((context) -> {
-            return injector.getInstance(GenerateMapActorFactory.class).create(context).start();
+			return injector.getInstance(GenerateMapActorFactory.class).create(context, db).start();
         });
     }
 
     /**
      * Creates the {@link GenerateMapActor}.
      */
-    public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout) {
+	public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout, ActorRef<Message> db) {
         var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
-        return createNamedActor(system, timeout, ID, KEY, NAME, create(injector));
+		return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, db));
     }
 
     @Inject
     @Assisted
     private ActorContext<Message> context;
 
+	@Inject
+	@Assisted
+	private ActorRef<Message> db;
+
     /**
-     * Initial behavior. Returns a behavior for the messages:
-     *
-     * <ul>
-     * <li>{@link ConnectDbMessage}
-     * </ul>
-     */
+	 * Initial behavior. Returns a behavior for the messages:
+	 *
+	 * <ul>
+	 * <li>{@link GenerateMessage}
+	 * </ul>
+	 */
     public Behavior<Message> start() {
         return getInitialBehavior().build();
     }
 
-    /**
-     * Reacts to {@link ConnectDbMessage}. Returns a behavior for the messages:
-     *
-     * <ul>
-     * <li>{@link CloseDbMessage}
-     * <li>{@link CreateDbMessage}
-     * </ul>
-     */
-    private Behavior<Message> onConnectDb(ConnectDbMessage m) {
-        log.debug("onConnectDb {}", m);
-        try {
-            this.orientdb = Optional.of(new OrientDB(m.url, m.user, m.password, OrientDBConfig.defaultConfig()));
-        } catch (Exception e) {
-            m.replyTo.tell(new ConnectDbErrorMessage(m, e));
-            return Behaviors.same();
-        }
-        m.replyTo.tell(new ConnectDbSuccessMessage(m));
-        return getConnectedBehavior().build();
-    }
-
-    /**
-     * Reacts to {@link CloseDbMessage}. Returns a behavior for the messages:
-     *
-     * <ul>
-     * <li>{@link ConnectDbMessage}
-     * </ul>
-     */
-    private Behavior<Message> onCloseDb(CloseDbMessage m) {
-        log.debug("onCloseDb {}", m);
-        if (orientdb.isPresent()) {
-            orientdb.get().close();
-        }
-        return getInitialBehavior().build();
-    }
-
-    /**
-     * Reacts to {@link ConnectDbMessage}. Returns a behavior for the messages:
-     *
-     * <ul>
-     * <li>{@link CloseDbMessage}
-     * <li>{@link CreateDbMessage}
-     * <li>{@link GenerateMessage}
-     * </ul>
-     */
-    private Behavior<Message> onCreateDb(CreateDbMessage m) {
-        log.debug("onCreateDb {}", m);
-        try {
-            if (orientdb.get().exists(m.database)) {
-                m.replyTo.tell(new DbAlreadyExistMessage(m));
-            } else {
-                orientdb.get().create(m.database, m.type);
-                m.replyTo.tell(new CreateDbSuccessMessage(m));
-            }
-        } catch (Exception e) {
-            m.replyTo.tell(new CreateDbErrorMessage(m, e));
-            return Behaviors.same();
-        }
-        return Behaviors.same();
-    }
-
-    /**
-     * Reacts to {@link GenerateMessage}. Returns a behavior for the messages:
-     *
-     * <ul>
-     * <li>{@link CloseDbMessage}
-     * <li>{@link CreateDbMessage}
-     * <li>{@link GenerateMessage}
-     * </ul>
-     */
-    private Behavior<Message> onDbCommand(GenerateMessage m) {
-        log.debug("onDbCommand {}", m);
-        try {
-            var database = orientdb.get().open(m.database, m.user, m.password);
-            try (database) {
-                m.command.accept(database);
-            }
-            m.replyTo.tell(new GenerateSuccessMessage(m));
-        } catch (Exception e) {
-            m.replyTo.tell(new GenerateErrorMessage(m, e));
-        }
-        return Behaviors.same();
-    }
+	/**
+	 * Handle {@link GenerateMessage}. Returns a behavior for the messages:
+	 *
+	 * <ul>
+	 * <li>{@link GenerateMessage}
+	 * </ul>
+	 */
+	protected Behavior<Message> onGenerate(GenerateMessage m) {
+		log.debug("onGenerate {}", m);
+		return Behaviors.same();
+	}
 
     private BehaviorBuilder<Message> getInitialBehavior() {
         return Behaviors.receive(Message.class)//
-                .onMessage(ConnectDbMessage.class, this::onConnectDb)//
-        ;
-    }
-
-    private BehaviorBuilder<Message> getConnectedBehavior() {
-        return Behaviors.receive(Message.class)//
-                .onMessage(CloseDbMessage.class, this::onCloseDb)//
-                .onMessage(CreateDbMessage.class, this::onCreateDb)//
-                .onMessage(GenerateMessage.class, this::onDbCommand)//
+				.onMessage(GenerateMessage.class, this::onGenerate)//
         ;
     }
 

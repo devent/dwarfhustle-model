@@ -3,16 +3,14 @@ package com.anrisoftware.dwarfhustle.model.db.cache;
 import com.anrisoftware.dwarfhustle.model.api.GameObject;
 
 import akka.actor.typed.ActorRef;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * Message to get {@link GameObject} game objects from the cache.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@Data
-@EqualsAndHashCode(callSuper = false)
+@ToString(callSuper = true)
 public class GetMessage extends AbstractCacheReplyMessage {
 
 	/**
@@ -20,8 +18,7 @@ public class GetMessage extends AbstractCacheReplyMessage {
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
-	@Data
-	@EqualsAndHashCode(callSuper = false)
+	@ToString(callSuper = true)
 	public static class GetSuccessMessage extends CacheSuccessMessage {
 
 		public final Object go;

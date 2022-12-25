@@ -3,16 +3,16 @@ package com.anrisoftware.dwarfhustle.model.db.cache;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 
 import akka.actor.typed.ActorRef;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 /**
  * Message to interact with the cache.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@Data
-@EqualsAndHashCode(callSuper = false)
+@RequiredArgsConstructor
+@ToString(callSuper = true)
 public class AbstractCacheReplyMessage extends Message {
 
 	/**
@@ -20,6 +20,8 @@ public class AbstractCacheReplyMessage extends Message {
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
+	@RequiredArgsConstructor
+	@ToString(callSuper = true)
 	public static class CacheResponseMessage extends Message {
 
 	}
@@ -29,8 +31,8 @@ public class AbstractCacheReplyMessage extends Message {
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
-	@Data
-	@EqualsAndHashCode(callSuper = false)
+	@RequiredArgsConstructor
+	@ToString(callSuper = true)
 	public static class CacheErrorMessage extends CacheResponseMessage {
 
 		public final AbstractCacheReplyMessage originalMessage;
@@ -43,8 +45,8 @@ public class AbstractCacheReplyMessage extends Message {
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
-	@Data
-	@EqualsAndHashCode(callSuper = false)
+	@RequiredArgsConstructor
+	@ToString(callSuper = true)
 	public static class CacheSuccessMessage extends CacheResponseMessage {
 
 		public final AbstractCacheReplyMessage originalMessage;

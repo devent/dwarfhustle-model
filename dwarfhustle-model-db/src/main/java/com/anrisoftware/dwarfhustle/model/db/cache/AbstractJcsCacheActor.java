@@ -263,7 +263,7 @@ public abstract class AbstractJcsCacheActor<K, V> implements IElementEventHandle
 	private Behavior<Message> onPut(PutMessage m) {
 		log.debug("onPut {}", m);
 		try {
-			cache.put((K) m.getKey(), (V) m.value);
+			cache.put((K) m.key, (V) m.value);
 			storeValueDb(m);
 			m.replyTo.tell(new CacheSuccessMessage(m));
 		} catch (CacheException e) {

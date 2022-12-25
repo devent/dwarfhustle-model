@@ -1,16 +1,14 @@
 package com.anrisoftware.dwarfhustle.model.db.cache;
 
 import akka.actor.typed.ActorRef;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * Message to put an object in the cache.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@Data
-@EqualsAndHashCode(callSuper = false)
+@ToString(callSuper = true)
 public class PutMessage extends AbstractCacheReplyMessage {
 
 	public final Object key;

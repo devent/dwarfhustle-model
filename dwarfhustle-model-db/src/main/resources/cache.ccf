@@ -46,3 +46,15 @@ jcs.region.mapTilesCache.cacheattributes.ShrinkerIntervalSeconds=60
 jcs.region.mapTilesCache.cacheattributes.MaxSpoolPerRun=500
 jcs.region.mapTilesCache.elementattributes=org.apache.commons.jcs3.engine.ElementAttributes
 jcs.region.mapTilesCache.elementattributes.IsEternal=false
+
+# PERSONS
+jcs.region.personsCache=
+jcs.region.personsCache.cacheattributes=org.apache.commons.jcs3.engine.CompositeCacheAttributes
+jcs.region.personsCache.cacheattributes.MaxObjects=1000
+jcs.region.personsCache.cacheattributes.MemoryCacheName=org.apache.commons.jcs3.engine.memory.lru.LRUMemoryCache
+jcs.region.personsCache.cacheattributes.UseMemoryShrinker=false
+jcs.region.personsCache.cacheattributes.MaxMemoryIdleTimeSeconds=3600
+jcs.region.personsCache.cacheattributes.ShrinkerIntervalSeconds=60
+jcs.region.personsCache.cacheattributes.MaxSpoolPerRun=500
+jcs.region.personsCache.elementattributes=org.apache.commons.jcs3.engine.ElementAttributes
+jcs.region.personsCache.elementattributes.IsEternal=false
