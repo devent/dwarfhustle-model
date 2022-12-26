@@ -23,30 +23,77 @@
 
 (assert (DWARFHUSTLE-MATERIALS/Metal Aluminium)) :documentation "Has a density lower than those of other common metals, at approximately one third that of steel. Aluminium visually resembles silver, both in its color and in its great ability to reflect light. It is soft, non-magnetic and ductile."
 (assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Aluminium) 660.00))
+(assert (= (DWARFHUSTLE-MATERIALS/boiling-point-material Aluminium) 2467.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Aluminium) 2.70))
-(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Aluminium) 0.9))
-(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Aluminium) 237))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Aluminium) 0.90))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Aluminium) 237.00))
 
 (assert (DWARFHUSTLE-MATERIALS/Metal Bismuth)) :documentation "Elemental bismuth occurs naturally, and its sulfide and oxide forms are important commercial ores. The free element is 86% as dense as lead. It is a brittle metal with a silvery-white color when freshly produced."
-(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Bismuth) 271))
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Bismuth) 271.00))
+(assert (= (DWARFHUSTLE-MATERIALS/boiling-point-material Bismuth) 1560.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Bismuth) 9.78))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Bismuth) 0.12))
-(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Bismuth) 7.97))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Bismuth) 8.00))
 
-(assert (DWARFHUSTLE-MATERIALS/Metal Copper)) :documentation "It is a soft, malleable, and ductile metal with very high thermal and electrical conductivity. A freshly exposed surface of pure copper has a pinkish-orange color."
-(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Copper) 1358.00))
-(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Copper) 8.96))
+(assert (DWARFHUSTLE-MATERIALS/Metal Copper)) :documentation "Soft, malleable, and ductile metal with very high thermal and electrical conductivity. A freshly exposed surface of pure copper has a pinkish-orange color."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Copper) 1084.00))
+(assert (= (DWARFHUSTLE-MATERIALS/boiling-point-material Copper) 2562.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Copper) 8.92))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Copper) 0.38))
-(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Copper) 401))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Copper) 401.00))
 
-(assert (DWARFHUSTLE-MATERIALS/Metal Gold)) :documentation "It is a bright, slightly orange-yellow, dense, soft, malleable, and ductile metal in a pure form."
-(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Gold) 1064))
-(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Gold) 19.3))
+(assert (DWARFHUSTLE-MATERIALS/Metal Gold)) :documentation "Bright, slightly orange-yellow, dense, soft, malleable, and ductile metal in a pure form."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Gold) 1064.00))
+(assert (= (DWARFHUSTLE-MATERIALS/boiling-point-material Gold) 2970.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Gold) 19.30))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Gold) 0.13))
-(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Gold) 318))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Gold) 320.00))
 
-(assert (DWARFHUSTLE-MATERIALS/Metal Iron)) :documentation "Iron has been known to mankind from early civilization. In fact, a period of history, the “iron age,” is named for the widespread use of this metal. For almost a thousand years, it remained as the single most-used metal, and its use in mechanization made the industrial revolution possible."
-(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Iron) 1538))
+(assert (DWARFHUSTLE-MATERIALS/Metal Iron)) :documentation "Has been known to mankind from early civilization. In fact, a period of history, the “iron age,” is named for the widespread use of this metal. For almost a thousand years, it remained as the single most-used metal, and its use in mechanization made the industrial revolution possible."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Iron) 1538.00))
+(assert (= (DWARFHUSTLE-MATERIALS/boiling-point-material Iron) 2861.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Iron) 7.87))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Iron) 0.44))
-(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Iron) 80.2))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Iron) 80.20))
+
+(assert (DWARFHUSTLE-MATERIALS/Metal Lead)) :documentation "Heavy metal that is denser than most common materials. Lead is soft and malleable, and also has a relatively low melting point. When freshly cut, lead is a shiny gray with a hint of blue. It tarnishes to a dull gray color when exposed to air."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Lead) 327.00))
+(assert (= (DWARFHUSTLE-MATERIALS/boiling-point-material Lead) 1740.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Lead) 11.34))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Lead) 0.13))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Lead) 35.00))
+
+(assert (DWARFHUSTLE-MATERIALS/Metal Nickel)) :documentation "Silvery-white lustrous metal with a slight golden tinge. Nickel is a hard and ductile transition metal."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Nickel) 1455.00))
+(assert (= (DWARFHUSTLE-MATERIALS/boiling-point-material Nickel) 2730.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Nickel) 8.91))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Nickel) 0.44))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Nickel) 90.70))
+
+(assert (DWARFHUSTLE-MATERIALS/Metal Platinum)) :documentation "Dense, malleable, ductile, highly unreactive, precious, silverish-white transition metal."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Platinum) 1772.00))
+(assert (= (DWARFHUSTLE-MATERIALS/boiling-point-material Platinum) 3827.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Platinum) 21.09))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Platinum) 0.13))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Platinum) 72.00))
+
+(assert (DWARFHUSTLE-MATERIALS/Metal Silver)) :documentation "Soft, white, lustrous transition metal, it exhibits the highest electrical conductivity, thermal conductivity, and reflectivity of any metal. The metal is found in the Earth's crust in the pure, free elemental form."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Silver) 961.00))
+(assert (= (DWARFHUSTLE-MATERIALS/boiling-point-material Silver) 2162.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Silver) 10.49))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Silver) 0.23))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Silver) 430.00))
+
+(assert (DWARFHUSTLE-MATERIALS/Metal Tin)) :documentation "Silvery-coloured metal. Tin is soft enough to be cut with little force[7] and a bar of tin can be bent by hand with little effort."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Tin) 232.00))
+(assert (= (DWARFHUSTLE-MATERIALS/boiling-point-material Tin) 2602.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Tin) 7.31))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Tin) 0.23))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Tin) 67.00))
+
+(assert (DWARFHUSTLE-MATERIALS/Metal Zinc)) :documentation "Slightly brittle metal at room temperature and has a shiny-greyish appearance when oxidation is removed."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Zinc) 420.00))
+(assert (= (DWARFHUSTLE-MATERIALS/boiling-point-material Zinc) 907.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Zinc) 7.14))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Zinc) 0.39))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Zinc) 116.00))

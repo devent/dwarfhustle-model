@@ -24,6 +24,9 @@
 (deffunction melting-point-material ((?material Material)) :-> (?temperature NUMBER))
   :documentation "Melting point of a material in °C."
 
+(deffunction boiling-point-material ((?material Material)) :-> (?temperature NUMBER))
+  :documentation "Boiling point of a material in °C."
+
 (deffunction density-of-material ((?material Material)) :-> (?density NUMBER))
   :documentation "Density of a material in g⋅cm−3."
 
@@ -33,16 +36,16 @@
 (deffunction thermal-conductivity-of-material ((?material Material)) :-> (?conductivity NUMBER))
   :documentation "Thermal conductivity of a material in W·m−1·K−1."
 
-(defconcept Metal (?material)
+(defconcept Metal (?material Material)
   :documentation "Metal material type.")
 
-(defconcept Metal-Ore (?material)
+(defconcept Metal-Ore (?material Material)
   :documentation "Metal ore material type.")
 
 (defrelation metal-ore-product ((?material Material) (?chance NUMBER) (?metal Material)))
   :documentation "Product of a metal ore with a specific chance to get the product. One ore can have multiple products."
 
-(defconcept Metal-Alloy (?material)
+(defconcept Metal-Alloy (?material Metal)
   :documentation "Metal alloy material type.")
 
 (defrelation metal-alloy-material ((?material Material) (?ratio NUMBER) (?alloy Material)))

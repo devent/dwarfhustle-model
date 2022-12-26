@@ -69,20 +69,34 @@ import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.create
 import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.PowerLoomKnowledgeActor.WORKING_MODULE;
 
 import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
 
+import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.map.primitive.IntObjectMap;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
+import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+import com.anrisoftware.dwarfhustle.model.api.Clay;
+import com.anrisoftware.dwarfhustle.model.api.IgneousExtrusive;
+import com.anrisoftware.dwarfhustle.model.api.IgneousIntrusive;
 import com.anrisoftware.dwarfhustle.model.api.Material;
+import com.anrisoftware.dwarfhustle.model.api.Metal;
+import com.anrisoftware.dwarfhustle.model.api.MetalAlloy;
+import com.anrisoftware.dwarfhustle.model.api.MetalOre;
+import com.anrisoftware.dwarfhustle.model.api.Metamorphic;
+import com.anrisoftware.dwarfhustle.model.api.Sand;
+import com.anrisoftware.dwarfhustle.model.api.Seabed;
 import com.anrisoftware.dwarfhustle.model.api.Sedimentary;
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.SedimentaryMaterialsMessage;
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.SedimentaryMaterialsSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.api.TopSoil;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.GetMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.ReplyMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandMessage.KnowledgeCommandErrorMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandMessage.KnowledgeCommandResponseMessage;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
@@ -118,7 +132,29 @@ public class KnowledgeBaseActor {
 
 	public static final int ID = KEY.hashCode();
 
+	public static Map<String, IntObjectMap<Material>> materials;
+
+	public static IntObjectMap<Material> metal;
+
+	public static IntObjectMap<Material> metalOre;
+
+	public static IntObjectMap<Material> metalAlloy;
+
+	public static IntObjectMap<Material> topsoil;
+
+	public static IntObjectMap<Material> seabed;
+
+	public static IntObjectMap<Material> sand;
+
+	public static IntObjectMap<Material> clay;
+
 	public static IntObjectMap<Material> sedimentary;
+
+	public static IntObjectMap<Material> igneousIntrusive;
+
+	public static IntObjectMap<Material> igneousExtrusive;
+
+	public static IntObjectMap<Material> metamorphic;
 
 	@RequiredArgsConstructor
 	@ToString(callSuper = true)
@@ -152,6 +188,10 @@ public class KnowledgeBaseActor {
 	private static void loadKnowledgeBase(ActorContext<Message> context, ActorRef<Message> knowledge) {
 		context.pipeToSelf(loadKnowledgeBase0(context, knowledge), (result, cause) -> {
 			if (cause == null) {
+				if (result instanceof KnowledgeCommandErrorMessage) {
+					var m = (KnowledgeCommandErrorMessage) result;
+					return new SetupErrorMessage(m.error);
+				}
 				return new InitialStateMessage();
 			} else {
 				return new SetupErrorMessage(cause);
@@ -169,7 +209,30 @@ public class KnowledgeBaseActor {
 	}
 
 	private static void retrieveMaterials() {
+		metal = retrieveMaterials("Metal", Metal.class);
+		metalOre = retrieveMaterials("Metal-Ore", MetalOre.class);
+		metalAlloy = retrieveMaterials("Metal-Alloy", MetalAlloy.class);
+		topsoil = retrieveMaterials("Topsoil", TopSoil.class);
+		seabed = retrieveMaterials("Seabed", Seabed.class);
+		sand = retrieveMaterials("Sand", Sand.class);
+		clay = retrieveMaterials("Clay", Clay.class);
 		sedimentary = retrieveMaterials("Sedimentary", Sedimentary.class);
+		igneousIntrusive = retrieveMaterials("Igneous-Intrusive", IgneousIntrusive.class);
+		igneousExtrusive = retrieveMaterials("Igneous-Extrusive", IgneousExtrusive.class);
+		metamorphic = retrieveMaterials("Metamorphic", Metamorphic.class);
+		MutableMap<String, IntObjectMap<Material>> mmaterials = Maps.mutable.empty();
+		mmaterials.put("Metal", metal);
+		mmaterials.put("Metal-Ore", metalOre);
+		mmaterials.put("Metal-Alloy", metalAlloy);
+		mmaterials.put("Topsoil", topsoil);
+		mmaterials.put("Seabed", seabed);
+		mmaterials.put("Sand", sand);
+		mmaterials.put("Clay", clay);
+		mmaterials.put("Sedimentary", sedimentary);
+		mmaterials.put("Igneous-Intrusive", igneousIntrusive);
+		mmaterials.put("Igneous-Extrusive", igneousExtrusive);
+		mmaterials.put("Metamorphic", metamorphic);
+		materials = mmaterials.asUnmodifiable();
 	}
 
 	@SneakyThrows
@@ -187,6 +250,7 @@ public class KnowledgeBaseActor {
 			var material = matType.getConstructors()[0].newInstance(id, name, meltingPoint, density, shc, tc);
 			map.put(id, (Material) material);
 		}
+		log.trace("retrieveMaterials {} {}", type, map.size());
 		return map.asUnmodifiable();
 	}
 
@@ -257,22 +321,21 @@ public class KnowledgeBaseActor {
 	}
 
 	/**
-	 * Reacts to {@link SedimentaryMaterialsMessage}. Returns a behavior for the
-	 * messages:
+	 * Reacts to {@link GetMessage}. Returns a behavior for the messages:
 	 *
 	 * <ul>
-	 * <li>{@link SedimentaryMaterialsMessage}
+	 * <li>{@link GetMessage}
 	 * </ul>
 	 */
-	private Behavior<Message> onSedimentaryMaterials(SedimentaryMaterialsMessage m) {
-		log.debug("onSedimentaryMaterials {}", m);
-		m.replyTo.tell(new SedimentaryMaterialsSuccessMessage(sedimentary));
+	private Behavior<Message> onGet(GetMessage m) {
+		log.debug("onGet {}", m);
+		m.replyTo.tell(new ReplyMessage(materials.get(m.material)));
 		return Behaviors.same();
 	}
 
 	private BehaviorBuilder<Message> getInitialBehavior() {
 		return Behaviors.receive(Message.class)//
-				.onMessage(SedimentaryMaterialsMessage.class, this::onSedimentaryMaterials)//
+				.onMessage(GetMessage.class, this::onGet)//
 		;
 	}
 

@@ -60,28 +60,28 @@
 (assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Mudsone) 623.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Mudsone) 2.47))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Mudsone) 343.00))
-(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Mudsone) 2.5))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Mudsone) 2.50))
 
 (assert (DWARFHUSTLE-MATERIALS/Sedimentary Rock-Salt)) :documentation "Consists almost entirely of halite, a mineral composed of sodium chloride, NaCl. It forms where large volumes of sea water or salty lake water evaporate from an arid-climate basin -- where there is a replenishing flow of salt water and a restricted input of other water."
 (assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Rock-Salt) 623.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Rock-Salt) 2.47))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Rock-Salt) 343.00))
-(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Rock-Salt) 2.5))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Rock-Salt) 2.50))
 
 (assert (DWARFHUSTLE-MATERIALS/Sedimentary Sandstone)) :documentation "Sand-size grains of mineral, rock, or organic material. It also contains a cementing material that binds the sand grains together and may contain a matrix of silt- or clay-size particles that occupy the spaces between the sand grains."
 (assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Sandstone) 623.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Sandstone) 2.47))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Sandstone) 343.00))
-(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Sandstone) 2.5))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Sandstone) 2.50))
 
 (assert (DWARFHUSTLE-MATERIALS/Sedimentary Shale)) :documentation "Fine grained, hard, laminated mudrock, consisting of clay minerals, and quartz and feldspar silt. Shale is lithified and cleavable. It must have at least 50-percent of its particles measure less than 0.062 mm. This term is confined to argillaceous, or clay-bearing, rock."
 (assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Shale) 623.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Shale) 2.47))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Shale) 343.00))
-(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Shale) 2.5))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Shale) 2.50))
 
 (assert (DWARFHUSTLE-MATERIALS/Sedimentary Siltstone)) :documentation "Lithified, non-cleavable mudrock. In order for a rock to be named a siltstone, it must contain over fifty percent silt-sized material. Silt is any particle smaller than sand, 1/16 of a millimeter, and larger than clay, 1/256 of millimeter."
 (assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Siltstone) 623.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Siltstone) 2.47))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Siltstone) 343.00))
-(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Siltstone) 2.5))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Siltstone) 2.50))

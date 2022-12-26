@@ -12,7 +12,7 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class MetalOre extends Material{
+public class MetalOre extends Material {
 
 	private static final long serialVersionUID = 7612699665527178770L;
 

@@ -23,18 +23,19 @@
 
 (assert (DWARFHUSTLE-MATERIALS/Metal-Ore Aluminium-Ore)) :documentation "Because extraction of aluminium from Bauxite is a complex chemical process that also requires electrolysis we will just use pure aluminium."
 (assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Aluminium-Ore) 660.00))
+(assert (= (DWARFHUSTLE-MATERIALS/boiling-point-material Aluminium-Ore) 2467.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Aluminium-Ore) 2.70))
-(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Aluminium-Ore) 0.9))
-(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Aluminium-Ore) 237))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Aluminium-Ore) 0.90))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Aluminium-Ore) 237.00))
 (assert (metal-ore-product Aluminium-Ore 1.00 DWARFHUSTLE-MATERIALS-METALS/Aluminium))
 
 (assert (DWARFHUSTLE-MATERIALS/Metal-Ore Bismuthinite)) :documentation "It is an important ore for bismuth. The crystals are steel-grey to off-white with a metallic luster. It is soft enough to be scratched with a fingernail and rather dense."
-(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Bismuthinite) 775))
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Bismuthinite) 775.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Bismuthinite) 7.00))
 (assert (metal-ore-product Bismuthinite 1.00 DWARFHUSTLE-MATERIALS-METALS/Bismuth))
 
 (assert (DWARFHUSTLE-MATERIALS/Metal-Ore Bismite)) :documentation "It is a monoclinic mineral, but the typical form of occurrence is massive and clay-like with no macroscopic crystals. The color varies from green to yellow."
-(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Bismite) 825))
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Bismite) 825.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Bismite) 8.90))
 (assert (metal-ore-product Bismite 1.00 DWARFHUSTLE-MATERIALS-METALS/Bismuth))
 
@@ -60,8 +61,9 @@
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Malachite) 2.28))
 (assert (metal-ore-product Malachite 1.00 DWARFHUSTLE-MATERIALS-METALS/Copper))
 
-(assert (DWARFHUSTLE-MATERIALS/Metal Gold-Ore)) :documentation "Gold most often occurs as a native metal."
-(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Gold-Ore) 1064))
-(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Gold-Ore) 19.3))
+(assert (DWARFHUSTLE-MATERIALS/Metal-Ore Gold-Ore)) :documentation "Gold most often occurs as a native metal."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Gold-Ore) 1064.00))
+(assert (= (DWARFHUSTLE-MATERIALS/boiling-point-material Gold-Ore) 2970.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Gold-Ore) 19.30))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Gold-Ore) 0.13))
-(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Gold-Ore) 318))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Gold-Ore) 320.00))

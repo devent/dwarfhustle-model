@@ -19,37 +19,41 @@ import lombok.ToString;
 public class KnowledgeBaseMessage extends Message {
 
 	@ToString(callSuper = true)
-	public static class SedimentaryMaterialsMessage extends KnowledgeBaseMessage {
+	public static class GetMessage extends KnowledgeBaseMessage {
 
-		public SedimentaryMaterialsMessage(ActorRef<KnowledgeBaseResponseMessage> replyTo) {
+		public final String material;
+
+		public GetMessage(ActorRef<ResponseMessage> replyTo, String material) {
 			super(replyTo);
+			this.material = material;
 		}
 
 	}
 
 	@RequiredArgsConstructor
 	@ToString(callSuper = true)
-	public static class SedimentaryMaterialsSuccessMessage extends KnowledgeBaseResponseMessage {
+	public static class ReplyMessage extends ResponseMessage {
 
 		@ToString.Exclude
-		public final IntObjectMap<Material> sedimentary;
+		public final IntObjectMap<? extends Material> material;
 	}
 
 	@RequiredArgsConstructor
 	@ToString(callSuper = true)
-	public static class KnowledgeBaseResponseMessage extends Message {
+	public static class ResponseMessage extends Message {
 
 	}
 
 	@RequiredArgsConstructor
 	@ToString(callSuper = true)
-	public static class KnowledgeCommandErrorMessage extends KnowledgeBaseResponseMessage {
+	public static class ErrorMessage extends ResponseMessage {
 
+		@ToString.Exclude
 		public final KnowledgeBaseMessage originalMessage;
 
 		public final Exception error;
 	}
 
-	public final ActorRef<KnowledgeBaseResponseMessage> replyTo;
+	public final ActorRef<ResponseMessage> replyTo;
 
 }

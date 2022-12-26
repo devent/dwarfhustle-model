@@ -21,12 +21,12 @@
 (clear-module "DWARFHUSTLE-MATERIALS-METALS-ALLOYS")
 (reset-features)
 
-(assert (DWARFHUSTLE-MATERIALS/Metal-Alloy Electrum)) :documentation "Electrum is a naturally occurring alloy of gold and silver, with trace amounts of copper and other metals. Its color ranges from pale to bright yellow, depending on the proportions of gold and silver."
-(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Electrum) 1310))
+(assert (DWARFHUSTLE-MATERIALS/Metal-Alloy Electrum)) :documentation "Electrum is a naturally occurring alloy of gold and silver. Its color ranges from pale to bright yellow, depending on the proportions of gold and silver."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Electrum) 1310.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Electrum) 13.75))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Electrum) 0.15))
-(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Electrum) 2))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Electrum) 2.00))
 (assert (metal-ore-product Electrum 0.50 DWARFHUSTLE-MATERIALS-METALS/Gold))
 (assert (metal-ore-product Electrum 0.50 DWARFHUSTLE-MATERIALS-METALS/Silver))
-(assert (metal-alloy-material Gold 0.50 Electrum))
-(assert (metal-alloy-material Silver 0.50 Electrum))
+(assert (metal-alloy-material DWARFHUSTLE-MATERIALS-METALS/Gold 0.50 Electrum))
+(assert (metal-alloy-material DWARFHUSTLE-MATERIALS-METALS/Silver 0.50 Electrum))

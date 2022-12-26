@@ -10,9 +10,9 @@ import org.junit.jupiter.api.Timeout
 
 import com.anrisoftware.dwarfhustle.model.actor.MainActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.KnowledgeCommandErrorMessage
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.SedimentaryMaterialsMessage
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.SedimentaryMaterialsSuccessMessage
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.GetMessage
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.ReplyMessage
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandMessage.KnowledgeCommandErrorMessage
 import com.google.inject.Guice
 import com.google.inject.Injector
 
@@ -49,22 +49,22 @@ class KnowledgeBaseActorTest {
 	}
 
 	@Test
-	@Timeout(10)
+	@Timeout(15)
 	void "test retrieve"() {
 		def result =
 				AskPattern.ask(
 				knowledgeBaseActor, {replyTo ->
-					new SedimentaryMaterialsMessage(replyTo)
+					new GetMessage(replyTo, "Sedimentary")
 				},
-				Duration.ofSeconds(300),
+				Duration.ofSeconds(15),
 				testKit.scheduler())
 		def lock = new CountDownLatch(1)
-		def sedimentary
+		def material
 		result.whenComplete( {reply, failure ->
 			log.info "Command reply {} failure {}", reply, failure
 			switch (reply) {
-				case SedimentaryMaterialsSuccessMessage:
-					sedimentary = reply.sedimentary
+				case ReplyMessage:
+					material = reply.material
 					break
 				case KnowledgeCommandErrorMessage:
 					break
@@ -72,6 +72,6 @@ class KnowledgeBaseActorTest {
 			lock.countDown()
 		})
 		lock.await()
-		assert sedimentary.size() == 11
+		assert material.size() == 11
 	}
 }

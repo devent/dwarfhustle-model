@@ -22,21 +22,21 @@
 (reset-features)
 
 (assert (DWARFHUSTLE-MATERIALS/Clay Clay)) :documentation "Fine-grained natural soil material containing clay minerals. Composition is about 20-60-20% concentration of sand-clay-silt, respectively."
-(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Sand) 1670))
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Sand) 1670.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Sand) 1.70))
 
 (assert (DWARFHUSTLE-MATERIALS/Clay Clay-Loam)) :documentation "Fine-grained natural soil material containing clay minerals. Composition is about 30-35-35% concentration of sand-clay-silt, respectively."
-(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Black-Sand) 1670))
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Black-Sand) 1670.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Black-Sand) 1.70))
 
 (assert (DWARFHUSTLE-MATERIALS/Clay Sandy-Clay)) :documentation "Fine-grained natural soil material containing clay minerals. Composition is about 50-45-5% concentration of sand-clay-silt, respectively."
-(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Red-Sand) 1670))
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Red-Sand) 1670.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Red-Sand) 1.70))
 
 (assert (DWARFHUSTLE-MATERIALS/Clay Silty-Clay)) :documentation "Fine-grained natural soil material containing clay minerals. Composition is about 5-45-50% concentration of sand-clay-silt, respectively."
-(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material White-Sand) 1670))
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material White-Sand) 1670.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material White-Sand) 1.70))
 
 (assert (DWARFHUSTLE-MATERIALS/Clay Fire-Clay)) :documentation "Range of refractory clays used in the manufacture of ceramics, especially fire brick."
-(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Yellow-Sand) 1775))
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Yellow-Sand) 1775.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Yellow-Sand) 1.36))
