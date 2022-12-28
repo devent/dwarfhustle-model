@@ -1,5 +1,7 @@
 package com.anrisoftware.dwarfhustle.model.db.orientdb.cache
 
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbTestUtils.*
+
 import java.time.Duration
 import java.util.concurrent.CountDownLatch
 
@@ -22,22 +24,13 @@ import com.anrisoftware.dwarfhustle.model.db.cache.JcsCacheModule
 import com.anrisoftware.dwarfhustle.model.db.cache.MapTilesJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.db.cache.MapTilesJcsCacheActor.MapTilesJcsCacheActorFactory
 import com.anrisoftware.dwarfhustle.model.db.cache.PutMessage
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.AbstractDbReplyMessage.DbErrorMessage
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.AbstractDbReplyMessage.DbSuccessMessage
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CloseDbMessage
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.ConnectDbMessage
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CreateDbMessage
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DeleteDbMessage
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbModule
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.CreateSchemasMessage
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.MapTileStorage
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsActor
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsModule
 import com.google.inject.Guice
 import com.google.inject.Injector
-import com.orientechnologies.orient.core.db.ODatabaseType
 
 import akka.actor.testkit.typed.javadsl.ActorTestKit
 import akka.actor.typed.ActorRef
@@ -64,7 +57,7 @@ class JcsCacheActorTest {
 
 	static IDGenerator generator
 
-	static timeout = Duration.ofSeconds(1500)
+	static timeout = Duration.ofSeconds(15)
 
 	static mapTilesParams
 
@@ -79,103 +72,17 @@ class JcsCacheActorTest {
 		orientDbActor = testKit.spawn(OrientDbActor.create(injector), "OrientDbActor");
 		objectsActor = testKit.spawn(ObjectsActor.create(injector, orientDbActor), "objectsActor");
 		generator = injector.getInstance(IDGenerator.class)
-		connectCreateDatabase()
+		connectCreateDatabase(orientDbActor, objectsActor, timeout, testKit, generator, initDatabaseLock)
 		initDatabaseLock.await()
 		mapTilesCacheActor = testKit.spawn(MapTilesJcsCacheActor.create(injector, orientDbActor, injector.getInstance(MapTilesJcsCacheActorFactory), MapTilesJcsCacheActor.createInitCacheAsync(), mapTilesParams), "JcsCacheActor");
 	}
 
 	@AfterAll
 	static void closeDb() {
-		deleteDatabase()
+		deleteDatabase(orientDbActor, timeout, testKit, deleteDatabaseLock)
 		orientDbActor.tell(new CloseDbMessage())
 		testKit.shutdown(testKit.system(), timeout)
 		deleteDatabaseLock.await()
-	}
-
-	static void connectCreateDatabase() {
-		def result =
-				AskPattern.ask(
-				orientDbActor,
-				{replyTo -> new ConnectDbMessage(replyTo, "remote:localhost", "test", "root", "admin")},
-				timeout,
-				testKit.scheduler())
-		result.whenComplete({reply, failure ->
-			log_reply_failure "connectCreateDatabase", reply, failure
-			switch (reply) {
-				case DbSuccessMessage:
-					createDatabase()
-					break
-				case DbErrorMessage:
-					throw reply.error
-					break
-			}
-		})
-	}
-
-	static void createDatabase() {
-		def result =
-				AskPattern.ask(
-				orientDbActor,
-				{replyTo -> new CreateDbMessage(replyTo, ODatabaseType.MEMORY)},
-				timeout,
-				testKit.scheduler())
-		result.whenComplete( {reply, failure ->
-			log_reply_failure "createDatabase", reply, failure
-			createSchemas()
-		})
-	}
-
-	static void createSchemas() {
-		def result =
-				AskPattern.ask(
-				objectsActor,
-				{replyTo -> new CreateSchemasMessage(replyTo)},
-				timeout,
-				testKit.scheduler())
-		result.whenComplete( {reply, failure ->
-			log_reply_failure "createSchemas", reply, failure
-			fillDatabase()
-		})
-	}
-
-	static void fillDatabase() {
-		def result =
-				AskPattern.ask(
-				orientDbActor, {replyTo ->
-					new DbCommandMessage(replyTo, { db ->
-						def go = new MapTile(generator.generate())
-						go.pos = new GameMapPosition(0, 10, 20, 2)
-						go.material = "Sandstone"
-						def doc = db.newVertex(go.getType());
-						db.begin();
-						new MapTileStorage().save(doc, go)
-						doc.save();
-						db.commit();
-					})
-				},
-				timeout,
-				testKit.scheduler())
-		result.whenComplete( {reply, failure ->
-			log_reply_failure "fillDatabase", reply, failure
-			initDatabaseLock.countDown()
-		})
-	}
-
-	static void deleteDatabase() {
-		def result =
-				AskPattern.ask(
-				orientDbActor,
-				{replyTo -> new DeleteDbMessage(replyTo)},
-				timeout,
-				testKit.scheduler())
-		result.whenComplete( {reply, failure ->
-			log_reply_failure "deleteDatabase", reply, failure
-			deleteDatabaseLock.countDown()
-		})
-	}
-
-	static void log_reply_failure(def name, def reply, def failure) {
-		log.info "$name reply ${reply} failure ${failure}"
 	}
 
 	@Test

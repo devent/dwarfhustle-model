@@ -114,14 +114,14 @@ public class GenerateMapActor {
 
 	@RequiredArgsConstructor
 	@ToString(callSuper = true)
-	public static class ResponseErrorMessage extends ResponseMessage {
+	private static class ResponseErrorMessage extends ResponseMessage {
 
 		public final Throwable error;
 	}
 
 	@RequiredArgsConstructor
 	@ToString(callSuper = true)
-	public static class MaterialsLoadSuccessMessage extends ResponseMessage {
+	private static class MaterialsLoadSuccessMessage extends ResponseMessage {
 
 		@ToString.Exclude
 		public final Map<String, IntObjectMap<? extends Material>> materials;
@@ -131,7 +131,7 @@ public class GenerateMapActor {
 
 	@RequiredArgsConstructor
 	@ToString(callSuper = true)
-	public static class GenerateSuccessMessage extends ResponseMessage {
+	private static class GenerateSuccessMessage extends ResponseMessage {
 
 		public final GenerateMessage generateMessage;
 	}
@@ -263,10 +263,10 @@ public class GenerateMapActor {
 						return new ResponseErrorMessage(throwable);
 					}
 					if (response instanceof KnowledgeBaseMessage.ErrorMessage) {
-						KnowledgeBaseMessage.ErrorMessage km = (KnowledgeBaseMessage.ErrorMessage) response;
+						var km = (KnowledgeBaseMessage.ErrorMessage) response;
 						return new ResponseErrorMessage(km.error);
 					} else {
-						KnowledgeBaseMessage.ReplyMessage km = (KnowledgeBaseMessage.ReplyMessage) response;
+						var km = (KnowledgeBaseMessage.ReplyMessage) response;
 						return new MaterialsLoadSuccessMessage(km.materials, m);
 					}
 				});

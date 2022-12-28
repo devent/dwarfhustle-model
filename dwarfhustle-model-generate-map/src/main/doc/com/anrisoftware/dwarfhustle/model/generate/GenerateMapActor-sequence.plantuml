@@ -1,0 +1,24 @@
+@startuml
+participant GenerateMapActor as gmActor
+participant knowledge
+participant workerActor
+
+-> gmActor ++ : GenerateMessage
+gmActor -> gmActor : onGenerate()
+gmActor -> gmActor : retrieveMapTileMaterials()
+gmActor -> knowledge : KnowledgeBaseMessage.ResponseMessage
+alt throwable != null case
+gmActor -> gmActor :  ResponseErrorMessage
+else response = KnowledgeBaseMessage.ErrorMessage case
+gmActor -> gmActor :  ResponseErrorMessage
+else response = KnowledgeBaseMessage.ReplyMessage case
+return MaterialsLoadSuccessMessage
+end
+
+-> gmActor : MaterialsLoadSuccessMessage
+activate gmActor
+gmActor -> gmActor :  onMaterialsLoadSuccess()
+gmActor -> workerActor ** : create
+deactivate gmActor
+
+@enduml
