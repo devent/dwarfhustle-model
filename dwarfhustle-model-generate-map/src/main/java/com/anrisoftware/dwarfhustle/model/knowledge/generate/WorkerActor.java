@@ -77,16 +77,14 @@ import org.eclipse.collections.api.map.primitive.IntObjectMap;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.api.IgneousExtrusive;
-import com.anrisoftware.dwarfhustle.model.api.IgneousIntrusive;
 import com.anrisoftware.dwarfhustle.model.api.Material;
-import com.anrisoftware.dwarfhustle.model.api.Metamorphic;
-import com.anrisoftware.dwarfhustle.model.api.Sedimentary;
-import com.anrisoftware.dwarfhustle.model.knowledge.generate.WorkerActor.WorkerActorFactory;
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage;
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.ResponseMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.AbstractDbReplyMessage.DbErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.AbstractDbReplyMessage.DbResponseMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage.DbCommandSuccessMessage;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
+import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -103,58 +101,89 @@ import lombok.extern.slf4j.Slf4j;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
-public class GenerateMapActor {
+public class WorkerActor {
 
-	public static final ServiceKey<Message> KEY = ServiceKey.create(Message.class,
-			GenerateMapActor.class.getSimpleName());
+	public static final ServiceKey<Message> KEY = ServiceKey.create(Message.class, WorkerActor.class.getSimpleName());
 
-	public static final String NAME = GenerateMapActor.class.getSimpleName();
+	public static final String NAME = WorkerActor.class.getSimpleName();
 
 	public static final int ID = KEY.hashCode();
 
+	/**
+	 * Message to generate game map.
+	 *
+	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+	 */
 	@RequiredArgsConstructor
 	@ToString(callSuper = true)
-	public static class ResponseErrorMessage extends ResponseMessage {
+	public static class GenerateMapMessage extends Message {
+
+		public final ActorRef<ResponseMessage> replyTo;
+
+		public final GenerateMessage generateMessage;
+
+		@ToString.Exclude
+		public final Map<String, IntObjectMap<? extends Material>> materials;
+	}
+
+	@RequiredArgsConstructor
+	@ToString(callSuper = true)
+	public static class ResponseMessage extends Message {
+
+	}
+
+	@RequiredArgsConstructor
+	@ToString(callSuper = true)
+	public static class ErrorMessage extends ResponseMessage {
+
+		@ToString.Exclude
+		public final GenerateMapMessage originalMessage;
 
 		public final Throwable error;
 	}
 
 	@RequiredArgsConstructor
 	@ToString(callSuper = true)
-	public static class MaterialsLoadSuccessMessage extends ResponseMessage {
+	public static class SuccessMessage extends ResponseMessage {
 
-		@ToString.Exclude
-		public final Map<String, IntObjectMap<? extends Material>> materials;
-
-		public final GenerateMessage m;
+		public final GenerateMapMessage originalMessage;
 	}
 
 	@RequiredArgsConstructor
 	@ToString(callSuper = true)
-	public static class GenerateSuccessMessage extends ResponseMessage {
+	private static class GenerateNodesErrorMessage extends ResponseMessage {
 
-		public final GenerateMessage generateMessage;
+		public final GenerateMapMessage m;
+
+		public final Throwable error;
+	}
+
+	@RequiredArgsConstructor
+	@ToString(callSuper = true)
+	private static class GenerateNodesSuccessMessage extends ResponseMessage {
+
+		public final GenerateMapMessage m;
 	}
 
 	/**
-	 * Factory to create {@link GenerateMapActor}.
+	 * Factory to create {@link WorkerActor}.
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
-	public interface GenerateMapActorFactory {
+	public interface WorkerActorFactory {
 
-		GenerateMapActor create(ActorContext<Message> context, @Assisted("db") ActorRef<Message> db,
+		WorkerActor create(ActorContext<Message> context, @Assisted("db") ActorRef<Message> db,
 				@Assisted("knowledge") ActorRef<Message> knowledge);
 	}
 
 	public static Behavior<Message> create(Injector injector, ActorRef<Message> db, ActorRef<Message> knowledge) {
 		return Behaviors.setup((context) -> {
-			return injector.getInstance(GenerateMapActorFactory.class).create(context, db, knowledge).start();
+			return injector.getInstance(WorkerActorFactory.class).create(context, db, knowledge).start();
 		});
 	}
 
 	/**
-	 * Creates the {@link GenerateMapActor}.
+	 * Creates the {@link WorkerActor}.
 	 */
 	public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout, ActorRef<Message> db,
 			ActorRef<Message> knowledge) {
@@ -174,18 +203,13 @@ public class GenerateMapActor {
 	@Assisted("knowledge")
 	private ActorRef<Message> knowledge;
 
-	@Inject
-	private WorkerActorFactory workerActorFactory;
-
 	private final Duration timeout = Duration.ofSeconds(300);
 
 	/**
 	 * Initial behavior. Returns a behavior for the messages:
 	 *
 	 * <ul>
-	 * <li>{@link GenerateSuccessMessage}
-	 * <li>{@link MaterialsLoadSuccessMessage}
-	 * <li>{@link GenerateSuccessMessage}
+	 * <li>{@link GenerateMapMessage}
 	 * </ul>
 	 */
 	public Behavior<Message> start() {
@@ -193,99 +217,73 @@ public class GenerateMapActor {
 	}
 
 	/**
-	 * Handle {@link GenerateMessage}. Returns a behavior for the messages:
+	 * Handle {@link GenerateMapMessage}. Returns a behavior for the messages:
 	 *
 	 * <ul>
-	 * <li>{@link GenerateSuccessMessage}
-	 * <li>{@link MaterialsLoadSuccessMessage}
-	 * <li>{@link GenerateSuccessMessage}
+	 * <li>{@link GenerateMapMessage}
 	 * </ul>
 	 */
-	protected Behavior<Message> onGenerate(GenerateMessage m) {
+	private Behavior<Message> onGenerateMap(GenerateMapMessage m) {
 		log.debug("onGenerate {}", m);
-		retrieveMapTileMaterials(m);
-		return Behaviors.same();
+		try {
+			generateNodes(m);
+			m.replyTo.tell(new SuccessMessage(m));
+		} catch (Throwable e) {
+			m.replyTo.tell(new ErrorMessage(m, e));
+		}
+		return Behaviors.receive(Message.class)//
+				.onMessage(GenerateNodesErrorMessage.class, this::onGenerateNodesError)//
+				.onMessage(GenerateNodesSuccessMessage.class, this::onGenerateNodesSuccess)//
+				.build();
 	}
 
 	/**
-	 * Handle {@link MaterialsLoadSuccessMessage}. Returns a behavior for the
-	 * messages:
-	 *
-	 * <ul>
-	 * <li>{@link GenerateSuccessMessage}
-	 * <li>{@link MaterialsLoadSuccessMessage}
-	 * <li>{@link GenerateSuccessMessage}
-	 * </ul>
+	 * Handle {@link GenerateNodesErrorMessage}. Sends {@link ErrorMessage} to the
+	 * caller and terminates this actor.
 	 */
-	protected Behavior<Message> onMaterialsLoadSuccess(MaterialsLoadSuccessMessage m) {
-		log.debug("onMaterialsLoadSuccess {}", m);
-		var workerActor = context.spawn(workerActorFactory.create(context, db, knowledge).start(),
-				WorkerActor.NAME);
-		context.ask(WorkerActor.ResponseMessage.class, workerActor, timeout,
-				(ActorRef<WorkerActor.ResponseMessage> ref) -> new WorkerActor.GenerateMapMessage(ref, m.m,
-						m.materials),
-				(response, throwable) -> {
-					if (throwable != null) {
-						return new ResponseErrorMessage(throwable);
-					}
-					if (response instanceof WorkerActor.ErrorMessage) {
-						var wm = (WorkerActor.ErrorMessage) response;
-						return new ResponseErrorMessage(wm.error);
-					} else {
-						var wm = (WorkerActor.SuccessMessage) response;
-						return new GenerateSuccessMessage(wm.originalMessage.generateMessage);
-					}
-				});
-		return Behaviors.same();
+	protected Behavior<Message> onGenerateNodesError(GenerateNodesErrorMessage m) {
+		log.debug("onGenerateNodesError {}", m);
+		m.m.replyTo.tell(new ErrorMessage(m.m, m.error));
+		return Behaviors.stopped();
 	}
 
 	/**
-	 * Handle {@link GenerateSuccessMessage}. Returns a behavior for the messages:
-	 *
-	 * <ul>
-	 * <li>{@link GenerateSuccessMessage}
-	 * <li>{@link MaterialsLoadSuccessMessage}
-	 * <li>{@link GenerateSuccessMessage}
-	 * </ul>
+	 * Handle {@link GenerateNodesSuccessMessage}. Sends {@link SuccessMessage} to
+	 * the caller and terminates this actor.
 	 */
-	protected Behavior<Message> onGenerateSuccess(GenerateSuccessMessage m) {
-		log.debug("onGenerateSuccess {}", m);
-		m.generateMessage.replyTo.tell(new GenerateMessage.GenerateSuccessMessage(m.generateMessage));
-		return Behaviors.same();
+	protected Behavior<Message> onGenerateNodesSuccess(GenerateNodesSuccessMessage m) {
+		log.debug("onGenerateNodesSuccess {}", m);
+		m.m.replyTo.tell(new SuccessMessage(m.m));
+		return Behaviors.stopped();
 	}
 
-	private void retrieveMapTileMaterials(GenerateMessage m) {
-		context.ask(KnowledgeBaseMessage.ResponseMessage.class, knowledge, timeout,
-				(ActorRef<KnowledgeBaseMessage.ResponseMessage> ref) -> new KnowledgeBaseMessage.GetMessage(ref,
-						Sedimentary.TYPE, IgneousIntrusive.TYPE, IgneousExtrusive.TYPE, Metamorphic.TYPE),
-				(response, throwable) -> {
+	private void generateNodes(GenerateMapMessage m) {
+		context.ask(DbResponseMessage.class, db, timeout,
+				(ActorRef<DbResponseMessage> ref) -> new DbCommandMessage(ref, (db) -> {
+					generateNodes(db);
+					return null;
+				}), (response, throwable) -> {
 					if (throwable != null) {
-						return new ResponseErrorMessage(throwable);
+						return new GenerateNodesErrorMessage(m, throwable);
 					}
-					if (response instanceof KnowledgeBaseMessage.ErrorMessage) {
-						KnowledgeBaseMessage.ErrorMessage km = (KnowledgeBaseMessage.ErrorMessage) response;
-						return new ResponseErrorMessage(km.error);
+					if (response instanceof DbErrorMessage) {
+						var dm = (DbErrorMessage) response;
+						return new GenerateNodesErrorMessage(m, dm.error);
 					} else {
-						KnowledgeBaseMessage.ReplyMessage km = (KnowledgeBaseMessage.ReplyMessage) response;
-						return new MaterialsLoadSuccessMessage(km.materials, m);
+						var dm = (DbCommandSuccessMessage) response;
+						return new GenerateNodesSuccessMessage(m);
 					}
 				});
 	}
 
-	/**
-	 * Returns a behavior for the messages:
-	 *
-	 * <ul>
-	 * <li>{@link GenerateSuccessMessage}
-	 * <li>{@link MaterialsLoadSuccessMessage}
-	 * <li>{@link GenerateSuccessMessage}
-	 * </ul>
-	 */
+	private void generateNodes(ODatabaseDocument db) {
+		// TODO Auto-generated method stub
+
+	}
+
 	private BehaviorBuilder<Message> getInitialBehavior() {
 		return Behaviors.receive(Message.class)//
-				.onMessage(GenerateMessage.class, this::onGenerate)//
-				.onMessage(MaterialsLoadSuccessMessage.class, this::onMaterialsLoadSuccess)//
-				.onMessage(GenerateSuccessMessage.class, this::onGenerateSuccess)//
+				.onMessage(GenerateMapMessage.class, this::onGenerateMap)//
 		;
 	}
 
