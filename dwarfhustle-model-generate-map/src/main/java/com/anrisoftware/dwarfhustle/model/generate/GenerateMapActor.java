@@ -63,7 +63,7 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.anrisoftware.dwarfhustle.model.knowledge.generate;
+package com.anrisoftware.dwarfhustle.model.generate;
 
 import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
 
@@ -82,7 +82,7 @@ import com.anrisoftware.dwarfhustle.model.api.IgneousIntrusive;
 import com.anrisoftware.dwarfhustle.model.api.Material;
 import com.anrisoftware.dwarfhustle.model.api.Metamorphic;
 import com.anrisoftware.dwarfhustle.model.api.Sedimentary;
-import com.anrisoftware.dwarfhustle.model.knowledge.generate.WorkerActor.WorkerActorFactory;
+import com.anrisoftware.dwarfhustle.model.generate.WorkerActor.WorkerActorFactory;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.ResponseMessage;
 import com.google.inject.Injector;

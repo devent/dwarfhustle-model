@@ -1,4 +1,4 @@
-package com.anrisoftware.dwarfhustle.model.knowledge.generate;
+package com.anrisoftware.dwarfhustle.model.generate;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 

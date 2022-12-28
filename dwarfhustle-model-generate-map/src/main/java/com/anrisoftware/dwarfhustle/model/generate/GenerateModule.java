@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.knowledge.generate;
+package com.anrisoftware.dwarfhustle.model.generate;
 
-import com.anrisoftware.dwarfhustle.model.knowledge.generate.GenerateMapActor.GenerateMapActorFactory;
-import com.anrisoftware.dwarfhustle.model.knowledge.generate.WorkerActor.WorkerActorFactory;
+import com.anrisoftware.dwarfhustle.model.generate.GenerateMapActor.GenerateMapActorFactory;
+import com.anrisoftware.dwarfhustle.model.generate.WorkerActor.WorkerActorFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 
