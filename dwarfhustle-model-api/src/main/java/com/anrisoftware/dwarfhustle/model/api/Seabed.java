@@ -16,6 +16,8 @@ public class Seabed extends Soil {
 
 	private static final long serialVersionUID = -8063100762452949944L;
 
+	public static final String TYPE = "Seabed";
+
 	public Seabed(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
 			float thermalConductivity) {
 		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);

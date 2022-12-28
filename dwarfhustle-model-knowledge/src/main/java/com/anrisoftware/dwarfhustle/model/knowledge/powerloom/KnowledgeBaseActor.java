@@ -93,7 +93,7 @@ import com.anrisoftware.dwarfhustle.model.api.Metamorphic;
 import com.anrisoftware.dwarfhustle.model.api.Sand;
 import com.anrisoftware.dwarfhustle.model.api.Seabed;
 import com.anrisoftware.dwarfhustle.model.api.Sedimentary;
-import com.anrisoftware.dwarfhustle.model.api.TopSoil;
+import com.anrisoftware.dwarfhustle.model.api.Topsoil;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.GetMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.ReplyMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandMessage.KnowledgeCommandErrorMessage;
@@ -212,7 +212,7 @@ public class KnowledgeBaseActor {
 		metal = retrieveMaterials("Metal", Metal.class);
 		metalOre = retrieveMaterials("Metal-Ore", MetalOre.class);
 		metalAlloy = retrieveMaterials("Metal-Alloy", MetalAlloy.class);
-		topsoil = retrieveMaterials("Topsoil", TopSoil.class);
+		topsoil = retrieveMaterials("Topsoil", Topsoil.class);
 		seabed = retrieveMaterials("Seabed", Seabed.class);
 		sand = retrieveMaterials("Sand", Sand.class);
 		clay = retrieveMaterials("Clay", Clay.class);
@@ -329,7 +329,11 @@ public class KnowledgeBaseActor {
 	 */
 	private Behavior<Message> onGet(GetMessage m) {
 		log.debug("onGet {}", m);
-		m.replyTo.tell(new ReplyMessage(materials.get(m.material)));
+		MutableMap<String, IntObjectMap<? extends Material>> map = Maps.mutable.withInitialCapacity(m.material.length);
+		for (String material : m.material) {
+			map.put(material, materials.get(material));
+		}
+		m.replyTo.tell(new ReplyMessage(map.asUnmodifiable()));
 		return Behaviors.same();
 	}
 

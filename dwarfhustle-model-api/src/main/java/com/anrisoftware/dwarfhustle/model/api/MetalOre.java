@@ -16,6 +16,8 @@ public class MetalOre extends Material {
 
 	private static final long serialVersionUID = 7612699665527178770L;
 
+	public static final String TYPE = "Metal-Ore";
+
 	public MetalOre(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
 			float thermalConductivity) {
 		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);

@@ -1,4 +1,4 @@
-package com.anrisoftware.dwarfhustle.model.knowledge.powerloom
+package com.anrisoftware.dwarfhustle.model.knowledge.generate
 
 import java.time.Duration
 import java.util.concurrent.CountDownLatch
@@ -10,9 +10,11 @@ import org.junit.jupiter.api.Timeout
 
 import com.anrisoftware.dwarfhustle.model.actor.MainActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.GetMessage
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.ReplyMessage
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandMessage.KnowledgeCommandErrorMessage
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbModule
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseActor
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.PowerLoomKnowledgeActor
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.PowerloomModule
 import com.google.inject.Guice
 import com.google.inject.Injector
 
@@ -26,21 +28,27 @@ import groovy.util.logging.Slf4j
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
-class KnowledgeBaseActorTest {
+class GenerateMapActorTest {
 
 	static final ActorTestKit testKit = ActorTestKit.create()
 
 	static Injector injector
 
+	static ActorRef<Message> orientDbActor
+
 	static ActorRef<Message> powerLoomKnowledgeActor
 
 	static ActorRef<Message> knowledgeBaseActor
 
+	static ActorRef<Message> generateMapActor
+
 	@BeforeAll
 	static void setupActor() {
-		injector = Guice.createInjector(new MainActorsModule(), new PowerloomModule())
+		injector = Guice.createInjector(new MainActorsModule(), new PowerloomModule(), new GenerateModule(), new OrientDbModule())
+		orientDbActor = testKit.spawn(OrientDbActor.create(injector), "OrientDbActor");
 		powerLoomKnowledgeActor = testKit.spawn(PowerLoomKnowledgeActor.create(injector), "PowerLoomKnowledgeActor");
 		knowledgeBaseActor = testKit.spawn(KnowledgeBaseActor.create(injector, powerLoomKnowledgeActor), "KnowledgeBaseActor");
+		generateMapActor = testKit.spawn(GenerateMapActor.create(injector, orientDbActor, knowledgeBaseActor), "GenerateMapActor");
 	}
 
 	@AfterAll
@@ -50,11 +58,11 @@ class KnowledgeBaseActorTest {
 
 	@Test
 	@Timeout(15)
-	void "test retrieve"() {
+	void "test generate"() {
 		def result =
 				AskPattern.ask(
-				knowledgeBaseActor, {replyTo ->
-					new GetMessage(replyTo, "Sedimentary")
+				generateMapActor, {replyTo ->
+					new GenerateMessage(replyTo, 0, 16, 16, 16)
 				},
 				Duration.ofSeconds(15),
 				testKit.scheduler())
@@ -62,17 +70,8 @@ class KnowledgeBaseActorTest {
 		def materials
 		result.whenComplete( {reply, failure ->
 			log.info "Command reply {} failure {}", reply, failure
-			switch (reply) {
-				case ReplyMessage:
-					materials = reply.materials
-					break
-				case KnowledgeCommandErrorMessage:
-					break
-			}
 			lock.countDown()
 		})
 		lock.await()
-		assert materials.size() == 1
-		assert materials.get("Sedimentary").size() == 11
 	}
 }

@@ -16,6 +16,8 @@ public class IgneousIntrusive extends StoneLayer {
 
 	private static final long serialVersionUID = -7681776713433266564L;
 
+	public static final String TYPE = "Igneous-Intrusive";
+
 	public IgneousIntrusive(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
 			float thermalConductivity) {
 		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);

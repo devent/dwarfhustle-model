@@ -14,11 +14,13 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class TopSoil extends Soil {
+public class Topsoil extends Soil {
 
 	private static final long serialVersionUID = -8313103572923248267L;
 
-	public TopSoil(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
+	public static final String TYPE = "Topsoil";
+
+	public Topsoil(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
 			float thermalConductivity) {
 		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);
 	}

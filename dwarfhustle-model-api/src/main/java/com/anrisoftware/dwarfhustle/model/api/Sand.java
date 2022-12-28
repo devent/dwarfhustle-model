@@ -18,6 +18,8 @@ public class Sand extends Soil {
 
 	private static final long serialVersionUID = -1399286827364690668L;
 
+	public static final String TYPE = "Sand";
+
 	public Sand(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
 			float thermalConductivity) {
 		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);

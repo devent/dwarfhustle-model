@@ -16,6 +16,8 @@ public class StoneLayer extends Stone {
 
 	private static final long serialVersionUID = -6750889966414477986L;
 
+	public static final String TYPE = "Stone-Layer";
+
 	public StoneLayer(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
 			float thermalConductivity) {
 		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);

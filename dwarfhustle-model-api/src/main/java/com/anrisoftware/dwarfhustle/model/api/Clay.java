@@ -16,6 +16,8 @@ public class Clay extends Soil {
 
 	private static final long serialVersionUID = -1719735937834492527L;
 
+	public static final String TYPE = "Clay";
+
 	public Clay(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
 			float thermalConductivity) {
 		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);

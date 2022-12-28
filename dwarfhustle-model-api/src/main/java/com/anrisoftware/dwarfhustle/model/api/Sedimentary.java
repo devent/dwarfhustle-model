@@ -16,6 +16,8 @@ public class Sedimentary extends StoneLayer {
 
 	private static final long serialVersionUID = 2404309050992962234L;
 
+	public static final String TYPE = "Sedimentary";
+
 	public Sedimentary(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
 			float thermalConductivity) {
 		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);

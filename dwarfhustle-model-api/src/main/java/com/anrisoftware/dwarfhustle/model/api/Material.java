@@ -16,6 +16,8 @@ public class Material implements Serializable {
 
 	private static final long serialVersionUID = -6527071336221066901L;
 
+	public static final String TYPE = "Material";
+
 	@EqualsAndHashCode.Include
 	public final int id;
 

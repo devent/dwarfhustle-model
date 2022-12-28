@@ -16,6 +16,8 @@ public class MetalAlloy extends Material {
 
 	private static final long serialVersionUID = 8455084483504021084L;
 
+	public static final String TYPE = "Metal-Alloy";
+
 	public MetalAlloy(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
 			float thermalConductivity) {
 		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);

@@ -68,27 +68,33 @@ package com.anrisoftware.dwarfhustle.model.knowledge.generate;
 import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
 
 import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
 
+import org.eclipse.collections.api.map.primitive.IntObjectMap;
+
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.db.cache.AbstractJcsCacheActor.SetupErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.cache.MapTilesJcsCacheActor.MapTilesInitialLoadDoneMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.AbstractDbReplyMessage.DbErrorMessage;
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandMessage;
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandMessage.KnowledgeCommandResponseMessage;
+import com.anrisoftware.dwarfhustle.model.api.IgneousExtrusive;
+import com.anrisoftware.dwarfhustle.model.api.IgneousIntrusive;
+import com.anrisoftware.dwarfhustle.model.api.Material;
+import com.anrisoftware.dwarfhustle.model.api.Metamorphic;
+import com.anrisoftware.dwarfhustle.model.api.Sedimentary;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.ResponseMessage;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.ActorContext;
-import akka.actor.typed.javadsl.AskPattern;
 import akka.actor.typed.javadsl.BehaviorBuilder;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.receptionist.ServiceKey;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -104,6 +110,21 @@ public class GenerateMapActor {
 	public static final String NAME = GenerateMapActor.class.getSimpleName();
 
 	public static final int ID = KEY.hashCode();
+
+	@RequiredArgsConstructor
+	@ToString(callSuper = true)
+	public static class ResponseErrorMessage extends ResponseMessage {
+
+		public final Throwable error;
+	}
+
+	@RequiredArgsConstructor
+	@ToString(callSuper = true)
+	public static class MaterialsLoadSuccessMessage extends ResponseMessage {
+
+		@ToString.Exclude
+		public final Map<String, IntObjectMap<? extends Material>> materials;
+	}
 
 	/**
 	 * Factory to create {@link GenerateMapActor}.
@@ -169,29 +190,42 @@ public class GenerateMapActor {
 		return Behaviors.same();
 	}
 
-	private void retrieveMapTileMaterials() {
-		CompletionStage<KnowledgeCommandResponseMessage> stage = AskPattern.ask(db,
-				replyTo -> new KnowledgeCommandMessage(replyTo, () -> {
-					return null;
-				}), timeout, context.getSystem().scheduler());
-		context.pipeToSelf(stage, (result, cause) -> {
-			if (cause != null) {
-				return new SetupErrorMessage(cause);
-			} else {
-				if (result instanceof DbErrorMessage) {
-					DbErrorMessage m = (DbErrorMessage) result;
-					return new SetupErrorMessage(m.error);
-				} else {
-					return new MapTilesInitialLoadDoneMessage();
-				}
-			}
-		});
+	/**
+	 * Handle {@link MaterialsLoadSuccessMessage}. Returns a behavior for the
+	 * messages:
+	 *
+	 * <ul>
+	 * <li>{@link GenerateMessage}
+	 * </ul>
+	 */
+	protected Behavior<Message> onMaterialsLoadSuccess(MaterialsLoadSuccessMessage m) {
+		log.debug("onMaterialsLoadSuccess {}", m);
+		System.out.println(m.materials); // TODO
+		return Behaviors.same();
 	}
 
+	private void retrieveMapTileMaterials() {
+		context.ask(KnowledgeBaseMessage.ResponseMessage.class, knowledge, timeout,
+				(ActorRef<KnowledgeBaseMessage.ResponseMessage> ref) -> new KnowledgeBaseMessage.GetMessage(ref,
+						Sedimentary.TYPE, IgneousIntrusive.TYPE, IgneousExtrusive.TYPE, Metamorphic.TYPE),
+				(response, throwable) -> {
+					if (throwable != null) {
+						return new ResponseErrorMessage(throwable);
+					}
+					if (response instanceof KnowledgeBaseMessage.ErrorMessage) {
+						KnowledgeBaseMessage.ErrorMessage m = (KnowledgeBaseMessage.ErrorMessage) response;
+						return new ResponseErrorMessage(m.error);
+					} else {
+						KnowledgeBaseMessage.ReplyMessage m = (KnowledgeBaseMessage.ReplyMessage) response;
+						return new MaterialsLoadSuccessMessage(m.materials);
+					}
+				});
+	}
 
 	private BehaviorBuilder<Message> getInitialBehavior() {
 		return Behaviors.receive(Message.class)//
 				.onMessage(GenerateMessage.class, this::onGenerate)//
+				.onMessage(MaterialsLoadSuccessMessage.class, this::onMaterialsLoadSuccess)//
 		;
 	}
 

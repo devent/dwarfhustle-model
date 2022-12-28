@@ -12,9 +12,11 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class Stone extends Soil {
+public class Stone extends Material {
 
 	private static final long serialVersionUID = 8269626284334971192L;
+
+	public static final String TYPE = "Stone";
 
 	public Stone(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
 			float thermalConductivity) {
