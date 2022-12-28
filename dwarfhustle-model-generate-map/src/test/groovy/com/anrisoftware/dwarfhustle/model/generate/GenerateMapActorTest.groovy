@@ -51,7 +51,7 @@ class GenerateMapActorTest {
 
 	static ActorRef<Message> generateMapActor
 
-	static timeout = Duration.ofSeconds(15)
+	static timeout = Duration.ofSeconds(30)
 
 	static initDatabaseLock = new CountDownLatch(1)
 
@@ -79,14 +79,14 @@ class GenerateMapActorTest {
 	}
 
 	@Test
-	@Timeout(15)
+	@Timeout(300)
 	void "test generate"() {
 		def result =
 				AskPattern.ask(
 				generateMapActor, {replyTo ->
 					new GenerateMessage(replyTo, 0, 16, 16, 16)
 				},
-				Duration.ofSeconds(15),
+				Duration.ofSeconds(300),
 				testKit.scheduler())
 		def lock = new CountDownLatch(1)
 		def materials

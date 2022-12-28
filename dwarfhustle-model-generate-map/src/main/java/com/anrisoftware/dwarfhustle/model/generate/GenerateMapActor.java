@@ -183,7 +183,7 @@ public class GenerateMapActor {
 	 * Initial behavior. Returns a behavior for the messages:
 	 *
 	 * <ul>
-	 * <li>{@link GenerateSuccessMessage}
+	 * <li>{@link GenerateMessage}
 	 * <li>{@link MaterialsLoadSuccessMessage}
 	 * <li>{@link GenerateSuccessMessage}
 	 * </ul>
@@ -196,7 +196,7 @@ public class GenerateMapActor {
 	 * Handle {@link GenerateMessage}. Returns a behavior for the messages:
 	 *
 	 * <ul>
-	 * <li>{@link GenerateSuccessMessage}
+	 * <li>{@link GenerateMessage}
 	 * <li>{@link MaterialsLoadSuccessMessage}
 	 * <li>{@link GenerateSuccessMessage}
 	 * </ul>
@@ -212,7 +212,7 @@ public class GenerateMapActor {
 	 * messages:
 	 *
 	 * <ul>
-	 * <li>{@link GenerateSuccessMessage}
+	 * <li>{@link GenerateMessage}
 	 * <li>{@link MaterialsLoadSuccessMessage}
 	 * <li>{@link GenerateSuccessMessage}
 	 * </ul>
@@ -243,7 +243,7 @@ public class GenerateMapActor {
 	 * Handle {@link GenerateSuccessMessage}. Returns a behavior for the messages:
 	 *
 	 * <ul>
-	 * <li>{@link GenerateSuccessMessage}
+	 * <li>{@link GenerateMessage}
 	 * <li>{@link MaterialsLoadSuccessMessage}
 	 * <li>{@link GenerateSuccessMessage}
 	 * </ul>
@@ -252,6 +252,23 @@ public class GenerateMapActor {
 		log.debug("onGenerateSuccess {}", m);
 		m.generateMessage.replyTo.tell(new GenerateMessage.GenerateSuccessMessage(m.generateMessage));
 		return Behaviors.same();
+	}
+
+	/**
+	 * Returns a behavior for the messages:
+	 *
+	 * <ul>
+	 * <li>{@link GenerateMessage}
+	 * <li>{@link MaterialsLoadSuccessMessage}
+	 * <li>{@link GenerateSuccessMessage}
+	 * </ul>
+	 */
+	private BehaviorBuilder<Message> getInitialBehavior() {
+		return Behaviors.receive(Message.class)//
+				.onMessage(GenerateMessage.class, this::onGenerate)//
+				.onMessage(MaterialsLoadSuccessMessage.class, this::onMaterialsLoadSuccess)//
+				.onMessage(GenerateSuccessMessage.class, this::onGenerateSuccess)//
+		;
 	}
 
 	private void retrieveMapTileMaterials(GenerateMessage m) {
@@ -270,23 +287,6 @@ public class GenerateMapActor {
 						return new MaterialsLoadSuccessMessage(km.materials, m);
 					}
 				});
-	}
-
-	/**
-	 * Returns a behavior for the messages:
-	 *
-	 * <ul>
-	 * <li>{@link GenerateSuccessMessage}
-	 * <li>{@link MaterialsLoadSuccessMessage}
-	 * <li>{@link GenerateSuccessMessage}
-	 * </ul>
-	 */
-	private BehaviorBuilder<Message> getInitialBehavior() {
-		return Behaviors.receive(Message.class)//
-				.onMessage(GenerateMessage.class, this::onGenerate)//
-				.onMessage(MaterialsLoadSuccessMessage.class, this::onMaterialsLoadSuccess)//
-				.onMessage(GenerateSuccessMessage.class, this::onGenerateSuccess)//
-		;
 	}
 
 }

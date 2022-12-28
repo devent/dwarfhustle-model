@@ -69,6 +69,8 @@ class DbTestUtils {
 			log_reply_failure "createSchemas", reply, failure
 			if (fillDatabase) {
 				fillDatabase(orientDbActor, timeout, testKit, generator, initDatabaseLock)
+			} else {
+				initDatabaseLock.countDown()
 			}
 		})
 	}

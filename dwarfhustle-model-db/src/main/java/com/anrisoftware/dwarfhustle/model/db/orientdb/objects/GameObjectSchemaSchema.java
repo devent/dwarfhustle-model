@@ -1,6 +1,7 @@
 package com.anrisoftware.dwarfhustle.model.db.orientdb.objects;
 
 import com.anrisoftware.dwarfhustle.model.api.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.Path;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 
@@ -39,6 +40,31 @@ public class GameObjectSchemaSchema implements GameObjectSchema {
 		try (var q = odb.command(
 				"CREATE INDEX GameObject_type_id ON GameObject (objecttype, objectid) UNIQUE METADATA {ignoreNullValues: false}")) {
 		}
+		var ec = odb.createEdgeClass(Path.TYPE);
+		odb.createClass(Path.NPath.TYPE, Path.TYPE);
+		odb.createClass(Path.NePath.TYPE, Path.TYPE);
+		odb.createClass(Path.EPath.TYPE, Path.TYPE);
+		odb.createClass(Path.SePath.TYPE, Path.TYPE);
+		odb.createClass(Path.SPath.TYPE, Path.TYPE);
+		odb.createClass(Path.SwPath.TYPE, Path.TYPE);
+		odb.createClass(Path.WPath.TYPE, Path.TYPE);
+		odb.createClass(Path.NwPath.TYPE, Path.TYPE);
+		odb.createClass(Path.UnPath.TYPE, Path.TYPE);
+		odb.createClass(Path.UnePath.TYPE, Path.TYPE);
+		odb.createClass(Path.UePath.TYPE, Path.TYPE);
+		odb.createClass(Path.UsePath.TYPE, Path.TYPE);
+		odb.createClass(Path.UsPath.TYPE, Path.TYPE);
+		odb.createClass(Path.UswPath.TYPE, Path.TYPE);
+		odb.createClass(Path.UwPath.TYPE, Path.TYPE);
+		odb.createClass(Path.UnwPath.TYPE, Path.TYPE);
+		odb.createClass(Path.DnPath.TYPE, Path.TYPE);
+		odb.createClass(Path.DnePath.TYPE, Path.TYPE);
+		odb.createClass(Path.DePath.TYPE, Path.TYPE);
+		odb.createClass(Path.DsePath.TYPE, Path.TYPE);
+		odb.createClass(Path.DsPath.TYPE, Path.TYPE);
+		odb.createClass(Path.DswPath.TYPE, Path.TYPE);
+		odb.createClass(Path.DwPath.TYPE, Path.TYPE);
+		odb.createClass(Path.DnwPath.TYPE, Path.TYPE);
 	}
 
 }
