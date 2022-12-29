@@ -167,7 +167,7 @@ public class WorkerActor {
 
 	@RequiredArgsConstructor
 	@ToString(callSuper = true)
-	private static class GenerateNodesErrorMessage extends ResponseMessage {
+	private static class GenerateNodesErrorMessage extends Message {
 
 		public final GenerateMapMessage m;
 
@@ -176,7 +176,7 @@ public class WorkerActor {
 
 	@RequiredArgsConstructor
 	@ToString(callSuper = true)
-	private static class GenerateNodesSuccessMessage extends ResponseMessage {
+	private static class GenerateNodesSuccessMessage extends Message {
 
 		public final GenerateMapMessage m;
 	}
@@ -229,6 +229,8 @@ public class WorkerActor {
 	 *
 	 * <ul>
 	 * <li>{@link GenerateMapMessage}
+	 * <li>{@link GenerateNodesErrorMessage}
+	 * <li>{@link GenerateNodesSuccessMessage}
 	 * </ul>
 	 */
 	public Behavior<Message> start() {
@@ -240,26 +242,21 @@ public class WorkerActor {
 	 *
 	 * <ul>
 	 * <li>{@link GenerateMapMessage}
+	 * <li>{@link GenerateNodesErrorMessage}
+	 * <li>{@link GenerateNodesSuccessMessage}
 	 * </ul>
 	 */
 	private Behavior<Message> onGenerateMap(GenerateMapMessage m) {
 		log.debug("onGenerateMap {}", m);
-		try {
-			generateNodes(m);
-		} catch (Throwable e) {
-			m.replyTo.tell(new ErrorMessage(m, e));
-		}
-		return Behaviors.receive(Message.class)//
-				.onMessage(GenerateNodesErrorMessage.class, this::onGenerateNodesError)//
-				.onMessage(GenerateNodesSuccessMessage.class, this::onGenerateNodesSuccess)//
-				.build();
+		generateNodes(m);
+		return Behaviors.same();
 	}
 
 	/**
 	 * Handle {@link GenerateNodesErrorMessage}. Sends {@link ErrorMessage} to the
 	 * caller and terminates this actor.
 	 */
-	protected Behavior<Message> onGenerateNodesError(GenerateNodesErrorMessage m) {
+	private Behavior<Message> onGenerateNodesError(GenerateNodesErrorMessage m) {
 		log.debug("onGenerateNodesError {}", m);
 		m.m.replyTo.tell(new ErrorMessage(m.m, m.error));
 		return Behaviors.stopped();
@@ -269,10 +266,18 @@ public class WorkerActor {
 	 * Handle {@link GenerateNodesSuccessMessage}. Sends {@link SuccessMessage} to
 	 * the caller and terminates this actor.
 	 */
-	protected Behavior<Message> onGenerateNodesSuccess(GenerateNodesSuccessMessage m) {
+	private Behavior<Message> onGenerateNodesSuccess(GenerateNodesSuccessMessage m) {
 		log.debug("onGenerateNodesSuccess {}", m);
 		m.m.replyTo.tell(new SuccessMessage(m.m));
 		return Behaviors.stopped();
+	}
+
+	private BehaviorBuilder<Message> getInitialBehavior() {
+		return Behaviors.receive(Message.class)//
+				.onMessage(GenerateMapMessage.class, this::onGenerateMap)//
+				.onMessage(GenerateNodesErrorMessage.class, this::onGenerateNodesError)//
+				.onMessage(GenerateNodesSuccessMessage.class, this::onGenerateNodesSuccess)//
+		;
 	}
 
 	private void generateNodes(GenerateMapMessage m) {
@@ -290,6 +295,7 @@ public class WorkerActor {
 						return new GenerateNodesErrorMessage(m, dm.error);
 					} else {
 						var dm = (DbCommandSuccessMessage) response;
+						System.out.println("return GenerateNodesSuccessMessage"); // TODO
 						return new GenerateNodesSuccessMessage(m);
 					}
 				});
@@ -327,12 +333,464 @@ public class WorkerActor {
 
 	@SneakyThrows
 	private void generatePaths(GenerateMapMessage m, ODatabaseDocument db) {
+		pathsMiddleAllDirections(m, db);
+		pathsMiddleLeftRight(m, db);
+		pathsMiddleTopBottom(m, db);
+		pathsTopLeftRight(m, db);
+		pathsBottomLeftRight(m, db);
+		pathsTopTopBottom(m, db);
+		pathsBottomTopBottom(m, db);
+		pathsEdges(m, db);
+		System.out.println("done"); // TODO
+
+	}
+
+	private void pathsEdges(GenerateMapMessage m, ODatabaseDocument db) {
+		var gm = m.generateMessage;
+		List<OEdge> e = Lists.mutable.withInitialCapacity(7);
+		// bottom south west edge
+		int x = 0;
+		int y = 0;
+		int z = 0;
+		OVertex n = nodes.get(x).get(y).get(z);
+		e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x), Path.NPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x + 1), Path.NePath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z).get(y).get(x + 1), Path.EPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x), Path.UPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x), Path.UnPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x + 1), Path.UnePath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x + 1), Path.UePath.TYPE));
+		// top south west edge
+		x = 0;
+		y = 0;
+		z = gm.depth - 1;
+		n = nodes.get(x).get(y).get(z);
+		e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x), Path.NPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x + 1), Path.NePath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z).get(y).get(x + 1), Path.EPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x), Path.DPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x), Path.DnPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x + 1), Path.DnePath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x + 1), Path.DePath.TYPE));
+		// bottom south east edge
+		x = gm.width - 1;
+		y = 0;
+		z = 0;
+		n = nodes.get(x).get(y).get(z);
+		e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x), Path.NPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x - 1), Path.NwPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z).get(y).get(x - 1), Path.WPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x), Path.UPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x), Path.UnPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x - 1), Path.UnwPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x - 1), Path.UwPath.TYPE));
+		// top south east edge
+		x = gm.width - 1;
+		y = 0;
+		z = gm.depth - 1;
+		n = nodes.get(x).get(y).get(z);
+		e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x), Path.NPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x - 1), Path.NwPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z).get(y).get(x - 1), Path.WPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x), Path.DPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x), Path.DnPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x - 1), Path.DnwPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x - 1), Path.DwPath.TYPE));
+		// bottom north east edge
+		x = gm.width - 1;
+		y = gm.height - 1;
+		z = 0;
+		n = nodes.get(x).get(y).get(z);
+		e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x), Path.SPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x - 1), Path.SwPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z).get(y).get(x - 1), Path.WPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x), Path.UPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z + 1).get(y - 1).get(x), Path.UsPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z + 1).get(y - 1).get(x - 1), Path.UswPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x - 1), Path.UwPath.TYPE));
+		// top north east edge
+		x = gm.width - 1;
+		y = gm.height - 1;
+		z = gm.depth - 1;
+		n = nodes.get(x).get(y).get(z);
+		e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x), Path.SPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x - 1), Path.SwPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z).get(y).get(x - 1), Path.WPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x), Path.DPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z - 1).get(y - 1).get(x), Path.DsPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z - 1).get(y - 1).get(x - 1), Path.DswPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x - 1), Path.DwPath.TYPE));
+		// bottom north west edge
+		x = 0;
+		y = gm.height - 1;
+		z = 0;
+		n = nodes.get(x).get(y).get(z);
+		e.add(db.newEdge(n, nodes.get(z).get(y).get(x + 1), Path.EPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x + 1), Path.SePath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x), Path.SPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x), Path.UPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x + 1), Path.UePath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z + 1).get(y - 1).get(x + 1), Path.UsePath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z + 1).get(y - 1).get(x), Path.UsPath.TYPE));
+		// top north west edge
+		x = 0;
+		y = gm.height - 1;
+		z = gm.depth - 1;
+		n = nodes.get(x).get(y).get(z);
+		e.add(db.newEdge(n, nodes.get(z).get(y).get(x + 1), Path.EPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x + 1), Path.SePath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x), Path.SPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x), Path.DPath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x + 1), Path.DePath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z - 1).get(y - 1).get(x + 1), Path.DsePath.TYPE));
+		e.add(db.newEdge(n, nodes.get(z - 1).get(y - 1).get(x), Path.DsPath.TYPE));
+		// save
+		for (OEdge edge : e) {
+			edge.save();
+		}
+	}
+
+	/**
+	 * Paths bottom z=0 on the bottom x=0 and top x=width-1.
+	 */
+	private void pathsBottomTopBottom(GenerateMapMessage m, ODatabaseDocument db) {
+		var gm = m.generateMessage;
+		int z = 0;
+		int x = 0;
+		for (int y = 1; y < gm.width - 1; y++) {
+			OVertex n = nodes.get(z).get(y).get(y);
+			List<OEdge> e = Lists.mutable.withInitialCapacity(5 + 5 + 1);
+			e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x), Path.NPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x + 1), Path.NePath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y).get(x + 1), Path.EPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y).get(x - 1), Path.WPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x - 1), Path.NwPath.TYPE));
+			// up
+			e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x), Path.UPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x), Path.UnPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x + 1), Path.UnePath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x + 1), Path.UePath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x - 1), Path.UwPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x - 1), Path.UnwPath.TYPE));
+			// save
+			for (OEdge edge : e) {
+				edge.save();
+			}
+		}
+		x = gm.width - 1;
+		for (int y = 1; y < gm.width - 1; y++) {
+			OVertex n = nodes.get(z).get(y).get(y);
+			List<OEdge> e = Lists.mutable.withInitialCapacity(5 + 5 + 1);
+			e.add(db.newEdge(n, nodes.get(z).get(y).get(x + 1), Path.EPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x + 1), Path.SePath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x), Path.SPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x - 1), Path.SwPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y).get(x - 1), Path.WPath.TYPE));
+			// up
+			e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x), Path.UPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x + 1), Path.UePath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z + 1).get(y - 1).get(x + 1), Path.UsePath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z + 1).get(y - 1).get(x), Path.UsPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z + 1).get(y - 1).get(x - 1), Path.UswPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x - 1), Path.UwPath.TYPE));
+			// save
+			for (OEdge edge : e) {
+				edge.save();
+			}
+		}
+	}
+
+	/**
+	 * Paths top z=depth-1 on the bottom x=0 and top x=width-1.
+	 */
+	private void pathsTopTopBottom(GenerateMapMessage m, ODatabaseDocument db) {
+		var gm = m.generateMessage;
+		int z = gm.depth - 1;
+		int x = 0;
+		for (int y = 1; y < gm.width - 1; y++) {
+			OVertex n = nodes.get(z).get(y).get(y);
+			List<OEdge> e = Lists.mutable.withInitialCapacity(5 + 5 + 1);
+			e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x), Path.NPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x + 1), Path.NePath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y).get(x + 1), Path.EPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y).get(x - 1), Path.WPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x - 1), Path.NwPath.TYPE));
+			// down
+			e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x), Path.DPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x), Path.DnPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x + 1), Path.DnePath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x + 1), Path.DePath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x - 1), Path.DwPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x - 1), Path.DnwPath.TYPE));
+			// save
+			for (OEdge edge : e) {
+				edge.save();
+			}
+		}
+		x = gm.width - 1;
+		for (int y = 1; y < gm.width - 1; y++) {
+			OVertex n = nodes.get(z).get(y).get(y);
+			List<OEdge> e = Lists.mutable.withInitialCapacity(5 + 5 + 1);
+			e.add(db.newEdge(n, nodes.get(z).get(y).get(x + 1), Path.EPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x + 1), Path.SePath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x), Path.SPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x - 1), Path.SwPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y).get(x - 1), Path.WPath.TYPE));
+			// down
+			e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x), Path.DPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x + 1), Path.DePath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z - 1).get(y - 1).get(x + 1), Path.DsePath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z - 1).get(y - 1).get(x), Path.DsPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z - 1).get(y - 1).get(x - 1), Path.DswPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x - 1), Path.DwPath.TYPE));
+			// save
+			for (OEdge edge : e) {
+				edge.save();
+			}
+		}
+	}
+
+	/**
+	 * Paths bottom z=0 on the left y=0 and right y=height-1.
+	 */
+	private void pathsBottomLeftRight(GenerateMapMessage m, ODatabaseDocument db) {
+		var gm = m.generateMessage;
+		int z = gm.depth - 1;
+		int y = 0;
+		for (int x = 1; x < gm.width - 1; x++) {
+			OVertex n = nodes.get(z).get(y).get(x);
+			List<OEdge> e = Lists.mutable.withInitialCapacity(5 + 5 + 1);
+			e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x), Path.NPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x + 1), Path.NePath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y).get(x + 1), Path.EPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x + 1), Path.SePath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x), Path.SPath.TYPE));
+			// up
+			e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x), Path.UPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x), Path.UnPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x + 1), Path.UnePath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x + 1), Path.UePath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z + 1).get(y - 1).get(x + 1), Path.UsePath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z + 1).get(y - 1).get(x), Path.UsPath.TYPE));
+			// save
+			for (OEdge edge : e) {
+				edge.save();
+			}
+		}
+		y = gm.height - 1;
+		for (int x = 1; x < gm.width - 1; x++) {
+			OVertex n = nodes.get(z).get(y).get(x);
+			List<OEdge> e = Lists.mutable.withInitialCapacity(5 + 5 + 1);
+			e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x), Path.NPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x), Path.SPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x - 1), Path.SwPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y).get(x - 1), Path.WPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x - 1), Path.NwPath.TYPE));
+			// up
+			e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x), Path.UPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x), Path.UnPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z + 1).get(y - 1).get(x), Path.UsPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z + 1).get(y - 1).get(x - 1), Path.UswPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x - 1), Path.UwPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x - 1), Path.UnwPath.TYPE));
+			// save
+			for (OEdge edge : e) {
+				edge.save();
+			}
+		}
+	}
+
+	/**
+	 * Paths top z=depth-1 on the left y=0 and right y=height-1.
+	 */
+	private void pathsTopLeftRight(GenerateMapMessage m, ODatabaseDocument db) {
+		var gm = m.generateMessage;
+		int z = gm.depth - 1;
+		int y = 0;
+		for (int x = 1; x < gm.width - 1; x++) {
+			OVertex n = nodes.get(z).get(y).get(x);
+			List<OEdge> e = Lists.mutable.withInitialCapacity(5 + 5 + 1);
+			e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x), Path.NPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x + 1), Path.NePath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y).get(x + 1), Path.EPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x + 1), Path.SePath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x), Path.SPath.TYPE));
+			// down
+			e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x), Path.DPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x), Path.DnPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x + 1), Path.DnePath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x + 1), Path.DePath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z - 1).get(y - 1).get(x + 1), Path.DsePath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z - 1).get(y - 1).get(x), Path.DsPath.TYPE));
+			// save
+			for (OEdge edge : e) {
+				edge.save();
+			}
+		}
+		y = gm.height - 1;
+		for (int x = 1; x < gm.width - 1; x++) {
+			OVertex n = nodes.get(z).get(y).get(x);
+			List<OEdge> e = Lists.mutable.withInitialCapacity(5 + 5 + 1);
+			e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x), Path.NPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x), Path.SPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x - 1), Path.SwPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y).get(x - 1), Path.WPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x - 1), Path.NwPath.TYPE));
+			// down
+			e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x), Path.DPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x), Path.DnPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z - 1).get(y - 1).get(x), Path.DsPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z - 1).get(y - 1).get(x - 1), Path.DswPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x - 1), Path.DwPath.TYPE));
+			e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x - 1), Path.DnwPath.TYPE));
+			// save
+			for (OEdge edge : e) {
+				edge.save();
+			}
+		}
+	}
+
+	/**
+	 * Paths middle 0<z<depth-1 on the top x=0 and bottom x=width-1.
+	 */
+	private void pathsMiddleTopBottom(GenerateMapMessage m, ODatabaseDocument db) {
+		var gm = m.generateMessage;
+		for (int z = 1; z < gm.depth - 1; z++) {
+			int x = 0;
+			for (int y = 1; y < gm.height - 1; y++) {
+				OVertex n = nodes.get(z).get(y).get(y);
+				List<OEdge> e = Lists.mutable.withInitialCapacity(5 + 5 + 5 + 2);
+				e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x), Path.NPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x + 1), Path.NePath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z).get(y).get(x + 1), Path.EPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x + 1), Path.SePath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x), Path.SPath.TYPE));
+				// up
+				e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x), Path.UPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x), Path.UnPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x + 1), Path.UnePath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x + 1), Path.UePath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z + 1).get(y - 1).get(x + 1), Path.UsePath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z + 1).get(y - 1).get(x), Path.UsPath.TYPE));
+				// down
+				e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x), Path.DPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x), Path.DnPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x + 1), Path.DnePath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x + 1), Path.DePath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z - 1).get(y - 1).get(x + 1), Path.DsePath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z - 1).get(y - 1).get(x), Path.DsPath.TYPE));
+				// save
+				for (OEdge edge : e) {
+					edge.save();
+				}
+			}
+			x = gm.width - 1;
+			for (int y = 1; y < gm.height - 1; y++) {
+				OVertex n = nodes.get(z).get(y).get(y);
+				List<OEdge> e = Lists.mutable.withInitialCapacity(5 + 5 + 5 + 2);
+				e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x), Path.NPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x), Path.SPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x - 1), Path.SwPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z).get(y).get(x - 1), Path.WPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x - 1), Path.NwPath.TYPE));
+				// up
+				e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x), Path.UPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x), Path.UnPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z + 1).get(y - 1).get(x), Path.UsPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z + 1).get(y - 1).get(x - 1), Path.UswPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x - 1), Path.UwPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x - 1), Path.UnwPath.TYPE));
+				// down
+				e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x), Path.DPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x), Path.DnPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z - 1).get(y - 1).get(x), Path.DsPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z - 1).get(y - 1).get(x - 1), Path.DswPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x - 1), Path.DwPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x - 1), Path.DnwPath.TYPE));
+				// save
+				for (OEdge edge : e) {
+					edge.save();
+				}
+			}
+		}
+	}
+
+	/**
+	 * Paths middle 0<z<depth-1 on the left y=0 and right y=height-1.
+	 */
+	private void pathsMiddleLeftRight(GenerateMapMessage m, ODatabaseDocument db) {
+		var gm = m.generateMessage;
+		for (int z = 1; z < gm.depth - 1; z++) {
+			int y = 0;
+			for (int x = 1; x < gm.width - 1; x++) {
+				OVertex n = nodes.get(z).get(y).get(x);
+				List<OEdge> e = Lists.mutable.withInitialCapacity(5 + 5 + 5 + 2);
+				e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x), Path.NPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x + 1), Path.NePath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z).get(y).get(x + 1), Path.EPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z).get(y).get(x - 1), Path.WPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x - 1), Path.NwPath.TYPE));
+				// up
+				e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x), Path.UPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x), Path.UnPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x + 1), Path.UnePath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x + 1), Path.UePath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x - 1), Path.UwPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x - 1), Path.UnwPath.TYPE));
+				// down
+				e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x), Path.DPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x), Path.DnPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x + 1), Path.DnePath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x + 1), Path.DePath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x - 1), Path.DwPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x - 1), Path.DnwPath.TYPE));
+				// save
+				for (OEdge edge : e) {
+					edge.save();
+				}
+			}
+			y = gm.height - 1;
+			for (int x = 1; x < gm.width - 1; x++) {
+				OVertex n = nodes.get(z).get(y).get(x);
+				List<OEdge> e = Lists.mutable.withInitialCapacity(5 + 5 + 5 + 2);
+				e.add(db.newEdge(n, nodes.get(z).get(y).get(x + 1), Path.EPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x + 1), Path.SePath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x), Path.SPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x - 1), Path.SwPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z).get(y).get(x - 1), Path.WPath.TYPE));
+				// up
+				e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x), Path.UPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x + 1), Path.UePath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z + 1).get(y - 1).get(x + 1), Path.UsePath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z + 1).get(y - 1).get(x), Path.UsPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z + 1).get(y - 1).get(x - 1), Path.UswPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x - 1), Path.UwPath.TYPE));
+				// down
+				e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x), Path.DPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x + 1), Path.DePath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z - 1).get(y - 1).get(x + 1), Path.DsePath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z - 1).get(y - 1).get(x), Path.DsPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z - 1).get(y - 1).get(x - 1), Path.DswPath.TYPE));
+				e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x - 1), Path.DwPath.TYPE));
+				// save
+				for (OEdge edge : e) {
+					edge.save();
+				}
+			}
+		}
+	}
+
+	/**
+	 * Paths for tiles that have all directions available 0<z<depth-1, 0<y<height-1,
+	 * 0<x<width-1.
+	 */
+	private void pathsMiddleAllDirections(GenerateMapMessage m, ODatabaseDocument db) {
 		var gm = m.generateMessage;
 		for (int z = 1; z < gm.depth - 1; z++) {
 			for (int y = 1; y < gm.height - 1; y++) {
 				for (int x = 1; x < gm.width - 1; x++) {
 					OVertex n = nodes.get(z).get(y).get(x);
-					List<OEdge> e = Lists.mutable.withInitialCapacity(8 * 8 * 8);
+					List<OEdge> e = Lists.mutable.withInitialCapacity(8 + 8 + 8 + 2);
 					e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x), Path.NPath.TYPE));
 					e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x + 1), Path.NePath.TYPE));
 					e.add(db.newEdge(n, nodes.get(z).get(y).get(x + 1), Path.EPath.TYPE));
@@ -342,6 +800,7 @@ public class WorkerActor {
 					e.add(db.newEdge(n, nodes.get(z).get(y).get(x - 1), Path.WPath.TYPE));
 					e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x - 1), Path.NwPath.TYPE));
 					// up
+					e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x), Path.UPath.TYPE));
 					e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x), Path.UnPath.TYPE));
 					e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x + 1), Path.UnePath.TYPE));
 					e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x + 1), Path.UePath.TYPE));
@@ -351,6 +810,7 @@ public class WorkerActor {
 					e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x - 1), Path.UwPath.TYPE));
 					e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x - 1), Path.UnwPath.TYPE));
 					// down
+					e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x), Path.DPath.TYPE));
 					e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x), Path.DnPath.TYPE));
 					e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x + 1), Path.DnePath.TYPE));
 					e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x + 1), Path.DePath.TYPE));
@@ -366,122 +826,6 @@ public class WorkerActor {
 				}
 			}
 		}
-		for (int z = 1; z < gm.depth - 1; z++) {
-			int y = 0;
-			for (int x = 1; x < gm.width - 1; x++) {
-				OVertex n = nodes.get(z).get(y).get(x);
-				List<OEdge> e = Lists.mutable.withInitialCapacity(8 * 1 * 8);
-				e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x), Path.NPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x + 1), Path.NePath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z).get(y).get(x + 1), Path.EPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z).get(y).get(x - 1), Path.WPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x - 1), Path.NwPath.TYPE));
-				// up
-				e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x), Path.UnPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x + 1), Path.UnePath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x + 1), Path.UePath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x - 1), Path.UwPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x - 1), Path.UnwPath.TYPE));
-				// down
-				e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x), Path.DnPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x + 1), Path.DnePath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x + 1), Path.DePath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x - 1), Path.DwPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x - 1), Path.DnwPath.TYPE));
-				// save
-				for (OEdge edge : e) {
-					edge.save();
-				}
-			}
-			y = gm.height - 1;
-			for (int x = 1; x < gm.width - 1; x++) {
-				OVertex n = nodes.get(z).get(y).get(x);
-				List<OEdge> e = Lists.mutable.withInitialCapacity(8 * 1 * 8);
-				e.add(db.newEdge(n, nodes.get(z).get(y).get(x + 1), Path.EPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x + 1), Path.SePath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x), Path.SPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x - 1), Path.SwPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z).get(y).get(x - 1), Path.WPath.TYPE));
-				// up
-				e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x + 1), Path.UePath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z + 1).get(y - 1).get(x + 1), Path.UsePath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z + 1).get(y - 1).get(x), Path.UsPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z + 1).get(y - 1).get(x - 1), Path.UswPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x - 1), Path.UwPath.TYPE));
-				// down
-				e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x + 1), Path.DePath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z - 1).get(y - 1).get(x + 1), Path.DsePath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z - 1).get(y - 1).get(x), Path.DsPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z - 1).get(y - 1).get(x - 1), Path.DswPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x - 1), Path.DwPath.TYPE));
-				// save
-				for (OEdge edge : e) {
-					edge.save();
-				}
-			}
-		}
-		for (int z = 1; z < gm.depth - 1; z++) {
-			int x = 0;
-			for (int y = 1; y < gm.height - 1; y++) {
-				OVertex n = nodes.get(z).get(y).get(y);
-				List<OEdge> e = Lists.mutable.withInitialCapacity(8 * 8 * 1);
-				e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x), Path.NPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x + 1), Path.NePath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z).get(y).get(x + 1), Path.EPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x + 1), Path.SePath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x), Path.SPath.TYPE));
-				// up
-				e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x), Path.UnPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x + 1), Path.UnePath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x + 1), Path.UePath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z + 1).get(y - 1).get(x + 1), Path.UsePath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z + 1).get(y - 1).get(x), Path.UsPath.TYPE));
-				// down
-				e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x), Path.DnPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x + 1), Path.DnePath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x + 1), Path.DePath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z - 1).get(y - 1).get(x + 1), Path.DsePath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z - 1).get(y - 1).get(x), Path.DsPath.TYPE));
-				// save
-				for (OEdge edge : e) {
-					edge.save();
-				}
-			}
-			x = gm.width - 1;
-			for (int y = 1; y < gm.height - 1; y++) {
-				OVertex n = nodes.get(z).get(y).get(y);
-				List<OEdge> e = Lists.mutable.withInitialCapacity(8 * 8 * 1);
-				e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x), Path.NPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x), Path.SPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z).get(y - 1).get(x - 1), Path.SwPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z).get(y).get(x - 1), Path.WPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z).get(y + 1).get(x - 1), Path.NwPath.TYPE));
-				// up
-				e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x), Path.UnPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z + 1).get(y - 1).get(x), Path.UsPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z + 1).get(y - 1).get(x - 1), Path.UswPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z + 1).get(y).get(x - 1), Path.UwPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z + 1).get(y + 1).get(x - 1), Path.UnwPath.TYPE));
-				// down
-				e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x), Path.DnPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z - 1).get(y - 1).get(x), Path.DsPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z - 1).get(y - 1).get(x - 1), Path.DswPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z - 1).get(y).get(x - 1), Path.DwPath.TYPE));
-				e.add(db.newEdge(n, nodes.get(z - 1).get(y + 1).get(x - 1), Path.DnwPath.TYPE));
-				// save
-				for (OEdge edge : e) {
-					edge.save();
-				}
-			}
-		}
-		System.out.println("done"); // TODO
-
-	}
-
-	private BehaviorBuilder<Message> getInitialBehavior() {
-		return Behaviors.receive(Message.class)//
-				.onMessage(GenerateMapMessage.class, this::onGenerateMap)//
-		;
 	}
 
 }

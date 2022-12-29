@@ -8,6 +8,16 @@ package com.anrisoftware.dwarfhustle.model.api;
 public enum PathDirection {
 
 	/**
+	 * Up.
+	 */
+	U,
+
+	/**
+	 * Down.
+	 */
+	D,
+
+	/**
 	 * North.
 	 */
 	N,

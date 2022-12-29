@@ -1,5 +1,6 @@
 package com.anrisoftware.dwarfhustle.model.api;
 
+import static com.anrisoftware.dwarfhustle.model.api.PathDirection.D;
 import static com.anrisoftware.dwarfhustle.model.api.PathDirection.DE;
 import static com.anrisoftware.dwarfhustle.model.api.PathDirection.DN;
 import static com.anrisoftware.dwarfhustle.model.api.PathDirection.DNE;
@@ -15,6 +16,7 @@ import static com.anrisoftware.dwarfhustle.model.api.PathDirection.NW;
 import static com.anrisoftware.dwarfhustle.model.api.PathDirection.S;
 import static com.anrisoftware.dwarfhustle.model.api.PathDirection.SE;
 import static com.anrisoftware.dwarfhustle.model.api.PathDirection.SW;
+import static com.anrisoftware.dwarfhustle.model.api.PathDirection.U;
 import static com.anrisoftware.dwarfhustle.model.api.PathDirection.UE;
 import static com.anrisoftware.dwarfhustle.model.api.PathDirection.UN;
 import static com.anrisoftware.dwarfhustle.model.api.PathDirection.UNE;
@@ -562,6 +564,50 @@ public abstract class Path implements Serializable {
 		@Override
 		public PathDirection getDirection() {
 			return DNW;
+		}
+	}
+
+	/**
+	 * {@link PathDirection#U}
+	 *
+	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+	 */
+	public static class UPath extends Path {
+
+		private static final long serialVersionUID = 4045875178934642770L;
+
+		public static final String TYPE = "UPath";
+
+		@Override
+		public String getType() {
+			return TYPE;
+		}
+
+		@Override
+		public PathDirection getDirection() {
+			return U;
+		}
+	}
+
+	/**
+	 * {@link PathDirection#D}
+	 *
+	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+	 */
+	public static class DPath extends Path {
+
+		private static final long serialVersionUID = -9040160405673541825L;
+
+		public static final String TYPE = "DPath";
+
+		@Override
+		public String getType() {
+			return TYPE;
+		}
+
+		@Override
+		public PathDirection getDirection() {
+			return D;
 		}
 	}
 

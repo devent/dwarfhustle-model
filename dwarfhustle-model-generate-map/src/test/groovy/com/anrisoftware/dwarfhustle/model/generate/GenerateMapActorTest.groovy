@@ -84,7 +84,7 @@ class GenerateMapActorTest {
 		def result =
 				AskPattern.ask(
 				generateMapActor, {replyTo ->
-					new GenerateMessage(replyTo, 0, 16, 16, 16)
+					new GenerateMessage(replyTo, 0, 2, 2, 2)
 				},
 				Duration.ofSeconds(300),
 				testKit.scheduler())

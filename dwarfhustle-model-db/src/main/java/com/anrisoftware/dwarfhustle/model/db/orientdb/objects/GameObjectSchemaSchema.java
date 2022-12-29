@@ -40,7 +40,7 @@ public class GameObjectSchemaSchema implements GameObjectSchema {
 		try (var q = odb.command(
 				"CREATE INDEX GameObject_type_id ON GameObject (objecttype, objectid) UNIQUE METADATA {ignoreNullValues: false}")) {
 		}
-		var ec = odb.createEdgeClass(Path.TYPE);
+		odb.createEdgeClass(Path.TYPE);
 		odb.createClass(Path.NPath.TYPE, Path.TYPE);
 		odb.createClass(Path.NePath.TYPE, Path.TYPE);
 		odb.createClass(Path.EPath.TYPE, Path.TYPE);
@@ -65,6 +65,8 @@ public class GameObjectSchemaSchema implements GameObjectSchema {
 		odb.createClass(Path.DswPath.TYPE, Path.TYPE);
 		odb.createClass(Path.DwPath.TYPE, Path.TYPE);
 		odb.createClass(Path.DnwPath.TYPE, Path.TYPE);
+		odb.createClass(Path.UPath.TYPE, Path.TYPE);
+		odb.createClass(Path.DPath.TYPE, Path.TYPE);
 	}
 
 }
