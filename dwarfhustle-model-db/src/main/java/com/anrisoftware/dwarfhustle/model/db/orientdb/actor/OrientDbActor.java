@@ -75,10 +75,9 @@ import javax.inject.Inject;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.AbstractDbReplyMessage.DbErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.AbstractDbReplyMessage.DbSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CreateDbMessage.DbAlreadyExistMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage.DbCommandSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DeleteDbMessage.DbNotExistMessage;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
@@ -160,6 +159,9 @@ public class OrientDbActor {
 	 * <ul>
 	 * <li>{@link CloseDbMessage}
 	 * <li>{@link CreateDbMessage}
+	 * <li>{@link DeleteDbMessage}
+	 * <li>{@link DbCommandReplyMessage}
+	 * <li>{@link DbCommandMessage}
 	 * </ul>
 	 */
 	private Behavior<Message> onConnectDb(ConnectDbMessage m) {
@@ -199,6 +201,7 @@ public class OrientDbActor {
 	 * <li>{@link CloseDbMessage}
 	 * <li>{@link CreateDbMessage}
 	 * <li>{@link DeleteDbMessage}
+	 * <li>{@link DbCommandReplyMessage}
 	 * <li>{@link DbCommandMessage}
 	 * </ul>
 	 */
@@ -225,6 +228,7 @@ public class OrientDbActor {
 	 * <li>{@link CloseDbMessage}
 	 * <li>{@link CreateDbMessage}
 	 * <li>{@link DeleteDbMessage}
+	 * <li>{@link DbCommandReplyMessage}
 	 * <li>{@link DbCommandMessage}
 	 * </ul>
 	 */
@@ -245,17 +249,18 @@ public class OrientDbActor {
 	}
 
 	/**
-	 * Reacts to {@link DbCommandMessage}. Returns a behavior for the messages:
+	 * Reacts to {@link DbCommandReplyMessage}. Returns a behavior for the messages:
 	 *
 	 * <ul>
 	 * <li>{@link CloseDbMessage}
 	 * <li>{@link CreateDbMessage}
 	 * <li>{@link DeleteDbMessage}
+	 * <li>{@link DbCommandReplyMessage}
 	 * <li>{@link DbCommandMessage}
 	 * </ul>
 	 */
-	private Behavior<Message> onDbCommand(DbCommandMessage m) {
-		log.debug("onDbCommand {}", m);
+	private Behavior<Message> onDbReplyCommand(DbCommandReplyMessage m) {
+		log.debug("onDbReplyCommand {}", m);
 		try {
 			Object ret = null;
 			try (var db = orientdb.get().open(database, user, password)) {
@@ -268,6 +273,38 @@ public class OrientDbActor {
 		return Behaviors.same();
 	}
 
+	/**
+	 * Reacts to {@link DbCommandReplyMessage}. Returns a behavior for the messages:
+	 *
+	 * <ul>
+	 * <li>{@link CloseDbMessage}
+	 * <li>{@link CreateDbMessage}
+	 * <li>{@link DeleteDbMessage}
+	 * <li>{@link DbCommandReplyMessage}
+	 * <li>{@link DbCommandMessage}
+	 * </ul>
+	 */
+	private Behavior<Message> onDbCommand(DbCommandMessage m) {
+		log.debug("onDbCommand {}", m);
+		try {
+			Object ret = null;
+			try (var db = orientdb.get().open(database, user, password)) {
+				ret = m.command.apply(db);
+			}
+			m.caller.tell(new DbCommandSuccessMessage(m, ret));
+		} catch (Exception e) {
+			m.caller.tell(new DbErrorMessage(m, e));
+		}
+		return Behaviors.same();
+	}
+
+	/**
+	 * Returns a behavior for the messages:
+	 *
+	 * <ul>
+	 * <li>{@link ConnectDbMessage}
+	 * </ul>
+	 */
 	private BehaviorBuilder<Message> getInitialBehavior() {
 		return Behaviors.receive(Message.class)//
 				.onMessage(ConnectDbMessage.class, this::onConnectDb)//
@@ -279,6 +316,7 @@ public class OrientDbActor {
 				.onMessage(CloseDbMessage.class, this::onCloseDb)//
 				.onMessage(CreateDbMessage.class, this::onCreateDb)//
 				.onMessage(DeleteDbMessage.class, this::onDeleteDb)//
+				.onMessage(DbCommandReplyMessage.class, this::onDbReplyCommand)//
 				.onMessage(DbCommandMessage.class, this::onDbCommand)//
 		;
 	}

@@ -27,7 +27,7 @@ public class GenerateMessage extends Message {
 
         public final GenerateMessage originalMessage;
 
-        public final Exception error;
+		public final Throwable error;
     }
 
 	@RequiredArgsConstructor

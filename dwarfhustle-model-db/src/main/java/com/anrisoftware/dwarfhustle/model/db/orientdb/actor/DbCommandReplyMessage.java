@@ -2,7 +2,6 @@ package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
 import java.util.function.Function;
 
-import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 
 import akka.actor.typed.ActorRef;
@@ -14,11 +13,11 @@ import lombok.ToString;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @ToString(callSuper = true)
-public class DbCommandMessage extends AbstractDbMessage {
+public class DbCommandReplyMessage extends AbstractDbReplyMessage {
 
 	public final Function<ODatabaseDocument, Object> command;
 
-	public DbCommandMessage(ActorRef<Message> replyTo, Function<ODatabaseDocument, Object> command) {
+	public DbCommandReplyMessage(ActorRef<DbResponseMessage> replyTo, Function<ODatabaseDocument, Object> command) {
 		super(replyTo);
 		this.command = command;
 	}

@@ -1,6 +1,7 @@
 package com.anrisoftware.dwarfhustle.model.db.orientdb.actor
 
 import java.time.Duration
+import java.util.concurrent.CountDownLatch
 
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -8,8 +9,8 @@ import org.junit.jupiter.api.Test
 
 import com.anrisoftware.dwarfhustle.model.actor.MainActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.AbstractDbReplyMessage.DbErrorMessage
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.AbstractDbReplyMessage.DbSuccessMessage
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbSuccessMessage
 import com.google.inject.Guice
 import com.google.inject.Injector
 import com.orientechnologies.orient.core.db.ODatabaseType
@@ -47,62 +48,61 @@ class OrientDbActorTest {
 		testKit.shutdown(testKit.system(), timeout)
 	}
 
-	@Test
-	void connect_db_message_create_db() {
-		def result =
-				AskPattern.ask(
-				orientDbActor,
-				{replyTo -> new ConnectDbMessage(replyTo, "remote:172.21.0.2", "test", "root", "admin")},
-				timeout,
-				testKit.scheduler())
-		def future = result.toCompletableFuture()
-		result.whenComplete( {reply, failure ->
-			log.info "Connect database reply {} failure {}", reply, failure
-			switch (reply) {
-				case DbSuccessMessage:
-					createDatabase()
-					break
-				case DbErrorMessage:
-					break
-			}
-		})
-		future.join()
-	}
-
-	void createDatabase() {
-		def result =
-				AskPattern.ask(
-				orientDbActor,
-				{replyTo -> new CreateDbMessage(replyTo, ODatabaseType.MEMORY)},
-				timeout,
-				testKit.scheduler())
-		def future = result.toCompletableFuture()
-		result.whenComplete( {reply, failure ->
-			log.info "Create database reply {} failure {}", reply, failure
-			executeCommand()
-		})
-		future.join()
-	}
-
 	static void deleteDatabase() {
+		def lock = new CountDownLatch(1)
 		def result =
 				AskPattern.ask(
 				orientDbActor,
 				{replyTo -> new DeleteDbMessage(replyTo)},
 				timeout,
 				testKit.scheduler())
-		def future = result.toCompletableFuture()
 		result.whenComplete( {reply, failure ->
 			log.info "Delete database reply {} failure {}", reply, failure
+			lock.countDown()
 		})
-		future.join()
+		lock.await()
 	}
 
-	void executeCommand() {
+	@Test
+	void connect_db_message_create_db() {
+		def lock = new CountDownLatch(1)
+		def result =
+				AskPattern.ask(
+				orientDbActor,
+				{replyTo -> new ConnectDbMessage(replyTo, "remote:localhost", "test", "root", "admin")},
+				timeout,
+				testKit.scheduler())
+		result.whenComplete( {reply, failure ->
+			log.info "Connect database reply {} failure {}", reply, failure
+			switch (reply) {
+				case DbSuccessMessage:
+					createDatabase(lock)
+					break
+				case DbErrorMessage:
+					break
+			}
+		})
+		lock.await()
+	}
+
+	void createDatabase(def lock) {
+		def result =
+				AskPattern.ask(
+				orientDbActor,
+				{replyTo -> new CreateDbMessage(replyTo, ODatabaseType.MEMORY)},
+				timeout,
+				testKit.scheduler())
+		result.whenComplete( {reply, failure ->
+			log.info "Create database reply {} failure {}", reply, failure
+			executeCommand(lock)
+		})
+	}
+
+	void executeCommand(def lock) {
 		def result =
 				AskPattern.ask(
 				orientDbActor, {replyTo ->
-					new DbCommandMessage(replyTo, { db ->
+					new DbCommandReplyMessage(replyTo, { db ->
 						def cl = db.createClassIfNotExist("Person", "V")
 						db.begin();
 						def doc = db.newVertex(cl);
@@ -113,10 +113,9 @@ class OrientDbActorTest {
 				},
 				timeout,
 				testKit.scheduler())
-		def future = result.toCompletableFuture()
 		result.whenComplete( {reply, failure ->
 			log.info "Execute command reply {} failure {}", reply, failure
+			lock.countDown()
 		})
-		future.join()
 	}
 }

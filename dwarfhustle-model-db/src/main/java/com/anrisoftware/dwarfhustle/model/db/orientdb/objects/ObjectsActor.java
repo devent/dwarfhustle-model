@@ -75,9 +75,9 @@ import javax.inject.Inject;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.AbstractDbReplyMessage.DbErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.AbstractDbReplyMessage.DbResponseMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandReplyMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.AbstractObjectsReplyMessage.ObjectsErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.AbstractObjectsReplyMessage.ObjectsSuccessMessage;
 import com.google.inject.Injector;
@@ -168,7 +168,7 @@ public class ObjectsActor {
 	private Behavior<Message> onCreateSchemas(CreateSchemasMessage m) {
 		log.debug("onCreateSchemas {}", m);
 		context.ask(DbResponseMessage.class, db, timeout,
-				(ActorRef<DbResponseMessage> ref) -> new DbCommandMessage(ref, db -> {
+				(ActorRef<DbResponseMessage> ref) -> new DbCommandReplyMessage(ref, db -> {
 					return createSchemas(db);
 				}), (response, throwable) -> {
 					if (throwable != null) {

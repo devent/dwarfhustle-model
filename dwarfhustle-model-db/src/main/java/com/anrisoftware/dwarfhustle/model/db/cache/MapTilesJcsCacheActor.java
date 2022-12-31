@@ -85,10 +85,10 @@ import com.anrisoftware.dwarfhustle.model.api.GameObjectStorage;
 import com.anrisoftware.dwarfhustle.model.api.MapTile;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractCacheReplyMessage.CacheErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractCacheReplyMessage.CacheSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.AbstractDbReplyMessage.DbErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.AbstractDbReplyMessage.DbResponseMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.AbstractDbReplyMessage.DbSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandReplyMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbSuccessMessage;
 import com.google.inject.Injector;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 import com.orientechnologies.orient.core.id.ORID;
@@ -211,7 +211,7 @@ public class MapTilesJcsCacheActor extends AbstractJcsCacheActor<GameMapPosition
 	}
 
 	private void loadMapTiles() {
-		CompletionStage<DbResponseMessage> stage = AskPattern.ask(db, replyTo -> new DbCommandMessage(replyTo, db -> {
+		CompletionStage<DbResponseMessage> stage = AskPattern.ask(db, replyTo -> new DbCommandReplyMessage(replyTo, db -> {
 			return loadMapTilesAsync(db);
 		}), timeout, context.getSystem().scheduler());
 		context.pipeToSelf(stage, (result, cause) -> {
@@ -242,7 +242,7 @@ public class MapTilesJcsCacheActor extends AbstractJcsCacheActor<GameMapPosition
 
 	@Override
 	protected MapTile retrieveValueFromDb(GetMessage m) {
-		CompletionStage<DbResponseMessage> result = AskPattern.ask(db, replyTo -> new DbCommandMessage(replyTo, db -> {
+		CompletionStage<DbResponseMessage> result = AskPattern.ask(db, replyTo -> new DbCommandReplyMessage(replyTo, db -> {
 			return retrieveGameObjectAsync(db, m);
 		}), timeout, context.getSystem().scheduler());
 		var future = result.toCompletableFuture();
@@ -282,7 +282,7 @@ public class MapTilesJcsCacheActor extends AbstractJcsCacheActor<GameMapPosition
 
 	@Override
 	protected void storeValueDb(PutMessage m) {
-		CompletionStage<DbResponseMessage> result = AskPattern.ask(db, replyTo -> new DbCommandMessage(replyTo, db -> {
+		CompletionStage<DbResponseMessage> result = AskPattern.ask(db, replyTo -> new DbCommandReplyMessage(replyTo, db -> {
 			return storeValueDbAsync(db, m);
 		}), timeout, context.getSystem().scheduler());
 		result.whenComplete((response, throwable) -> {

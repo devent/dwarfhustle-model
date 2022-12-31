@@ -27,5 +27,6 @@
 	</root>
 
 	<logger name="com.anrisoftware" level="ALL" />
+    <logger name="com.anrisoftware.dwarfhustle.model.db.orientdb.actor" level="ERROR" />
 
 </configuration>

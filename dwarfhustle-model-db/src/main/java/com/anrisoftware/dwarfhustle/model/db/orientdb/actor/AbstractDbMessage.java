@@ -13,10 +13,10 @@ import lombok.ToString;
  */
 @RequiredArgsConstructor
 @ToString(callSuper = true)
-public class AbstractDbReplyMessage extends Message {
+public class AbstractDbMessage extends Message {
 
 	/**
 	 * Reply to {@link ActorRef}.
 	 */
-	public final ActorRef<DbResponseMessage> replyTo;
+	public final ActorRef<Message> caller;
 }

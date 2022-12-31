@@ -79,19 +79,19 @@ class GenerateMapActorTest {
 	}
 
 	@Test
-	@Timeout(300)
+	@Timeout(600)
 	void "test generate"() {
 		def result =
 				AskPattern.ask(
 				generateMapActor, {replyTo ->
-					new GenerateMessage(replyTo, 0, 2, 2, 2)
+					new GenerateMessage(replyTo, 0, 32, 32, 32)
 				},
-				Duration.ofSeconds(300),
+				Duration.ofSeconds(600),
 				testKit.scheduler())
 		def lock = new CountDownLatch(1)
 		def materials
 		result.whenComplete( {reply, failure ->
-			log.info "Command reply {} failure {}", reply, failure
+			log_reply_failure "test generate", reply, failure
 			lock.countDown()
 		})
 		lock.await()

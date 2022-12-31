@@ -5,8 +5,8 @@ import java.time.Duration
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.api.GameMapPosition
 import com.anrisoftware.dwarfhustle.model.api.MapTile
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.AbstractDbReplyMessage.DbErrorMessage
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.AbstractDbReplyMessage.DbSuccessMessage
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbSuccessMessage
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.CreateSchemasMessage
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.MapTileStorage
 import com.orientechnologies.orient.core.db.ODatabaseType
@@ -49,7 +49,7 @@ class DbTestUtils {
 		def result =
 				AskPattern.ask(
 				orientDbActor,
-				{replyTo -> new CreateDbMessage(replyTo, ODatabaseType.MEMORY)},
+				{replyTo -> new CreateDbMessage(replyTo, ODatabaseType.PLOCAL)},
 				timeout,
 				testKit.scheduler())
 		result.whenComplete( {reply, failure ->
@@ -79,7 +79,7 @@ class DbTestUtils {
 		def result =
 				AskPattern.ask(
 				orientDbActor, {replyTo ->
-					new DbCommandMessage(replyTo, { db ->
+					new DbCommandReplyMessage(replyTo, { db ->
 						def go = new MapTile(generator.generate())
 						go.pos = new GameMapPosition(0, 10, 20, 2)
 						go.material = "Sandstone"
