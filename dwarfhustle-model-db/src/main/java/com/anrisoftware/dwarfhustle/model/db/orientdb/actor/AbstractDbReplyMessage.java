@@ -2,7 +2,6 @@ package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 
-import akka.actor.typed.ActorRef;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
@@ -15,8 +14,4 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class AbstractDbReplyMessage extends Message {
 
-	/**
-	 * Reply to {@link ActorRef}.
-	 */
-	public final ActorRef<DbResponseMessage> replyTo;
 }

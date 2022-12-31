@@ -18,7 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.generate;
 
 import com.anrisoftware.dwarfhustle.model.generate.GenerateMapActor.GenerateMapActorFactory;
-import com.anrisoftware.dwarfhustle.model.generate.WorkerActor.WorkerActorFactory;
+import com.anrisoftware.dwarfhustle.model.generate.Worker.WorkerActorFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 
@@ -31,7 +31,7 @@ public class GenerateModule extends AbstractModule {
     protected void configure() {
         install(new FactoryModuleBuilder().implement(GenerateMapActor.class, GenerateMapActor.class)
                 .build(GenerateMapActorFactory.class));
-		install(new FactoryModuleBuilder().implement(WorkerActor.class, WorkerActor.class)
+		install(new FactoryModuleBuilder().implement(Worker.class, Worker.class)
 				.build(WorkerActorFactory.class));
     }
 

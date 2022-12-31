@@ -65,7 +65,6 @@
  */
 package com.anrisoftware.dwarfhustle.model.generate;
 
-import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
 import static com.anrisoftware.dwarfhustle.model.api.GameObject.toId;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.GameObjectSchemaSchema.MAPID_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.GameObjectSchemaSchema.OBJECTID_FIELD;
@@ -76,28 +75,25 @@ import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.GameObjectS
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
 
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.primitive.IntObjectMap;
 import org.eclipse.collections.impl.factory.Lists;
 import org.lable.oss.uniqueid.IDGenerator;
 
-import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.MapTile;
-import com.anrisoftware.dwarfhustle.model.api.Material;
 import com.anrisoftware.dwarfhustle.model.api.Path;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandReplyMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage;
-import com.google.inject.Injector;
+import com.anrisoftware.dwarfhustle.model.generate.Worker.GenerateMapMessage;
+import com.anrisoftware.dwarfhustle.model.generate.Worker.SuccessMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.ErrorMessage;
 import com.google.inject.assistedinject.Assisted;
+import com.orientechnologies.orient.core.db.OrientDB;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 import com.orientechnologies.orient.core.record.OEdge;
 import com.orientechnologies.orient.core.record.OVertex;
@@ -107,10 +103,7 @@ import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.BehaviorBuilder;
 import akka.actor.typed.javadsl.Behaviors;
-import akka.actor.typed.receptionist.ServiceKey;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -118,110 +111,16 @@ import lombok.extern.slf4j.Slf4j;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
-public class WorkerActor {
-
-	public static final ServiceKey<Message> KEY = ServiceKey.create(Message.class, WorkerActor.class.getSimpleName());
-
-	public static final String NAME = WorkerActor.class.getSimpleName();
-
-	public static final int ID = KEY.hashCode();
+public class Worker {
 
 	/**
-	 * Message to generate game map.
-	 *
-	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
-	 */
-	@RequiredArgsConstructor
-	@ToString(callSuper = true)
-	public static class GenerateMapMessage extends Message {
-
-		public final ActorRef<ResponseMessage> replyTo;
-
-		public final GenerateMessage generateMessage;
-
-		@ToString.Exclude
-		public final Map<String, IntObjectMap<? extends Material>> materials;
-	}
-
-	@RequiredArgsConstructor
-	@ToString(callSuper = true)
-	public static class ResponseMessage extends Message {
-
-	}
-
-	@RequiredArgsConstructor
-	@ToString(callSuper = true)
-	public static class ErrorMessage extends ResponseMessage {
-
-		@ToString.Exclude
-		public final GenerateMapMessage originalMessage;
-
-		public final Throwable error;
-	}
-
-	@RequiredArgsConstructor
-	@ToString(callSuper = true)
-	public static class SuccessMessage extends ResponseMessage {
-
-		public final GenerateMapMessage originalMessage;
-	}
-
-	@RequiredArgsConstructor
-	@ToString(callSuper = true)
-	private static class GenerateNodesErrorMessage extends Message {
-
-		public final GenerateMapMessage m;
-
-		public final Throwable error;
-	}
-
-	@RequiredArgsConstructor
-	@ToString(callSuper = true)
-	private static class GenerateNodesSuccessMessage extends Message {
-
-		public final GenerateMapMessage m;
-	}
-
-	@RequiredArgsConstructor
-	@ToString(callSuper = true)
-	private static class SaveEdgesErrorMessage extends Message {
-
-		public final GenerateMapMessage m;
-
-		public final Throwable error;
-	}
-
-	@RequiredArgsConstructor
-	@ToString(callSuper = true)
-	private static class SaveEdgesSuccessMessage extends Message {
-
-		public final GenerateMapMessage m;
-	}
-
-	/**
-	 * Factory to create {@link WorkerActor}.
+	 * Factory to create {@link Worker}.
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
 	public interface WorkerActorFactory {
 
-		WorkerActor create(ActorContext<Message> context, @Assisted("db") ActorRef<Message> db,
-				@Assisted("knowledge") ActorRef<Message> knowledge);
-	}
-
-	public static Behavior<Message> create(Injector injector, ActorRef<Message> db, ActorRef<Message> knowledge) {
-		return Behaviors.setup((context) -> {
-			return injector.getInstance(WorkerActorFactory.class).create(context, db, knowledge).start();
-		});
-	}
-
-	/**
-	 * Creates the {@link WorkerActor}.
-	 */
-	public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout, ActorRef<Message> db,
-			ActorRef<Message> knowledge) {
-		var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
-		return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, db, knowledge));
+		Worker create(OrientDB db);
 	}
 
 	@Inject
@@ -299,7 +198,7 @@ public class WorkerActor {
 
 	private void generateNodes(GenerateMapMessage m) {
 		context.ask(DbResponseMessage.class, db, timeout,
-				(ActorRef<DbResponseMessage> ref) -> new DbCommandReplyMessage(ref, (db) -> {
+				(ActorRef<DbResponseMessage> ref) -> new DbCommandMessage(ref, (db) -> {
 					generateNodes(m, db);
 					generatePaths(m, db);
 					return null;

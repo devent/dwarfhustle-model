@@ -13,8 +13,8 @@ import org.junit.jupiter.params.provider.ValueSource
 
 import com.anrisoftware.dwarfhustle.model.actor.MainActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandMessage.KnowledgeCommandErrorMessage
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandMessage.KnowledgeCommandSuccessMessage
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandResponseMessage.KnowledgeCommandErrorMessage
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandResponseMessage.KnowledgeCommandSuccessMessage
 import com.google.inject.Guice
 import com.google.inject.Injector
 
@@ -98,7 +98,7 @@ class PowerLoomKnowledgeActorTest {
 		def result =
 				AskPattern.ask(
 				powerLoomKnowledgeActor, {replyTo ->
-					new KnowledgeCommandMessage(replyTo, command)
+					new KnowledgeCommandReplyMessage(replyTo, command)
 				},
 				Duration.ofSeconds(300),
 				testKit.scheduler())

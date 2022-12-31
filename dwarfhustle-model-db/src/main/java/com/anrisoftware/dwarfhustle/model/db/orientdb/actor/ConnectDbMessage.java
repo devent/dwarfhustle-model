@@ -1,17 +1,24 @@
 package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
+import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+
 import akka.actor.typed.ActorRef;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 /**
  * Message to connect to a OrientDb database.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@Data
-@EqualsAndHashCode(callSuper = false)
-public class ConnectDbMessage extends AbstractDbReplyMessage {
+@RequiredArgsConstructor
+@ToString(callSuper = true)
+public class ConnectDbMessage extends Message {
+
+	/**
+	 * Reply to {@link ActorRef}.
+	 */
+	public final ActorRef<DbResponseMessage> replyTo;
 
 	public final String url;
 
@@ -20,14 +27,5 @@ public class ConnectDbMessage extends AbstractDbReplyMessage {
 	public final String user;
 
 	public final String password;
-
-	public ConnectDbMessage(ActorRef<DbResponseMessage> replyTo, String url, String database, String user,
-			String password) {
-		super(replyTo);
-		this.url = url;
-		this.database = database;
-		this.user = user;
-		this.password = password;
-	}
 
 }

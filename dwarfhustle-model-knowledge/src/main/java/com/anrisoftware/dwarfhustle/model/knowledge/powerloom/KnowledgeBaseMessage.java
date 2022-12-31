@@ -23,12 +23,34 @@ public class KnowledgeBaseMessage extends Message {
 	@ToString(callSuper = true)
 	public static class GetMessage extends KnowledgeBaseMessage {
 
+		public final ActorRef<Message> caller;
+
 		public final String[] material;
 
-		public GetMessage(ActorRef<ResponseMessage> replyTo, String... material) {
-			super(replyTo);
+		public GetMessage(ActorRef<Message> caller, String... material) {
+			super();
+			this.caller = caller;
 			this.material = material;
 		}
+	}
+
+	@ToString(callSuper = true)
+	public static class GetReplyMessage extends KnowledgeBaseMessage {
+
+		public final ActorRef<ResponseMessage> replyTo;
+
+		public final String[] material;
+
+		public GetReplyMessage(ActorRef<ResponseMessage> replyTo, String... material) {
+			super();
+			this.replyTo = replyTo;
+			this.material = material;
+		}
+	}
+
+	@RequiredArgsConstructor
+	@ToString(callSuper = true)
+	public static class ResponseMessage extends Message {
 
 	}
 
@@ -42,12 +64,6 @@ public class KnowledgeBaseMessage extends Message {
 
 	@RequiredArgsConstructor
 	@ToString(callSuper = true)
-	public static class ResponseMessage extends Message {
-
-	}
-
-	@RequiredArgsConstructor
-	@ToString(callSuper = true)
 	public static class ErrorMessage extends ResponseMessage {
 
 		@ToString.Exclude
@@ -55,7 +71,5 @@ public class KnowledgeBaseMessage extends Message {
 
 		public final Exception error;
 	}
-
-	public final ActorRef<ResponseMessage> replyTo;
 
 }

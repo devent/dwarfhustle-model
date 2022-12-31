@@ -82,8 +82,8 @@ import org.apache.commons.io.IOUtils;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandMessage.KnowledgeCommandErrorMessage;
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandMessage.KnowledgeCommandSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandResponseMessage.KnowledgeCommandErrorMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandResponseMessage.KnowledgeCommandSuccessMessage;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
 
@@ -224,6 +224,7 @@ public class PowerLoomKnowledgeActor {
 	 * Returns a behavior for the messages:
 	 *
 	 * <ul>
+	 * <li>{@link KnowledgeCommandReplyMessage}
 	 * <li>{@link KnowledgeCommandMessage}
 	 * </ul>
 	 */
@@ -234,15 +235,16 @@ public class PowerLoomKnowledgeActor {
 	}
 
 	/**
-	 * Reacts to {@link KnowledgeCommandMessage}. Returns a behavior for the
+	 * Reacts to {@link KnowledgeCommandReplyMessage}. Returns a behavior for the
 	 * messages:
 	 *
 	 * <ul>
+	 * <li>{@link KnowledgeCommandReplyMessage}
 	 * <li>{@link KnowledgeCommandMessage}
 	 * </ul>
 	 */
-	private Behavior<Message> onKnowledgeCommand(KnowledgeCommandMessage m) {
-		log.debug("onKnowledgeCommand {}", m);
+	private Behavior<Message> onKnowledgeReplyCommand(KnowledgeCommandReplyMessage m) {
+		log.debug("onKnowledgeReplyCommand {}", m);
 		try {
 			var res = m.command.get();
 			m.replyTo.tell(new KnowledgeCommandSuccessMessage(m, res));
@@ -252,8 +254,29 @@ public class PowerLoomKnowledgeActor {
 		return Behaviors.same();
 	}
 
+	/**
+	 * Reacts to {@link KnowledgeCommandMessage}. Returns a behavior for the
+	 * messages:
+	 *
+	 * <ul>
+	 * <li>{@link KnowledgeCommandReplyMessage}
+	 * <li>{@link KnowledgeCommandMessage}
+	 * </ul>
+	 */
+	private Behavior<Message> onKnowledgeCommand(KnowledgeCommandMessage m) {
+		log.debug("onKnowledgeCommand {}", m);
+		try {
+			var res = m.command.get();
+			m.caller.tell(new KnowledgeCommandSuccessMessage(m, res));
+		} catch (Exception e) {
+			m.caller.tell(new KnowledgeCommandErrorMessage(m, e));
+		}
+		return Behaviors.same();
+	}
+
 	private BehaviorBuilder<Message> getInitialBehavior() {
 		return Behaviors.receive(Message.class)//
+				.onMessage(KnowledgeCommandReplyMessage.class, this::onKnowledgeReplyCommand)//
 				.onMessage(KnowledgeCommandMessage.class, this::onKnowledgeCommand)//
 		;
 	}

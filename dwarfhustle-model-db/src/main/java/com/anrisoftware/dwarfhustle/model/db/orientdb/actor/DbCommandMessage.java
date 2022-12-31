@@ -6,6 +6,7 @@ import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 
 import akka.actor.typed.ActorRef;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -13,14 +14,11 @@ import lombok.ToString;
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
+@RequiredArgsConstructor
 @ToString(callSuper = true)
-public class DbCommandMessage extends AbstractDbMessage {
+public class DbCommandMessage extends Message {
+
+	public final ActorRef<Message> caller;
 
 	public final Function<ODatabaseDocument, Object> command;
-
-	public DbCommandMessage(ActorRef<Message> replyTo, Function<ODatabaseDocument, Object> command) {
-		super(replyTo);
-		this.command = command;
-	}
-
 }

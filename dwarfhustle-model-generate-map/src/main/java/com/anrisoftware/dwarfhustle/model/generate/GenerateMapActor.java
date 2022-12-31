@@ -137,6 +137,13 @@ public class GenerateMapActor {
 		public final GenerateMessage generateMessage;
 	}
 
+	@RequiredArgsConstructor
+	@ToString(callSuper = true)
+	private static class WrappedKnowledgeBaseResponse extends Message {
+
+		private final KnowledgeBaseMessage.ResponseMessage response;
+	}
+
 	/**
 	 * Factory to create {@link GenerateMapActor}.
 	 *
@@ -175,6 +182,8 @@ public class GenerateMapActor {
 	@Assisted("knowledge")
 	private ActorRef<Message> knowledge;
 
+	private ActorRef<KnowledgeBaseMessage.ResponseMessage> knowledgeBaseResponseAdapter;
+
 	private final Duration timeout = Duration.ofSeconds(600);
 
 	private Injector injector;
@@ -191,6 +200,8 @@ public class GenerateMapActor {
 	 */
 	public Behavior<Message> start(Injector injector) {
 		this.injector = injector;
+		this.knowledgeBaseResponseAdapter = context.messageAdapter(KnowledgeBaseMessage.ResponseMessage.class,
+				WrappedKnowledgeBaseResponse::new);
 		return getInitialBehavior().build();
 	}
 
@@ -206,7 +217,8 @@ public class GenerateMapActor {
 	 */
 	protected Behavior<Message> onGenerate(GenerateMessage m) {
 		log.debug("onGenerate {}", m);
-		retrieveMapTileMaterials(m);
+		knowledge.tell(new KnowledgeBaseMessage.GetMessage(context.getSelf(), Sedimentary.TYPE, IgneousIntrusive.TYPE,
+				IgneousExtrusive.TYPE, Metamorphic.TYPE));
 		return Behaviors.same();
 	}
 
@@ -223,19 +235,19 @@ public class GenerateMapActor {
 	 */
 	protected Behavior<Message> onMaterialsLoadSuccess(MaterialsLoadSuccessMessage m) {
 		log.debug("onMaterialsLoadSuccess {}", m);
-		var workerActor = context.spawn(WorkerActor.create(injector, db, knowledge), WorkerActor.NAME);
-		context.ask(WorkerActor.ResponseMessage.class, workerActor, timeout,
-				(ActorRef<WorkerActor.ResponseMessage> ref) -> new WorkerActor.GenerateMapMessage(ref, m.m,
+		var workerActor = context.spawn(Worker.create(injector, db, knowledge), Worker.NAME);
+		context.ask(Worker.ResponseMessage.class, workerActor, timeout,
+				(ActorRef<Worker.ResponseMessage> ref) -> new Worker.GenerateMapMessage(ref, m.m,
 						m.materials),
 				(response, throwable) -> {
 					if (throwable != null) {
 						return new ResponseErrorMessage(m.m, throwable);
 					}
-					if (response instanceof WorkerActor.ErrorMessage) {
-						var wm = (WorkerActor.ErrorMessage) response;
+					if (response instanceof Worker.ErrorMessage) {
+						var wm = (Worker.ErrorMessage) response;
 						return new ResponseErrorMessage(m.m, wm.error);
 					} else {
-						var wm = (WorkerActor.SuccessMessage) response;
+						var wm = (Worker.SuccessMessage) response;
 						return new GenerateSuccessMessage(wm.originalMessage.generateMessage);
 					}
 				});
@@ -284,24 +296,6 @@ public class GenerateMapActor {
 				.onMessage(GenerateSuccessMessage.class, this::onGenerateSuccess)//
 				.onMessage(ResponseErrorMessage.class, this::onResponseError)//
 		;
-	}
-
-	private void retrieveMapTileMaterials(GenerateMessage m) {
-		context.ask(KnowledgeBaseMessage.ResponseMessage.class, knowledge, timeout,
-				(ActorRef<KnowledgeBaseMessage.ResponseMessage> ref) -> new KnowledgeBaseMessage.GetMessage(ref,
-						Sedimentary.TYPE, IgneousIntrusive.TYPE, IgneousExtrusive.TYPE, Metamorphic.TYPE),
-				(response, throwable) -> {
-					if (throwable != null) {
-						return new ResponseErrorMessage(m, throwable);
-					}
-					if (response instanceof KnowledgeBaseMessage.ErrorMessage) {
-						var km = (KnowledgeBaseMessage.ErrorMessage) response;
-						return new ResponseErrorMessage(m, km.error);
-					} else {
-						var km = (KnowledgeBaseMessage.ReplyMessage) response;
-						return new MaterialsLoadSuccessMessage(km.materials, m);
-					}
-				});
 	}
 
 }

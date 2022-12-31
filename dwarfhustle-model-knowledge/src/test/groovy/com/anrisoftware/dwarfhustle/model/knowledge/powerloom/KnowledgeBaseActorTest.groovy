@@ -10,9 +10,9 @@ import org.junit.jupiter.api.Timeout
 
 import com.anrisoftware.dwarfhustle.model.actor.MainActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.GetMessage
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.GetReplyMessage
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.ReplyMessage
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandMessage.KnowledgeCommandErrorMessage
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandResponseMessage.KnowledgeCommandErrorMessage
 import com.google.inject.Guice
 import com.google.inject.Injector
 
@@ -54,7 +54,7 @@ class KnowledgeBaseActorTest {
 		def result =
 				AskPattern.ask(
 				knowledgeBaseActor, {replyTo ->
-					new GetMessage(replyTo, "Sedimentary")
+					new GetReplyMessage(replyTo, "Sedimentary")
 				},
 				Duration.ofSeconds(15),
 				testKit.scheduler())

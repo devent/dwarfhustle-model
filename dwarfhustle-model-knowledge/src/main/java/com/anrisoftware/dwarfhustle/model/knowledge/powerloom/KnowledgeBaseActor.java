@@ -95,9 +95,9 @@ import com.anrisoftware.dwarfhustle.model.api.Seabed;
 import com.anrisoftware.dwarfhustle.model.api.Sedimentary;
 import com.anrisoftware.dwarfhustle.model.api.Topsoil;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.GetMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.GetReplyMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.ReplyMessage;
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandMessage.KnowledgeCommandErrorMessage;
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandMessage.KnowledgeCommandResponseMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandResponseMessage.KnowledgeCommandErrorMessage;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
 
@@ -202,7 +202,7 @@ public class KnowledgeBaseActor {
 	private static CompletionStage<KnowledgeCommandResponseMessage> loadKnowledgeBase0(ActorContext<Message> context,
 			ActorRef<Message> knowledge) {
 		Duration timeout = Duration.ofSeconds(30);
-		return AskPattern.ask(knowledge, replyTo -> new KnowledgeCommandMessage(replyTo, () -> {
+		return AskPattern.ask(knowledge, replyTo -> new KnowledgeCommandReplyMessage(replyTo, () -> {
 			retrieveMaterials();
 			return null;
 		}), timeout, context.getSystem().scheduler());
@@ -311,7 +311,8 @@ public class KnowledgeBaseActor {
 	 * Returns a behavior for the messages:
 	 *
 	 * <ul>
-	 * <li>{@link KnowledgeCommandMessage}
+	 * <li>{@link GetReplyMessage}
+	 * <li>{@link GetMessage}
 	 * </ul>
 	 */
 	private Behavior<Message> onInitialState(InitialStateMessage m) {
@@ -321,9 +322,28 @@ public class KnowledgeBaseActor {
 	}
 
 	/**
+	 * Reacts to {@link GetReplyMessage}. Returns a behavior for the messages:
+	 *
+	 * <ul>
+	 * <li>{@link GetReplyMessage}
+	 * <li>{@link GetMessage}
+	 * </ul>
+	 */
+	private Behavior<Message> onGetReply(GetReplyMessage m) {
+		log.debug("onGetReply {}", m);
+		MutableMap<String, IntObjectMap<? extends Material>> map = Maps.mutable.withInitialCapacity(m.material.length);
+		for (String material : m.material) {
+			map.put(material, materials.get(material));
+		}
+		m.replyTo.tell(new ReplyMessage(map.asUnmodifiable()));
+		return Behaviors.same();
+	}
+
+	/**
 	 * Reacts to {@link GetMessage}. Returns a behavior for the messages:
 	 *
 	 * <ul>
+	 * <li>{@link GetReplyMessage}
 	 * <li>{@link GetMessage}
 	 * </ul>
 	 */
@@ -333,12 +353,13 @@ public class KnowledgeBaseActor {
 		for (String material : m.material) {
 			map.put(material, materials.get(material));
 		}
-		m.replyTo.tell(new ReplyMessage(map.asUnmodifiable()));
+		m.caller.tell(new ReplyMessage(map.asUnmodifiable()));
 		return Behaviors.same();
 	}
 
 	private BehaviorBuilder<Message> getInitialBehavior() {
 		return Behaviors.receive(Message.class)//
+				.onMessage(GetReplyMessage.class, this::onGetReply)//
 				.onMessage(GetMessage.class, this::onGet)//
 		;
 	}

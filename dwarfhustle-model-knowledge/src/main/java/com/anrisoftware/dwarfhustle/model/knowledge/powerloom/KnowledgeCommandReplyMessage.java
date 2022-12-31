@@ -15,9 +15,9 @@ import lombok.ToString;
  */
 @RequiredArgsConstructor
 @ToString(callSuper = true)
-public class KnowledgeCommandMessage extends Message {
+public class KnowledgeCommandReplyMessage extends Message {
 
-	public final ActorRef<Message> caller;
+    public final ActorRef<KnowledgeCommandResponseMessage> replyTo;
 
 	public final Supplier<Object> command;
 
