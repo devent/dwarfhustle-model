@@ -19,15 +19,16 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbModule
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsActor
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsModule
+import com.anrisoftware.dwarfhustle.model.generate.Worker.WorkerFactory
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseActor
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.PowerLoomKnowledgeActor
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.PowerloomModule
+import com.anrisoftware.globalpom.threads.properties.internal.PropertiesThreadsModule
 import com.google.inject.Guice
 import com.google.inject.Injector
 
 import akka.actor.testkit.typed.javadsl.ActorTestKit
 import akka.actor.typed.ActorRef
-import akka.actor.typed.javadsl.AskPattern
 import groovy.util.logging.Slf4j
 
 /**
@@ -35,7 +36,7 @@ import groovy.util.logging.Slf4j
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
-class GenerateMapActorTest {
+class WorkerTest {
 
 	static final ActorTestKit testKit = ActorTestKit.create()
 
@@ -49,9 +50,9 @@ class GenerateMapActorTest {
 
 	static ActorRef<Message> knowledgeBaseActor
 
-	static ActorRef<Message> generateMapActor
+	static WorkerFactory workerFactory
 
-	static timeout = Duration.ofSeconds(30)
+	static timeout = Duration.ofSeconds(300)
 
 	static initDatabaseLock = new CountDownLatch(1)
 
@@ -60,19 +61,21 @@ class GenerateMapActorTest {
 	@BeforeAll
 	static void setupActor() {
 		fillDatabase = false
-		injector = Guice.createInjector(new MainActorsModule(), new ObjectsModule(), new PowerloomModule(), new GenerateModule(), new OrientDbModule(), new ApiModule())
+		injector = Guice.createInjector(
+				new MainActorsModule(), new ObjectsModule(), new PowerloomModule(), new GenerateModule(), new OrientDbModule(), new ApiModule(),
+				new PropertiesThreadsModule())
+		workerFactory = injector.getInstance(WorkerFactory)
 		orientDbActor = testKit.spawn(OrientDbActor.create(injector), "OrientDbActor");
 		objectsActor = testKit.spawn(ObjectsActor.create(injector, orientDbActor), "objectsActor");
 		powerLoomKnowledgeActor = testKit.spawn(PowerLoomKnowledgeActor.create(injector), "PowerLoomKnowledgeActor");
 		knowledgeBaseActor = testKit.spawn(KnowledgeBaseActor.create(injector, powerLoomKnowledgeActor), "KnowledgeBaseActor");
-		connectCreateDatabase(orientDbActor, objectsActor, timeout, testKit, injector.getInstance(IDGenerator.class), initDatabaseLock)
+		connectCreateDatabase(orientDbActor, objectsActor, testKit, injector.getInstance(IDGenerator.class), initDatabaseLock)
 		initDatabaseLock.await()
-		generateMapActor = testKit.spawn(GenerateMapActor.create(injector, orientDbActor, knowledgeBaseActor), "GenerateMapActor");
 	}
 
 	@AfterAll
 	static void closeDb() {
-		deleteDatabase(orientDbActor, timeout, testKit, deleteDatabaseLock)
+		deleteDatabase(orientDbActor, testKit, deleteDatabaseLock)
 		orientDbActor.tell(new CloseDbMessage())
 		testKit.shutdown(testKit.system(), timeout)
 		deleteDatabaseLock.await()
@@ -81,19 +84,8 @@ class GenerateMapActorTest {
 	@Test
 	@Timeout(600)
 	void "test generate"() {
-		def result =
-				AskPattern.ask(
-				generateMapActor, {replyTo ->
-					new GenerateMapMessage(replyTo, 0, 32, 32, 32)
-				},
-				Duration.ofSeconds(600),
-				testKit.scheduler())
-		def lock = new CountDownLatch(1)
-		def materials
-		result.whenComplete( {reply, failure ->
-			log_reply_failure "test generate", reply, failure
-			lock.countDown()
-		})
-		lock.await()
+		def s = 32
+		def m = new GenerateMapMessage(null, database, user, password, 0, s, s, s)
+		workerFactory.create(db).generateMap(m)
 	}
 }

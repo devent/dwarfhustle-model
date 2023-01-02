@@ -69,6 +69,7 @@ import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.create
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
@@ -82,10 +83,13 @@ import com.anrisoftware.dwarfhustle.model.api.IgneousIntrusive;
 import com.anrisoftware.dwarfhustle.model.api.Material;
 import com.anrisoftware.dwarfhustle.model.api.Metamorphic;
 import com.anrisoftware.dwarfhustle.model.api.Sedimentary;
+import com.anrisoftware.dwarfhustle.model.generate.GenerateMapMessage.GenerateErrorMessage;
+import com.anrisoftware.dwarfhustle.model.generate.Worker.WorkerFactory;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.ResponseMessage;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
+import com.orientechnologies.orient.core.db.OrientDB;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -115,7 +119,7 @@ public class GenerateMapActor {
 	@ToString(callSuper = true)
 	private static class ResponseErrorMessage extends ResponseMessage {
 
-		public final GenerateMessage generateMessage;
+		public final GenerateMapMessage generateMessage;
 
 		public final Throwable error;
 	}
@@ -127,14 +131,13 @@ public class GenerateMapActor {
 		@ToString.Exclude
 		public final Map<String, IntObjectMap<? extends Material>> materials;
 
-		public final GenerateMessage m;
 	}
 
 	@RequiredArgsConstructor
 	@ToString(callSuper = true)
 	private static class GenerateSuccessMessage extends ResponseMessage {
 
-		public final GenerateMessage generateMessage;
+		public final GenerateMapMessage generateMessage;
 	}
 
 	@RequiredArgsConstructor
@@ -151,20 +154,19 @@ public class GenerateMapActor {
 	 */
 	public interface GenerateMapActorFactory {
 
-		GenerateMapActor create(ActorContext<Message> context, @Assisted("db") ActorRef<Message> db,
-				@Assisted("knowledge") ActorRef<Message> knowledge);
+		GenerateMapActor create(ActorContext<Message> context, OrientDB db, ActorRef<Message> knowledge);
 	}
 
-	public static Behavior<Message> create(Injector injector, ActorRef<Message> db, ActorRef<Message> knowledge) {
+	public static Behavior<Message> create(Injector injector, OrientDB db, ActorRef<Message> knowledge) {
 		return Behaviors.setup((context) -> {
-			return injector.getInstance(GenerateMapActorFactory.class).create(context, db, knowledge).start(injector);
+			return injector.getInstance(GenerateMapActorFactory.class).create(context, db, knowledge).start();
 		});
 	}
 
 	/**
 	 * Creates the {@link GenerateMapActor}.
 	 */
-	public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout, ActorRef<Message> db,
+	public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout, OrientDB db,
 			ActorRef<Message> knowledge) {
 		var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
 		return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, db, knowledge));
@@ -175,50 +177,52 @@ public class GenerateMapActor {
 	private ActorContext<Message> context;
 
 	@Inject
-	@Assisted("db")
-	private ActorRef<Message> db;
+	@Assisted
+	private OrientDB db;
 
 	@Inject
-	@Assisted("knowledge")
+	@Assisted
 	private ActorRef<Message> knowledge;
+
+	@Inject
+	private WorkerFactory workerActorFactory;
 
 	private ActorRef<KnowledgeBaseMessage.ResponseMessage> knowledgeBaseResponseAdapter;
 
 	private final Duration timeout = Duration.ofSeconds(600);
 
-	private Injector injector;
+	private Optional<GenerateMapMessage> generateMap;
 
 	/**
 	 * Initial behavior. Returns a behavior for the messages:
 	 *
 	 * <ul>
-	 * <li>{@link GenerateMessage}
+	 * <li>{@link GenerateMapMessage}
 	 * <li>{@link MaterialsLoadSuccessMessage}
-	 * <li>{@link GenerateSuccessMessage}
-	 * <li>{@link ResponseErrorMessage}
+	 * <li>{@link WrappedKnowledgeBaseResponse}
 	 * </ul>
 	 */
-	public Behavior<Message> start(Injector injector) {
-		this.injector = injector;
+	public Behavior<Message> start() {
+		this.generateMap = Optional.empty();
 		this.knowledgeBaseResponseAdapter = context.messageAdapter(KnowledgeBaseMessage.ResponseMessage.class,
 				WrappedKnowledgeBaseResponse::new);
 		return getInitialBehavior().build();
 	}
 
 	/**
-	 * Handle {@link GenerateMessage}. Returns a behavior for the messages:
+	 * Handle {@link GenerateMapMessage}. Returns a behavior for the messages:
 	 *
 	 * <ul>
-	 * <li>{@link GenerateMessage}
+	 * <li>{@link GenerateMapMessage}
 	 * <li>{@link MaterialsLoadSuccessMessage}
-	 * <li>{@link GenerateSuccessMessage}
-	 * <li>{@link ResponseErrorMessage}
+	 * <li>{@link WrappedKnowledgeBaseResponse}
 	 * </ul>
 	 */
-	protected Behavior<Message> onGenerate(GenerateMessage m) {
+	protected Behavior<Message> onGenerateMap(GenerateMapMessage m) {
 		log.debug("onGenerate {}", m);
-		knowledge.tell(new KnowledgeBaseMessage.GetMessage(context.getSelf(), Sedimentary.TYPE, IgneousIntrusive.TYPE,
-				IgneousExtrusive.TYPE, Metamorphic.TYPE));
+		this.generateMap = Optional.of(m);
+		knowledge.tell(new KnowledgeBaseMessage.GetReplyMessage(knowledgeBaseResponseAdapter, Sedimentary.TYPE,
+				IgneousIntrusive.TYPE, IgneousExtrusive.TYPE, Metamorphic.TYPE));
 		return Behaviors.same();
 	}
 
@@ -227,74 +231,56 @@ public class GenerateMapActor {
 	 * messages:
 	 *
 	 * <ul>
-	 * <li>{@link GenerateMessage}
+	 * <li>{@link GenerateMapMessage}
 	 * <li>{@link MaterialsLoadSuccessMessage}
-	 * <li>{@link GenerateSuccessMessage}
-	 * <li>{@link ResponseErrorMessage}
+	 * <li>{@link WrappedKnowledgeBaseResponse}
 	 * </ul>
 	 */
 	protected Behavior<Message> onMaterialsLoadSuccess(MaterialsLoadSuccessMessage m) {
 		log.debug("onMaterialsLoadSuccess {}", m);
-		var workerActor = context.spawn(Worker.create(injector, db, knowledge), Worker.NAME);
-		context.ask(Worker.ResponseMessage.class, workerActor, timeout,
-				(ActorRef<Worker.ResponseMessage> ref) -> new Worker.GenerateMapMessage(ref, m.m,
-						m.materials),
-				(response, throwable) -> {
-					if (throwable != null) {
-						return new ResponseErrorMessage(m.m, throwable);
-					}
-					if (response instanceof Worker.ErrorMessage) {
-						var wm = (Worker.ErrorMessage) response;
-						return new ResponseErrorMessage(m.m, wm.error);
-					} else {
-						var wm = (Worker.SuccessMessage) response;
-						return new GenerateSuccessMessage(wm.originalMessage.generateMessage);
-					}
-				});
+		var workerActor = workerActorFactory.create(db);
 		return Behaviors.same();
 	}
 
 	/**
-	 * Handle {@link GenerateSuccessMessage}. Returns a behavior for the messages:
+	 * Handles {@link WrappedKnowledgeBaseResponse}. Returns a behavior for the
+	 * messages:
 	 *
 	 * <ul>
-	 * <li>{@link GenerateMessage}
+	 * <li>{@link GenerateMapMessage}
 	 * <li>{@link MaterialsLoadSuccessMessage}
-	 * <li>{@link GenerateSuccessMessage}
-	 * <li>{@link ResponseErrorMessage}
+	 * <li>{@link WrappedKnowledgeBaseResponse}
 	 * </ul>
 	 */
-	protected Behavior<Message> onGenerateSuccess(GenerateSuccessMessage m) {
-		log.debug("onGenerateSuccess {}", m);
-		m.generateMessage.replyTo.tell(new GenerateMessage.GenerateSuccessMessage(m.generateMessage));
+	private Behavior<Message> onWrappedKnowledgeBaseResponse(WrappedKnowledgeBaseResponse m) {
+		log.debug("onWrappedKnowledgeBaseResponse {}", m);
+		var response = m.response;
+		if (response instanceof KnowledgeBaseMessage.ErrorMessage) {
+			var em = (KnowledgeBaseMessage.ErrorMessage) response;
+			log.error("Error load materials", em.error);
+			generateMap.get().replyTo.tell(new GenerateErrorMessage(generateMap.get(), em.error));
+			return Behaviors.stopped();
+		} else if (response instanceof KnowledgeBaseMessage.ReplyMessage) {
+			var rm = (KnowledgeBaseMessage.ReplyMessage) response;
+			context.getSelf().tell(new MaterialsLoadSuccessMessage(rm.materials));
+		}
 		return Behaviors.same();
-	}
-
-	/**
-	 * Handle {@link ResponseErrorMessage}. Stopps the actor.
-	 */
-	protected Behavior<Message> onResponseError(ResponseErrorMessage m) {
-		log.debug("onResponseError {}", m);
-		m.generateMessage.replyTo.tell(new GenerateMessage.GenerateErrorMessage(m.generateMessage, m.error));
-		return Behaviors.stopped();
 	}
 
 	/**
 	 * Returns a behavior for the messages:
 	 *
 	 * <ul>
-	 * <li>{@link GenerateMessage}
+	 * <li>{@link GenerateMapMessage}
 	 * <li>{@link MaterialsLoadSuccessMessage}
-	 * <li>{@link GenerateSuccessMessage}
-	 * <li>{@link ResponseErrorMessage}
+	 * <li>{@link WrappedKnowledgeBaseResponse}
 	 * </ul>
 	 */
 	private BehaviorBuilder<Message> getInitialBehavior() {
 		return Behaviors.receive(Message.class)//
-				.onMessage(GenerateMessage.class, this::onGenerate)//
+				.onMessage(GenerateMapMessage.class, this::onGenerateMap)//
 				.onMessage(MaterialsLoadSuccessMessage.class, this::onMaterialsLoadSuccess)//
-				.onMessage(GenerateSuccessMessage.class, this::onGenerateSuccess)//
-				.onMessage(ResponseErrorMessage.class, this::onResponseError)//
+				.onMessage(WrappedKnowledgeBaseResponse.class, this::onWrappedKnowledgeBaseResponse)//
 		;
 	}
 

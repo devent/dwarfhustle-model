@@ -1,18 +1,29 @@
 @startuml
+actor Caller as caller
 participant GenerateMapActor as gmActor
 participant knowledge
 participant workerActor
 
--> gmActor ++ : GenerateMessage
-gmActor -> gmActor : onGenerate()
+caller -> gmActor ** : create
+gmActor -> gmActor ++ : start()
+gmActor -> knowledgeBaseResponseAdapter ** : create
+deactivate gmActor
+
+caller -> gmActor ++ : GenerateMapMessage
+gmActor -> gmActor : onGenerateMap()
 gmActor -> gmActor : retrieveMapTileMaterials()
-gmActor -> knowledge : KnowledgeBaseMessage.ResponseMessage
-alt throwable != null case
-gmActor -> gmActor :  ResponseErrorMessage
-else response = KnowledgeBaseMessage.ErrorMessage case
-gmActor -> gmActor :  ResponseErrorMessage
+gmActor -> knowledge ++ : KnowledgeBaseMessage.GetMessage
+deactivate gmActor
+
+knowledge -> knowledge : onGet()
+knowledge -> knowledgeBaseResponseAdapter --++ : KnowledgeBaseMessage.ResponseMessage
+knowledgeBaseResponseAdapter -> gmActor ++ : WrappedKnowledgeBaseResponse
+gmActor -> gmActor : onWrappedKnowledgeBaseResponse
+
+alt response == KnowledgeBaseMessage.ErrorMessage case
+gmActor -> caller : ResponseErrorMessage
 else response = KnowledgeBaseMessage.ReplyMessage case
-return MaterialsLoadSuccessMessage
+gmActor -> gmActor -- : MaterialsLoadSuccessMessage
 end
 
 -> gmActor : MaterialsLoadSuccessMessage

@@ -75,6 +75,7 @@ import javax.inject.Inject;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.ConnectDbMessage.ConnectDbSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CreateDbMessage.DbAlreadyExistMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbSuccessMessage;
@@ -154,7 +155,9 @@ public class OrientDbActor {
 	}
 
 	/**
-	 * Reacts to {@link ConnectDbMessage}. Returns a behavior for the messages:
+	 * Reacts to {@link ConnectDbMessage}. Replies with the
+	 * {@link ConnectDbSuccessMessage} on success and with {@link DbErrorMessage} on
+	 * failure. Returns a behavior for the messages:
 	 *
 	 * <ul>
 	 * <li>{@link CloseDbMessage}
@@ -170,12 +173,13 @@ public class OrientDbActor {
 			this.user = m.user;
 			this.password = m.password;
 			this.database = m.database;
-			this.orientdb = Optional.of(new OrientDB(m.url, m.user, m.password, OrientDBConfig.defaultConfig()));
+			var config = OrientDBConfig.defaultConfig();
+			this.orientdb = Optional.of(new OrientDB(m.url, m.user, m.password, config));
 		} catch (Exception e) {
 			m.replyTo.tell(new DbErrorMessage(m, e));
 			return Behaviors.same();
 		}
-		m.replyTo.tell(new DbSuccessMessage(m));
+		m.replyTo.tell(new ConnectDbSuccessMessage(m, orientdb.get()));
 		return getConnectedBehavior().build();
 	}
 
@@ -195,7 +199,9 @@ public class OrientDbActor {
 	}
 
 	/**
-	 * Reacts to {@link ConnectDbMessage}. Returns a behavior for the messages:
+	 * Reacts to {@link ConnectDbMessage}. Replies with {@link DbSuccessMessage} on
+	 * success, with {@link DbAlreadyExistMessage} if the database already exist or
+	 * with {@link DbErrorMessage} on failure. Returns a behavior for the messages:
 	 *
 	 * <ul>
 	 * <li>{@link CloseDbMessage}

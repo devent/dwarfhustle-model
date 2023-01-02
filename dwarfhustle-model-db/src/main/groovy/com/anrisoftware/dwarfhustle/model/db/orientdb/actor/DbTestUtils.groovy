@@ -5,11 +5,12 @@ import java.time.Duration
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.api.GameMapPosition
 import com.anrisoftware.dwarfhustle.model.api.MapTile
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.ConnectDbMessage.ConnectDbSuccessMessage
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbSuccessMessage
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.CreateSchemasMessage
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.MapTileStorage
 import com.orientechnologies.orient.core.db.ODatabaseType
+import com.orientechnologies.orient.core.db.OrientDB
 
 import akka.actor.typed.ActorRef
 import akka.actor.typed.javadsl.AskPattern
@@ -25,7 +26,21 @@ class DbTestUtils {
 
 	static boolean fillDatabase = true
 
-	static void connectCreateDatabase(ActorRef<Message> orientDbActor, ActorRef<Message> objectsActor, Duration timeout, def testKit, def generator, def initDatabaseLock) {
+	static final url = "remote:localhost"
+
+	static final database = "test"
+
+	static final user = "root"
+
+	static final password = "admin"
+
+	static final type = ODatabaseType.PLOCAL
+
+	static OrientDB db
+
+	static Duration timeout = Duration.ofSeconds(600)
+
+	static void connectCreateDatabase(ActorRef<Message> orientDbActor, ActorRef<Message> objectsActor, def testKit, def generator, def initDatabaseLock) {
 		def result =
 				AskPattern.ask(
 				orientDbActor,
@@ -35,8 +50,9 @@ class DbTestUtils {
 		result.whenComplete({reply, failure ->
 			log_reply_failure "connectCreateDatabase", reply, failure
 			switch (reply) {
-				case DbSuccessMessage:
-					createDatabase(orientDbActor, objectsActor, timeout, testKit, generator, initDatabaseLock)
+				case ConnectDbSuccessMessage:
+					db = reply.db
+					createDatabase(orientDbActor, objectsActor, testKit, generator, initDatabaseLock)
 					break
 				case DbErrorMessage:
 					throw reply.error
@@ -45,20 +61,20 @@ class DbTestUtils {
 		})
 	}
 
-	static void createDatabase(ActorRef<Message> orientDbActor, ActorRef<Message> objectsActor, Duration timeout, def testKit, def generator, def initDatabaseLock) {
+	static void createDatabase(ActorRef<Message> orientDbActor, ActorRef<Message> objectsActor, def testKit, def generator, def initDatabaseLock) {
 		def result =
 				AskPattern.ask(
 				orientDbActor,
-				{replyTo -> new CreateDbMessage(replyTo, ODatabaseType.PLOCAL)},
+				{replyTo -> new CreateDbMessage(replyTo, type)},
 				timeout,
 				testKit.scheduler())
 		result.whenComplete( {reply, failure ->
 			log_reply_failure "createDatabase", reply, failure
-			createSchemas(orientDbActor, objectsActor, timeout, testKit, generator, initDatabaseLock)
+			createSchemas(orientDbActor, objectsActor, testKit, generator, initDatabaseLock)
 		})
 	}
 
-	static void createSchemas(ActorRef<Message> orientDbActor, ActorRef<Message> objectsActor, Duration timeout, def testKit, def generator, def initDatabaseLock) {
+	static void createSchemas(ActorRef<Message> orientDbActor, ActorRef<Message> objectsActor, def testKit, def generator, def initDatabaseLock) {
 		def result =
 				AskPattern.ask(
 				objectsActor,
@@ -68,14 +84,14 @@ class DbTestUtils {
 		result.whenComplete( {reply, failure ->
 			log_reply_failure "createSchemas", reply, failure
 			if (fillDatabase) {
-				fillDatabase(orientDbActor, timeout, testKit, generator, initDatabaseLock)
+				fillDatabase(orientDbActor, testKit, generator, initDatabaseLock)
 			} else {
 				initDatabaseLock.countDown()
 			}
 		})
 	}
 
-	static void fillDatabase(ActorRef<Message> orientDbActor, Duration timeout, def testKit, def generator, def initDatabaseLock) {
+	static void fillDatabase(ActorRef<Message> orientDbActor, def testKit, def generator, def initDatabaseLock) {
 		def result =
 				AskPattern.ask(
 				orientDbActor, {replyTo ->
@@ -98,7 +114,7 @@ class DbTestUtils {
 		})
 	}
 
-	static void deleteDatabase(ActorRef<Message> orientDbActor, Duration timeout, def testKit, def deleteDatabaseLock) {
+	static void deleteDatabase(ActorRef<Message> orientDbActor, def testKit, def deleteDatabaseLock) {
 		def result =
 				AskPattern.ask(
 				orientDbActor,

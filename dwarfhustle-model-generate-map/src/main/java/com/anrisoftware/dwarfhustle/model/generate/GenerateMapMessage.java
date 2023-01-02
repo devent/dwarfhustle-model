@@ -13,7 +13,7 @@ import lombok.ToString;
  */
 @RequiredArgsConstructor
 @ToString(callSuper = true)
-public class GenerateMessage extends Message {
+public class GenerateMapMessage extends Message {
 
 	@RequiredArgsConstructor
 	@ToString(callSuper = true)
@@ -25,7 +25,7 @@ public class GenerateMessage extends Message {
 	@ToString(callSuper = true)
     public static class GenerateErrorMessage extends GenerateResponseMessage {
 
-        public final GenerateMessage originalMessage;
+        public final GenerateMapMessage originalMessage;
 
 		public final Throwable error;
     }
@@ -34,10 +34,16 @@ public class GenerateMessage extends Message {
 	@ToString(callSuper = true)
     public static class GenerateSuccessMessage extends GenerateResponseMessage {
 
-        public final GenerateMessage originalMessage;
+        public final GenerateMapMessage originalMessage;
     }
 
     public final ActorRef<GenerateResponseMessage> replyTo;
+
+	public final String database;
+
+	public final String user;
+
+	public final String password;
 
 	public final int mapid;
 
@@ -46,4 +52,8 @@ public class GenerateMessage extends Message {
 	public final int height;
 
 	public final int depth;
+
+	public int getSize() {
+		return depth * height * width;
+	}
 }
