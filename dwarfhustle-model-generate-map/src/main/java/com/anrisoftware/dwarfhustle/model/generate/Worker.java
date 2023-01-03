@@ -132,6 +132,7 @@ public class Worker {
 		generateNodes(m);
 		generatePaths(m);
 		pool.shutdown();
+		log.trace("Done generating map");
 	}
 
 	private List<List<List<OVertex>>> nodes;
@@ -204,7 +205,6 @@ public class Worker {
 			done++;
 			log.trace("Task still running {}", tasks.size() - done);
 		}
-		System.out.println("done"); // TODO
 	}
 
 	private void saveEdges(List<OEdge> edges, GenerateMapMessage m, MutableList<CompletableFuture<Void>> tasks) {

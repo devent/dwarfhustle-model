@@ -1,7 +1,5 @@
 package com.anrisoftware.dwarfhustle.model.generate
 
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbTestUtils.*
-
 import java.time.Duration
 import java.util.concurrent.CountDownLatch
 
@@ -15,6 +13,8 @@ import com.anrisoftware.dwarfhustle.model.actor.MainActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.api.ApiModule
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CloseDbMessage
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbServerUtils
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbTestUtils
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbModule
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsActor
@@ -42,6 +42,10 @@ class WorkerTest {
 
 	static Injector injector
 
+	static DbTestUtils dbTestUtils
+
+	static DbServerUtils dbServerUtils
+
 	static ActorRef<Message> orientDbActor
 
 	static ActorRef<Message> objectsActor
@@ -60,7 +64,8 @@ class WorkerTest {
 
 	@BeforeAll
 	static void setupActor() {
-		fillDatabase = false
+		dbServerUtils = new DbServerUtils()
+		dbServerUtils.createServer()
 		injector = Guice.createInjector(
 				new MainActorsModule(), new ObjectsModule(), new PowerloomModule(), new GenerateModule(), new OrientDbModule(), new ApiModule(),
 				new PropertiesThreadsModule())
@@ -69,23 +74,26 @@ class WorkerTest {
 		objectsActor = testKit.spawn(ObjectsActor.create(injector, orientDbActor), "objectsActor");
 		powerLoomKnowledgeActor = testKit.spawn(PowerLoomKnowledgeActor.create(injector), "PowerLoomKnowledgeActor");
 		knowledgeBaseActor = testKit.spawn(KnowledgeBaseActor.create(injector, powerLoomKnowledgeActor), "KnowledgeBaseActor");
-		connectCreateDatabase(orientDbActor, objectsActor, testKit, injector.getInstance(IDGenerator.class), initDatabaseLock)
+		dbTestUtils = new DbTestUtils(orientDbActor, objectsActor, testKit, injector.getInstance(IDGenerator.class))
+		dbTestUtils.fillDatabase = false
+		dbTestUtils.connectCreateDatabaseEmbedded(dbServerUtils.server, initDatabaseLock)
 		initDatabaseLock.await()
 	}
 
 	@AfterAll
 	static void closeDb() {
-		deleteDatabase(orientDbActor, testKit, deleteDatabaseLock)
+		dbTestUtils.deleteDatabase(deleteDatabaseLock)
 		orientDbActor.tell(new CloseDbMessage())
 		testKit.shutdown(testKit.system(), timeout)
 		deleteDatabaseLock.await()
+		dbServerUtils.shutdownServer()
 	}
 
 	@Test
 	@Timeout(600)
 	void "test generate"() {
-		def s = 32
-		def m = new GenerateMapMessage(null, database, user, password, 0, s, s, s)
-		workerFactory.create(db).generateMap(m)
+		def s = 64
+		def m = new GenerateMapMessage(null, dbTestUtils.database, dbTestUtils.user, dbTestUtils.password, 0, s, s, s)
+		workerFactory.create(dbTestUtils.db).generateMap(m)
 	}
 }

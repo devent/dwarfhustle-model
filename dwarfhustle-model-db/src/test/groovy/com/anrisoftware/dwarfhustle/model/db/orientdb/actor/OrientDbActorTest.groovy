@@ -69,7 +69,7 @@ class OrientDbActorTest {
 		def result =
 				AskPattern.ask(
 				orientDbActor,
-				{replyTo -> new ConnectDbMessage(replyTo, "remote:localhost", "test", "root", "admin")},
+				{replyTo -> new ConnectDbRemoteMessage(replyTo, "remote:localhost", "test", "root", "admin")},
 				timeout,
 				testKit.scheduler())
 		result.whenComplete( {reply, failure ->

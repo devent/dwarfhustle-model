@@ -11,6 +11,10 @@
 
     <artifactId>dwarfhustle-model-db</artifactId>
 
+    <properties>
+        <argLine>-XX:MaxDirectMemorySize=512g</argLine>
+    </properties>
+
     <dependencies>
         <!-- Test dependencies -->
         <dependency>
@@ -63,10 +67,6 @@
             <groupId>com.anrisoftware.dwarfhustle</groupId>
             <artifactId>dwarfhustle-model-actor</artifactId>
             <version>0.1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.orientechnologies</groupId>
-            <artifactId>orientdb-server</artifactId>
         </dependency>
     </dependencies>
 

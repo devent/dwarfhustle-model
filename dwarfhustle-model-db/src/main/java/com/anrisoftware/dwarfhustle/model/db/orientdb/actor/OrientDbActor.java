@@ -75,7 +75,6 @@ import javax.inject.Inject;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.ConnectDbMessage.ConnectDbSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CreateDbMessage.DbAlreadyExistMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbSuccessMessage;
@@ -146,7 +145,8 @@ public class OrientDbActor {
 	 * Initial behavior. Returns a behavior for the messages:
 	 *
 	 * <ul>
-	 * <li>{@link ConnectDbMessage}
+	 * <li>{@link ConnectDbRemoteMessage}
+	 * <li>{@link ConnectDbEmbeddedMessage}
 	 * </ul>
 	 */
 	public Behavior<Message> start() {
@@ -155,7 +155,7 @@ public class OrientDbActor {
 	}
 
 	/**
-	 * Reacts to {@link ConnectDbMessage}. Replies with the
+	 * Reacts to {@link ConnectDbRemoteMessage}. Replies with the
 	 * {@link ConnectDbSuccessMessage} on success and with {@link DbErrorMessage} on
 	 * failure. Returns a behavior for the messages:
 	 *
@@ -167,8 +167,8 @@ public class OrientDbActor {
 	 * <li>{@link DbCommandMessage}
 	 * </ul>
 	 */
-	private Behavior<Message> onConnectDb(ConnectDbMessage m) {
-		log.debug("onConnectDb {}", m);
+	private Behavior<Message> onConnectDbRemote(ConnectDbRemoteMessage m) {
+		log.debug("onConnectDbRemote {}", m);
 		try {
 			this.user = m.user;
 			this.password = m.password;
@@ -184,10 +184,38 @@ public class OrientDbActor {
 	}
 
 	/**
+	 * Reacts to {@link ConnectDbEmbeddedMessage}. Replies with the
+	 * {@link ConnectDbSuccessMessage} on success and with {@link DbErrorMessage} on
+	 * failure. Returns a behavior for the messages:
+	 *
+	 * <ul>
+	 * <li>{@link CloseDbMessage}
+	 * <li>{@link CreateDbMessage}
+	 * <li>{@link DeleteDbMessage}
+	 * <li>{@link DbCommandReplyMessage}
+	 * <li>{@link DbCommandMessage}
+	 * </ul>
+	 */
+	private Behavior<Message> onConnectDbEmbedded(ConnectDbEmbeddedMessage m) {
+		log.debug("onConnectDbEmbedded {}", m);
+		try {
+			this.user = m.user;
+			this.password = m.password;
+			this.database = m.database;
+			this.orientdb = Optional.of(m.server.getContext());
+		} catch (Exception e) {
+			m.replyTo.tell(new DbErrorMessage(m, e));
+			return Behaviors.same();
+		}
+		m.replyTo.tell(new ConnectDbSuccessMessage(m, orientdb.get()));
+		return getConnectedBehavior().build();
+	}
+
+	/**
 	 * Reacts to {@link CloseDbMessage}. Returns a behavior for the messages:
 	 *
 	 * <ul>
-	 * <li>{@link ConnectDbMessage}
+	 * <li>{@link ConnectDbRemoteMessage}
 	 * </ul>
 	 */
 	private Behavior<Message> onCloseDb(CloseDbMessage m) {
@@ -199,7 +227,7 @@ public class OrientDbActor {
 	}
 
 	/**
-	 * Reacts to {@link ConnectDbMessage}. Replies with {@link DbSuccessMessage} on
+	 * Reacts to {@link ConnectDbRemoteMessage}. Replies with {@link DbSuccessMessage} on
 	 * success, with {@link DbAlreadyExistMessage} if the database already exist or
 	 * with {@link DbErrorMessage} on failure. Returns a behavior for the messages:
 	 *
@@ -308,12 +336,14 @@ public class OrientDbActor {
 	 * Returns a behavior for the messages:
 	 *
 	 * <ul>
-	 * <li>{@link ConnectDbMessage}
+	 * <li>{@link ConnectDbRemoteMessage}
+	 * <li>{@link ConnectDbEmbeddedMessage}
 	 * </ul>
 	 */
 	private BehaviorBuilder<Message> getInitialBehavior() {
 		return Behaviors.receive(Message.class)//
-				.onMessage(ConnectDbMessage.class, this::onConnectDb)//
+				.onMessage(ConnectDbRemoteMessage.class, this::onConnectDbRemote)//
+				.onMessage(ConnectDbEmbeddedMessage.class, this::onConnectDbEmbedded)//
 		;
 	}
 
