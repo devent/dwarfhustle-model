@@ -27,18 +27,18 @@ jcs.region.testCache1.elementattributes=org.apache.commons.jcs3.engine.ElementAt
 jcs.region.testCache1.elementattributes.IsEternal=false
 
 # AVAILABLE AUXILIARY CACHES
-#jcs.auxiliary.DC=org.apache.commons.jcs3.auxiliary.disk.indexed.IndexedDiskCacheFactory
-#jcs.auxiliary.DC.attributes=org.apache.commons.jcs3.auxiliary.disk.indexed.IndexedDiskCacheAttributes
-#jcs.auxiliary.DC.attributes.DiskPath=${user.dir}/.dwarfhustle_jcs_swap
-#jcs.auxiliary.DC.attributes.MaxPurgatorySize=10000000
-#jcs.auxiliary.DC.attributes.MaxKeySize=1000000
-#jcs.auxiliary.DC.attributes.OptimizeAtRemoveCount=300000
-#jcs.auxiliary.DC.attributes.ShutdownSpoolTimeLimit=60
+jcs.auxiliary.DC=org.apache.commons.jcs3.auxiliary.disk.indexed.IndexedDiskCacheFactory
+jcs.auxiliary.DC.attributes=org.apache.commons.jcs3.auxiliary.disk.indexed.IndexedDiskCacheAttributes
+jcs.auxiliary.DC.attributes.DiskPath=${user.dir}/.dwarfhustle_jcs_swap
+jcs.auxiliary.DC.attributes.MaxPurgatorySize=10000000
+jcs.auxiliary.DC.attributes.MaxKeySize=1000000
+jcs.auxiliary.DC.attributes.OptimizeAtRemoveCount=300000
+jcs.auxiliary.DC.attributes.ShutdownSpoolTimeLimit=60
 
 # MAP-TILE
-jcs.region.mapTilesCache=
+jcs.region.mapTilesCache=DC
 jcs.region.mapTilesCache.cacheattributes=org.apache.commons.jcs3.engine.CompositeCacheAttributes
-jcs.region.mapTilesCache.cacheattributes.MaxObjects=6553600
+jcs.region.mapTilesCache.cacheattributes.MaxObjects=32768
 jcs.region.mapTilesCache.cacheattributes.MemoryCacheName=org.apache.commons.jcs3.engine.memory.lru.LRUMemoryCache
 jcs.region.mapTilesCache.cacheattributes.UseMemoryShrinker=false
 jcs.region.mapTilesCache.cacheattributes.MaxMemoryIdleTimeSeconds=3600

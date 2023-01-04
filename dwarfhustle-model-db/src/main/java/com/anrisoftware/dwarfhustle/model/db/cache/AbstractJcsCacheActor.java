@@ -70,6 +70,7 @@ import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.create
 import java.time.Duration;
 import java.util.EventObject;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
@@ -83,7 +84,6 @@ import org.apache.commons.jcs3.engine.control.event.behavior.IElementEventHandle
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.GameObject;
-import com.anrisoftware.dwarfhustle.model.api.GameObjectStorage;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractCacheReplyMessage.CacheErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractCacheReplyMessage.CacheSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.GetMessage.GetSuccessMessage;
@@ -137,17 +137,16 @@ public abstract class AbstractJcsCacheActor<K, V> implements IElementEventHandle
 	public interface AbstractJcsCacheActorFactory {
 
 		@SuppressWarnings("rawtypes")
-		AbstractJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, ActorRef<Message> db,
+		AbstractJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash,
 				Map<String, Object> params);
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <K, V> Behavior<Message> create(Injector injector, ActorRef<Message> db,
-			AbstractJcsCacheActorFactory actorFactory, CompletionStage<CacheAccess<K, V>> initCacheAsync,
-			Map<String, Object> params) {
+	public static <K, V> Behavior<Message> create(Injector injector, AbstractJcsCacheActorFactory actorFactory,
+			CompletionStage<CacheAccess<K, V>> initCacheAsync, Map<String, Object> params) {
 		return Behaviors.withStash(100, stash -> Behaviors.setup((context) -> {
 			initCache(context, initCacheAsync);
-			return actorFactory.create(context, stash, db, params).start();
+			return actorFactory.create(context, stash, params).start();
 		}));
 	}
 
@@ -166,10 +165,40 @@ public abstract class AbstractJcsCacheActor<K, V> implements IElementEventHandle
 	 * Creates the {@link AbstractJcsCacheActor}.
 	 */
 	public static <K, V> CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout,
-			ActorRef<Message> db, AbstractJcsCacheActorFactory actorFactory,
-			CompletionStage<CacheAccess<K, V>> initCache, Map<String, Object> params) {
+			AbstractJcsCacheActorFactory actorFactory, CompletionStage<CacheAccess<K, V>> initCache,
+			Map<String, Object> params) {
 		var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
-		return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, db, actorFactory, initCache, params));
+		return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, actorFactory, initCache, params));
+	}
+
+	public static void createCache(Properties config, Map<String, Object> params) {
+		var cacheName = params.get("cache_name");
+		var maxObjects = params.get("max_objects");
+		var isEternal = params.get("is_enternal");
+		config.put("jcs.region." + cacheName + ".cacheattributes",
+				"org.apache.commons.jcs3.engine.CompositeCacheAttributes");
+		config.put("jcs.region." + cacheName + ".cacheattributes.MaxObjects", maxObjects);
+		config.put("jcs.region." + cacheName + ".cacheattributes.MemoryCacheName",
+				"org.apache.commons.jcs3.engine.memory.lru.LRUMemoryCache");
+		config.put("jcs.region." + cacheName + ".cacheattributes.UseMemoryShrinker", "false");
+		config.put("jcs.region." + cacheName + ".cacheattributes.MaxMemoryIdleTimeSeconds", "3600");
+		config.put("jcs.region." + cacheName + ".cacheattributes.ShrinkerIntervalSeconds", "60");
+		config.put("jcs.region." + cacheName + ".cacheattributes.MaxSpoolPerRun", "500");
+		config.put("jcs.region." + cacheName + ".elementattributes",
+				"org.apache.commons.jcs3.engine.ElementAttributes");
+		config.put("jcs.region." + cacheName + ".elementattributes.IsEternal", isEternal);
+	}
+
+	public static void createFileAuxCache(Properties config, Map<String, Object> params) {
+		var gameName = params.get("game_name");
+		config.put("jcs.auxiliary.file", "org.apache.commons.jcs3.auxiliary.disk.indexed.IndexedDiskCacheFactory");
+		config.put("jcs.auxiliary.file.attributes",
+				"org.apache.commons.jcs3.auxiliary.disk.indexed.IndexedDiskCacheAttributes");
+		config.put("jcs.auxiliary.file.attributes.DiskPath", "${user.dir}/.dwarfhustle_jcs_swap_" + gameName);
+		config.put("jcs.auxiliary.file.attributes.MaxPurgatorySize", "10000000");
+		config.put("jcs.auxiliary.file.attributes.MaxKeySize", "1000000");
+		config.put("jcs.auxiliary.file.attributes.OptimizeAtRemoveCount", "300000");
+		config.put("jcs.auxiliary.file.attributes.ShutdownSpoolTimeLimit", "60");
 	}
 
 	protected final Duration timeout = Duration.ofSeconds(300);
@@ -185,13 +214,6 @@ public abstract class AbstractJcsCacheActor<K, V> implements IElementEventHandle
 	@Inject
 	@Assisted
 	protected StashBuffer<Message> buffer;
-
-	@Inject
-	@Assisted
-	protected ActorRef<Message> db;
-
-	@Inject
-	protected Map<String, GameObjectStorage> storages;
 
 	protected CacheAccess<K, V> cache;
 

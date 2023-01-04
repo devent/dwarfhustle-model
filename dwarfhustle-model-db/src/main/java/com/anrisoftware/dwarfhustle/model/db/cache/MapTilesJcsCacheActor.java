@@ -69,6 +69,7 @@ import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.create
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -81,28 +82,14 @@ import org.eclipse.collections.impl.factory.primitive.LongSets;
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.GameMapPosition;
-import com.anrisoftware.dwarfhustle.model.api.GameObjectStorage;
 import com.anrisoftware.dwarfhustle.model.api.MapTile;
-import com.anrisoftware.dwarfhustle.model.db.cache.AbstractCacheReplyMessage.CacheErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.cache.AbstractCacheReplyMessage.CacheSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandReplyMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbSuccessMessage;
 import com.google.inject.Injector;
-import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
-import com.orientechnologies.orient.core.id.ORID;
-import com.orientechnologies.orient.core.record.OVertex;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.ActorContext;
-import akka.actor.typed.javadsl.AskPattern;
-import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.StashBuffer;
 import akka.actor.typed.receptionist.ServiceKey;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -120,18 +107,6 @@ public class MapTilesJcsCacheActor extends AbstractJcsCacheActor<GameMapPosition
 	public static final int ID = KEY.hashCode();
 
 	/**
-	 * Message that the {@link MapTile} map tiles were loaded initially from the
-	 * database into the cache.
-	 *
-	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
-	 */
-	@RequiredArgsConstructor
-	@ToString(callSuper = true)
-	public static class MapTilesInitialLoadDoneMessage extends Message {
-
-	}
-
-	/**
 	 * Factory to create {@link MapTilesJcsCacheActor}.
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
@@ -139,36 +114,44 @@ public class MapTilesJcsCacheActor extends AbstractJcsCacheActor<GameMapPosition
 	public interface MapTilesJcsCacheActorFactory extends AbstractJcsCacheActorFactory {
 
 		@Override
-		MapTilesJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, ActorRef<Message> db,
+		MapTilesJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash,
 				Map<String, Object> params);
 	}
 
-	public static <K, V> Behavior<Message> create(Injector injector, ActorRef<Message> db,
-			AbstractJcsCacheActorFactory actorFactory, CompletionStage<CacheAccess<K, V>> initCacheAsync,
-			Map<String, Object> params) {
-		return AbstractJcsCacheActor.create(injector, db, actorFactory, initCacheAsync, params);
+	public static <K, V> Behavior<Message> create(Injector injector, AbstractJcsCacheActorFactory actorFactory,
+			CompletionStage<CacheAccess<K, V>> initCacheAsync, Map<String, Object> params) {
+		return AbstractJcsCacheActor.create(injector, actorFactory, initCacheAsync, params);
 	}
 
 	/**
 	 * Creates the {@link MapTilesJcsCacheActor}.
 	 */
-	public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout, ActorRef<Message> db,
+	public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout,
 			Map<String, Object> params) {
 		var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
 		var actorFactory = injector.getInstance(MapTilesJcsCacheActorFactory.class);
-		var initCache = createInitCacheAsync();
-		return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, db, actorFactory, initCache, params));
+		var initCache = createInitCacheAsync(params);
+		return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, actorFactory, initCache, params));
 	}
 
-	public static CompletableFuture<CacheAccess<Object, Object>> createInitCacheAsync() {
+	public static CompletableFuture<CacheAccess<Object, Object>> createInitCacheAsync(Map<String, Object> params) {
 		var initCache = CompletableFuture.supplyAsync(() -> {
-			return loadCache();
+			return createCache(params);
 		});
 		return initCache;
 	}
 
-	private static CacheAccess<Object, Object> loadCache() {
+	private static CacheAccess<Object, Object> createCache(Map<String, Object> params) {
 		try {
+			var mapid = params.get("mapid");
+			params.put("cache_name", "mapTilesCache_" + mapid);
+			params.put("max_objects", 32768);
+			params.put("is_enternal", true);
+			var config = new Properties();
+			createFileAuxCache(config, params);
+			config.put("jcs.region.mapTilesCache", "file");
+			createCache(config, params);
+			JCS.setConfigProperties(config);
 			return JCS.getInstance("mapTilesCache");
 		} catch (CacheException e) {
 			throw new RuntimeException(e);
@@ -183,9 +166,7 @@ public class MapTilesJcsCacheActor extends AbstractJcsCacheActor<GameMapPosition
 
 	private int depth;
 
-	private MutableLongSet goids;
-
-	private GameObjectStorage storage;
+	private MutableLongSet ids;
 
 	@Override
 	protected Behavior<Message> initialStage(InitialStateMessage<GameMapPosition, MapTile> m) {
@@ -194,115 +175,16 @@ public class MapTilesJcsCacheActor extends AbstractJcsCacheActor<GameMapPosition
 		this.width = (int) params.get("width");
 		this.height = (int) params.get("height");
 		this.depth = (int) params.get("depth");
-		this.goids = LongSets.mutable.withInitialCapacity(width * height * depth);
-		this.storage = storages.get(MapTile.TYPE);
-		loadMapTiles();
-		return Behaviors.receive(Message.class)//
-				.onMessage(MapTilesInitialLoadDoneMessage.class, this::onMapTilesInitialLoadDone)//
-				.onMessage(SetupErrorMessage.class, this::onSetupError)//
-				.onMessage(Message.class, this::stashOtherCommand)//
-				.build();
-	}
-
-	private Behavior<Message> onMapTilesInitialLoadDone(MapTilesInitialLoadDoneMessage m) {
-		log.debug("onMapTilesInitialLoadDone {}", m);
-		return buffer.unstashAll(getInitialBehavior()//
-				.build());
-	}
-
-	private void loadMapTiles() {
-		CompletionStage<DbResponseMessage> stage = AskPattern.ask(db, replyTo -> new DbCommandReplyMessage(replyTo, db -> {
-			return loadMapTilesAsync(db);
-		}), timeout, context.getSystem().scheduler());
-		context.pipeToSelf(stage, (result, cause) -> {
-			if (cause != null) {
-				return new SetupErrorMessage(cause);
-			} else {
-				if (result instanceof DbErrorMessage) {
-					DbErrorMessage m = (DbErrorMessage) result;
-					return new SetupErrorMessage(m.error);
-				} else {
-					return new MapTilesInitialLoadDoneMessage();
-				}
-			}
-		});
-	}
-
-	private Void loadMapTilesAsync(ODatabaseDocument db) {
-		var rs = db.query("SELECT FROM ? where objecttype = ? and mapid = ?", MapTile.TYPE, MapTile.TYPE, mapid);
-		while (rs.hasNext()) {
-			var item = rs.next();
-			var go = storage.load(item.toElement(), storage.create());
-			cache.put(go.getPos(), (MapTile) go);
-			goids.add(go.getId());
-		}
-		rs.close();
-		return null;
+		this.ids = LongSets.mutable.withInitialCapacity(width * height * depth);
+		return super.initialStage(m);
 	}
 
 	@Override
 	protected MapTile retrieveValueFromDb(GetMessage m) {
-		CompletionStage<DbResponseMessage> result = AskPattern.ask(db, replyTo -> new DbCommandReplyMessage(replyTo, db -> {
-			return retrieveGameObjectAsync(db, m);
-		}), timeout, context.getSystem().scheduler());
-		var future = result.toCompletableFuture();
-		result.whenComplete((response, throwable) -> {
-			translateDbResponse(m, response, throwable);
-		});
-		future.join();
 		return null;
-	}
-
-	private void translateDbResponse(GetMessage m, DbResponseMessage response, Throwable throwable) {
-		if (throwable != null) {
-			m.replyTo.tell(new CacheErrorMessage(m, throwable));
-		} else {
-			if (response instanceof DbSuccessMessage) {
-				m.replyTo.tell(new CacheSuccessMessage(m));
-			} else if (response instanceof DbErrorMessage) {
-				var ret = (DbErrorMessage) response;
-				m.replyTo.tell(new CacheErrorMessage(m, ret.error));
-			}
-		}
-	}
-
-	private MapTile retrieveGameObjectAsync(ODatabaseDocument db, GetMessage m) {
-		var pos = (GameMapPosition) m.key;
-		var rs = db.query("SELECT FROM ? where objecttype = ? and mapid = ? and x = ? and y = ? and z = ?",
-				MapTile.TYPE, pos.getMapid(), pos.getX(), pos.getY(), pos.getZ());
-		MapTile go = null;
-		while (rs.hasNext()) {
-			var item = rs.next();
-			go = (MapTile) storage.load(item, storage.create());
-			cache.put(go.getPos(), go);
-		}
-		rs.close();
-		return go;
 	}
 
 	@Override
 	protected void storeValueDb(PutMessage m) {
-		CompletionStage<DbResponseMessage> result = AskPattern.ask(db, replyTo -> new DbCommandReplyMessage(replyTo, db -> {
-			return storeValueDbAsync(db, m);
-		}), timeout, context.getSystem().scheduler());
-		result.whenComplete((response, throwable) -> {
-			if (throwable != null) {
-				m.replyTo.tell(new CacheErrorMessage(m, throwable));
-			}
-		});
-	}
-
-	private Void storeValueDbAsync(ODatabaseDocument db, PutMessage m) {
-		var go = (MapTile) m.value;
-		if (!go.isDirty()) {
-			return null;
-		}
-		var rid = (ORID) go.getRid();
-		OVertex v = null;
-		if (rid == null) {
-			v = db.newVertex(go.getType());
-		}
-		storage.save(v, go);
-		return null;
 	}
 }

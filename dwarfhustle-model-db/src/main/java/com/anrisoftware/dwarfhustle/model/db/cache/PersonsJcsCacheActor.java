@@ -72,6 +72,8 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import javax.inject.Inject;
+
 import org.apache.commons.jcs3.JCS;
 import org.apache.commons.jcs3.access.CacheAccess;
 import org.apache.commons.jcs3.access.exception.CacheException;
@@ -139,14 +141,15 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPosition,
 	public interface PersonsJcsCacheActorFactory extends AbstractJcsCacheActorFactory {
 
 		@Override
-		PersonsJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, ActorRef<Message> db,
+		PersonsJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash,
 				Map<String, Object> params);
 	}
 
 	public static <K, V> Behavior<Message> create(Injector injector, ActorRef<Message> db,
 			AbstractJcsCacheActorFactory actorFactory, CompletionStage<CacheAccess<K, V>> initCacheAsync,
 			Map<String, Object> params) {
-		return AbstractJcsCacheActor.create(injector, db, actorFactory, initCacheAsync, params);
+		params.put("db", db);
+		return AbstractJcsCacheActor.create(injector, actorFactory, initCacheAsync, params);
 	}
 
 	/**
@@ -175,15 +178,22 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPosition,
 		}
 	}
 
+	@Inject
+	private Map<String, GameObjectStorage> storages;
+
 	private int mapid;
 
 	private MutableLongSet goids;
 
 	private GameObjectStorage storage;
 
+	private ActorRef<Message> db;
+
+	@SuppressWarnings("unchecked")
 	@Override
 	protected Behavior<Message> initialStage(InitialStateMessage<GameMapPosition, MapTile> m) {
 		log.debug("initialStage {}", m);
+		this.db = (ActorRef<Message>) params.get("db");
 		this.mapid = (int) params.get("mapid");
 		this.goids = LongSets.mutable.withInitialCapacity(1000);
 		this.storage = storages.get(MapTile.TYPE);
@@ -202,9 +212,10 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPosition,
 	}
 
 	private void loadMapTiles() {
-		CompletionStage<DbResponseMessage> stage = AskPattern.ask(db, replyTo -> new DbCommandReplyMessage(replyTo, db -> {
-			return loadMapTilesAsync(db);
-		}), timeout, context.getSystem().scheduler());
+		CompletionStage<DbResponseMessage> stage = AskPattern.ask(db,
+				replyTo -> new DbCommandReplyMessage(replyTo, db -> {
+					return loadMapTilesAsync(db);
+				}), timeout, context.getSystem().scheduler());
 		context.pipeToSelf(stage, (result, cause) -> {
 			if (cause != null) {
 				return new SetupErrorMessage(cause);
@@ -233,9 +244,10 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPosition,
 
 	@Override
 	protected MapTile retrieveValueFromDb(GetMessage m) {
-		CompletionStage<DbResponseMessage> result = AskPattern.ask(db, replyTo -> new DbCommandReplyMessage(replyTo, db -> {
-			return retrieveGameObjectAsync(db, m);
-		}), timeout, context.getSystem().scheduler());
+		CompletionStage<DbResponseMessage> result = AskPattern.ask(db,
+				replyTo -> new DbCommandReplyMessage(replyTo, db -> {
+					return retrieveGameObjectAsync(db, m);
+				}), timeout, context.getSystem().scheduler());
 		var future = result.toCompletableFuture();
 		result.whenComplete((response, throwable) -> {
 			translateDbResponse(m, response, throwable);
@@ -273,9 +285,10 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPosition,
 
 	@Override
 	protected void storeValueDb(PutMessage m) {
-		CompletionStage<DbResponseMessage> result = AskPattern.ask(db, replyTo -> new DbCommandReplyMessage(replyTo, db -> {
-			return storeValueDbAsync(db, m);
-		}), timeout, context.getSystem().scheduler());
+		CompletionStage<DbResponseMessage> result = AskPattern.ask(db,
+				replyTo -> new DbCommandReplyMessage(replyTo, db -> {
+					return storeValueDbAsync(db, m);
+				}), timeout, context.getSystem().scheduler());
 		result.whenComplete((response, throwable) -> {
 			if (throwable != null) {
 				m.replyTo.tell(new CacheErrorMessage(m, throwable));
