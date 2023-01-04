@@ -19,12 +19,12 @@ import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.api.ApiModule
 import com.anrisoftware.dwarfhustle.model.api.GameMapPosition
 import com.anrisoftware.dwarfhustle.model.api.MapTile
-import com.anrisoftware.dwarfhustle.model.db.cache.GetMessage
-import com.anrisoftware.dwarfhustle.model.db.cache.GetMessage.GetSuccessMessage
+import com.anrisoftware.dwarfhustle.model.db.cache.AbstractGetMessage.GetReplyMessage
+import com.anrisoftware.dwarfhustle.model.db.cache.AbstractGetMessage.GetSuccessMessage
+import com.anrisoftware.dwarfhustle.model.db.cache.AbstractPutMessage.PutReplyMessage
 import com.anrisoftware.dwarfhustle.model.db.cache.JcsCacheModule
 import com.anrisoftware.dwarfhustle.model.db.cache.MapTilesJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.db.cache.MapTilesJcsCacheActor.MapTilesJcsCacheActorFactory
-import com.anrisoftware.dwarfhustle.model.db.cache.PutMessage
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbModule
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsModule
 import com.google.inject.Guice
@@ -81,7 +81,7 @@ class MapTilesJcsCacheActorTest {
 		def result =
 				AskPattern.ask(
 				mapTilesCacheActor,
-				{replyTo -> new PutMessage(replyTo, go.id, go)},
+				{replyTo -> new PutReplyMessage(replyTo, go.id, go)},
 				timeout,
 				testKit.scheduler())
 		result.whenComplete( {reply, failure ->
@@ -102,7 +102,7 @@ class MapTilesJcsCacheActorTest {
 		def result =
 				AskPattern.ask(
 				mapTilesCacheActor,
-				{replyTo -> new PutMessage(replyTo, go.pos, go)},
+				{replyTo -> new PutReplyMessage(replyTo, go.pos, go)},
 				timeout,
 				testKit.scheduler())
 		result.whenComplete( {reply, failure ->
@@ -120,7 +120,7 @@ class MapTilesJcsCacheActorTest {
 		def result =
 				AskPattern.ask(
 				mapTilesCacheActor,
-				{replyTo -> new GetMessage(replyTo, MapTile.TYPE, new GameMapPosition(0, 11, 20, 1))},
+				{replyTo -> new GetReplyMessage(replyTo, MapTile.TYPE, new GameMapPosition(0, 11, 20, 1))},
 				timeout,
 				testKit.scheduler())
 		result.whenComplete( {reply, failure ->

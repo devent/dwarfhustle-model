@@ -84,9 +84,14 @@ import org.apache.commons.jcs3.engine.control.event.behavior.IElementEventHandle
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.GameObject;
-import com.anrisoftware.dwarfhustle.model.db.cache.AbstractCacheReplyMessage.CacheErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.cache.AbstractCacheReplyMessage.CacheSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.db.cache.GetMessage.GetSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.AbstractGetMessage.GetMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.AbstractGetMessage.GetReplyMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.AbstractGetMessage.GetSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.AbstractPutMessage.PutMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.AbstractPutMessage.PutReplyMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage.CacheErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage.CacheSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.RetrieveCacheMessage.RetrieveCacheResponseMessage;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
 
@@ -249,8 +254,9 @@ public abstract class AbstractJcsCacheActor<K, V> implements IElementEventHandle
 	 * Returns a behavior for the messages:
 	 *
 	 * <ul>
-	 * <li>{@link PutMessage}
-	 * <li>{@link GetMessage}
+	 * <li>{@link PutReplyMessage}
+	 * <li>{@link GetReplyMessage}
+	 * <li>{@link RetrieveCacheMessage}
 	 * <li>{@link CacheElementEventMessage}
 	 * </ul>
 	 */
@@ -276,14 +282,38 @@ public abstract class AbstractJcsCacheActor<K, V> implements IElementEventHandle
 	 * Returns a behavior for the messages:
 	 *
 	 * <ul>
+	 * <li>{@link PutReplyMessage}
 	 * <li>{@link PutMessage}
+	 * <li>{@link GetReplyMessage}
 	 * <li>{@link GetMessage}
+	 * <li>{@link RetrieveCacheMessage}
 	 * <li>{@link CacheElementEventMessage}
 	 * </ul>
 	 */
-	@SuppressWarnings("unchecked")
+	private Behavior<Message> onPutReply(PutReplyMessage m) {
+		log.debug("onPutReply {}", m);
+		return doPut(m);
+	}
+
+	/**
+	 * Returns a behavior for the messages:
+	 *
+	 * <ul>
+	 * <li>{@link PutReplyMessage}
+	 * <li>{@link PutMessage}
+	 * <li>{@link GetReplyMessage}
+	 * <li>{@link GetMessage}
+	 * <li>{@link RetrieveCacheMessage}
+	 * <li>{@link CacheElementEventMessage}
+	 * </ul>
+	 */
 	private Behavior<Message> onPut(PutMessage m) {
 		log.debug("onPut {}", m);
+		return doPut(m);
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private Behavior<Message> doPut(AbstractPutMessage m) {
 		try {
 			cache.put((K) m.key, (V) m.value);
 			storeValueDb(m);
@@ -298,20 +328,44 @@ public abstract class AbstractJcsCacheActor<K, V> implements IElementEventHandle
 	 * Returns a behavior for the messages:
 	 *
 	 * <ul>
+	 * <li>{@link PutReplyMessage}
 	 * <li>{@link PutMessage}
+	 * <li>{@link GetReplyMessage}
 	 * <li>{@link GetMessage}
+	 * <li>{@link RetrieveCacheMessage}
+	 * <li>{@link CacheElementEventMessage}
+	 * </ul>
+	 */
+	private Behavior<Message> onGetReply(GetReplyMessage m) {
+		log.debug("onGetReply {}", m);
+		return doGet(m);
+	}
+
+	/**
+	 * Returns a behavior for the messages:
+	 *
+	 * <ul>
+	 * <li>{@link PutReplyMessage}
+	 * <li>{@link PutMessage}
+	 * <li>{@link GetReplyMessage}
+	 * <li>{@link GetMessage}
+	 * <li>{@link RetrieveCacheMessage}
 	 * <li>{@link CacheElementEventMessage}
 	 * </ul>
 	 */
 	private Behavior<Message> onGet(GetMessage m) {
 		log.debug("onGet {}", m);
+		return doGet(m);
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private Behavior<Message> doGet(AbstractGetMessage m) {
 		try {
-			@SuppressWarnings("unchecked")
 			var v = cache.get((K) m.key);
 			if (v == null) {
 				v = retrieveValueFromDb(m);
 			} else {
-				m.replyTo.tell(new GetSuccessMessage(m, v));
+				m.replyTo.tell(new GetSuccessMessage(m, (GameObject) v));
 			}
 		} catch (CacheException e) {
 			m.replyTo.tell(new CacheErrorMessage(m, e));
@@ -323,8 +377,11 @@ public abstract class AbstractJcsCacheActor<K, V> implements IElementEventHandle
 	 * Handle {@link CacheElementEventMessage}. Returns a behavior for the messages:
 	 *
 	 * <ul>
+	 * <li>{@link PutReplyMessage}
 	 * <li>{@link PutMessage}
+	 * <li>{@link GetReplyMessage}
 	 * <li>{@link GetMessage}
+	 * <li>{@link RetrieveCacheMessage}
 	 * <li>{@link CacheElementEventMessage}
 	 * </ul>
 	 */
@@ -334,12 +391,35 @@ public abstract class AbstractJcsCacheActor<K, V> implements IElementEventHandle
 	}
 
 	/**
+	 * Handle {@link CacheElementEventMessage}. Replies with a
+	 * {@link RetrieveCacheResponseMessage} message. Returns a behavior for the
+	 * messages:
+	 *
+	 * <ul>
+	 * <li>{@link PutReplyMessage}
+	 * <li>{@link PutMessage}
+	 * <li>{@link GetReplyMessage}
+	 * <li>{@link GetMessage}
+	 * <li>{@link RetrieveCacheMessage}
+	 * <li>{@link CacheElementEventMessage}
+	 * </ul>
+	 */
+	protected Behavior<Message> onRetrieveCache(RetrieveCacheMessage<K, V> m) {
+		log.debug("onRetrieveCache {}", m);
+		m.replyTo.tell(new RetrieveCacheResponseMessage<>(m, cache));
+		return Behaviors.same();
+	}
+
+	/**
 	 * Unstash all messages kept in the buffer and return the initial behavior.
 	 * Returns a behavior for the messages:
 	 *
 	 * <ul>
+	 * <li>{@link PutReplyMessage}
 	 * <li>{@link PutMessage}
+	 * <li>{@link GetReplyMessage}
 	 * <li>{@link GetMessage}
+	 * <li>{@link RetrieveCacheMessage}
 	 * <li>{@link CacheElementEventMessage}
 	 * </ul>
 	 */
@@ -354,15 +434,21 @@ public abstract class AbstractJcsCacheActor<K, V> implements IElementEventHandle
 	 * the messages:
 	 *
 	 * <ul>
+	 * <li>{@link PutReplyMessage}
 	 * <li>{@link PutMessage}
+	 * <li>{@link GetReplyMessage}
 	 * <li>{@link GetMessage}
+	 * <li>{@link RetrieveCacheMessage}
 	 * <li>{@link CacheElementEventMessage}
 	 * </ul>
 	 */
 	protected BehaviorBuilder<Message> getInitialBehavior() {
 		return Behaviors.receive(Message.class)//
+				.onMessage(PutReplyMessage.class, this::onPutReply)//
 				.onMessage(PutMessage.class, this::onPut)//
+				.onMessage(GetReplyMessage.class, this::onGetReply)//
 				.onMessage(GetMessage.class, this::onGet)//
+				.onMessage(RetrieveCacheMessage.class, this::onRetrieveCache)//
 				.onMessage(CacheElementEventMessage.class, this::onCacheElementEvent)//
 		;
 	}
@@ -370,7 +456,7 @@ public abstract class AbstractJcsCacheActor<K, V> implements IElementEventHandle
 	/**
 	 * Stores the put value in the database.
 	 */
-	protected abstract void storeValueDb(PutMessage m);
+	protected abstract void storeValueDb(AbstractPutMessage<?> m);
 
 	/**
 	 * Retrieves the value from the database. Example send a database command:
@@ -383,6 +469,6 @@ public abstract class AbstractJcsCacheActor<K, V> implements IElementEventHandle
 	 * });
 	 * </pre>
 	 */
-	protected abstract V retrieveValueFromDb(GetMessage m);
+	protected abstract V retrieveValueFromDb(AbstractGetMessage<?> m);
 
 }

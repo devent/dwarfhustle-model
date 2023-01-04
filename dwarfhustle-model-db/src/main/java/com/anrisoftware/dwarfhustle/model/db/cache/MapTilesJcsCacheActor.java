@@ -180,11 +180,11 @@ public class MapTilesJcsCacheActor extends AbstractJcsCacheActor<GameMapPosition
 	}
 
 	@Override
-	protected MapTile retrieveValueFromDb(GetMessage m) {
+	protected MapTile retrieveValueFromDb(AbstractGetMessage<?> m) {
 		return null;
 	}
 
 	@Override
-	protected void storeValueDb(PutMessage m) {
+	protected void storeValueDb(AbstractPutMessage<?> m) {
 	}
 }

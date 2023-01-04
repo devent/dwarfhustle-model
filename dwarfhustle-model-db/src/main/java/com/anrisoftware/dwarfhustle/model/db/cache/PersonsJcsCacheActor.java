@@ -85,8 +85,8 @@ import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.GameMapPosition;
 import com.anrisoftware.dwarfhustle.model.api.GameObjectStorage;
 import com.anrisoftware.dwarfhustle.model.api.MapTile;
-import com.anrisoftware.dwarfhustle.model.db.cache.AbstractCacheReplyMessage.CacheErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.cache.AbstractCacheReplyMessage.CacheSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage.CacheErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage.CacheSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandReplyMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage;
@@ -243,7 +243,7 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPosition,
 	}
 
 	@Override
-	protected MapTile retrieveValueFromDb(GetMessage m) {
+	protected MapTile retrieveValueFromDb(AbstractGetMessage<?> m) {
 		CompletionStage<DbResponseMessage> result = AskPattern.ask(db,
 				replyTo -> new DbCommandReplyMessage(replyTo, db -> {
 					return retrieveGameObjectAsync(db, m);
@@ -256,7 +256,8 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPosition,
 		return null;
 	}
 
-	private void translateDbResponse(GetMessage m, DbResponseMessage response, Throwable throwable) {
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private void translateDbResponse(AbstractGetMessage m, DbResponseMessage response, Throwable throwable) {
 		if (throwable != null) {
 			m.replyTo.tell(new CacheErrorMessage(m, throwable));
 		} else {
@@ -269,7 +270,7 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPosition,
 		}
 	}
 
-	private MapTile retrieveGameObjectAsync(ODatabaseDocument db, GetMessage m) {
+	private MapTile retrieveGameObjectAsync(ODatabaseDocument db, AbstractGetMessage<?> m) {
 		var pos = (GameMapPosition) m.key;
 		var rs = db.query("SELECT FROM ? where objecttype = ? and mapid = ? and x = ? and y = ? and z = ?",
 				MapTile.TYPE, pos.getMapid(), pos.getX(), pos.getY(), pos.getZ());
@@ -284,19 +285,24 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPosition,
 	}
 
 	@Override
-	protected void storeValueDb(PutMessage m) {
+	protected void storeValueDb(AbstractPutMessage<?> m) {
 		CompletionStage<DbResponseMessage> result = AskPattern.ask(db,
 				replyTo -> new DbCommandReplyMessage(replyTo, db -> {
 					return storeValueDbAsync(db, m);
 				}), timeout, context.getSystem().scheduler());
 		result.whenComplete((response, throwable) -> {
 			if (throwable != null) {
-				m.replyTo.tell(new CacheErrorMessage(m, throwable));
+				tellCacheError(m, throwable);
 			}
 		});
 	}
 
-	private Void storeValueDbAsync(ODatabaseDocument db, PutMessage m) {
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private void tellCacheError(AbstractPutMessage m, Throwable throwable) {
+		m.replyTo.tell(new CacheErrorMessage(m, throwable));
+	}
+
+	private Void storeValueDbAsync(ODatabaseDocument db, AbstractPutMessage<?> m) {
 		var go = (MapTile) m.value;
 		if (!go.isDirty()) {
 			return null;

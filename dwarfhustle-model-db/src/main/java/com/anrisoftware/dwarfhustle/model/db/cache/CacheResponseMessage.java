@@ -2,29 +2,17 @@ package com.anrisoftware.dwarfhustle.model.db.cache;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 
-import akka.actor.typed.ActorRef;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
- * Message to interact with the cache.
+ * Base class of cache responses.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @RequiredArgsConstructor
 @ToString(callSuper = true)
-public class AbstractCacheReplyMessage extends Message {
-
-	/**
-	 * Base class of cache responses.
-	 *
-	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
-	 */
-	@RequiredArgsConstructor
-	@ToString(callSuper = true)
-	public static class CacheResponseMessage extends Message {
-
-	}
+public class CacheResponseMessage extends Message {
 
 	/**
 	 * Cache error response.
@@ -35,7 +23,8 @@ public class AbstractCacheReplyMessage extends Message {
 	@ToString(callSuper = true)
 	public static class CacheErrorMessage extends CacheResponseMessage {
 
-		public final AbstractCacheReplyMessage originalMessage;
+		@ToString.Exclude
+		public final Message m;
 
 		public final Throwable error;
 	}
@@ -49,11 +38,8 @@ public class AbstractCacheReplyMessage extends Message {
 	@ToString(callSuper = true)
 	public static class CacheSuccessMessage extends CacheResponseMessage {
 
-		public final AbstractCacheReplyMessage originalMessage;
+		@ToString.Exclude
+		public final Message m;
 	}
 
-	/**
-	 * Reply to {@link ActorRef}.
-	 */
-	public final ActorRef<CacheResponseMessage> replyTo;
 }
