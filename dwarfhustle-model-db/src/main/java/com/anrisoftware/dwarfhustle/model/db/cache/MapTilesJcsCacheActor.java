@@ -76,6 +76,7 @@ import java.util.concurrent.CompletionStage;
 import org.apache.commons.jcs3.JCS;
 import org.apache.commons.jcs3.access.CacheAccess;
 import org.apache.commons.jcs3.access.exception.CacheException;
+import org.apache.commons.jcs3.engine.control.event.behavior.IElementEvent;
 import org.eclipse.collections.api.set.primitive.MutableLongSet;
 import org.eclipse.collections.impl.factory.primitive.LongSets;
 
@@ -144,15 +145,20 @@ public class MapTilesJcsCacheActor extends AbstractJcsCacheActor<GameMapPosition
 	private static CacheAccess<Object, Object> createCache(Map<String, Object> params) {
 		try {
 			var mapid = params.get("mapid");
-			params.put("cache_name", "mapTilesCache_" + mapid);
-			params.put("max_objects", 32768);
-			params.put("is_enternal", true);
+			var cacheName = "mapTilesCache_" + mapid;
+			var width = (int) params.get("width");
+			var height = (int) params.get("height");
+			var depth = (int) params.get("depth");
+			params.put("cache_name", cacheName);
+			params.put("max_objects", width * height * depth);
+			params.put("is_eternal", true);
+			params.put("max_key_size", width * height * depth);
 			var config = new Properties();
 			createFileAuxCache(config, params);
-			config.put("jcs.region.mapTilesCache", "file");
+			config.put("jcs.region." + cacheName, cacheName + "_file");
 			createCache(config, params);
 			JCS.setConfigProperties(config);
-			return JCS.getInstance("mapTilesCache");
+			return JCS.getInstance(cacheName);
 		} catch (CacheException e) {
 			throw new RuntimeException(e);
 		}
@@ -177,6 +183,10 @@ public class MapTilesJcsCacheActor extends AbstractJcsCacheActor<GameMapPosition
 		this.depth = (int) params.get("depth");
 		this.ids = LongSets.mutable.withInitialCapacity(width * height * depth);
 		return super.initialStage(m);
+	}
+
+	@Override
+	public <T> void handleElementEvent(IElementEvent<T> event) {
 	}
 
 	@Override

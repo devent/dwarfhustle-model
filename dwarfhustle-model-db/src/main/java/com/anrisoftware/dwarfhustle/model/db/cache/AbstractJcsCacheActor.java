@@ -67,6 +67,7 @@ package com.anrisoftware.dwarfhustle.model.db.cache;
 
 import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
 
+import java.io.File;
 import java.time.Duration;
 import java.util.EventObject;
 import java.util.Map;
@@ -179,10 +180,10 @@ public abstract class AbstractJcsCacheActor<K, V> implements IElementEventHandle
 	public static void createCache(Properties config, Map<String, Object> params) {
 		var cacheName = params.get("cache_name");
 		var maxObjects = params.get("max_objects");
-		var isEternal = params.get("is_enternal");
+		var isEternal = params.get("is_eternal");
 		config.put("jcs.region." + cacheName + ".cacheattributes",
 				"org.apache.commons.jcs3.engine.CompositeCacheAttributes");
-		config.put("jcs.region." + cacheName + ".cacheattributes.MaxObjects", maxObjects);
+		config.put("jcs.region." + cacheName + ".cacheattributes.MaxObjects", toString(maxObjects));
 		config.put("jcs.region." + cacheName + ".cacheattributes.MemoryCacheName",
 				"org.apache.commons.jcs3.engine.memory.lru.LRUMemoryCache");
 		config.put("jcs.region." + cacheName + ".cacheattributes.UseMemoryShrinker", "false");
@@ -191,19 +192,30 @@ public abstract class AbstractJcsCacheActor<K, V> implements IElementEventHandle
 		config.put("jcs.region." + cacheName + ".cacheattributes.MaxSpoolPerRun", "500");
 		config.put("jcs.region." + cacheName + ".elementattributes",
 				"org.apache.commons.jcs3.engine.ElementAttributes");
-		config.put("jcs.region." + cacheName + ".elementattributes.IsEternal", isEternal);
+		config.put("jcs.region." + cacheName + ".elementattributes.IsEternal", toString(isEternal));
 	}
 
 	public static void createFileAuxCache(Properties config, Map<String, Object> params) {
 		var gameName = params.get("game_name");
-		config.put("jcs.auxiliary.file", "org.apache.commons.jcs3.auxiliary.disk.indexed.IndexedDiskCacheFactory");
-		config.put("jcs.auxiliary.file.attributes",
+		var cacheName = params.get("cache_name") + "_file";
+		var maxKeySize = params.get("max_key_size");
+		var parentDir = (File) params.get("parent_dir");
+		config.put("jcs.auxiliary." + cacheName,
+				"org.apache.commons.jcs3.auxiliary.disk.indexed.IndexedDiskCacheFactory");
+		config.put("jcs.auxiliary." + cacheName + ".attributes",
 				"org.apache.commons.jcs3.auxiliary.disk.indexed.IndexedDiskCacheAttributes");
-		config.put("jcs.auxiliary.file.attributes.DiskPath", "${user.dir}/.dwarfhustle_jcs_swap_" + gameName);
-		config.put("jcs.auxiliary.file.attributes.MaxPurgatorySize", "10000000");
-		config.put("jcs.auxiliary.file.attributes.MaxKeySize", "1000000");
-		config.put("jcs.auxiliary.file.attributes.OptimizeAtRemoveCount", "300000");
-		config.put("jcs.auxiliary.file.attributes.ShutdownSpoolTimeLimit", "60");
+		config.put("jcs.auxiliary." + cacheName + ".attributes.DiskPath",
+				parentDir.getAbsolutePath() + "/.dwarfhustle_jcs_swap_" + gameName + "_" + cacheName);
+		config.put("jcs.auxiliary." + cacheName + ".attributes.MaxPurgatorySize", toString(maxKeySize));
+		config.put("jcs.auxiliary." + cacheName + ".attributes.MaxKeySize", toString(maxKeySize));
+		config.put("jcs.auxiliary." + cacheName + ".attributes.OptimizeAtRemoveCount", "300000");
+		config.put("jcs.auxiliary." + cacheName + ".attributes.ShutdownSpoolTimeLimit", "60");
+		config.put("jcs.auxiliary." + cacheName + ".attributes.OptimizeOnShutdown", toString(true));
+		config.put("jcs.auxiliary." + cacheName + ".attributes.DiskLimitType", "COUNT");
+	}
+
+	private static String toString(Object v) {
+		return v.toString();
 	}
 
 	protected final Duration timeout = Duration.ofSeconds(300);
@@ -271,7 +283,7 @@ public abstract class AbstractJcsCacheActor<K, V> implements IElementEventHandle
 
 	@Override
 	public <T> void handleElementEvent(IElementEvent<T> event) {
-		log.debug("handleElementEvent {}", event);
+		log.debug("handleElementEvent {} {}", event.getElementEvent(), event);
 		@SuppressWarnings("unchecked")
 		var e = (CacheElement<Object, GameObject>) ((EventObject) event).getSource();
 		var val = e.getVal();

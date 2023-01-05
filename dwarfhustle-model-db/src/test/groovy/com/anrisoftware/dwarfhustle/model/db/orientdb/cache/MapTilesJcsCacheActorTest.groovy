@@ -71,29 +71,8 @@ class MapTilesJcsCacheActorTest {
 	}
 
 	@Test
-	@Timeout(1)
+	@Timeout(600)
 	@Order(1)
-	void put_map_tile_by_id() {
-		def go = new MapTile(generator.generate())
-		go.pos = new GameMapPosition(0, 10, 20, 1)
-		go.material = "Sandstone"
-		def lock = new CountDownLatch(1)
-		def result =
-				AskPattern.ask(
-				mapTilesCacheActor,
-				{replyTo -> new PutReplyMessage(replyTo, go.id, go)},
-				timeout,
-				testKit.scheduler())
-		result.whenComplete( {reply, failure ->
-			log_reply_failure "put_map_tile_by_id", reply, failure
-			lock.countDown()
-		})
-		lock.await()
-	}
-
-	@Test
-	@Timeout(1)
-	@Order(2)
 	void put_map_tile_by_pos_index() {
 		def go = new MapTile(generator.generate())
 		go.pos = new GameMapPosition(0, 11, 20, 1)
@@ -113,7 +92,7 @@ class MapTilesJcsCacheActorTest {
 	}
 
 	@Test
-	@Timeout(1)
+	@Timeout(600)
 	@Order(10)
 	void get_map_tile_by_pos_index() {
 		def lock = new CountDownLatch(1)

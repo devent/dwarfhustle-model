@@ -39,12 +39,6 @@ public class GenerateMapMessage extends Message {
 
     public final ActorRef<GenerateResponseMessage> replyTo;
 
-	public final String database;
-
-	public final String user;
-
-	public final String password;
-
 	public final int mapid;
 
 	public final int width;
