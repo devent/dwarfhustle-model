@@ -3,7 +3,7 @@ package com.anrisoftware.dwarfhustle.model.db.orientdb.actor
 import java.time.Duration
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
-import com.anrisoftware.dwarfhustle.model.api.GameMapPosition
+import com.anrisoftware.dwarfhustle.model.api.GameMapPos
 import com.anrisoftware.dwarfhustle.model.api.MapTile
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.CreateSchemasMessage
@@ -132,7 +132,7 @@ class DbTestUtils {
 				orientDbActor, {replyTo ->
 					new DbCommandReplyMessage(replyTo, { db ->
 						def go = new MapTile(generator.generate())
-						go.pos = new GameMapPosition(0, 10, 20, 2)
+						go.pos = new GameMapPos(0, 10, 20, 2)
 						go.material = "Sandstone"
 						def doc = db.newVertex(go.getType());
 						db.begin();

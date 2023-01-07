@@ -19,23 +19,25 @@ package com.anrisoftware.dwarfhustle.model.api;
 
 import java.io.Serializable;
 
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
- * Game object on the game map.
+ * Game object of the game.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@Data
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Getter
+@Setter
 public class GameObject implements Serializable {
 
 	private static final long serialVersionUID = 8715034096848467783L;
 
-	public static final String TYPE = "GameObject";
+	public static final String OBJECT_TYPE = GameObject.class.getSimpleName();
 
 	/**
 	 * Converts the byte array to an Id.
@@ -58,20 +60,10 @@ public class GameObject implements Serializable {
 	private long id;
 
 	/**
-	 * Record ID set after the object was once stored in the database.
-	 */
-	private Serializable rid;
-
-	/**
 	 * Set to true if the object had changed state and should be stored in the
 	 * database.
 	 */
 	private boolean dirty = false;
-
-	/**
-	 * X, Y and Z position of a {@link GameObject} on the game map.
-	 */
-	private GameMapPosition pos = new GameMapPosition();
 
 	public GameObject(long id) {
 		this.id = id;
@@ -81,14 +73,7 @@ public class GameObject implements Serializable {
 		this(toId(idbuf));
 	}
 
-	public String getType() {
-		return TYPE;
-	}
-
-	public void setPos(GameMapPosition pos) {
-		if (!this.pos.equals(pos)) {
-			setDirty(true);
-			this.pos = pos;
-		}
+	public String getObjectType() {
+		return OBJECT_TYPE;
 	}
 }

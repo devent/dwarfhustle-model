@@ -27,7 +27,7 @@ public class GameObjectSchemaSchema implements GameObjectSchema {
 	@Override
 	public void createSchema(Object db) {
 		var odb = (ODatabaseDocument) db;
-		var c = odb.createVertexClass(GameObject.TYPE);
+		var c = odb.createVertexClass(GameObject.OBJECT_TYPE);
 		c.createProperty(OBJECTID_FIELD, OType.LONG);
 		c.createProperty(OBJECTTYPE_FIELD, OType.STRING);
 		c.createProperty(MAPID_FIELD, OType.INTEGER);

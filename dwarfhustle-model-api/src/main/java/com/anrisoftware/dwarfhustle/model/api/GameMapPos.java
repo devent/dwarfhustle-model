@@ -3,18 +3,22 @@ package com.anrisoftware.dwarfhustle.model.api;
 import java.io.Serializable;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 /**
  * X, Y and Z position of a {@link GameObject} on the game map.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class GameMapPosition implements Serializable {
+@ToString
+@EqualsAndHashCode
+@Getter
+public class GameMapPos implements Serializable {
 
 	private static final long serialVersionUID = 8842532533035915317L;
 
@@ -38,4 +42,15 @@ public class GameMapPosition implements Serializable {
 	 */
 	private int z = -1;
 
+	public int getDiffX(GameMapPos pos) {
+		return x - pos.x;
+	}
+
+	public int getDiffY(GameMapPos pos) {
+		return y - pos.y;
+	}
+
+	public int getDiffZ(GameMapPos pos) {
+		return z - pos.z;
+	}
 }

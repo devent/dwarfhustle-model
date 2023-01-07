@@ -48,7 +48,7 @@ public class Person extends GameObject {
 	}
 
 	@Override
-	public String getType() {
+	public String getObjectType() {
 		return TYPE;
 	}
 

@@ -17,7 +17,7 @@ import org.lable.oss.uniqueid.IDGenerator
 import com.anrisoftware.dwarfhustle.model.actor.MainActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.api.ApiModule
-import com.anrisoftware.dwarfhustle.model.api.GameMapPosition
+import com.anrisoftware.dwarfhustle.model.api.GameMapPos
 import com.anrisoftware.dwarfhustle.model.api.MapTile
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractGetMessage.GetReplyMessage
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractGetMessage.GetSuccessMessage
@@ -75,7 +75,7 @@ class MapTilesJcsCacheActorTest {
 	@Order(1)
 	void put_map_tile_by_pos_index() {
 		def go = new MapTile(generator.generate())
-		go.pos = new GameMapPosition(0, 11, 20, 1)
+		go.pos = new GameMapPos(0, 11, 20, 1)
 		go.material = "Sandstone"
 		def lock = new CountDownLatch(1)
 		def result =
@@ -99,14 +99,14 @@ class MapTilesJcsCacheActorTest {
 		def result =
 				AskPattern.ask(
 				mapTilesCacheActor,
-				{replyTo -> new GetReplyMessage(replyTo, MapTile.TYPE, new GameMapPosition(0, 11, 20, 1))},
+				{replyTo -> new GetReplyMessage(replyTo, MapTile.TYPE, new GameMapPos(0, 11, 20, 1))},
 				timeout,
 				testKit.scheduler())
 		result.whenComplete( {reply, failure ->
 			log_reply_failure "get_map_tile_by_pos_index", reply, failure
 			switch (reply) {
 				case GetSuccessMessage:
-					assert reply.go.pos == new GameMapPosition(0, 11, 20, 1)
+					assert reply.go.pos == new GameMapPos(0, 11, 20, 1)
 					assert reply.go.material == "Sandstone"
 					break
 				default:

@@ -83,7 +83,7 @@ import org.eclipse.collections.impl.factory.primitive.LongSets;
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.GameMapPos;
-import com.anrisoftware.dwarfhustle.model.api.MapTile;
+import com.anrisoftware.dwarfhustle.model.api.MapBlock;
 import com.google.inject.Injector;
 
 import akka.actor.typed.ActorRef;
@@ -94,28 +94,29 @@ import akka.actor.typed.receptionist.ServiceKey;
 import lombok.extern.slf4j.Slf4j;
 
 /**
+ * Cache for {@link MapBlock} map blocks.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
-public class MapTilesJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, MapTile> {
+public class MapBlocksJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, MapBlock> {
 
 	public static final ServiceKey<Message> KEY = ServiceKey.create(Message.class,
-			MapTilesJcsCacheActor.class.getSimpleName());
+			MapBlocksJcsCacheActor.class.getSimpleName());
 
-	public static final String NAME = MapTilesJcsCacheActor.class.getSimpleName();
+	public static final String NAME = MapBlocksJcsCacheActor.class.getSimpleName();
 
 	public static final int ID = KEY.hashCode();
 
 	/**
-	 * Factory to create {@link MapTilesJcsCacheActor}.
+	 * Factory to create {@link MapBlocksJcsCacheActor}.
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
-	public interface MapTilesJcsCacheActorFactory extends AbstractJcsCacheActorFactory {
+	public interface MapBlocksJcsCacheActorFactory extends AbstractJcsCacheActorFactory {
 
 		@Override
-		MapTilesJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash,
+		MapBlocksJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash,
 				Map<String, Object> params);
 	}
 
@@ -125,12 +126,12 @@ public class MapTilesJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Map
 	}
 
 	/**
-	 * Creates the {@link MapTilesJcsCacheActor}.
+	 * Creates the {@link MapBlocksJcsCacheActor}.
 	 */
 	public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout,
 			Map<String, Object> params) {
 		var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
-		var actorFactory = injector.getInstance(MapTilesJcsCacheActorFactory.class);
+		var actorFactory = injector.getInstance(MapBlocksJcsCacheActorFactory.class);
 		var initCache = createInitCacheAsync(params);
 		return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, actorFactory, initCache, params));
 	}
@@ -145,14 +146,16 @@ public class MapTilesJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Map
 	private static CacheAccess<Object, Object> createCache(Map<String, Object> params) {
 		try {
 			var mapid = params.get("mapid");
-			var cacheName = "mapTilesCache_" + mapid;
+			var cacheName = "mapBlocksCache_" + mapid;
 			var width = (int) params.get("width");
 			var height = (int) params.get("height");
 			var depth = (int) params.get("depth");
+			var size = (int) params.get("block_size");
+			int blocks = width * height * depth / (size * size * size) + 1;
 			params.put("cache_name", cacheName);
-			params.put("max_objects", width * height * depth);
+			params.put("max_objects", blocks);
 			params.put("is_eternal", true);
-			params.put("max_key_size", width * height * depth);
+			params.put("max_key_size", blocks);
 			var config = new Properties();
 			createFileAuxCache(config, params);
 			config.put("jcs.region." + cacheName, cacheName + "_file");
@@ -175,7 +178,7 @@ public class MapTilesJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Map
 	private MutableLongSet ids;
 
 	@Override
-	protected Behavior<Message> initialStage(InitialStateMessage<GameMapPos, MapTile> m) {
+	protected Behavior<Message> initialStage(InitialStateMessage<GameMapPos, MapBlock> m) {
 		log.debug("initialStage {}", m);
 		this.mapid = (int) params.get("mapid");
 		this.width = (int) params.get("width");
@@ -190,7 +193,7 @@ public class MapTilesJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Map
 	}
 
 	@Override
-	protected MapTile retrieveValueFromDb(AbstractGetMessage<?> m) {
+	protected MapBlock retrieveValueFromDb(AbstractGetMessage<?> m) {
 		return null;
 	}
 

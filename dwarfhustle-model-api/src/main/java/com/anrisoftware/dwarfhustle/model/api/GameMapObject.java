@@ -17,49 +17,51 @@
  */
 package com.anrisoftware.dwarfhustle.model.api;
 
-import org.eclipse.collections.api.map.ImmutableMap;
-import org.eclipse.collections.api.map.primitive.ImmutableObjectLongMap;
+import java.io.Serializable;
 
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Tile on the game map.
+ * Game object on the game map.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
 @NoArgsConstructor
-public class MapBlock extends GameObject {
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
+@Getter
+@Setter
+public class GameMapObject extends GameObject {
 
-	private static final long serialVersionUID = -5242372790621414364L;
+	private static final long serialVersionUID = 8715034096848467783L;
 
-	public static final String OBJECT_TYPE = MapBlock.class.getSimpleName();
+	public static final String OBJECT_TYPE = GameMapObject.class.getSimpleName();
 
-	private ImmutableObjectLongMap<GameMapPos> blocks;
+	private GameMapPos pos = new GameMapPos();
 
-	private ImmutableMap<GameMapPos, MapTile> tiles;
+	/**
+	 * Record ID set after the object was once stored in the database.
+	 */
+	private Serializable rid = null;
 
-	private GameBlockPos pos = new GameBlockPos();
-
-	public MapBlock(long id) {
+	public GameMapObject(long id) {
 		super(id);
 	}
 
-	public MapBlock(byte[] idbuf) {
+	public GameMapObject(byte[] idbuf) {
 		super(idbuf);
 	}
 
-	public MapBlock(long id, GameBlockPos pos) {
+	public GameMapObject(long id, GameMapPos pos) {
 		super(id);
 		this.pos = pos;
 	}
 
-	public MapBlock(byte[] idbuf, GameBlockPos pos) {
+	public GameMapObject(byte[] idbuf, GameMapPos pos) {
 		super(idbuf);
 		this.pos = pos;
 	}
@@ -70,17 +72,12 @@ public class MapBlock extends GameObject {
 	}
 
 	/**
-	 * Sets the X, Y and Z start position and end position of a {@link MapBlock} on
-	 * the game map.
+	 * Sets the X, Y and Z position of a {@link GameMapObject} on the game map.
 	 */
-	public void setPos(GameBlockPos pos) {
+	public void setPos(GameMapPos pos) {
 		if (!this.pos.equals(pos)) {
 			setDirty(true);
 			this.pos = pos;
 		}
-	}
-
-	public GameMapPos getEndPos() {
-		return pos.getEndPos();
 	}
 }

@@ -25,12 +25,12 @@ import com.anrisoftware.dwarfhustle.model.api.ApiModule
 import com.anrisoftware.dwarfhustle.model.api.GameMapPos
 import com.anrisoftware.dwarfhustle.model.api.MapTile
 import com.anrisoftware.dwarfhustle.model.db.cache.JcsCacheModule
-import com.anrisoftware.dwarfhustle.model.db.cache.MapTilesJcsCacheActor
-import com.anrisoftware.dwarfhustle.model.db.cache.MapTilesJcsCacheActor.MapTilesJcsCacheActorFactory
+import com.anrisoftware.dwarfhustle.model.db.cache.MapBlocksJcsCacheActor
+import com.anrisoftware.dwarfhustle.model.db.cache.MapBlocksJcsCacheActor.MapBlocksJcsCacheActorFactory
 import com.anrisoftware.dwarfhustle.model.db.cache.RetrieveCacheMessage
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbModule
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsModule
-import com.anrisoftware.dwarfhustle.model.generate.Worker.WorkerFactory
+import com.anrisoftware.dwarfhustle.model.generate.WorkerBlocks.WorkerBlocksFactory
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseActor
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.PowerLoomKnowledgeActor
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.PowerloomModule
@@ -44,12 +44,12 @@ import akka.actor.typed.javadsl.AskPattern
 import groovy.util.logging.Slf4j
 
 /**
- * @see KnowledgeBaseActor
+ * @see WorkerBlocks
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
 @TestMethodOrder(OrderAnnotation.class)
-class WorkerTest {
+class WorkerBlocksTest {
 
 	static final ActorTestKit testKit = ActorTestKit.create()
 
@@ -59,7 +59,7 @@ class WorkerTest {
 
 	static ActorRef<Message> knowledgeBaseActor
 
-	static WorkerFactory workerFactory
+	static WorkerBlocksFactory workerFactory
 
 	static timeout = Duration.ofSeconds(300)
 
@@ -69,10 +69,10 @@ class WorkerTest {
 
 	@BeforeAll
 	static void setupActor() {
-		def s = 64
+		def s = 128
 		def parentDir = File.createTempDir()
-		mapTilesParams = [parent_dir: parentDir, game_name: "test", mapid: 0, width: s, height: s, depth: s]
-		cacheFile = new File(parentDir, "dwarfhustle_jcs_swap_${mapTilesParams.game_name}_mapTilesCache_0_file")
+		mapTilesParams = [parent_dir: parentDir, game_name: "test", mapid: 0, width: s, height: s, depth: s, block_size: 4]
+		cacheFile = new File(parentDir, "dwarfhustle_jcs_swap_${mapTilesParams.game_name}_mapBlocksCache_0_file")
 		injector = Guice.createInjector(
 				new MainActorsModule(),
 				new ObjectsModule(),
@@ -82,7 +82,7 @@ class WorkerTest {
 				new ApiModule(),
 				new JcsCacheModule(),
 				new PropertiesThreadsModule())
-		workerFactory = injector.getInstance(WorkerFactory)
+		workerFactory = injector.getInstance(WorkerBlocksFactory)
 		powerLoomKnowledgeActor = testKit.spawn(PowerLoomKnowledgeActor.create(injector), "PowerLoomKnowledgeActor");
 		knowledgeBaseActor = testKit.spawn(KnowledgeBaseActor.create(injector, powerLoomKnowledgeActor), "KnowledgeBaseActor");
 	}
@@ -127,12 +127,12 @@ class WorkerTest {
 	@Timeout(600)
 	@Order(1)
 	void "test generate"() {
-		def mapTilesCacheActor = testKit.spawn(MapTilesJcsCacheActor.create(injector, injector.getInstance(MapTilesJcsCacheActorFactory), MapTilesJcsCacheActor.createInitCacheAsync(mapTilesParams), mapTilesParams), "MapTilesJcsCacheActor");
-		def cache = retrieveCache(mapTilesCacheActor)
+		def cacheActor = testKit.spawn(MapBlocksJcsCacheActor.create(injector, injector.getInstance(MapBlocksJcsCacheActorFactory), MapBlocksJcsCacheActor.createInitCacheAsync(mapTilesParams), mapTilesParams), "MapBlocksJcsCacheActor");
+		def cache = retrieveCache(cacheActor)
 		def m = new GenerateMapMessage(null, 0, mapTilesParams.width, mapTilesParams.height, mapTilesParams.depth)
-		workerFactory.create(cache).generateMap(m)
+		workerFactory.create(cache).generate(m)
 		log.info("generate done")
-		testKit.stop(mapTilesCacheActor)
+		testKit.stop(cacheActor)
 		shutdownJcs()
 	}
 
@@ -140,7 +140,7 @@ class WorkerTest {
 	@Timeout(600)
 	@Order(10)
 	void "load tiles from cache"() {
-		def mapTilesCacheActor = testKit.spawn(MapTilesJcsCacheActor.create(injector, injector.getInstance(MapTilesJcsCacheActorFactory), MapTilesJcsCacheActor.createInitCacheAsync(mapTilesParams), mapTilesParams), "MapTilesJcsCacheActor");
+		def mapTilesCacheActor = testKit.spawn(MapBlocksJcsCacheActor.create(injector, injector.getInstance(MapBlocksJcsCacheActor), MapBlocksJcsCacheActor.createInitCacheAsync(mapTilesParams), mapTilesParams), "MapTilesJcsCacheActor");
 		def cache = retrieveCache(mapTilesCacheActor)
 		log.info("retrieve cache done")
 		for (int z = 0; z < mapTilesParams.depth; z++) {

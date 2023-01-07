@@ -82,7 +82,7 @@ import org.eclipse.collections.impl.factory.primitive.LongSets;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.api.GameMapPosition;
+import com.anrisoftware.dwarfhustle.model.api.GameMapPos;
 import com.anrisoftware.dwarfhustle.model.api.GameObjectStorage;
 import com.anrisoftware.dwarfhustle.model.api.MapTile;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage.CacheErrorMessage;
@@ -112,7 +112,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
-public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPosition, MapTile> {
+public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, MapTile> {
 
 	public static final ServiceKey<Message> KEY = ServiceKey.create(Message.class,
 			PersonsJcsCacheActor.class.getSimpleName());
@@ -191,7 +191,7 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPosition,
 
 	@SuppressWarnings("unchecked")
 	@Override
-	protected Behavior<Message> initialStage(InitialStateMessage<GameMapPosition, MapTile> m) {
+	protected Behavior<Message> initialStage(InitialStateMessage<GameMapPos, MapTile> m) {
 		log.debug("initialStage {}", m);
 		this.db = (ActorRef<Message>) params.get("db");
 		this.mapid = (int) params.get("mapid");
@@ -271,7 +271,7 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPosition,
 	}
 
 	private MapTile retrieveGameObjectAsync(ODatabaseDocument db, AbstractGetMessage<?> m) {
-		var pos = (GameMapPosition) m.key;
+		var pos = (GameMapPos) m.key;
 		var rs = db.query("SELECT FROM ? where objecttype = ? and mapid = ? and x = ? and y = ? and z = ?",
 				MapTile.TYPE, pos.getMapid(), pos.getX(), pos.getY(), pos.getZ());
 		MapTile go = null;
@@ -310,7 +310,7 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPosition,
 		var rid = (ORID) go.getRid();
 		OVertex v = null;
 		if (rid == null) {
-			v = db.newVertex(go.getType());
+			v = db.newVertex(go.getObjectType());
 		}
 		storage.save(v, go);
 		return null;

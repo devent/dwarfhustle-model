@@ -181,18 +181,17 @@ public abstract class AbstractJcsCacheActor<K, V> implements IElementEventHandle
 		var cacheName = params.get("cache_name");
 		var maxObjects = params.get("max_objects");
 		var isEternal = params.get("is_eternal");
-		config.put("jcs.region." + cacheName + ".cacheattributes",
-				"org.apache.commons.jcs3.engine.CompositeCacheAttributes");
-		config.put("jcs.region." + cacheName + ".cacheattributes.MaxObjects", toString(maxObjects));
-		config.put("jcs.region." + cacheName + ".cacheattributes.MemoryCacheName",
+		String region = "jcs.region." + cacheName;
+		config.put(region + ".cacheattributes", "org.apache.commons.jcs3.engine.CompositeCacheAttributes");
+		config.put(region + ".cacheattributes.MaxObjects", toString(maxObjects));
+		config.put(region + ".cacheattributes.MemoryCacheName",
 				"org.apache.commons.jcs3.engine.memory.lru.LRUMemoryCache");
-		config.put("jcs.region." + cacheName + ".cacheattributes.UseMemoryShrinker", "false");
-		config.put("jcs.region." + cacheName + ".cacheattributes.MaxMemoryIdleTimeSeconds", "3600");
-		config.put("jcs.region." + cacheName + ".cacheattributes.ShrinkerIntervalSeconds", "60");
-		config.put("jcs.region." + cacheName + ".cacheattributes.MaxSpoolPerRun", "500");
-		config.put("jcs.region." + cacheName + ".elementattributes",
-				"org.apache.commons.jcs3.engine.ElementAttributes");
-		config.put("jcs.region." + cacheName + ".elementattributes.IsEternal", toString(isEternal));
+		config.put(region + ".cacheattributes.UseMemoryShrinker", "false");
+		config.put(region + ".cacheattributes.MaxMemoryIdleTimeSeconds", "3600");
+		config.put(region + ".cacheattributes.ShrinkerIntervalSeconds", "60");
+		config.put(region + ".cacheattributes.MaxSpoolPerRun", "500");
+		config.put(region + ".elementattributes", "org.apache.commons.jcs3.engine.ElementAttributes");
+		config.put(region + ".elementattributes.IsEternal", toString(isEternal));
 	}
 
 	public static void createFileAuxCache(Properties config, Map<String, Object> params) {
@@ -200,18 +199,17 @@ public abstract class AbstractJcsCacheActor<K, V> implements IElementEventHandle
 		var cacheName = params.get("cache_name") + "_file";
 		var maxKeySize = params.get("max_key_size");
 		var parentDir = (File) params.get("parent_dir");
-		config.put("jcs.auxiliary." + cacheName,
-				"org.apache.commons.jcs3.auxiliary.disk.indexed.IndexedDiskCacheFactory");
-		config.put("jcs.auxiliary." + cacheName + ".attributes",
-				"org.apache.commons.jcs3.auxiliary.disk.indexed.IndexedDiskCacheAttributes");
-		config.put("jcs.auxiliary." + cacheName + ".attributes.DiskPath",
-				parentDir.getAbsolutePath() + "/.dwarfhustle_jcs_swap_" + gameName + "_" + cacheName);
-		config.put("jcs.auxiliary." + cacheName + ".attributes.MaxPurgatorySize", toString(maxKeySize));
-		config.put("jcs.auxiliary." + cacheName + ".attributes.MaxKeySize", toString(maxKeySize));
-		config.put("jcs.auxiliary." + cacheName + ".attributes.OptimizeAtRemoveCount", "300000");
-		config.put("jcs.auxiliary." + cacheName + ".attributes.ShutdownSpoolTimeLimit", "60");
-		config.put("jcs.auxiliary." + cacheName + ".attributes.OptimizeOnShutdown", toString(true));
-		config.put("jcs.auxiliary." + cacheName + ".attributes.DiskLimitType", "COUNT");
+		String aux = "jcs.auxiliary." + cacheName;
+		config.put(aux, "org.apache.commons.jcs3.auxiliary.disk.indexed.IndexedDiskCacheFactory");
+		config.put(aux + ".attributes", "org.apache.commons.jcs3.auxiliary.disk.indexed.IndexedDiskCacheAttributes");
+		config.put(aux + ".attributes.DiskPath",
+				parentDir.getAbsolutePath() + "/dwarfhustle_jcs_swap_" + gameName + "_" + cacheName);
+		config.put(aux + ".attributes.MaxPurgatorySize", toString(maxKeySize));
+		config.put(aux + ".attributes.MaxKeySize", toString(maxKeySize));
+		config.put(aux + ".attributes.OptimizeAtRemoveCount", "300000");
+		config.put(aux + ".attributes.ShutdownSpoolTimeLimit", "60");
+		config.put(aux + ".attributes.OptimizeOnShutdown", toString(true));
+		config.put(aux + ".attributes.DiskLimitType", "COUNT");
 	}
 
 	private static String toString(Object v) {
