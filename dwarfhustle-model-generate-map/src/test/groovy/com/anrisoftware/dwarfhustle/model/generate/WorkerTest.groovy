@@ -69,7 +69,7 @@ class WorkerTest {
 
 	@BeforeAll
 	static void setupActor() {
-		def s = 64
+		def s = 8
 		def parentDir = File.createTempDir()
 		mapTilesParams = [parent_dir: parentDir, game_name: "test", mapid: 0, width: s, height: s, depth: s]
 		cacheFile = new File(parentDir, "dwarfhustle_jcs_swap_${mapTilesParams.game_name}_mapTilesCache_0_file")
@@ -127,12 +127,12 @@ class WorkerTest {
 	@Timeout(600)
 	@Order(1)
 	void "test generate"() {
-		def mapTilesCacheActor = testKit.spawn(MapTilesJcsCacheActor.create(injector, injector.getInstance(MapTilesJcsCacheActorFactory), MapTilesJcsCacheActor.createInitCacheAsync(mapTilesParams), mapTilesParams), "MapTilesJcsCacheActor");
-		def cache = retrieveCache(mapTilesCacheActor)
+		def cacheActor = testKit.spawn(MapTilesJcsCacheActor.create(injector, injector.getInstance(MapTilesJcsCacheActorFactory), MapTilesJcsCacheActor.createInitCacheAsync(mapTilesParams), mapTilesParams), "MapTilesJcsCacheActor");
+		def cache = retrieveCache(cacheActor)
 		def m = new GenerateMapMessage(null, 0, mapTilesParams.width, mapTilesParams.height, mapTilesParams.depth)
 		workerFactory.create(cache).generateMap(m)
 		log.info("generate done")
-		testKit.stop(mapTilesCacheActor)
+		testKit.stop(cacheActor)
 		shutdownJcs()
 	}
 
@@ -140,8 +140,8 @@ class WorkerTest {
 	@Timeout(600)
 	@Order(10)
 	void "load tiles from cache"() {
-		def mapTilesCacheActor = testKit.spawn(MapTilesJcsCacheActor.create(injector, injector.getInstance(MapTilesJcsCacheActorFactory), MapTilesJcsCacheActor.createInitCacheAsync(mapTilesParams), mapTilesParams), "MapTilesJcsCacheActor");
-		def cache = retrieveCache(mapTilesCacheActor)
+		def cacheActor = testKit.spawn(MapTilesJcsCacheActor.create(injector, injector.getInstance(MapTilesJcsCacheActorFactory), MapTilesJcsCacheActor.createInitCacheAsync(mapTilesParams), mapTilesParams), "MapTilesJcsCacheActor");
+		def cache = retrieveCache(cacheActor)
 		log.info("retrieve cache done")
 		for (int z = 0; z < mapTilesParams.depth; z++) {
 			for (int y = 0; y < mapTilesParams.height; y++) {
@@ -155,7 +155,7 @@ class WorkerTest {
 			}
 			log.trace("done check map tile z={}", z);
 		}
-		testKit.stop(mapTilesCacheActor)
+		testKit.stop(cacheActor)
 		shutdownJcs()
 	}
 }

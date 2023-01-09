@@ -22,6 +22,10 @@ public class GameBlockPos extends GameMapPos {
 
 	private GameMapPos endPos = new GameMapPos();
 
+	public GameBlockPos(int mapid, int x, int y, int z, int ex, int ey, int ez) {
+		this(new GameMapPos(mapid, x, y, z), new GameMapPos(mapid, ex, ey, ez));
+	}
+
 	public GameBlockPos(GameMapPos pos, GameMapPos endPos) {
 		super(pos.getMapid(), pos.getX(), pos.getY(), pos.getZ());
 		this.endPos = endPos;

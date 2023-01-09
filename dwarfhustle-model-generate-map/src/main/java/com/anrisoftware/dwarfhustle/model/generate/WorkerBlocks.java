@@ -112,18 +112,33 @@ public class WorkerBlocks {
 	@Inject
 	private IDGenerator generator;
 
+	private int blocksDone;
+
+	private boolean generateDone;
+
 	public WorkerBlocks() {
+	}
+
+	public int getBlocksDone() {
+		return blocksDone;
+	}
+
+	public boolean isGenerateDone() {
+		return generateDone;
 	}
 
 	@SneakyThrows
 	public void generate(GenerateMapMessage m) {
 		log.debug("generate {}", m);
+		this.blocksDone = 0;
+		this.generateDone = false;
 		int w1 = m.width;
 		int h1 = m.height;
 		int d1 = m.depth;
 		var pos = pos(m, 0, 0, 0);
 		var endPos = pos(m, w1, h1, d1);
-		var root = generateBlock0(m, createBlocksMap(), pos, endPos);
+		generateBlock0(m, createBlocksMap(), pos, endPos);
+		this.generateDone = true;
 		log.trace("generate done {}", m);
 	}
 
@@ -135,10 +150,11 @@ public class WorkerBlocks {
 		int w2 = endPos.getDiffX(pos) / 2;
 		int h2 = endPos.getDiffY(pos) / 2;
 		int d2 = endPos.getDiffZ(pos) / 2;
-		if (w2 == 2) {
+		if (w2 == m.blockSize / 2) {
 			var block = createBlock(m, pos, endPos);
 			createMapTiles(block);
 			cache.put(block.getPos(), block);
+			blocksDone++;
 			return block;
 		}
 		var block = createBlock(m, pos, endPos);
@@ -165,6 +181,7 @@ public class WorkerBlocks {
 		map.put(b7.getPos(), b7.getId());
 		block.setBlocks(map.toImmutable());
 		cache.put(block.getPos(), block);
+		blocksDone++;
 		return block;
 	}
 

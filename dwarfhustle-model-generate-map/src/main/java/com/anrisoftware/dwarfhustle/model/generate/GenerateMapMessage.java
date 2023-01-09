@@ -47,6 +47,8 @@ public class GenerateMapMessage extends Message {
 
 	public final int depth;
 
+	public final int blockSize;
+
 	public int getSize() {
 		return depth * height * width;
 	}

@@ -22,8 +22,8 @@ import org.junit.jupiter.api.Timeout
 import com.anrisoftware.dwarfhustle.model.actor.MainActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.api.ApiModule
-import com.anrisoftware.dwarfhustle.model.api.GameMapPos
-import com.anrisoftware.dwarfhustle.model.api.MapTile
+import com.anrisoftware.dwarfhustle.model.api.GameBlockPos
+import com.anrisoftware.dwarfhustle.model.api.MapBlock
 import com.anrisoftware.dwarfhustle.model.db.cache.JcsCacheModule
 import com.anrisoftware.dwarfhustle.model.db.cache.MapBlocksJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.db.cache.MapBlocksJcsCacheActor.MapBlocksJcsCacheActorFactory
@@ -69,9 +69,9 @@ class WorkerBlocksTest {
 
 	@BeforeAll
 	static void setupActor() {
-		def s = 128
+		def s = 256
 		def parentDir = File.createTempDir()
-		mapTilesParams = [parent_dir: parentDir, game_name: "test", mapid: 0, width: s, height: s, depth: s, block_size: 4]
+		mapTilesParams = [parent_dir: parentDir, game_name: "test", mapid: 0, width: s, height: s, depth: s, block_size: 8]
 		cacheFile = new File(parentDir, "dwarfhustle_jcs_swap_${mapTilesParams.game_name}_mapBlocksCache_0_file")
 		injector = Guice.createInjector(
 				new MainActorsModule(),
@@ -129,9 +129,16 @@ class WorkerBlocksTest {
 	void "test generate"() {
 		def cacheActor = testKit.spawn(MapBlocksJcsCacheActor.create(injector, injector.getInstance(MapBlocksJcsCacheActorFactory), MapBlocksJcsCacheActor.createInitCacheAsync(mapTilesParams), mapTilesParams), "MapBlocksJcsCacheActor");
 		def cache = retrieveCache(cacheActor)
-		def m = new GenerateMapMessage(null, 0, mapTilesParams.width, mapTilesParams.height, mapTilesParams.depth)
-		workerFactory.create(cache).generate(m)
-		log.info("generate done")
+		def m = new GenerateMapMessage(null, 0, mapTilesParams.width, mapTilesParams.height, mapTilesParams.depth, mapTilesParams.block_size)
+		def worker = workerFactory.create(cache)
+		def thread = Thread.start {
+			worker.generate(m)
+		}
+		while (!worker.generateDone) {
+			Thread.sleep(1000)
+			log.info("Blocks done {}", worker.blocksDone)
+		}
+		log.info("generate done {}", worker.blocksDone)
 		testKit.stop(cacheActor)
 		shutdownJcs()
 	}
@@ -139,23 +146,36 @@ class WorkerBlocksTest {
 	@Test
 	@Timeout(600)
 	@Order(10)
-	void "load tiles from cache"() {
-		def mapTilesCacheActor = testKit.spawn(MapBlocksJcsCacheActor.create(injector, injector.getInstance(MapBlocksJcsCacheActor), MapBlocksJcsCacheActor.createInitCacheAsync(mapTilesParams), mapTilesParams), "MapTilesJcsCacheActor");
-		def cache = retrieveCache(mapTilesCacheActor)
+	void "load blocks from cache"() {
+		def cacheActor = testKit.spawn(MapBlocksJcsCacheActor.create(injector, injector.getInstance(MapBlocksJcsCacheActorFactory), MapBlocksJcsCacheActor.createInitCacheAsync(mapTilesParams), mapTilesParams), "MapBlocksJcsCacheActor");
+		def cache = retrieveCache(cacheActor)
+		def s = mapTilesParams.block_size
+		def mapid = mapTilesParams.mapid
 		log.info("retrieve cache done")
-		for (int z = 0; z < mapTilesParams.depth; z++) {
-			for (int y = 0; y < mapTilesParams.height; y++) {
-				for (int x = 0; x < mapTilesParams.width; x++) {
-					MapTile tile = cache.get(new GameMapPos(mapTilesParams.mapid, x, y, z))
-					assert tile.pos.mapid == mapTilesParams.mapid
-					assert tile.pos.x == x
-					assert tile.pos.y == y
-					assert tile.pos.z == z
+		for (int z = 0; z < mapTilesParams.depth; z += s) {
+			for (int y = 0; y < mapTilesParams.height; y += s) {
+				for (int x = 0; x < mapTilesParams.width; x += s) {
+					def pos = new GameBlockPos(mapid, x, y, z, x + s, y + s, z + s)
+					MapBlock block = cache.get(pos)
+					if (!block) {
+						log.info("No block for {}", pos)
+					}
+					assert block.pos.mapid == mapid
+					assert block.pos.x == x
+					assert block.pos.y == y
+					assert block.pos.z == z
+					assert block.pos.endPos.mapid == mapid
+					assert block.pos.endPos.x == x + s
+					assert block.pos.endPos.y == y + s
+					assert block.pos.endPos.z == z + s
+					assert block.blocks == null
+					assert block.tiles != null
+					assert block.tiles.size() == s * s * s
 				}
 			}
 			log.trace("done check map tile z={}", z);
 		}
-		testKit.stop(mapTilesCacheActor)
+		testKit.stop(cacheActor)
 		shutdownJcs()
 	}
 }
