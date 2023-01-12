@@ -9,7 +9,7 @@ import com.orientechnologies.orient.core.record.OVertex;
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-public class MapTileStorage extends AbstractGameObjectStorage {
+public class MapTileStorage extends AbstractGameMapObjectStorage {
 
 	@Override
 	public void save(Object o, GameObject go) {
@@ -18,7 +18,7 @@ public class MapTileStorage extends AbstractGameObjectStorage {
 		}
 		var v = (OVertex) o;
 		var mt = (MapTile) go;
-		v.setProperty("material", mt.getMaterial());
+		v.setProperty(MapTileSchema.MATERIAL_FIELD, mt.getMaterial());
 		super.save(o, go);
 	}
 

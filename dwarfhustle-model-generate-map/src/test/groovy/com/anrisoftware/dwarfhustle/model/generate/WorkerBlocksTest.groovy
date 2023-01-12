@@ -71,7 +71,7 @@ class WorkerBlocksTest {
 	static void setupActor() {
 		def s = 256
 		def parentDir = File.createTempDir()
-		mapTilesParams = [parent_dir: parentDir, game_name: "test", mapid: 0, width: s, height: s, depth: s, block_size: 8]
+		mapTilesParams = [parent_dir: parentDir, game_name: "test", mapid: 0, width: s, height: s, depth: s, block_size: 4]
 		cacheFile = new File(parentDir, "dwarfhustle_jcs_swap_${mapTilesParams.game_name}_mapBlocksCache_0_file")
 		injector = Guice.createInjector(
 				new MainActorsModule(),
@@ -168,8 +168,7 @@ class WorkerBlocksTest {
 					assert block.pos.endPos.x == x + s
 					assert block.pos.endPos.y == y + s
 					assert block.pos.endPos.z == z + s
-					assert block.blocks == null
-					assert block.tiles != null
+					assert block.blocks.empty
 					assert block.tiles.size() == s * s * s
 				}
 			}

@@ -17,9 +17,10 @@
  */
 package com.anrisoftware.dwarfhustle.model.api;
 
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 /**
@@ -27,17 +28,16 @@ import lombok.ToString;
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
 @NoArgsConstructor
-public class Person extends GameObject {
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
+@Getter
+@Setter
+public class Person extends GameMapObject {
 
 	private static final long serialVersionUID = -6027695018525898404L;
 
-	public static final String TYPE = "Person";
-
-	private String material;
+	public static final String OBJECT_TYPE = Person.class.getSimpleName();
 
 	public Person(long id) {
 		super(id);
@@ -49,14 +49,6 @@ public class Person extends GameObject {
 
 	@Override
 	public String getObjectType() {
-		return TYPE;
+		return OBJECT_TYPE;
 	}
-
-	public void setMaterial(String material) {
-		if (this.material != material) {
-			setDirty(true);
-			this.material = material;
-		}
-	}
-
 }

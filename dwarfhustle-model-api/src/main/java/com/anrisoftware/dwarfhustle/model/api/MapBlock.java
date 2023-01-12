@@ -17,11 +17,13 @@
  */
 package com.anrisoftware.dwarfhustle.model.api;
 
-import org.eclipse.collections.api.map.ImmutableMap;
-import org.eclipse.collections.api.map.primitive.ImmutableObjectLongMap;
+import org.eclipse.collections.api.map.MapIterable;
+import org.eclipse.collections.api.map.primitive.ObjectLongMap;
+import org.eclipse.collections.impl.factory.Maps;
+import org.eclipse.collections.impl.factory.primitive.ObjectLongMaps;
 
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
@@ -30,19 +32,19 @@ import lombok.ToString;
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
 @NoArgsConstructor
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
+@Getter
 public class MapBlock extends GameObject {
 
 	private static final long serialVersionUID = -5242372790621414364L;
 
 	public static final String OBJECT_TYPE = MapBlock.class.getSimpleName();
 
-	private ImmutableObjectLongMap<GameMapPos> blocks;
+	private ObjectLongMap<GameBlockPos> blocks = ObjectLongMaps.immutable.empty();
 
-	private ImmutableMap<GameMapPos, MapTile> tiles;
+	private MapIterable<GameMapPos, MapTile> tiles = Maps.immutable.empty();
 
 	private GameBlockPos pos = new GameBlockPos();
 
@@ -67,6 +69,16 @@ public class MapBlock extends GameObject {
 	@Override
 	public String getObjectType() {
 		return OBJECT_TYPE;
+	}
+
+	public void setBlocks(ObjectLongMap<GameBlockPos> blocks) {
+		this.blocks = blocks;
+		setDirty(true);
+	}
+
+	public void setTiles(MapIterable<GameMapPos, MapTile> tiles) {
+		this.tiles = tiles;
+		setDirty(true);
 	}
 
 	/**
