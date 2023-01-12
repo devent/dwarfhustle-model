@@ -84,7 +84,7 @@ import com.anrisoftware.dwarfhustle.model.api.Material;
 import com.anrisoftware.dwarfhustle.model.api.Metamorphic;
 import com.anrisoftware.dwarfhustle.model.api.Sedimentary;
 import com.anrisoftware.dwarfhustle.model.generate.GenerateMapMessage.GenerateErrorMessage;
-import com.anrisoftware.dwarfhustle.model.generate.Worker.WorkerFactory;
+import com.anrisoftware.dwarfhustle.model.generate.WorkerBlocks.WorkerBlocksFactory;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.ResponseMessage;
 import com.google.inject.Injector;
@@ -185,7 +185,7 @@ public class GenerateMapActor {
 	private ActorRef<Message> knowledge;
 
 	@Inject
-	private WorkerFactory workerActorFactory;
+	private WorkerBlocksFactory workerActorFactory;
 
 	private ActorRef<KnowledgeBaseMessage.ResponseMessage> knowledgeBaseResponseAdapter;
 

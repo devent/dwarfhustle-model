@@ -17,9 +17,6 @@
  */
 package com.anrisoftware.dwarfhustle.model.api;
 
-import org.eclipse.collections.api.map.primitive.ObjectLongMap;
-import org.eclipse.collections.impl.factory.primitive.ObjectLongMaps;
-
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -40,8 +37,6 @@ public class MapTile extends GameMapObject {
 
 	public static final String OBJECT_TYPE = MapTile.class.getSimpleName();
 
-	private ObjectLongMap<PathDirection> paths = ObjectLongMaps.immutable.empty();
-
 	private String material;
 
 	public MapTile(long id) {
@@ -55,11 +50,6 @@ public class MapTile extends GameMapObject {
 	@Override
 	public String getObjectType() {
 		return OBJECT_TYPE;
-	}
-
-	public void setPaths(ObjectLongMap<PathDirection> paths) {
-		this.paths = paths;
-		setDirty(true);
 	}
 
 	public void setMaterial(String material) {
