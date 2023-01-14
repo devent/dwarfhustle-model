@@ -49,8 +49,11 @@ public class ObjectsDbModule extends AbstractModule {
 	@Provides
 	public Map<String, GameObjectStorage> getStorages() {
 		var map = new HashMap<String, GameObjectStorage>();
-		map.put(MapTile.OBJECT_TYPE, new MapTileStorage());
-		map.put(MapBlock.OBJECT_TYPE, new MapBlockStorage());
+		var mapTileStorage = new MapTileStorage();
+		map.put(MapTile.OBJECT_TYPE, mapTileStorage);
+		var mapBlockStorage = new MapBlockStorage();
+		mapBlockStorage.setStorages(map);
+		map.put(MapBlock.OBJECT_TYPE, mapBlockStorage);
 		return map;
 	}
 

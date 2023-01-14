@@ -65,13 +65,13 @@
  */
 package com.anrisoftware.dwarfhustle.model.generate;
 
+import java.util.Map;
+
 import javax.inject.Inject;
 
 import org.apache.commons.jcs3.access.CacheAccess;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.map.primitive.MutableObjectLongMap;
-import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.factory.primitive.ObjectLongMaps;
 import org.lable.oss.uniqueid.GeneratorException;
@@ -79,11 +79,13 @@ import org.lable.oss.uniqueid.IDGenerator;
 
 import com.anrisoftware.dwarfhustle.model.api.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.GameMapPos;
+import com.anrisoftware.dwarfhustle.model.api.GameObjectStorage;
 import com.anrisoftware.dwarfhustle.model.api.MapBlock;
 import com.anrisoftware.dwarfhustle.model.api.MapTile;
 import com.google.inject.assistedinject.Assisted;
 import com.orientechnologies.orient.core.db.ODatabaseSession;
 import com.orientechnologies.orient.core.db.OrientDB;
+import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -120,9 +122,14 @@ public class WorkerBlocks {
 
 	private boolean generateDone;
 
-	private MutableList<MutableList<MutableList<MapTile>>> nodes;
+	private GameObjectStorage mapBlockStore;
 
 	public WorkerBlocks() {
+	}
+
+	@Inject
+	public void setStorages(Map<String, GameObjectStorage> storages) {
+		this.mapBlockStore = storages.get(MapBlock.OBJECT_TYPE);
 	}
 
 	public int getBlocksDone() {
@@ -143,17 +150,10 @@ public class WorkerBlocks {
 		int d1 = m.depth;
 		var pos = pos(m, 0, 0, 0);
 		var endPos = pos(m, w1, h1, d1);
-		this.nodes = Lists.mutable.ofInitialCapacity(d1);
-		for (int z = 0; z < d1; z++) {
-			MutableList<MutableList<MapTile>> ylist = Lists.mutable.withInitialCapacity(h1);
-			nodes.add(ylist);
-			for (int y = 0; y < h1; y++) {
-				MutableList<MapTile> xlist = Lists.mutable.withInitialCapacity(w1);
-				ylist.add(xlist);
-			}
-		}
 		try (var db = orientdb.open(m.database, m.user, m.password)) {
+			db.declareIntent(new OIntentMassiveInsert());
 			generateMapBlock(m, db, createBlocksMap(), pos, endPos);
+			db.declareIntent(null);
 		}
 		this.generateDone = true;
 		log.trace("generate done {}", m);
@@ -171,6 +171,7 @@ public class WorkerBlocks {
 			var block = createBlock(m, db, pos, endPos);
 			createMapTiles(db, block);
 			cache.put(block.getPos(), block);
+			saveBlock(db, block);
 			blocksDone++;
 			return block;
 		}
@@ -199,7 +200,14 @@ public class WorkerBlocks {
 		block.setBlocks(map.asUnmodifiable());
 		cache.put(block.getPos(), block);
 		blocksDone++;
+		saveBlock(db, block);
 		return block;
+	}
+
+	private void saveBlock(ODatabaseSession db, MapBlock block) {
+		var v = db.newVertex(MapBlock.OBJECT_TYPE);
+		mapBlockStore.save(db, v, block);
+		v.save();
 	}
 
 	private void createMapTiles(ODatabaseSession db, MapBlock block) throws GeneratorException {
@@ -218,7 +226,6 @@ public class WorkerBlocks {
 					var tile = new MapTile(ids.pop());
 					tile.setPos(new GameMapPos(mapid, xx, yy, zz));
 					tiles.put(tile.getPos(), tile);
-					nodes.get(zz).get(yy).add(tile);
 				}
 			}
 		}

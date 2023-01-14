@@ -25,15 +25,15 @@ class DbTestUtils {
 
 	boolean fillDatabase = true
 
-	final url = "remote:localhost"
+	def url = "remote:localhost"
 
-	final database = "test"
+	def database = "test"
 
-	final user = "root"
+	def user = "root"
 
-	final password = "admin"
+	def password = "admin"
 
-	final type = ODatabaseType.MEMORY
+	def type = ODatabaseType.MEMORY
 
 	OrientDB db
 

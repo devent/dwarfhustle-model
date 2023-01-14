@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
 import org.junit.jupiter.api.Timeout
+import org.lable.oss.uniqueid.IDGenerator
 
 import com.anrisoftware.dwarfhustle.model.actor.MainActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
@@ -28,7 +29,11 @@ import com.anrisoftware.dwarfhustle.model.db.cache.JcsCacheModule
 import com.anrisoftware.dwarfhustle.model.db.cache.MapBlocksJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.db.cache.MapBlocksJcsCacheActor.MapBlocksJcsCacheActorFactory
 import com.anrisoftware.dwarfhustle.model.db.cache.RetrieveCacheMessage
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbServerUtils
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbTestUtils
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbModule
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsDbActor
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsDbModule
 import com.anrisoftware.dwarfhustle.model.generate.WorkerBlocks.WorkerBlocksFactory
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseActor
@@ -37,6 +42,7 @@ import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.PowerloomModule
 import com.anrisoftware.globalpom.threads.properties.internal.PropertiesThreadsModule
 import com.google.inject.Guice
 import com.google.inject.Injector
+import com.orientechnologies.orient.core.db.ODatabaseType
 
 import akka.actor.testkit.typed.javadsl.ActorTestKit
 import akka.actor.typed.ActorRef
@@ -51,15 +57,27 @@ import groovy.util.logging.Slf4j
 @TestMethodOrder(OrderAnnotation.class)
 class WorkerBlocksTest {
 
+	static final EMBEDDED_SERVER_PROPERTY = System.getProperty("com.anrisoftware.dwarfhustle.model.db.orientdb.objects.embedded-server", "no")
+
 	static final ActorTestKit testKit = ActorTestKit.create()
 
 	static Injector injector
+
+	static DbServerUtils dbServerUtils
+
+	static DbTestUtils dbTestUtils
 
 	static ActorRef<Message> powerLoomKnowledgeActor
 
 	static ActorRef<Message> knowledgeBaseActor
 
 	static WorkerBlocksFactory workerFactory
+
+	static IDGenerator gen
+
+	static ActorRef<Message> orientDbActor
+
+	static ActorRef<Message> objectsDbActor
 
 	static timeout = Duration.ofSeconds(300)
 
@@ -69,9 +87,13 @@ class WorkerBlocksTest {
 
 	@BeforeAll
 	static void setupActor() {
-		def s = 256
+		if (EMBEDDED_SERVER_PROPERTY == "yes") {
+			dbServerUtils = new DbServerUtils()
+			dbServerUtils.createServer()
+		}
+		def s = 64
 		def parentDir = File.createTempDir()
-		mapTilesParams = [parent_dir: parentDir, game_name: "test", mapid: 0, width: s, height: s, depth: s, block_size: 4]
+		mapTilesParams = [parent_dir: parentDir, game_name: "test", mapid: 0, width: s, height: s, depth: s, block_size: 8]
 		cacheFile = new File(parentDir, "dwarfhustle_jcs_swap_${mapTilesParams.game_name}_mapBlocksCache_0_file")
 		injector = Guice.createInjector(
 				new MainActorsModule(),
@@ -85,52 +107,40 @@ class WorkerBlocksTest {
 		workerFactory = injector.getInstance(WorkerBlocksFactory)
 		powerLoomKnowledgeActor = testKit.spawn(PowerLoomKnowledgeActor.create(injector), "PowerLoomKnowledgeActor");
 		knowledgeBaseActor = testKit.spawn(KnowledgeBaseActor.create(injector, powerLoomKnowledgeActor), "KnowledgeBaseActor");
-	}
-
-	static CacheAccess retrieveCache(ActorRef<Message> mapTilesCacheActor) {
-		def cache
-		def lock = new CountDownLatch(1)
-		def result =
-				AskPattern.ask(
-				mapTilesCacheActor, { replyTo ->
-					new RetrieveCacheMessage(replyTo)
-				},
-				timeout,
-				testKit.scheduler())
-		result.whenComplete( { reply, failure ->
-			log_reply_failure "retrieveCache", reply, failure
-			cache = reply.cache
-			lock.countDown()
-		})
-		lock.await()
-		return cache
+		orientDbActor = testKit.spawn(OrientDbActor.create(injector), "OrientDbActor");
+		objectsDbActor = testKit.spawn(ObjectsDbActor.create(injector, orientDbActor), "ObjectsDbActor");
+		gen = injector.getInstance(IDGenerator)
+		dbTestUtils = new DbTestUtils(orientDbActor, objectsDbActor, testKit, gen)
+		dbTestUtils.type = ODatabaseType.PLOCAL
+		dbTestUtils.fillDatabase = false
+		def initDatabaseLock = new CountDownLatch(1)
+		if (EMBEDDED_SERVER_PROPERTY == "yes") {
+			dbTestUtils.connectCreateDatabaseEmbedded(dbServerUtils.server, initDatabaseLock)
+		} else {
+			dbTestUtils.connectCreateDatabaseRemote(initDatabaseLock)
+		}
+		initDatabaseLock.await()
 	}
 
 	@AfterAll
 	static void shutdownTest() {
+		def deleteDatabaseLock = new CountDownLatch(1)
+		dbTestUtils.deleteDatabase(deleteDatabaseLock)
+		deleteDatabaseLock.await()
 		testKit.shutdown(testKit.system(), timeout)
 		cacheFile.deleteDir()
-	}
-
-	static void shutdownJcs() {
-		log.info("shutdownJcs")
-		((JulLogAdapter)LogManager.getLog(CompositeCache.class)).logger.setFilter({
-			isLoggable: {
-				!it.message.startsWith("No element event queue available for cache")
-			}
-		} as Filter)
-		JCS.shutdown()
-		log.info("shutdownJcs done.")
+		if (EMBEDDED_SERVER_PROPERTY == "yes") {
+			dbServerUtils.shutdownServer()
+		}
 	}
 
 	@Test
-	@Timeout(600)
 	@Order(1)
 	void "test generate"() {
 		def cacheActor = testKit.spawn(MapBlocksJcsCacheActor.create(injector, injector.getInstance(MapBlocksJcsCacheActorFactory), MapBlocksJcsCacheActor.createInitCacheAsync(mapTilesParams), mapTilesParams), "MapBlocksJcsCacheActor");
 		def cache = retrieveCache(cacheActor)
-		def m = new GenerateMapMessage(null, 0, mapTilesParams.width, mapTilesParams.height, mapTilesParams.depth, mapTilesParams.block_size)
-		def worker = workerFactory.create(cache)
+		def m = new GenerateMapMessage(null, 0, mapTilesParams.width, mapTilesParams.height, mapTilesParams.depth, mapTilesParams.block_size, dbTestUtils.user, dbTestUtils.password, dbTestUtils.database)
+		def worker = workerFactory.create(cache, dbTestUtils.db)
 		def thread = Thread.start {
 			worker.generate(m)
 		}
@@ -176,5 +186,35 @@ class WorkerBlocksTest {
 		}
 		testKit.stop(cacheActor)
 		shutdownJcs()
+	}
+
+	static CacheAccess retrieveCache(ActorRef<Message> mapTilesCacheActor) {
+		def cache
+		def lock = new CountDownLatch(1)
+		def result =
+				AskPattern.ask(
+				mapTilesCacheActor, { replyTo ->
+					new RetrieveCacheMessage(replyTo)
+				},
+				timeout,
+				testKit.scheduler())
+		result.whenComplete( { reply, failure ->
+			log_reply_failure "retrieveCache", reply, failure
+			cache = reply.cache
+			lock.countDown()
+		})
+		lock.await()
+		return cache
+	}
+
+	static void shutdownJcs() {
+		log.info("shutdownJcs")
+		((JulLogAdapter)LogManager.getLog(CompositeCache.class)).logger.setFilter({
+			isLoggable: {
+				!it.message.startsWith("No element event queue available for cache")
+			}
+		} as Filter)
+		JCS.shutdown()
+		log.info("shutdownJcs done.")
 	}
 }

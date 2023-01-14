@@ -151,19 +151,7 @@ public class MapBlocksJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Ma
 			var height = (int) params.get("height");
 			var depth = (int) params.get("depth");
 			var size = (int) params.get("block_size");
-			int blocks = 1;
-			int w = width;
-			int h = height;
-			int d = depth;
-			while (true) {
-				if (w < 8 || h < 8 || d < 8) {
-					break;
-				}
-				blocks += w * h * d / (size * size * size);
-				w /= 2;
-				h /= 2;
-				d /= 2;
-			}
+			int blocks = MapBlock.calculateBlocksCount(width, height, depth, size);
 			params.put("cache_name", cacheName);
 			params.put("max_objects", blocks);
 			params.put("is_eternal", true);
