@@ -29,7 +29,7 @@ import com.anrisoftware.dwarfhustle.model.db.cache.MapBlocksJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.db.cache.MapBlocksJcsCacheActor.MapBlocksJcsCacheActorFactory
 import com.anrisoftware.dwarfhustle.model.db.cache.RetrieveCacheMessage
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbModule
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsModule
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsDbModule
 import com.anrisoftware.dwarfhustle.model.generate.WorkerBlocks.WorkerBlocksFactory
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseActor
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.PowerLoomKnowledgeActor
@@ -75,7 +75,7 @@ class WorkerBlocksTest {
 		cacheFile = new File(parentDir, "dwarfhustle_jcs_swap_${mapTilesParams.game_name}_mapBlocksCache_0_file")
 		injector = Guice.createInjector(
 				new MainActorsModule(),
-				new ObjectsModule(),
+				new ObjectsDbModule(),
 				new PowerloomModule(),
 				new GenerateModule(),
 				new OrientDbModule(),

@@ -302,6 +302,7 @@ public class OrientDbActor {
 			}
 			m.replyTo.tell(new DbCommandSuccessMessage(m, ret));
 		} catch (Exception e) {
+			log.error("onDbReplyCommand", e);
 			m.replyTo.tell(new DbErrorMessage(m, e));
 		}
 		return Behaviors.same();

@@ -31,4 +31,24 @@ class GameBlockPosTest {
 			assert a != b
 		}
 	}
+
+	static block_pos_toSaveString() {
+		Stream.of(
+				of(new GameBlockPos(0, 0, 0, 0, 0, 0, 0), "0/0/0/0/0/0/0"),
+				of(new GameBlockPos(0, 0, 0, 0, 4, 4, 4), "0/0/0/0/4/4/4"),
+				of(new GameBlockPos(1, 0, 0, 0, 4, 4, 4), "1/0/0/0/4/4/4"),
+				)
+	}
+
+	@ParameterizedTest
+	@MethodSource
+	void block_pos_toSaveString(GameBlockPos a, def expected) {
+		assert a.toSaveString() == expected
+	}
+
+	@ParameterizedTest
+	@MethodSource("block_pos_toSaveString")
+	void block_pos_parse(GameBlockPos expected, def s) {
+		assert GameBlockPos.parse(s) == expected
+	}
 }

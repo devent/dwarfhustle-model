@@ -2,6 +2,8 @@ package com.anrisoftware.dwarfhustle.model.api;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.StringUtils;
+
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -52,5 +54,25 @@ public class GameMapPos implements Serializable {
 
 	public int getDiffZ(GameMapPos pos) {
 		return z - pos.z;
+	}
+
+	/**
+	 * Returns string that can be used to store the block position.
+	 */
+	public String toSaveString() {
+		return getMapid() + "/" + getX() + "/" + getY() + "/" + getZ();
+	}
+
+	/**
+	 * Returns the {@link GameMapPos} parsed from the string.
+	 */
+	public static GameMapPos parse(String s) {
+		var split = StringUtils.split(s, "/");
+		var pos = new GameMapPos(toInt(split[0]), toInt(split[1]), toInt(split[2]), toInt(split[3]));
+		return pos;
+	}
+
+	private static int toInt(String s) {
+		return Integer.parseInt(s);
 	}
 }

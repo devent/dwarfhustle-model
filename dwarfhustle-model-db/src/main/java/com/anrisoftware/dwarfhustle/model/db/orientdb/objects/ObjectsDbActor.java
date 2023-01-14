@@ -69,6 +69,7 @@ import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.create
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
@@ -78,6 +79,7 @@ import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandReplyMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.AbstractObjectsReplyMessage.ObjectsErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.AbstractObjectsReplyMessage.ObjectsSuccessMessage;
 import com.google.inject.Injector;
@@ -90,46 +92,58 @@ import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.BehaviorBuilder;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.receptionist.ServiceKey;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
+ * Acts on the messages:
+ * <ul>
+ * <li>{@link CreateSchemasMessage}</li>
+ * </ul>
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
-public class ObjectsActor {
+public class ObjectsDbActor {
 
-	public static final ServiceKey<Message> KEY = ServiceKey.create(Message.class, ObjectsActor.class.getSimpleName());
+	public static final ServiceKey<Message> KEY = ServiceKey.create(Message.class, ObjectsDbActor.class.getSimpleName());
 
-	public static final String NAME = ObjectsActor.class.getSimpleName();
+	public static final String NAME = ObjectsDbActor.class.getSimpleName();
 
 	public static final int ID = KEY.hashCode();
 
+	@RequiredArgsConstructor
+	@ToString(callSuper = true)
+	private static class WrappedDbResponse extends Message {
+		private final DbResponseMessage response;
+	}
+
 	/**
-	 * Factory to create {@link ObjectsActor}.
+	 * Factory to create {@link ObjectsDbActor}.
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
-	public interface ObjectsActorFactory {
-
-		ObjectsActor create(ActorContext<Message> context, ActorRef<Message> db);
+	public interface ObjectsDbActorFactory {
+		ObjectsDbActor create(ActorContext<Message> context, ActorRef<Message> db);
 	}
 
+	/**
+	 * Creates the {@link ObjectsDbActor}.
+	 */
 	public static Behavior<Message> create(Injector injector, ActorRef<Message> db) {
 		return Behaviors.setup((context) -> {
-			return injector.getInstance(ObjectsActorFactory.class).create(context, db).start();
+			return injector.getInstance(ObjectsDbActorFactory.class).create(context, db).start();
 		});
 	}
 
 	/**
-	 * Creates the {@link ObjectsActor}.
+	 * Creates the {@link ObjectsDbActor}.
 	 */
 	public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout, ActorRef<Message> db) {
 		var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
 		return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, db));
 	}
-
-	private final Duration timeout = Duration.ofSeconds(300);
 
 	@Inject
 	@Assisted
@@ -142,57 +156,56 @@ public class ObjectsActor {
 	@Inject
 	private List<GameObjectSchema> schemas;
 
+	private ActorRef<DbResponseMessage> dbResponseAdapter;
+
+	private Optional<CreateSchemasMessage> createSchemasMessage = Optional.empty();
+
 	/**
-	 * Stash behavior. Returns a behavior for the messages:
-	 *
-	 * <ul>
-	 * <li>{@link CreateSchemasMessage}
-	 * <li>{@link ObjectsErrorMessage}
-	 * <li>{@link ObjectsSuccessMessage}
-	 * </ul>
+	 * Returns a behavior for the messages from {@link #getInitialBehavior()}
 	 */
 	public Behavior<Message> start() {
+		this.dbResponseAdapter = context.messageAdapter(DbResponseMessage.class, WrappedDbResponse::new);
 		return getInitialBehavior()//
 				.build();
 	}
 
 	/**
-	 * Returns a behavior for the messages:
-	 *
-	 * <ul>
-	 * <li>{@link CreateSchemasMessage}
-	 * <li>{@link ObjectsErrorMessage}
-	 * <li>{@link ObjectsSuccessMessage}
-	 * </ul>
+	 * Returns a behavior for the messages from {@link #getInitialBehavior()}
 	 */
 	private Behavior<Message> onCreateSchemas(CreateSchemasMessage m) {
 		log.debug("onCreateSchemas {}", m);
-		context.ask(DbResponseMessage.class, db, timeout,
-				(ActorRef<DbResponseMessage> ref) -> new DbCommandReplyMessage(ref, db -> {
-					return createSchemas(db);
-				}), (response, throwable) -> {
-					if (throwable != null) {
-						return new ObjectsErrorMessage(m, throwable);
-					} else {
-						return translateDbResponse(response, m);
-					}
-				});
+		this.createSchemasMessage = Optional.of(m);
+		db.tell(new DbCommandReplyMessage(dbResponseAdapter, db -> {
+			createSchemas(db);
+			return null;
+		}));
 		return Behaviors.same();
 	}
 
-	private Void createSchemas(ODatabaseDocument db) {
-		for (GameObjectSchema schema : schemas) {
-			schema.createSchema(db);
+	/**
+	 * <ul>
+	 * <li>Stops the actor on {@link DbErrorMessage} and replies with
+	 * {@link ObjectsErrorMessage}.</li>
+	 * <li>Returns a behavior for the messages from {@link #getInitialBehavior()} on
+	 * {@link DbSuccessMessage} and replies with {@link ObjectsSuccessMessage}.</li>
+	 * </ul>
+	 */
+	private Behavior<Message> onWrappedDbResponse(WrappedDbResponse m) {
+		log.debug("onWrappedDbResponse {}", m);
+		if (createSchemasMessage.isEmpty()) {
+			return Behaviors.same();
 		}
-		return null;
-	}
-
-	private Message translateDbResponse(DbResponseMessage response, CreateSchemasMessage m) {
+		var response = m.response;
+		var om = createSchemasMessage.get();
 		if (response instanceof DbErrorMessage) {
-			var dm = (DbErrorMessage) response;
-			return new ObjectsErrorMessage(m, dm.error);
+			var rm = (DbErrorMessage) response;
+			log.error("Db error", rm);
+			om.replyTo.tell(new ObjectsErrorMessage(om, rm.error));
+			return Behaviors.stopped();
+		} else if (response instanceof DbSuccessMessage) {
+			om.replyTo.tell(new ObjectsSuccessMessage(om));
 		}
-		return new ObjectsSuccessMessage(m);
+		return Behaviors.same();
 	}
 
 	/**
@@ -200,36 +213,21 @@ public class ObjectsActor {
 	 *
 	 * <ul>
 	 * <li>{@link CreateSchemasMessage}
-	 * <li>{@link ObjectsErrorMessage}
-	 * <li>{@link ObjectsSuccessMessage}
+	 * <li>{@link WrappedDbResponse}
 	 * </ul>
 	 */
-	private Behavior<Message> onObjectsError(ObjectsErrorMessage m) {
-		log.debug("onObjectsError {}", m);
-		m.originalMessage.replyTo.tell(m);
-		return Behaviors.stopped();
-	}
-
-	/**
-	 * Returns a behavior for the messages:
-	 *
-	 * <ul>
-	 * <li>{@link CreateSchemasMessage}
-	 * <li>{@link ObjectsErrorMessage}
-	 * <li>{@link ObjectsSuccessMessage}
-	 * </ul>
-	 */
-	private Behavior<Message> onObjectsSuccess(ObjectsSuccessMessage m) {
-		log.debug("onObjectsSuccess {}", m);
-		m.originalMessage.replyTo.tell(m);
-		return Behaviors.stopped();
-	}
-
 	private BehaviorBuilder<Message> getInitialBehavior() {
 		return Behaviors.receive(Message.class)//
 				.onMessage(CreateSchemasMessage.class, this::onCreateSchemas)//
-				.onMessage(ObjectsErrorMessage.class, this::onObjectsError)//
-				.onMessage(ObjectsSuccessMessage.class, this::onObjectsSuccess)//
+				.onMessage(WrappedDbResponse.class, this::onWrappedDbResponse)//
 		;
 	}
+
+	private void createSchemas(ODatabaseDocument db) {
+		for (GameObjectSchema schema : schemas) {
+			log.trace("createSchema {}", schema);
+			schema.createSchema(db);
+		}
+	}
+
 }

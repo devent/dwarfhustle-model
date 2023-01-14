@@ -7,9 +7,9 @@ package com.anrisoftware.dwarfhustle.model.api;
  */
 public interface GameObjectStorage {
 
-	void save(Object o, GameObject go);
+	void save(Object db, Object o, GameObject go);
 
-	GameObject load(Object o, GameObject go);
+	GameObject load(Object db, Object o, GameObject go);
 
 	GameObject create();
 }

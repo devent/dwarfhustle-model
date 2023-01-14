@@ -82,6 +82,8 @@ import com.anrisoftware.dwarfhustle.model.api.GameMapPos;
 import com.anrisoftware.dwarfhustle.model.api.MapBlock;
 import com.anrisoftware.dwarfhustle.model.api.MapTile;
 import com.google.inject.assistedinject.Assisted;
+import com.orientechnologies.orient.core.db.ODatabaseSession;
+import com.orientechnologies.orient.core.db.OrientDB;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -100,12 +102,16 @@ public class WorkerBlocks {
 	 */
 	public interface WorkerBlocksFactory {
 
-		WorkerBlocks create(CacheAccess<GameBlockPos, MapBlock> cache);
+		WorkerBlocks create(CacheAccess<GameBlockPos, MapBlock> cache, OrientDB orientdb);
 	}
 
 	@Inject
 	@Assisted
 	private CacheAccess<GameBlockPos, MapBlock> cache;
+
+	@Inject
+	@Assisted
+	private OrientDB orientdb;
 
 	@Inject
 	private IDGenerator generator;
@@ -146,13 +152,15 @@ public class WorkerBlocks {
 				ylist.add(xlist);
 			}
 		}
-		generateMapBlock(m, createBlocksMap(), pos, endPos);
+		try (var db = orientdb.open(m.database, m.user, m.password)) {
+			generateMapBlock(m, db, createBlocksMap(), pos, endPos);
+		}
 		this.generateDone = true;
 		log.trace("generate done {}", m);
 	}
 
-	private MapBlock generateMapBlock(GenerateMapMessage m, MutableObjectLongMap<GameBlockPos> parent, GameMapPos pos,
-			GameMapPos endPos) throws GeneratorException {
+	private MapBlock generateMapBlock(GenerateMapMessage m, ODatabaseSession db,
+			MutableObjectLongMap<GameBlockPos> parent, GameMapPos pos, GameMapPos endPos) throws GeneratorException {
 		int w1 = endPos.getDiffX(pos);
 		int h1 = endPos.getDiffY(pos);
 		int d1 = endPos.getDiffZ(pos);
@@ -160,33 +168,33 @@ public class WorkerBlocks {
 		int h2 = endPos.getDiffY(pos) / 2;
 		int d2 = endPos.getDiffZ(pos) / 2;
 		if (w2 == m.blockSize / 2) {
-			var block = createBlock(m, pos, endPos);
-			createMapTiles(block);
+			var block = createBlock(m, db, pos, endPos);
+			createMapTiles(db, block);
 			cache.put(block.getPos(), block);
 			blocksDone++;
 			return block;
 		}
-		var block = createBlock(m, pos, endPos);
+		var block = createBlock(m, db, pos, endPos);
 		parent.put(block.getPos(), block.getId());
 		var map = createBlocksMap();
 		int x = pos.getX();
 		int y = pos.getY();
 		int z = pos.getZ();
-		var b0 = generateMapBlock(m, map, pos(m, x, y, z), pos(m, x + w2, y + h2, z + d2));
+		var b0 = generateMapBlock(m, db, map, pos(m, x, y, z), pos(m, x + w2, y + h2, z + d2));
 		map.put(b0.getPos(), b0.getId());
-		var b1 = generateMapBlock(m, map, pos(m, x + w2, y, z), pos(m, x + w1, y + h2, z + d2));
+		var b1 = generateMapBlock(m, db, map, pos(m, x + w2, y, z), pos(m, x + w1, y + h2, z + d2));
 		map.put(b1.getPos(), b1.getId());
-		var b2 = generateMapBlock(m, map, pos(m, x + w2, y, z + d2), pos(m, x + w1, y + h2, z + d1));
+		var b2 = generateMapBlock(m, db, map, pos(m, x + w2, y, z + d2), pos(m, x + w1, y + h2, z + d1));
 		map.put(b2.getPos(), b2.getId());
-		var b3 = generateMapBlock(m, map, pos(m, x, y, z + d2), pos(m, x + w2, y + h2, z + d1));
+		var b3 = generateMapBlock(m, db, map, pos(m, x, y, z + d2), pos(m, x + w2, y + h2, z + d1));
 		map.put(b3.getPos(), b3.getId());
-		var b4 = generateMapBlock(m, map, pos(m, x, y + h2, z), pos(m, x + w2, y + h1, z + d2));
+		var b4 = generateMapBlock(m, db, map, pos(m, x, y + h2, z), pos(m, x + w2, y + h1, z + d2));
 		map.put(b4.getPos(), b4.getId());
-		var b5 = generateMapBlock(m, map, pos(m, x + w2, y + h2, z), pos(m, x + w1, y + h1, z + d2));
+		var b5 = generateMapBlock(m, db, map, pos(m, x + w2, y + h2, z), pos(m, x + w1, y + h1, z + d2));
 		map.put(b5.getPos(), b5.getId());
-		var b6 = generateMapBlock(m, map, pos(m, x + w2, y + h2, z + d2), pos(m, x + w1, y + h1, z + d1));
+		var b6 = generateMapBlock(m, db, map, pos(m, x + w2, y + h2, z + d2), pos(m, x + w1, y + h1, z + d1));
 		map.put(b6.getPos(), b6.getId());
-		var b7 = generateMapBlock(m, map, pos(m, x, y + h2, z + d2), pos(m, x + w2, y + h1, z + d1));
+		var b7 = generateMapBlock(m, db, map, pos(m, x, y + h2, z + d2), pos(m, x + w2, y + h1, z + d1));
 		map.put(b7.getPos(), b7.getId());
 		block.setBlocks(map.asUnmodifiable());
 		cache.put(block.getPos(), block);
@@ -194,7 +202,7 @@ public class WorkerBlocks {
 		return block;
 	}
 
-	private void createMapTiles(MapBlock block) throws GeneratorException {
+	private void createMapTiles(ODatabaseSession db, MapBlock block) throws GeneratorException {
 		int w = block.getEndPos().getDiffX(block.getPos());
 		int h = block.getEndPos().getDiffY(block.getPos());
 		int d = block.getEndPos().getDiffZ(block.getPos());
@@ -225,7 +233,8 @@ public class WorkerBlocks {
 		return ObjectLongMaps.mutable.ofInitialCapacity(8);
 	}
 
-	private MapBlock createBlock(GenerateMapMessage m, GameMapPos pos, GameMapPos endPos) throws GeneratorException {
+	private MapBlock createBlock(GenerateMapMessage m, ODatabaseSession db, GameMapPos pos, GameMapPos endPos)
+			throws GeneratorException {
 		var block = new MapBlock(generator.generate());
 		block.setPos(new GameBlockPos(pos, endPos));
 		return block;

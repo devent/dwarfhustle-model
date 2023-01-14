@@ -26,7 +26,7 @@ import com.anrisoftware.dwarfhustle.model.db.cache.JcsCacheModule
 import com.anrisoftware.dwarfhustle.model.db.cache.MapTilesJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.db.cache.MapTilesJcsCacheActor.MapTilesJcsCacheActorFactory
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbModule
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsModule
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsDbModule
 import com.google.inject.Guice
 import com.google.inject.Injector
 
@@ -60,7 +60,7 @@ class MapTilesJcsCacheActorTest {
 	@BeforeAll
 	static void setupActor() {
 		mapTilesParams = [game_name: "test", mapid: 0, width: 16, height: 16, depth: 10]
-		injector = Guice.createInjector(new MainActorsModule(), new OrientDbModule(), new JcsCacheModule(), new ObjectsModule(), new ApiModule())
+		injector = Guice.createInjector(new MainActorsModule(), new OrientDbModule(), new JcsCacheModule(), new ObjectsDbModule(), new ApiModule())
 		generator = injector.getInstance(IDGenerator.class)
 		mapTilesCacheActor = testKit.spawn(MapTilesJcsCacheActor.create(injector, injector.getInstance(MapTilesJcsCacheActorFactory), MapTilesJcsCacheActor.createInitCacheAsync(mapTilesParams), mapTilesParams), "MapTilesJcsCacheActor");
 	}

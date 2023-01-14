@@ -25,7 +25,9 @@ import java.util.Map;
 import javax.inject.Singleton;
 
 import com.anrisoftware.dwarfhustle.model.api.GameObjectStorage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsActor.ObjectsActorFactory;
+import com.anrisoftware.dwarfhustle.model.api.MapBlock;
+import com.anrisoftware.dwarfhustle.model.api.MapTile;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsDbActor.ObjectsDbActorFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
@@ -35,19 +37,20 @@ import com.google.inject.assistedinject.FactoryModuleBuilder;
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-public class ObjectsModule extends AbstractModule {
+public class ObjectsDbModule extends AbstractModule {
 
 	@Override
 	protected void configure() {
-		install(new FactoryModuleBuilder().implement(ObjectsActor.class, ObjectsActor.class)
-				.build(ObjectsActorFactory.class));
+		install(new FactoryModuleBuilder().implement(ObjectsDbActor.class, ObjectsDbActor.class)
+				.build(ObjectsDbActorFactory.class));
 	}
 
 	@Singleton
 	@Provides
 	public Map<String, GameObjectStorage> getStorages() {
 		var map = new HashMap<String, GameObjectStorage>();
-		map.put("MapTile", new MapTileStorage());
+		map.put(MapTile.OBJECT_TYPE, new MapTileStorage());
+		map.put(MapBlock.OBJECT_TYPE, new MapBlockStorage());
 		return map;
 	}
 
@@ -56,7 +59,9 @@ public class ObjectsModule extends AbstractModule {
 	public List<GameObjectSchema> getSchemas() {
 		var list = new ArrayList<GameObjectSchema>();
 		list.add(new GameObjectSchemaSchema());
+		list.add(new GameMapObjectSchema());
 		list.add(new MapTileSchema());
+		list.add(new MapBlockSchema());
 		return list;
 	}
 }

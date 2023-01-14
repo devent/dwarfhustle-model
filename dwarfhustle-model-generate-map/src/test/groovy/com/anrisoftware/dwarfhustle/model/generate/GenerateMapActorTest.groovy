@@ -17,8 +17,8 @@ import com.anrisoftware.dwarfhustle.model.api.ApiModule
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CloseDbMessage
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbModule
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsActor
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsModule
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsDbActor
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsDbModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseActor
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.PowerLoomKnowledgeActor
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.PowerloomModule
@@ -60,9 +60,9 @@ class GenerateMapActorTest {
 	@BeforeAll
 	static void setupActor() {
 		fillDatabase = false
-		injector = Guice.createInjector(new MainActorsModule(), new ObjectsModule(), new PowerloomModule(), new GenerateModule(), new OrientDbModule(), new ApiModule())
+		injector = Guice.createInjector(new MainActorsModule(), new ObjectsDbModule(), new PowerloomModule(), new GenerateModule(), new OrientDbModule(), new ApiModule())
 		orientDbActor = testKit.spawn(OrientDbActor.create(injector), "OrientDbActor");
-		objectsActor = testKit.spawn(ObjectsActor.create(injector, orientDbActor), "objectsActor");
+		objectsActor = testKit.spawn(ObjectsDbActor.create(injector, orientDbActor), "objectsActor");
 		powerLoomKnowledgeActor = testKit.spawn(PowerLoomKnowledgeActor.create(injector), "PowerLoomKnowledgeActor");
 		knowledgeBaseActor = testKit.spawn(KnowledgeBaseActor.create(injector, powerLoomKnowledgeActor), "KnowledgeBaseActor");
 		connectCreateDatabase(orientDbActor, objectsActor, timeout, testKit, injector.getInstance(IDGenerator.class), initDatabaseLock)

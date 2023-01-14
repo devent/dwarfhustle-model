@@ -49,6 +49,12 @@ public class GenerateMapMessage extends Message {
 
 	public final int blockSize;
 
+	public final String user;
+
+	public final String password;
+
+	public final String database;
+
 	public int getSize() {
 		return depth * height * width;
 	}

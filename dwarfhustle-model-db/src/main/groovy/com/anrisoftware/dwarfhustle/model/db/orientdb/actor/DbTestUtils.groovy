@@ -33,7 +33,7 @@ class DbTestUtils {
 
 	final password = "admin"
 
-	final type = ODatabaseType.PLOCAL
+	final type = ODatabaseType.MEMORY
 
 	OrientDB db
 
