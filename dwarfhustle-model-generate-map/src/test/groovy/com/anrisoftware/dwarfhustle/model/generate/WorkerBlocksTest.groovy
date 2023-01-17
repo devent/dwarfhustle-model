@@ -171,7 +171,7 @@ class WorkerBlocksTest {
 	}
 
 	@Test
-	@Timeout(600)
+	@Timeout(600l)
 	@Order(10)
 	void "load blocks from cache"() {
 		def cacheActor = testKit.spawn(MapBlocksJcsCacheActor.create(injector, injector.getInstance(MapBlocksJcsCacheActorFactory), MapBlocksJcsCacheActor.createInitCacheAsync(mapTilesParams), mapTilesParams), "MapBlocksJcsCacheActor");

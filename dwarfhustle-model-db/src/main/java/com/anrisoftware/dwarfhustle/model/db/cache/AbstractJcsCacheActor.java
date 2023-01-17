@@ -201,14 +201,14 @@ public abstract class AbstractJcsCacheActor<K, V> implements IElementEventHandle
 				.build();
 	}
 
-	protected Behavior<Message> onSetupError(SetupErrorMessage m) {
+	protected Behavior<Message> onSetupError(Object m) {
 		log.debug("onSetupError: {}", m);
 		return Behaviors.stopped();
 	}
 
-	protected Behavior<Message> stashOtherCommand(Message m) {
+	protected Behavior<Message> stashOtherCommand(Object m) {
 		log.debug("stashOtherCommand: {}", m);
-		buffer.stash(m);
+		buffer.stash((Message) m);
 		return Behaviors.same();
 	}
 
@@ -347,7 +347,7 @@ public abstract class AbstractJcsCacheActor<K, V> implements IElementEventHandle
 	 * <li>{@link CacheElementEventMessage}
 	 * </ul>
 	 */
-	protected Behavior<Message> onCacheElementEvent(CacheElementEventMessage m) {
+	protected Behavior<Message> onCacheElementEvent(Object m) {
 		log.debug("onCacheElementEvent {}", m);
 		return Behaviors.same();
 	}

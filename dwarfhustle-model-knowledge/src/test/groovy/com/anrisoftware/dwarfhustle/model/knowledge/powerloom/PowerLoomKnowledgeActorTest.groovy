@@ -75,7 +75,7 @@ class PowerLoomKnowledgeActorTest {
 		"all ?t (melting-point-material Aluminium ?t)",
 		"all ?t (melting-point-material Something ?t)",
 	])
-	@Timeout(10)
+	@Timeout(10l)
 	void "test retrieve"(String retrieve) {
 		askKnowledgeCommandMessage({
 			printPowerLoomRetrieve(retrieve, PowerLoomKnowledgeActor.WORKING_MODULE, null);
@@ -88,7 +88,7 @@ class PowerLoomKnowledgeActorTest {
 		"?t (melting-point-material Aluminium ?t)",
 		"?t (thermal-conductivity-of-material Clay ?t)",
 	])
-	@Timeout(1000)
+	@Timeout(1000l)
 	void "test retrieve pop"(String retrieve) {
 		askKnowledgeCommandMessage({
 			def answer = PLI.sRetrieve(retrieve, PowerLoomKnowledgeActor.WORKING_MODULE, null);
@@ -103,7 +103,7 @@ class PowerLoomKnowledgeActorTest {
 	@ValueSource(strings = [
 		"?t (melting-point-material Aluminium ?t)",
 	])
-	@Timeout(10)
+	@Timeout(10l)
 	void "test ask pop"(String retrieve) {
 		askKnowledgeCommandMessage({
 			def answer = PLI.sAsk(retrieve, PowerLoomKnowledgeActor.WORKING_MODULE, null);

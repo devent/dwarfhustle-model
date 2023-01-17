@@ -66,7 +66,7 @@ class KnowledgeBaseActorTest {
 	}
 
 	@Test
-	@Timeout(15)
+	@Timeout(15l)
 	void "test retrieve"() {
 		def result =
 				AskPattern.ask(

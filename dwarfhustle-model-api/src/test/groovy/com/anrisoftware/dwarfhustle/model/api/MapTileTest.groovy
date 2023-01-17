@@ -29,6 +29,6 @@ class MapTileTest {
 	@Test
 	void map_tile_type() {
 		def go = new MapTile()
-		assert go.type == "MapTile"
+		assert go.objectType == "MapTile"
 	}
 }
