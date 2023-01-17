@@ -24,7 +24,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Person on the game map.
+ * Object with a facing on the game map.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
@@ -33,17 +33,19 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-public class Person extends GameFacingObject {
+public class GameFacingObject extends GameMapObject {
 
-	private static final long serialVersionUID = -6027695018525898404L;
+	private static final long serialVersionUID = -2588184910010763410L;
 
-	public static final String OBJECT_TYPE = Person.class.getSimpleName();
+	public static final String OBJECT_TYPE = GameFacingObject.class.getSimpleName();
 
-	public Person(long id) {
+	private PathDirection facing;
+
+	public GameFacingObject(long id) {
 		super(id);
 	}
 
-	public Person(byte[] idbuf) {
+	public GameFacingObject(byte[] idbuf) {
 		super(idbuf);
 	}
 
@@ -52,4 +54,13 @@ public class Person extends GameFacingObject {
 		return OBJECT_TYPE;
 	}
 
+	/**
+	 * Sets the {@link PathDirection} the person is facing on the game map.
+	 */
+	public void setFacing(PathDirection facing) {
+		if (this.facing != facing) {
+			this.facing = facing;
+			setDirty(true);
+		}
+	}
 }
