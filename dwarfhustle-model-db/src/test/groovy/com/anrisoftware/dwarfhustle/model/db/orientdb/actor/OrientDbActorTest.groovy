@@ -24,10 +24,9 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
-import com.anrisoftware.dwarfhustle.model.actor.MainActorsModule
+import com.anrisoftware.dwarfhustle.model.actor.ActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbSuccessMessage
 import com.google.inject.Guice
 import com.google.inject.Injector
 import com.orientechnologies.orient.core.db.ODatabaseType
@@ -44,6 +43,8 @@ import groovy.util.logging.Slf4j
 @Slf4j
 class OrientDbActorTest {
 
+	static final EMBEDDED_SERVER_PROPERTY = System.getProperty("com.anrisoftware.dwarfhustle.model.db.orientdb.objects.embedded-server", "yes")
+
 	static final ActorTestKit testKit = ActorTestKit.create()
 
 	static Injector injector
@@ -52,9 +53,15 @@ class OrientDbActorTest {
 
 	static timeout = Duration.ofMinutes(10)
 
+	static DbServerUtils dbServerUtils
+
 	@BeforeAll
 	static void setupActor() {
-		injector = Guice.createInjector(new MainActorsModule(), new OrientDbModule())
+		if (EMBEDDED_SERVER_PROPERTY == "yes") {
+			dbServerUtils = new DbServerUtils()
+			dbServerUtils.createServer()
+		}
+		injector = Guice.createInjector(new ActorsModule(), new OrientDbModule())
 		orientDbActor = testKit.spawn(OrientDbActor.create(injector), "OrientDbActor");
 	}
 
@@ -63,6 +70,9 @@ class OrientDbActorTest {
 		deleteDatabase()
 		orientDbActor.tell(new CloseDbMessage())
 		testKit.shutdown(testKit.system(), timeout)
+		if (EMBEDDED_SERVER_PROPERTY == "yes") {
+			dbServerUtils.shutdownServer()
+		}
 	}
 
 	static void deleteDatabase() {
@@ -83,20 +93,33 @@ class OrientDbActorTest {
 	@Test
 	void connect_db_message_create_db() {
 		def lock = new CountDownLatch(1)
-		def result =
-				AskPattern.ask(
-				orientDbActor,
-				{replyTo -> new ConnectDbRemoteMessage(replyTo, "remote:localhost", "test", "root", "admin")},
-				timeout,
-				testKit.scheduler())
+		def result
+		if (EMBEDDED_SERVER_PROPERTY == "yes") {
+			result =
+					AskPattern.ask(
+					orientDbActor,
+					{replyTo -> new ConnectDbEmbeddedMessage(replyTo, dbServerUtils.server, "test", "root", "admin")},
+					timeout,
+					testKit.scheduler())
+		} else {
+			result =
+					AskPattern.ask(
+					orientDbActor,
+					{replyTo -> new ConnectDbRemoteMessage(replyTo, "remote:localhost", "test", "root", "admin")},
+					timeout,
+					testKit.scheduler())
+		}
 		result.whenComplete( {reply, failure ->
 			log.info "Connect database reply {} failure {}", reply, failure
 			switch (reply) {
-				case DbSuccessMessage:
+				case ConnectDbSuccessMessage:
 					createDatabase(lock)
 					break
 				case DbErrorMessage:
+					lock.countDown()
 					break
+				default:
+					lock.countDown()
 			}
 		})
 		lock.await()

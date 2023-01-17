@@ -19,7 +19,6 @@ package com.anrisoftware.dwarfhustle.model.actor;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
-import javax.inject.Singleton;
 
 import com.anrisoftware.dwarfhustle.model.actor.MainActor.MainActorFactory;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
@@ -34,7 +33,6 @@ import akka.actor.typed.javadsl.Behaviors;
  *
  * @author Erwin Müller
  */
-@Singleton
 public class ActorSystemProvider implements Provider<ActorRef<Message>> {
 
     private final ActorSystem<Message> actors;
@@ -46,7 +44,7 @@ public class ActorSystemProvider implements Provider<ActorRef<Message>> {
         this.actors = ActorSystem.create(Behaviors.setup((context) -> {
             mainActor = mainFactory.create(context);
             return mainActor;
-        }), "dwarf");
+		}), MainActor.class.getSimpleName());
     }
 
     public MainActor getMainActor() {

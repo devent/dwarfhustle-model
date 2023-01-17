@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
 import org.lable.oss.uniqueid.IDGenerator
 
-import com.anrisoftware.dwarfhustle.model.actor.MainActorsModule
+import com.anrisoftware.dwarfhustle.model.actor.ActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.api.ApiModule
 import com.anrisoftware.dwarfhustle.model.api.GameBlockPos
@@ -86,7 +86,7 @@ class ObjectsDbActorTest {
 			dbServerUtils = new DbServerUtils()
 			dbServerUtils.createServer()
 		}
-		injector = Guice.createInjector(new MainActorsModule(), new OrientDbModule(), new ObjectsDbModule(), new ApiModule())
+		injector = Guice.createInjector(new ActorsModule(), new OrientDbModule(), new ObjectsDbModule(), new ApiModule())
 		gen = injector.getInstance(IDGenerator)
 		orientDbActor = testKit.spawn(OrientDbActor.create(injector), "OrientDbActor");
 		objectsDbActor = testKit.spawn(ObjectsDbActor.create(injector, orientDbActor), "ObjectsDbActor");

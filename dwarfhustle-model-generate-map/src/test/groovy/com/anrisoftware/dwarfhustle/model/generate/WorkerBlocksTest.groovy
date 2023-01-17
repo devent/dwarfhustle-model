@@ -37,7 +37,7 @@ import org.junit.jupiter.api.TestMethodOrder
 import org.junit.jupiter.api.Timeout
 import org.lable.oss.uniqueid.IDGenerator
 
-import com.anrisoftware.dwarfhustle.model.actor.MainActorsModule
+import com.anrisoftware.dwarfhustle.model.actor.ActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.api.ApiModule
 import com.anrisoftware.dwarfhustle.model.api.GameBlockPos
@@ -74,7 +74,7 @@ import groovy.util.logging.Slf4j
 @TestMethodOrder(OrderAnnotation.class)
 class WorkerBlocksTest {
 
-	static final EMBEDDED_SERVER_PROPERTY = System.getProperty("com.anrisoftware.dwarfhustle.model.db.orientdb.objects.embedded-server", "no")
+	static final EMBEDDED_SERVER_PROPERTY = System.getProperty("com.anrisoftware.dwarfhustle.model.db.orientdb.objects.embedded-server", "yes")
 
 	static final ActorTestKit testKit = ActorTestKit.create()
 
@@ -108,12 +108,12 @@ class WorkerBlocksTest {
 			dbServerUtils = new DbServerUtils()
 			dbServerUtils.createServer()
 		}
-		def s = 64
+		def s = 32
 		def parentDir = File.createTempDir()
 		mapTilesParams = [parent_dir: parentDir, game_name: "test", mapid: 0, width: s, height: s, depth: s, block_size: 8]
 		cacheFile = new File(parentDir, "dwarfhustle_jcs_swap_${mapTilesParams.game_name}_mapBlocksCache_0_file")
 		injector = Guice.createInjector(
-				new MainActorsModule(),
+				new ActorsModule(),
 				new ObjectsDbModule(),
 				new PowerloomModule(),
 				new GenerateModule(),
@@ -128,7 +128,7 @@ class WorkerBlocksTest {
 		objectsDbActor = testKit.spawn(ObjectsDbActor.create(injector, orientDbActor), "ObjectsDbActor");
 		gen = injector.getInstance(IDGenerator)
 		dbTestUtils = new DbTestUtils(orientDbActor, objectsDbActor, testKit, gen)
-		dbTestUtils.type = ODatabaseType.PLOCAL
+		dbTestUtils.type = ODatabaseType.MEMORY
 		dbTestUtils.fillDatabase = false
 		def initDatabaseLock = new CountDownLatch(1)
 		if (EMBEDDED_SERVER_PROPERTY == "yes") {

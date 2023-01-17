@@ -17,23 +17,24 @@
  */
 package com.anrisoftware.dwarfhustle.model.actor;
 
+import com.anrisoftware.dwarfhustle.model.actor.MainActor.MainActorFactory;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 
 import akka.actor.typed.ActorRef;
 
 /**
- * Binds the {@link ActorSystemProvider}.
- *
- * @author Erwin Müller {@literal <erwin@mullerlpublic.de}
+ * @author Erwin Müller
  */
-public class ActorSystemProviderModule extends AbstractModule {
+public class ActorsModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(new TypeLiteral<ActorRef<Message>>() {
-        }).toProvider(ActorSystemProvider.class).asEagerSingleton();
+		bind(new TypeLiteral<ActorRef<Message>>() {
+		}).toProvider(ActorSystemProvider.class).asEagerSingleton();
+        install(new FactoryModuleBuilder().implement(MainActor.class, MainActor.class).build(MainActorFactory.class));
     }
 
 }

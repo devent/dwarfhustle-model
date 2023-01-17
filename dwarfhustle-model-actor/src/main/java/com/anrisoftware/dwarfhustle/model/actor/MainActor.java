@@ -126,7 +126,7 @@ public class MainActor extends MessageActor<Message> {
         log.debug("onShutdown {}", m);
         forwardMessage(m);
         getContext().getSystem().terminate();
-        return this;
+		return this;
     }
 
     private Behavior<Message> onCreateNamedActor(CreateNamedActorMessage m) {

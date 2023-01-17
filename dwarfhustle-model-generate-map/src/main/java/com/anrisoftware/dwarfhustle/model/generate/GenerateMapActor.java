@@ -26,12 +26,15 @@ import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
 
+import org.apache.commons.jcs3.access.CacheAccess;
 import org.eclipse.collections.api.map.primitive.IntObjectMap;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+import com.anrisoftware.dwarfhustle.model.api.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.IgneousExtrusive;
 import com.anrisoftware.dwarfhustle.model.api.IgneousIntrusive;
+import com.anrisoftware.dwarfhustle.model.api.MapBlock;
 import com.anrisoftware.dwarfhustle.model.api.Material;
 import com.anrisoftware.dwarfhustle.model.api.Metamorphic;
 import com.anrisoftware.dwarfhustle.model.api.Sedimentary;
@@ -190,7 +193,8 @@ public class GenerateMapActor {
 	 */
 	protected Behavior<Message> onMaterialsLoadSuccess(MaterialsLoadSuccessMessage m) {
 		log.debug("onMaterialsLoadSuccess {}", m);
-		var workerActor = workerActorFactory.create(db);
+		CacheAccess<GameBlockPos, MapBlock> cache = null;
+		var workerActor = workerActorFactory.create(cache, db);
 		return Behaviors.same();
 	}
 

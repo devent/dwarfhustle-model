@@ -25,7 +25,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 
-import com.anrisoftware.dwarfhustle.model.actor.MainActorsModule
+import com.anrisoftware.dwarfhustle.model.actor.ActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.GetReplyMessage
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.ReplyMessage
@@ -55,7 +55,7 @@ class KnowledgeBaseActorTest {
 
 	@BeforeAll
 	static void setupActor() {
-		injector = Guice.createInjector(new MainActorsModule(), new PowerloomModule())
+		injector = Guice.createInjector(new ActorsModule(), new PowerloomModule())
 		powerLoomKnowledgeActor = testKit.spawn(PowerLoomKnowledgeActor.create(injector), "PowerLoomKnowledgeActor");
 		knowledgeBaseActor = testKit.spawn(KnowledgeBaseActor.create(injector, powerLoomKnowledgeActor), "KnowledgeBaseActor");
 	}

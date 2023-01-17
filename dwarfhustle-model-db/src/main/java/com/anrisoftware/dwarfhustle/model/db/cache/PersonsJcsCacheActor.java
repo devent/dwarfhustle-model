@@ -148,7 +148,7 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, MapT
 		this.db = (ActorRef<Message>) params.get("db");
 		this.mapid = (int) params.get("mapid");
 		this.goids = LongSets.mutable.withInitialCapacity(1000);
-		this.storage = storages.get(MapTile.TYPE);
+		this.storage = storages.get(MapTile.OBJECT_TYPE);
 		loadMapTiles();
 		return Behaviors.receive(Message.class)//
 				.onMessage(MapTilesInitialLoadDoneMessage.class, this::onMapTilesInitialLoadDone)//
@@ -183,12 +183,13 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, MapT
 	}
 
 	private Void loadMapTilesAsync(ODatabaseDocument db) {
-		var rs = db.query("SELECT FROM ? where objecttype = ? and mapid = ?", MapTile.TYPE, MapTile.TYPE, mapid);
+		var rs = db.query("SELECT FROM ? where objecttype = ? and mapid = ?", MapTile.OBJECT_TYPE, MapTile.OBJECT_TYPE,
+				mapid);
 		while (rs.hasNext()) {
 			var item = rs.next();
-			var go = storage.load(item.toElement(), storage.create());
-			cache.put(go.getPos(), (MapTile) go);
-			goids.add(go.getId());
+			// var go = storage.load(item.toElement(), storage.create());
+			// cache.put(go.getPos(), (MapTile) go);
+			// goids.add(go.getId());
 		}
 		rs.close();
 		return null;
@@ -225,11 +226,11 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, MapT
 	private MapTile retrieveGameObjectAsync(ODatabaseDocument db, AbstractGetMessage<?> m) {
 		var pos = (GameMapPos) m.key;
 		var rs = db.query("SELECT FROM ? where objecttype = ? and mapid = ? and x = ? and y = ? and z = ?",
-				MapTile.TYPE, pos.getMapid(), pos.getX(), pos.getY(), pos.getZ());
+				MapTile.OBJECT_TYPE, pos.getMapid(), pos.getX(), pos.getY(), pos.getZ());
 		MapTile go = null;
 		while (rs.hasNext()) {
 			var item = rs.next();
-			go = (MapTile) storage.load(item, storage.create());
+			// go = (MapTile) storage.load(item, storage.create());
 			cache.put(go.getPos(), go);
 		}
 		rs.close();
@@ -264,7 +265,7 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, MapT
 		if (rid == null) {
 			v = db.newVertex(go.getObjectType());
 		}
-		storage.save(v, go);
+		// storage.save(v, go);
 		return null;
 	}
 }
