@@ -112,6 +112,11 @@ public class MainActor extends MessageActor<Message> {
         return actors.containsKey(id);
     }
 
+	public MainActor tell(Message m) {
+		getContext().getSelf().tell(m);
+		return this;
+	}
+
     @Override
     public Receive<Message> createReceive() {
         return newReceiveBuilder()//
