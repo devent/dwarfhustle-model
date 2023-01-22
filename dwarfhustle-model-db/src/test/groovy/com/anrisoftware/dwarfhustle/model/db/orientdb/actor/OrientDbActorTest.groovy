@@ -24,7 +24,7 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
-import com.anrisoftware.dwarfhustle.model.actor.ActorsModule
+import com.anrisoftware.dwarfhustle.model.actor.ModelActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage
 import com.google.inject.Guice
@@ -61,7 +61,7 @@ class OrientDbActorTest {
 			dbServerUtils = new DbServerUtils()
 			dbServerUtils.createServer()
 		}
-		injector = Guice.createInjector(new ActorsModule(), new OrientDbModule())
+		injector = Guice.createInjector(new ModelActorsModule(), new OrientDbModule())
 		orientDbActor = testKit.spawn(OrientDbActor.create(injector), "OrientDbActor");
 	}
 

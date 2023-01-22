@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 
-import com.anrisoftware.dwarfhustle.model.actor.ActorsModule
+import com.anrisoftware.dwarfhustle.model.actor.ModelActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandResponseMessage.KnowledgeCommandErrorMessage
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandResponseMessage.KnowledgeCommandSuccessMessage
@@ -56,7 +56,7 @@ class PowerLoomKnowledgeActorTest {
 
 	@BeforeAll
 	static void setupActor() {
-		injector = Guice.createInjector(new ActorsModule(), new PowerloomModule())
+		injector = Guice.createInjector(new ModelActorsModule(), new PowerloomModule())
 		powerLoomKnowledgeActor = testKit.spawn(PowerLoomKnowledgeActor.create(injector), "PowerLoomKnowledgeActor");
 	}
 

@@ -37,7 +37,7 @@ import org.junit.jupiter.api.TestMethodOrder
 import org.junit.jupiter.api.Timeout
 import org.lable.oss.uniqueid.IDGenerator
 
-import com.anrisoftware.dwarfhustle.model.actor.ActorsModule
+import com.anrisoftware.dwarfhustle.model.actor.ModelActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.api.ApiModule
 import com.anrisoftware.dwarfhustle.model.api.GameBlockPos
@@ -113,7 +113,7 @@ class WorkerBlocksTest {
 		mapTilesParams = [parent_dir: parentDir, game_name: "test", mapid: 0, width: s, height: s, depth: s, block_size: 8]
 		cacheFile = new File(parentDir, "dwarfhustle_jcs_swap_${mapTilesParams.game_name}_mapBlocksCache_0_file")
 		injector = Guice.createInjector(
-				new ActorsModule(),
+				new ModelActorsModule(),
 				new ObjectsDbModule(),
 				new PowerloomModule(),
 				new GenerateModule(),

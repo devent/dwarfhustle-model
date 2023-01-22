@@ -28,7 +28,7 @@ import akka.actor.typed.ActorRef;
 /**
  * @author Erwin Müller
  */
-public class ActorsModule extends AbstractModule {
+public class ModelActorsModule extends AbstractModule {
 
     @Override
     protected void configure() {
