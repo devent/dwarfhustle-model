@@ -179,6 +179,19 @@ class DbTestUtils {
 		})
 	}
 
+	void closeDatabase(def closeDatabaseLock) {
+		def result =
+				AskPattern.ask(
+				orientDbActor,
+				{replyTo -> new CloseDbMessage(replyTo)},
+				timeout,
+				testKit.scheduler())
+		result.whenComplete( {reply, failure ->
+			log_reply_failure "closeDatabase", reply, failure
+			closeDatabaseLock.countDown()
+		})
+	}
+
 	static void log_reply_failure(def name, def reply, def failure) {
 		log.info "$name reply ${reply} failure ${failure}"
 	}

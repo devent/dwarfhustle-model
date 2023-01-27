@@ -21,8 +21,6 @@ import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.orientechnologies.orient.core.db.ODatabaseType;
 
 import akka.actor.typed.ActorRef;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
@@ -35,8 +33,8 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class CreateDbMessage extends Message {
 
-	@Data
-	@EqualsAndHashCode(callSuper = false)
+	@RequiredArgsConstructor
+	@ToString(callSuper = true)
 	public static class DbAlreadyExistMessage extends DbResponseMessage {
 
 		public final CreateDbMessage originalMessage;

@@ -17,6 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.actor
 
+import com.orientechnologies.orient.core.Orient
 import com.orientechnologies.orient.server.OServer
 import com.orientechnologies.orient.server.OServerMain
 
@@ -32,7 +33,10 @@ class DbServerUtils {
 
 	OServer server
 
-	def createServer() {
+	def createServer(def rootPath = null) {
+		if (rootPath) {
+			System.setProperty(Orient.ORIENTDB_HOME, rootPath);
+		}
 		server = OServerMain.create();
 		def config = DbServerUtils.class.getResourceAsStream("/orientdb-test-config.xml")
 		assert config != null

@@ -172,16 +172,18 @@ public class OrientDbActor {
 	 */
 	private Behavior<Message> onCloseDb(CloseDbMessage m) {
 		log.debug("onCloseDb {}", m);
-		if (orientdb.isPresent()) {
-			orientdb.get().close();
-		}
+		orientdb.ifPresent(o -> {
+			o.close();
+			m.replyTo.tell(new DbSuccessMessage(m));
+		});
 		return getInitialBehavior().build();
 	}
 
 	/**
-	 * Reacts to {@link ConnectDbRemoteMessage}. Replies with {@link DbSuccessMessage} on
-	 * success, with {@link DbAlreadyExistMessage} if the database already exist or
-	 * with {@link DbErrorMessage} on failure. Returns a behavior for the messages:
+	 * Reacts to {@link ConnectDbRemoteMessage}. Replies with
+	 * {@link DbSuccessMessage} on success, with {@link DbAlreadyExistMessage} if
+	 * the database already exist or with {@link DbErrorMessage} on failure. Returns
+	 * a behavior for the messages:
 	 *
 	 * <ul>
 	 * <li>{@link CloseDbMessage}
