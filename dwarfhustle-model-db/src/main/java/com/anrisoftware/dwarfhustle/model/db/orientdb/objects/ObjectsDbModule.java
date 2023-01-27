@@ -24,6 +24,7 @@ import java.util.Map;
 
 import javax.inject.Singleton;
 
+import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapTile;
@@ -54,6 +55,7 @@ public class ObjectsDbModule extends AbstractModule {
 		var mapBlockStorage = new MapBlockStorage();
 		mapBlockStorage.setStorages(map);
 		map.put(MapBlock.OBJECT_TYPE, mapBlockStorage);
+		map.put(GameMap.OBJECT_TYPE, new GameMapStorage());
 		return map;
 	}
 
@@ -63,6 +65,7 @@ public class ObjectsDbModule extends AbstractModule {
 		var list = new ArrayList<GameObjectSchema>();
 		list.add(new GameObjectSchemaSchema());
 		list.add(new GameMapObjectSchema());
+		list.add(new GameMapSchema());
 		list.add(new MapTileSchema());
 		list.add(new MapBlockSchema());
 		return list;

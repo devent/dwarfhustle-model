@@ -153,7 +153,7 @@ class GenerateMap {
 	void "test generate"() {
 		def cacheActor = testKit.spawn(MapBlocksJcsCacheActor.create(injector, injector.getInstance(MapBlocksJcsCacheActorFactory), MapBlocksJcsCacheActor.createInitCacheAsync(mapTilesParams), mapTilesParams), "MapBlocksJcsCacheActor");
 		def cache = retrieveCache(cacheActor)
-		def m = new GenerateMapMessage(null, 0, mapTilesParams.width, mapTilesParams.height, mapTilesParams.depth, mapTilesParams.block_size, dbTestUtils.user, dbTestUtils.password, dbTestUtils.database)
+		def m = new GenerateMapMessage(null, "foo", 0, mapTilesParams.width, mapTilesParams.height, mapTilesParams.depth, mapTilesParams.block_size, dbTestUtils.user, dbTestUtils.password, dbTestUtils.database)
 		def worker = workerFactory.create(cache, dbTestUtils.db)
 		def thread = Thread.start {
 			worker.generate(m)

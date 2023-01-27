@@ -37,11 +37,11 @@ import org.junit.jupiter.api.TestMethodOrder
 import org.junit.jupiter.api.Timeout
 import org.lable.oss.uniqueid.IDGenerator
 
+import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.actor.ModelActorsModule
 import com.anrisoftware.dwarfhustle.model.api.objects.ApiModule
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock
-import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.db.cache.JcsCacheModule
 import com.anrisoftware.dwarfhustle.model.db.cache.MapBlocksJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.db.cache.MapBlocksJcsCacheActor.MapBlocksJcsCacheActorFactory
@@ -104,12 +104,12 @@ class WorkerBlocksTest {
 
 	@BeforeAll
 	static void setupActor() {
+		def parentDir = File.createTempDir()
 		if (EMBEDDED_SERVER_PROPERTY == "yes") {
 			dbServerUtils = new DbServerUtils()
-			dbServerUtils.createServer()
+			dbServerUtils.createServer(parentDir.absolutePath)
 		}
 		def s = 32
-		def parentDir = File.createTempDir()
 		mapTilesParams = [parent_dir: parentDir, game_name: "test", mapid: 0, width: s, height: s, depth: s, block_size: 8]
 		cacheFile = new File(parentDir, "dwarfhustle_jcs_swap_${mapTilesParams.game_name}_mapBlocksCache_0_file")
 		injector = Guice.createInjector(
@@ -156,7 +156,7 @@ class WorkerBlocksTest {
 	void "test generate"() {
 		def cacheActor = testKit.spawn(MapBlocksJcsCacheActor.create(injector, injector.getInstance(MapBlocksJcsCacheActorFactory), MapBlocksJcsCacheActor.createInitCacheAsync(mapTilesParams), mapTilesParams), "MapBlocksJcsCacheActor");
 		def cache = retrieveCache(cacheActor)
-		def m = new GenerateMapMessage(null, 0, mapTilesParams.width, mapTilesParams.height, mapTilesParams.depth, mapTilesParams.block_size, dbTestUtils.user, dbTestUtils.password, dbTestUtils.database)
+		def m = new GenerateMapMessage(null, "foo", 0, mapTilesParams.width, mapTilesParams.height, mapTilesParams.depth, mapTilesParams.block_size, dbTestUtils.user, dbTestUtils.password, dbTestUtils.database)
 		def worker = workerFactory.create(cache, dbTestUtils.db)
 		def thread = Thread.start {
 			worker.generate(m)

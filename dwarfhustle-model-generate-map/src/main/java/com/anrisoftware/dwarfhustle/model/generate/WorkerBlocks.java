@@ -30,6 +30,7 @@ import org.lable.oss.uniqueid.GeneratorException;
 import org.lable.oss.uniqueid.IDGenerator;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMapPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
@@ -76,11 +77,14 @@ public class WorkerBlocks {
 
 	private GameObjectStorage mapBlockStore;
 
+	private GameObjectStorage gameMapStore;
+
 	public WorkerBlocks() {
 	}
 
 	@Inject
 	public void setStorages(Map<String, GameObjectStorage> storages) {
+		this.gameMapStore = storages.get(GameMap.OBJECT_TYPE);
 		this.mapBlockStore = storages.get(MapBlock.OBJECT_TYPE);
 	}
 
@@ -103,12 +107,24 @@ public class WorkerBlocks {
 		var pos = pos(m, 0, 0, 0);
 		var endPos = pos(m, w1, h1, d1);
 		try (var db = orientdb.open(m.database, m.user, m.password)) {
+			saveGameMap(m, db);
 			db.declareIntent(new OIntentMassiveInsert());
 			generateMapBlock(m, db, createBlocksMap(), pos, endPos);
 			db.declareIntent(null);
 		}
 		this.generateDone = true;
 		log.trace("generate done {}", m);
+	}
+
+	private void saveGameMap(GenerateMapMessage m, ODatabaseSession db) throws GeneratorException {
+		var gamemap = new GameMap(generator.generate());
+		gamemap.setName(m.name);
+		gamemap.setWidth(m.width);
+		gamemap.setHeight(m.height);
+		gamemap.setDepth(m.depth);
+		var v = db.newVertex(GameMap.OBJECT_TYPE);
+		gameMapStore.save(db, v, gamemap);
+		v.save();
 	}
 
 	private MapBlock generateMapBlock(GenerateMapMessage m, ODatabaseSession db,

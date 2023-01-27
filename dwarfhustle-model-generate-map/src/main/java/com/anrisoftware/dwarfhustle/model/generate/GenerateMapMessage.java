@@ -56,6 +56,8 @@ public class GenerateMapMessage extends Message {
 
     public final ActorRef<GenerateResponseMessage> replyTo;
 
+	public final String name;
+
 	public final int mapid;
 
 	public final int width;
