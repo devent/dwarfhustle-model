@@ -15,18 +15,31 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api;
+package com.anrisoftware.dwarfhustle.model.api.materials;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
- * Saves and loads the attributes of a {@link GameObject} from the database.
+ * Upper layer of soil. It has the highest concentration of organic matter and
+ * microorganisms and is where most of the Earth's biological soil activity
+ * occurs.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-public interface GameObjectStorage {
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+public class Topsoil extends Soil {
 
-	void save(Object db, Object o, GameObject go);
+	private static final long serialVersionUID = -8313103572923248267L;
 
-	GameObject load(Object db, Object o, GameObject go);
+	public static final String TYPE = "Topsoil";
 
-	GameObject create();
+	public Topsoil(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
+			float thermalConductivity) {
+		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);
+	}
+
 }

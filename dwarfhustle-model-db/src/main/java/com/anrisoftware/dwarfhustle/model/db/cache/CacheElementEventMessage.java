@@ -20,7 +20,7 @@ package com.anrisoftware.dwarfhustle.model.db.cache;
 import org.apache.commons.jcs3.engine.CacheElement;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.api.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;

@@ -19,6 +19,9 @@ package com.anrisoftware.dwarfhustle.model.api
 
 import org.junit.jupiter.api.Test
 
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject
+import com.anrisoftware.dwarfhustle.model.api.objects.IdGeneratorProvider
+
 /**
  * @see IdGeneratorProvider
  *

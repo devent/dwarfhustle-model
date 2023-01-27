@@ -15,32 +15,41 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api;
+package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import javax.inject.Provider;
-
-import org.lable.oss.uniqueid.IDGenerator;
-import org.lable.oss.uniqueid.LocalUniqueIDGeneratorFactory;
-import org.lable.oss.uniqueid.bytes.Mode;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
- * Provides a Id generator.
+ * Person on the game map.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-public class IdGeneratorProvider implements Provider<IDGenerator>{
+@NoArgsConstructor
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
+@Getter
+@Setter
+public class Person extends GameMovingObject {
 
-	private IDGenerator generator;
+	private static final long serialVersionUID = -6027695018525898404L;
 
-	public IdGeneratorProvider() {
-		final int generatorID = 0;
-		final int clusterID = 0;
-		this.generator = LocalUniqueIDGeneratorFactory.generatorFor(generatorID, clusterID, Mode.SPREAD);
+	public static final String OBJECT_TYPE = Person.class.getSimpleName();
+
+	public Person(long id) {
+		super(id);
+	}
+
+	public Person(byte[] idbuf) {
+		super(idbuf);
 	}
 
 	@Override
-	public IDGenerator get() {
-		return generator;
+	public String getObjectType() {
+		return OBJECT_TYPE;
 	}
 
 }

@@ -17,7 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.objects;
 
-import com.anrisoftware.dwarfhustle.model.api.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 /**
  * Creates the schema for the {@link GameObject}.

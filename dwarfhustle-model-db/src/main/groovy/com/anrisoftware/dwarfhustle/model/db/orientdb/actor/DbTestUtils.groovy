@@ -20,8 +20,8 @@ package com.anrisoftware.dwarfhustle.model.db.orientdb.actor
 import java.time.Duration
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
-import com.anrisoftware.dwarfhustle.model.api.GameMapPos
-import com.anrisoftware.dwarfhustle.model.api.MapTile
+import com.anrisoftware.dwarfhustle.model.api.objects.GameMapPos
+import com.anrisoftware.dwarfhustle.model.api.objects.MapTile
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.CreateSchemasMessage
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.MapTileStorage

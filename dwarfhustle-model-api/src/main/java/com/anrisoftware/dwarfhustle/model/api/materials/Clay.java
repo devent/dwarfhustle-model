@@ -15,20 +15,29 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api;
+package com.anrisoftware.dwarfhustle.model.api.materials;
 
-import org.lable.oss.uniqueid.IDGenerator;
-
-import com.google.inject.AbstractModule;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
- * @author Erwin Müller
+ * Clay material type.
+ *
+ * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-public class ApiModule extends AbstractModule {
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+public class Clay extends Soil {
 
-    @Override
-    protected void configure() {
-		bind(IDGenerator.class).toProvider(IdGeneratorProvider.class).asEagerSingleton();
-    }
+	private static final long serialVersionUID = -1719735937834492527L;
+
+	public static final String TYPE = "Clay";
+
+	public Clay(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
+			float thermalConductivity) {
+		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);
+	}
 
 }

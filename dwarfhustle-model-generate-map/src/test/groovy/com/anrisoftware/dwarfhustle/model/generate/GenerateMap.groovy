@@ -38,7 +38,7 @@ import org.lable.oss.uniqueid.IDGenerator
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.actor.ModelActorsModule
-import com.anrisoftware.dwarfhustle.model.api.ApiModule
+import com.anrisoftware.dwarfhustle.model.api.objects.ApiModule
 import com.anrisoftware.dwarfhustle.model.db.cache.JcsCacheModule
 import com.anrisoftware.dwarfhustle.model.db.cache.MapBlocksJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.db.cache.MapBlocksJcsCacheActor.MapBlocksJcsCacheActorFactory

@@ -19,6 +19,8 @@ package com.anrisoftware.dwarfhustle.model.api
 
 import org.junit.jupiter.api.Test
 
+import com.anrisoftware.dwarfhustle.model.api.objects.MapTile
+
 /**
  * @see MapTile
  *

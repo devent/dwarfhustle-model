@@ -20,8 +20,8 @@ package com.anrisoftware.dwarfhustle.model.db.orientdb.objects;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.GameObjectSchemaSchema.OBJECTID_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.GameObjectSchemaSchema.OBJECTTYPE_FIELD;
 
-import com.anrisoftware.dwarfhustle.model.api.GameObject;
-import com.anrisoftware.dwarfhustle.model.api.GameObjectStorage;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
 import com.orientechnologies.orient.core.record.OElement;
 
 /**

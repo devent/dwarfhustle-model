@@ -18,7 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.db.cache;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.api.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage.CacheSuccessMessage;
 
 import akka.actor.typed.ActorRef;

@@ -24,9 +24,9 @@ import java.util.Map;
 
 import javax.inject.Singleton;
 
-import com.anrisoftware.dwarfhustle.model.api.GameObjectStorage;
-import com.anrisoftware.dwarfhustle.model.api.MapBlock;
-import com.anrisoftware.dwarfhustle.model.api.MapTile;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapTile;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsDbActor.ObjectsDbActorFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;

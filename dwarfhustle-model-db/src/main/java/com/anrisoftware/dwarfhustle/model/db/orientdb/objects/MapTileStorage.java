@@ -17,8 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.objects;
 
-import com.anrisoftware.dwarfhustle.model.api.GameObject;
-import com.anrisoftware.dwarfhustle.model.api.MapTile;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapTile;
 import com.orientechnologies.orient.core.record.OElement;
 
 /**

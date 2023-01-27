@@ -36,7 +36,7 @@ import org.apache.commons.jcs3.engine.control.event.behavior.IElementEventHandle
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.api.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractGetMessage.GetMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractGetMessage.GetReplyMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractGetMessage.GetSuccessMessage;

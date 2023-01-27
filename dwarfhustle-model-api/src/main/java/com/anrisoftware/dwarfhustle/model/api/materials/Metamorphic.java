@@ -15,27 +15,27 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api;
+package com.anrisoftware.dwarfhustle.model.api.materials;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /**
- * Stone that creates entire layers.
+ * Metamorphic stone material.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class StoneLayer extends Stone {
+public class Metamorphic extends StoneLayer {
 
-	private static final long serialVersionUID = -6750889966414477986L;
+	private static final long serialVersionUID = -300588915255253492L;
 
-	public static final String TYPE = "Stone-Layer";
+	public static final String TYPE = "Metamorphic";
 
-	public StoneLayer(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
+	public Metamorphic(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
 			float thermalConductivity) {
 		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);
 	}

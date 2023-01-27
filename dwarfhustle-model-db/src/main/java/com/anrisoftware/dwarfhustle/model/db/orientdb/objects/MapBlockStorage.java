@@ -38,12 +38,12 @@ import org.eclipse.collections.api.map.primitive.MutableObjectLongMap;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.factory.primitive.ObjectLongMaps;
 
-import com.anrisoftware.dwarfhustle.model.api.GameBlockPos;
-import com.anrisoftware.dwarfhustle.model.api.GameMapPos;
-import com.anrisoftware.dwarfhustle.model.api.GameObject;
-import com.anrisoftware.dwarfhustle.model.api.GameObjectStorage;
-import com.anrisoftware.dwarfhustle.model.api.MapBlock;
-import com.anrisoftware.dwarfhustle.model.api.MapTile;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameMapPos;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapTile;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.OElement;

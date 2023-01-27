@@ -15,29 +15,20 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api;
+package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import org.lable.oss.uniqueid.IDGenerator;
+
+import com.google.inject.AbstractModule;
 
 /**
- * The bottom of the ocean. All floors of the ocean are known as seabeds.
- *
- * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+ * @author Erwin Müller
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class Seabed extends Soil {
+public class ApiModule extends AbstractModule {
 
-	private static final long serialVersionUID = -8063100762452949944L;
-
-	public static final String TYPE = "Seabed";
-
-	public Seabed(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
-			float thermalConductivity) {
-		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);
-	}
+    @Override
+    protected void configure() {
+		bind(IDGenerator.class).toProvider(IdGeneratorProvider.class).asEagerSingleton();
+    }
 
 }

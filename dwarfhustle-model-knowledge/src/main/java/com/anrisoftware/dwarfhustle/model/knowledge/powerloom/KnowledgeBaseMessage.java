@@ -22,7 +22,7 @@ import java.util.Map;
 import org.eclipse.collections.api.map.primitive.IntObjectMap;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.api.Material;
+import com.anrisoftware.dwarfhustle.model.api.materials.Material;
 
 import akka.actor.typed.ActorRef;
 import lombok.RequiredArgsConstructor;

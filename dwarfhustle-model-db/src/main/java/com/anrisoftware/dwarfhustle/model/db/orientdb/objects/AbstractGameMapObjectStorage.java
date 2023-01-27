@@ -22,10 +22,10 @@ import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.GameMapObje
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.GameMapObjectSchema.Y_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.GameMapObjectSchema.Z_FIELD;
 
-import com.anrisoftware.dwarfhustle.model.api.GameMapObject;
-import com.anrisoftware.dwarfhustle.model.api.GameMapPos;
-import com.anrisoftware.dwarfhustle.model.api.GameObject;
-import com.anrisoftware.dwarfhustle.model.api.MapTile;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameMapPos;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapTile;
 import com.orientechnologies.orient.core.record.OElement;
 
 /**

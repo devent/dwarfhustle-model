@@ -15,27 +15,27 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api;
+package com.anrisoftware.dwarfhustle.model.api.materials;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /**
- * Metal alloy material type.
+ * The bottom of the ocean. All floors of the ocean are known as seabeds.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class MetalAlloy extends Material {
+public class Seabed extends Soil {
 
-	private static final long serialVersionUID = 8455084483504021084L;
+	private static final long serialVersionUID = -8063100762452949944L;
 
-	public static final String TYPE = "Metal-Alloy";
+	public static final String TYPE = "Seabed";
 
-	public MetalAlloy(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
+	public Seabed(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
 			float thermalConductivity) {
 		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);
 	}

@@ -34,8 +34,8 @@ import org.eclipse.collections.impl.factory.primitive.LongSets;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.api.GameMapPos;
-import com.anrisoftware.dwarfhustle.model.api.MapBlock;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameMapPos;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.google.inject.Injector;
 
 import akka.actor.typed.ActorRef;

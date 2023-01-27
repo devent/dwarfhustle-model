@@ -38,10 +38,10 @@ import org.junit.jupiter.api.Timeout
 import org.lable.oss.uniqueid.IDGenerator
 
 import com.anrisoftware.dwarfhustle.model.actor.ModelActorsModule
+import com.anrisoftware.dwarfhustle.model.api.objects.ApiModule
+import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos
+import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
-import com.anrisoftware.dwarfhustle.model.api.ApiModule
-import com.anrisoftware.dwarfhustle.model.api.GameBlockPos
-import com.anrisoftware.dwarfhustle.model.api.MapBlock
 import com.anrisoftware.dwarfhustle.model.db.cache.JcsCacheModule
 import com.anrisoftware.dwarfhustle.model.db.cache.MapBlocksJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.db.cache.MapBlocksJcsCacheActor.MapBlocksJcsCacheActorFactory

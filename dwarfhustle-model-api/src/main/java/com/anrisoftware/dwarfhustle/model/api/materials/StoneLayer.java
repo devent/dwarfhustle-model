@@ -15,41 +15,29 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api;
+package com.anrisoftware.dwarfhustle.model.api.materials;
 
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Person on the game map.
+ * Stone that creates entire layers.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@NoArgsConstructor
-@ToString(callSuper = true)
+@Data
 @EqualsAndHashCode(callSuper = true)
-@Getter
-@Setter
-public class Person extends GameMovingObject {
+@ToString(callSuper = true)
+public class StoneLayer extends Stone {
 
-	private static final long serialVersionUID = -6027695018525898404L;
+	private static final long serialVersionUID = -6750889966414477986L;
 
-	public static final String OBJECT_TYPE = Person.class.getSimpleName();
+	public static final String TYPE = "Stone-Layer";
 
-	public Person(long id) {
-		super(id);
-	}
-
-	public Person(byte[] idbuf) {
-		super(idbuf);
-	}
-
-	@Override
-	public String getObjectType() {
-		return OBJECT_TYPE;
+	public StoneLayer(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
+			float thermalConductivity) {
+		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);
 	}
 
 }

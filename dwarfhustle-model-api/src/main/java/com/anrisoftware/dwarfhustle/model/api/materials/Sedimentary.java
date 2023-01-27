@@ -15,48 +15,29 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api;
+package com.anrisoftware.dwarfhustle.model.api.materials;
 
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
- * Tile on the game map.
+ * Sedimentary stone material.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@NoArgsConstructor
-@ToString(callSuper = true)
+@Data
 @EqualsAndHashCode(callSuper = true)
-@Getter
-public class MapTile extends GameMapObject {
+@ToString(callSuper = true)
+public class Sedimentary extends StoneLayer {
 
-	private static final long serialVersionUID = -6027695018525898404L;
+	private static final long serialVersionUID = 2404309050992962234L;
 
-	public static final String OBJECT_TYPE = MapTile.class.getSimpleName();
+	public static final String TYPE = "Sedimentary";
 
-	private String material;
-
-	public MapTile(long id) {
-		super(id);
-	}
-
-	public MapTile(byte[] idbuf) {
-		super(idbuf);
-	}
-
-	@Override
-	public String getObjectType() {
-		return OBJECT_TYPE;
-	}
-
-	public void setMaterial(String material) {
-		if (this.material != material) {
-			setDirty(true);
-			this.material = material;
-		}
+	public Sedimentary(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
+			float thermalConductivity) {
+		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);
 	}
 
 }

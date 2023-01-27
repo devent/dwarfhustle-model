@@ -15,29 +15,18 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api;
-
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+package com.anrisoftware.dwarfhustle.model.api.objects;
 
 /**
- * Sedimentary stone material.
+ * Saves and loads the attributes of a {@link GameObject} from the database.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class Sedimentary extends StoneLayer {
+public interface GameObjectStorage {
 
-	private static final long serialVersionUID = 2404309050992962234L;
+	void save(Object db, Object o, GameObject go);
 
-	public static final String TYPE = "Sedimentary";
+	GameObject load(Object db, Object o, GameObject go);
 
-	public Sedimentary(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
-			float thermalConductivity) {
-		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);
-	}
-
+	GameObject create();
 }

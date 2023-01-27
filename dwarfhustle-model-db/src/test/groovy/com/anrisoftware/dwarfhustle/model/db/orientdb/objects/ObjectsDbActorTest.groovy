@@ -33,12 +33,12 @@ import org.junit.jupiter.api.TestMethodOrder
 import org.lable.oss.uniqueid.IDGenerator
 
 import com.anrisoftware.dwarfhustle.model.actor.ModelActorsModule
+import com.anrisoftware.dwarfhustle.model.api.objects.ApiModule
+import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos
+import com.anrisoftware.dwarfhustle.model.api.objects.GameMapPos
+import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock
+import com.anrisoftware.dwarfhustle.model.api.objects.MapTile
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
-import com.anrisoftware.dwarfhustle.model.api.ApiModule
-import com.anrisoftware.dwarfhustle.model.api.GameBlockPos
-import com.anrisoftware.dwarfhustle.model.api.GameMapPos
-import com.anrisoftware.dwarfhustle.model.api.MapBlock
-import com.anrisoftware.dwarfhustle.model.api.MapTile
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandReplyMessage
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbServerUtils
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbTestUtils

@@ -15,29 +15,27 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api;
+package com.anrisoftware.dwarfhustle.model.api.materials;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /**
- * Granular material composed of finely divided mineral particles. Sand has
- * various compositions but is defined by its grain size. Sand grains are
- * smaller than gravel and coarser than silt.
+ * Soil material.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class Sand extends Soil {
+public class Soil extends Material {
 
-	private static final long serialVersionUID = -1399286827364690668L;
+	private static final long serialVersionUID = -5079031705039022133L;
 
-	public static final String TYPE = "Sand";
+	public static final String TYPE = "Soil";
 
-	public Sand(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
+	public Soil(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
 			float thermalConductivity) {
 		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);
 	}

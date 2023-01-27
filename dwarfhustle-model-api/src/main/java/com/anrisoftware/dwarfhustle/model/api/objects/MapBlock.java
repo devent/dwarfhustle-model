@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api;
+package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import org.eclipse.collections.api.map.MapIterable;
 import org.eclipse.collections.api.map.primitive.ObjectLongMap;

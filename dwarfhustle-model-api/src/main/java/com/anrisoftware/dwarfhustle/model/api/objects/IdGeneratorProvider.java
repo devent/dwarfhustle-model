@@ -15,36 +15,32 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api;
+package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import java.io.Serializable;
+import javax.inject.Provider;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import org.lable.oss.uniqueid.IDGenerator;
+import org.lable.oss.uniqueid.LocalUniqueIDGeneratorFactory;
+import org.lable.oss.uniqueid.bytes.Mode;
 
 /**
- * Material what stuff is made of.
+ * Provides a Id generator.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@Data
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class Material implements Serializable {
+public class IdGeneratorProvider implements Provider<IDGenerator>{
 
-	private static final long serialVersionUID = -6527071336221066901L;
+	private IDGenerator generator;
 
-	public static final String TYPE = "Material";
+	public IdGeneratorProvider() {
+		final int generatorID = 0;
+		final int clusterID = 0;
+		this.generator = LocalUniqueIDGeneratorFactory.generatorFor(generatorID, clusterID, Mode.SPREAD);
+	}
 
-	@EqualsAndHashCode.Include
-	public final int id;
+	@Override
+	public IDGenerator get() {
+		return generator;
+	}
 
-	public final String name;
-
-	public final float meltingPoint;
-
-	public final float density;
-
-	public final float specificHeatCapacity;
-
-	public final float thermalConductivity;
 }

@@ -24,6 +24,8 @@ import java.util.stream.Stream
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 
+import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos
+
 /**
  * @see GameBlockPos
  *

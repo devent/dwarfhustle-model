@@ -15,27 +15,27 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api;
+package com.anrisoftware.dwarfhustle.model.api.materials;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /**
- * Clay material type.
+ * Metal ore material type.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class Clay extends Soil {
+public class MetalOre extends Material {
 
-	private static final long serialVersionUID = -1719735937834492527L;
+	private static final long serialVersionUID = 7612699665527178770L;
 
-	public static final String TYPE = "Clay";
+	public static final String TYPE = "Metal-Ore";
 
-	public Clay(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
+	public MetalOre(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
 			float thermalConductivity) {
 		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);
 	}

@@ -34,9 +34,9 @@ import org.eclipse.collections.impl.factory.primitive.LongSets;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.api.GameMapPos;
-import com.anrisoftware.dwarfhustle.model.api.GameObjectStorage;
-import com.anrisoftware.dwarfhustle.model.api.MapTile;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameMapPos;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapTile;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage.CacheErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage.CacheSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandReplyMessage;

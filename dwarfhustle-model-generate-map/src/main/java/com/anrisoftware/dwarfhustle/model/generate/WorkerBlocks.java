@@ -29,11 +29,11 @@ import org.eclipse.collections.impl.factory.primitive.ObjectLongMaps;
 import org.lable.oss.uniqueid.GeneratorException;
 import org.lable.oss.uniqueid.IDGenerator;
 
-import com.anrisoftware.dwarfhustle.model.api.GameBlockPos;
-import com.anrisoftware.dwarfhustle.model.api.GameMapPos;
-import com.anrisoftware.dwarfhustle.model.api.GameObjectStorage;
-import com.anrisoftware.dwarfhustle.model.api.MapBlock;
-import com.anrisoftware.dwarfhustle.model.api.MapTile;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameMapPos;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapTile;
 import com.google.inject.assistedinject.Assisted;
 import com.orientechnologies.orient.core.db.ODatabaseSession;
 import com.orientechnologies.orient.core.db.OrientDB;

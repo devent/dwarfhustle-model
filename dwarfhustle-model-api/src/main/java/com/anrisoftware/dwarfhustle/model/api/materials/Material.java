@@ -15,31 +15,36 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api;
+package com.anrisoftware.dwarfhustle.model.api.materials;
+
+import java.io.Serializable;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.ToString;
 
 /**
- * Upper layer of soil. It has the highest concentration of organic matter and
- * microorganisms and is where most of the Earth's biological soil activity
- * occurs.
+ * Material what stuff is made of.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class Topsoil extends Soil {
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+public class Material implements Serializable {
 
-	private static final long serialVersionUID = -8313103572923248267L;
+	private static final long serialVersionUID = -6527071336221066901L;
 
-	public static final String TYPE = "Topsoil";
+	public static final String TYPE = "Material";
 
-	public Topsoil(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
-			float thermalConductivity) {
-		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);
-	}
+	@EqualsAndHashCode.Include
+	public final int id;
 
+	public final String name;
+
+	public final float meltingPoint;
+
+	public final float density;
+
+	public final float specificHeatCapacity;
+
+	public final float thermalConductivity;
 }

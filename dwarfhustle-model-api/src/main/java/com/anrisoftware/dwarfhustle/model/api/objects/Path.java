@@ -15,34 +15,34 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api;
+package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.D;
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.DE;
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.DN;
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.DNE;
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.DNW;
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.DS;
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.DSE;
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.DSW;
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.DW;
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.E;
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.N;
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.NE;
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.NW;
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.S;
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.SE;
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.SW;
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.U;
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.UE;
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.UN;
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.UNE;
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.UNW;
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.US;
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.USE;
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.USW;
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.UW;
-import static com.anrisoftware.dwarfhustle.model.api.PathDirection.W;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.D;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.DE;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.DN;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.DNE;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.DNW;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.DS;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.DSE;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.DSW;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.DW;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.E;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.N;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.NE;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.NW;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.S;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.SE;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.SW;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.U;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.UE;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.UN;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.UNE;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.UNW;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.US;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.USE;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.USW;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.UW;
+import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.W;
 
 import java.io.Serializable;
 

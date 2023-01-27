@@ -15,27 +15,27 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api;
+package com.anrisoftware.dwarfhustle.model.api.materials;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /**
- * Igneous extrusive stone material.
+ * Igneous intrusive stone material.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class IgneousExtrusive extends StoneLayer {
+public class IgneousIntrusive extends StoneLayer {
 
-	private static final long serialVersionUID = 4493424467422404411L;
+	private static final long serialVersionUID = -7681776713433266564L;
 
-	public static final String TYPE = "Igneous-Extrusive";
+	public static final String TYPE = "Igneous-Intrusive";
 
-	public IgneousExtrusive(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
+	public IgneousIntrusive(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
 			float thermalConductivity) {
 		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);
 	}
