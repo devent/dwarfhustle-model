@@ -28,14 +28,15 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.orientechnologies.orient.core.record.OElement;
 
 /**
- * Saves and loads the attributes of a {@link GameMap} from the database.
+ * Stores and retrieves the properties of a {@link GameMap} to/from the
+ * database. Does not commit the changes into the database.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 public class GameMapStorage extends AbstractGameObjectStorage {
 
 	@Override
-	public void save(Object db, Object o, GameObject go) {
+	public void store(Object db, Object o, GameObject go) {
 		if (!go.isDirty()) {
 			return;
 		}
@@ -46,11 +47,11 @@ public class GameMapStorage extends AbstractGameObjectStorage {
 		v.setProperty(WIDTH_FIELD, mb.getWidth());
 		v.setProperty(HEIGHT_FIELD, mb.getHeight());
 		v.setProperty(DEPTH_FIELD, mb.getDepth());
-		super.save(db, o, go);
+		super.store(db, o, go);
 	}
 
 	@Override
-	public GameObject load(Object db, Object o, GameObject go) {
+	public GameObject retrieve(Object db, Object o, GameObject go) {
 		var v = (OElement) o;
 		var mb = (GameMap) go;
 		mb.setName(v.getProperty(NAME_FIELD));
@@ -58,7 +59,7 @@ public class GameMapStorage extends AbstractGameObjectStorage {
 		mb.setWidth(v.getProperty(WIDTH_FIELD));
 		mb.setHeight(v.getProperty(HEIGHT_FIELD));
 		mb.setDepth(v.getProperty(DEPTH_FIELD));
-		return super.load(db, o, go);
+		return super.retrieve(db, o, go);
 	}
 
 	@Override

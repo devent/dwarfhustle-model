@@ -18,15 +18,34 @@
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
 /**
- * Saves and loads the attributes of a {@link GameObject} from the database.
+ * Stores and retrieves the properties of a {@link GameObject} to/from the
+ * database. Does not commit the changes into the database.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 public interface GameObjectStorage {
 
-	void save(Object db, Object o, GameObject go);
+	/**
+	 * Stores the {@link GameObject} properties in the database object.
+	 *
+	 * @param db a reference to the database.
+	 * @param o  a reference to the storage object of the database.
+	 * @param go the {@link GameObject} to store.
+	 */
+	void store(Object db, Object o, GameObject go);
 
-	GameObject load(Object db, Object o, GameObject go);
+	/**
+	 * Retrieves the {@link GameObject} properties from the database object.
+	 *
+	 * @param db a reference to the database.
+	 * @param o  a reference to the storage object of the database.
+	 * @param go the {@link GameObject} to set the properties.
+	 * @return the {@link GameObject}.
+	 */
+	GameObject retrieve(Object db, Object o, GameObject go);
 
+	/**
+	 * Returns a new {@link GameObject}.
+	 */
 	GameObject create();
 }

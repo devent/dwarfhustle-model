@@ -29,22 +29,22 @@ import com.orientechnologies.orient.core.record.OElement;
 public class MapTileStorage extends AbstractGameMapObjectStorage {
 
 	@Override
-	public void save(Object db, Object o, GameObject go) {
+	public void store(Object db, Object o, GameObject go) {
 		if (!go.isDirty()) {
 			return;
 		}
 		var v = (OElement) o;
 		var mt = (MapTile) go;
 		v.setProperty(MapTileSchema.MATERIAL_FIELD, mt.getMaterial());
-		super.save(db, o, go);
+		super.store(db, o, go);
 	}
 
 	@Override
-	public GameObject load(Object db, Object o, GameObject go) {
+	public GameObject retrieve(Object db, Object o, GameObject go) {
 		var v = (OElement) o;
 		var mt = (MapTile) go;
 		mt.setMaterial(v.getProperty("material"));
-		return super.load(db, o, go);
+		return super.retrieve(db, o, go);
 	}
 
 	@Override

@@ -29,14 +29,15 @@ import com.anrisoftware.dwarfhustle.model.api.objects.MapTile;
 import com.orientechnologies.orient.core.record.OElement;
 
 /**
- * Saves and loads the attributes of a {@link GameMapObject} from the database.
+ * Stores and retrieves the properties of a {@link GameMapObject} to/from the
+ * database. Does not commit the changes into the database.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 public class AbstractGameMapObjectStorage extends AbstractGameObjectStorage {
 
 	@Override
-	public void save(Object db, Object o, GameObject go) {
+	public void store(Object db, Object o, GameObject go) {
 		if (!go.isDirty()) {
 			return;
 		}
@@ -46,17 +47,17 @@ public class AbstractGameMapObjectStorage extends AbstractGameObjectStorage {
 		v.setProperty(X_FIELD, gmo.getPos().getX());
 		v.setProperty(Y_FIELD, gmo.getPos().getY());
 		v.setProperty(Z_FIELD, gmo.getPos().getZ());
-		super.save(db, o, go);
+		super.store(db, o, go);
 	}
 
 	@Override
-	public GameObject load(Object db, Object o, GameObject go) {
+	public GameObject retrieve(Object db, Object o, GameObject go) {
 		var v = (OElement) o;
 		var gmo = (GameMapObject) go;
 		gmo.setPos(new GameMapPos(v.getProperty(MAPID_FIELD), v.getProperty(X_FIELD), v.getProperty(Y_FIELD),
 				v.getProperty(Z_FIELD)));
 		gmo.setRid(v.getIdentity());
-		return super.load(db, o, go);
+		return super.retrieve(db, o, go);
 	}
 
 	@Override

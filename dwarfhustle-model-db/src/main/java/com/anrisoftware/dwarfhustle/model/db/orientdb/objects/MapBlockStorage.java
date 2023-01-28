@@ -49,7 +49,8 @@ import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.OElement;
 
 /**
- * Saves and loads the attributes of a {@link GameObject} from the database.
+ * Stores and retrieves the properties of a {@link MapBlock} to/from the
+ * database. Does not commit the changes into the database.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
@@ -63,7 +64,7 @@ public class MapBlockStorage extends AbstractGameObjectStorage {
 	}
 
 	@Override
-	public void save(Object db, Object o, GameObject go) {
+	public void store(Object db, Object o, GameObject go) {
 		if (!go.isDirty()) {
 			return;
 		}
@@ -80,7 +81,7 @@ public class MapBlockStorage extends AbstractGameObjectStorage {
 		Map<String, OElement> tiles = Maps.mutable.ofInitialCapacity(mb.getBlocks().size());
 		mb.getTiles().forEachKeyValue((pos, tile) -> {
 			var vtile = odb.newVertex(MapTile.OBJECT_TYPE);
-			mapTileStorage.save(db, vtile, tile);
+			mapTileStorage.store(db, vtile, tile);
 			tiles.put(tile.getPos().toSaveString(), vtile);
 		});
 		v.setProperty(TILES_FIELD, tiles, OType.EMBEDDEDMAP);
@@ -91,11 +92,11 @@ public class MapBlockStorage extends AbstractGameObjectStorage {
 		v.setProperty(END_X_FIELD, mb.getPos().getEndPos().getX());
 		v.setProperty(END_Y_FIELD, mb.getPos().getEndPos().getY());
 		v.setProperty(END_Z_FIELD, mb.getPos().getEndPos().getZ());
-		super.save(db, o, go);
+		super.store(db, o, go);
 	}
 
 	@Override
-	public GameObject load(Object db, Object o, GameObject go) {
+	public GameObject retrieve(Object db, Object o, GameObject go) {
 		var v = (OElement) o;
 		var mb = (MapBlock) go;
 		Map<String, OElement> oblocks = v.getProperty(BLOCKS_FIELD);
@@ -109,7 +110,7 @@ public class MapBlockStorage extends AbstractGameObjectStorage {
 		MutableMap<GameMapPos, MapTile> tiles = Maps.mutable.ofInitialCapacity(otiles.size());
 		for (Map.Entry<String, OElement> otile : otiles.entrySet()) {
 			var pos = GameMapPos.parse(otile.getKey());
-			var tile = (MapTile) mapTileStorage.load(db, otile.getValue(), mapTileStorage.create());
+			var tile = (MapTile) mapTileStorage.retrieve(db, otile.getValue(), mapTileStorage.create());
 			tiles.put(pos, tile);
 		}
 		mb.setBlocks(blocks.asUnmodifiable());
@@ -117,7 +118,7 @@ public class MapBlockStorage extends AbstractGameObjectStorage {
 		mb.setPos(new GameBlockPos(v.getProperty(MAPID_FIELD), v.getProperty(START_X_FIELD),
 				v.getProperty(START_Y_FIELD), v.getProperty(START_Z_FIELD), v.getProperty(END_X_FIELD),
 				v.getProperty(END_Y_FIELD), v.getProperty(END_Z_FIELD)));
-		return super.load(db, o, go);
+		return super.retrieve(db, o, go);
 	}
 
 	@Override

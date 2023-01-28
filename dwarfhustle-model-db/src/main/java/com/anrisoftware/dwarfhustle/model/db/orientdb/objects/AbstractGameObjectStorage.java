@@ -25,14 +25,15 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
 import com.orientechnologies.orient.core.record.OElement;
 
 /**
- * Saves and loads the attributes of a {@link GameObject} from the database.
+ * Stores and retrieves the properties of a {@link GameObject} to/from the
+ * database. Does not commit the changes into the database.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 public abstract class AbstractGameObjectStorage implements GameObjectStorage {
 
 	@Override
-	public void save(Object db, Object o, GameObject go) {
+	public void store(Object db, Object o, GameObject go) {
 		if (!go.isDirty()) {
 			return;
 		}
@@ -43,7 +44,7 @@ public abstract class AbstractGameObjectStorage implements GameObjectStorage {
 	}
 
 	@Override
-	public GameObject load(Object db, Object o, GameObject go) {
+	public GameObject retrieve(Object db, Object o, GameObject go) {
 		var v = (OElement) o;
 		go.setId(v.getProperty(OBJECTID_FIELD));
 		go.setDirty(false);

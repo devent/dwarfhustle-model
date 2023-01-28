@@ -139,12 +139,12 @@ class ObjectsDbActorTest {
 						blocks.put(mapBlock.pos, mapBlock.id)
 						parentMapBlock.blocks = blocks
 						def v = db.newVertex(MapBlock.OBJECT_TYPE)
-						mapBlockStorage.save(db, v, parentMapBlock)
+						mapBlockStorage.store(db, v, parentMapBlock)
 						db.begin()
 						v.save()
 						db.commit()
 						v = db.newVertex(MapBlock.OBJECT_TYPE)
-						mapBlockStorage.save(db, v, mapBlock)
+						mapBlockStorage.store(db, v, mapBlock)
 						db.begin()
 						v.save()
 						db.commit()
@@ -173,7 +173,7 @@ class ObjectsDbActorTest {
 						while (rs.hasNext()) {
 							def row = rs.next();
 							assert row != null
-							MapBlock block = mapBlockStorage.load(db, row.vertex.get(), mapBlockStorage.create())
+							MapBlock block = mapBlockStorage.retrieve(db, row.vertex.get(), mapBlockStorage.create())
 							assert block.dirty == false
 							assert block.pos.mapid == 0
 							assert block.pos.x == 0
@@ -193,7 +193,7 @@ class ObjectsDbActorTest {
 						while (rs.hasNext()) {
 							def row = rs.next();
 							assert row != null
-							MapBlock block = mapBlockStorage.load(db, row.vertex.get(), mapBlockStorage.create())
+							MapBlock block = mapBlockStorage.retrieve(db, row.vertex.get(), mapBlockStorage.create())
 							assert block.dirty == false
 							assert block.pos.mapid == 0
 							assert block.pos.x == 0

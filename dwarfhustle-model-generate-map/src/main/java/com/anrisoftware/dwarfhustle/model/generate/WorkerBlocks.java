@@ -123,7 +123,7 @@ public class WorkerBlocks {
 		gamemap.setHeight(m.height);
 		gamemap.setDepth(m.depth);
 		var v = db.newVertex(GameMap.OBJECT_TYPE);
-		gameMapStore.save(db, v, gamemap);
+		gameMapStore.store(db, v, gamemap);
 		v.save();
 	}
 
@@ -174,7 +174,7 @@ public class WorkerBlocks {
 
 	private void saveBlock(ODatabaseSession db, MapBlock block) {
 		var v = db.newVertex(MapBlock.OBJECT_TYPE);
-		mapBlockStore.save(db, v, block);
+		mapBlockStore.store(db, v, block);
 		v.save();
 	}
 
