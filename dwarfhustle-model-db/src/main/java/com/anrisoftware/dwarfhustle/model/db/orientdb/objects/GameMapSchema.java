@@ -39,6 +39,8 @@ public class GameMapSchema implements GameObjectSchema {
 
 	public static final String DEPTH_FIELD = "depth";
 
+	public static final String BLOCK_SIZE_FIELD = "blockSize";
+
 	@Override
 	public void createSchema(Object db) {
 		var odb = (ODatabaseDocument) db;
@@ -48,6 +50,7 @@ public class GameMapSchema implements GameObjectSchema {
 		c.createProperty(WIDTH_FIELD, OType.INTEGER);
 		c.createProperty(HEIGHT_FIELD, OType.INTEGER);
 		c.createProperty(DEPTH_FIELD, OType.INTEGER);
+		c.createProperty(BLOCK_SIZE_FIELD, OType.INTEGER);
 		try (var q = odb.command(
 				"CREATE INDEX GameMap_name ON GameMap (objecttype, name) NOTUNIQUE METADATA {ignoreNullValues: false}")) {
 		}

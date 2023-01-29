@@ -147,15 +147,13 @@ public abstract class AbstractJcsCacheActor<K, V> implements IElementEventHandle
 	}
 
 	public static void createFileAuxCache(Properties config, Map<String, Object> params) {
-		var gameName = params.get("game_name");
 		var cacheName = params.get("cache_name") + "_file";
 		var maxKeySize = params.get("max_key_size");
 		var parentDir = (File) params.get("parent_dir");
 		String aux = "jcs.auxiliary." + cacheName;
 		config.put(aux, "org.apache.commons.jcs3.auxiliary.disk.indexed.IndexedDiskCacheFactory");
 		config.put(aux + ".attributes", "org.apache.commons.jcs3.auxiliary.disk.indexed.IndexedDiskCacheAttributes");
-		config.put(aux + ".attributes.DiskPath",
-				parentDir.getAbsolutePath() + "/dwarfhustle_jcs_swap_" + gameName + "_" + cacheName);
+		config.put(aux + ".attributes.DiskPath", parentDir.getAbsolutePath() + "/jcs_swap_" + cacheName);
 		config.put(aux + ".attributes.MaxPurgatorySize", toString(maxKeySize));
 		config.put(aux + ".attributes.MaxKeySize", toString(maxKeySize));
 		config.put(aux + ".attributes.OptimizeAtRemoveCount", "300000");

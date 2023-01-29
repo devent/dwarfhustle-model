@@ -52,6 +52,8 @@ public class GameMap extends GameObject {
 
 	private int depth;
 
+	private int blockSize;
+
 	private Optional<WorldMap> world = Optional.empty();
 
 	public GameMap(long id) {
@@ -104,6 +106,13 @@ public class GameMap extends GameObject {
 
 	public int getSize() {
 		return depth * height * width;
+	}
+
+	public void setBlockSize(int blockSize) {
+		if (this.blockSize != blockSize) {
+			setDirty(true);
+			this.blockSize = blockSize;
+		}
 	}
 
 	public void setWorld(WorldMap world) {

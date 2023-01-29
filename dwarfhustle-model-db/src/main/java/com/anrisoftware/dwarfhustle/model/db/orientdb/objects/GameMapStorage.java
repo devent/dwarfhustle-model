@@ -17,6 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.objects;
 
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.GameMapSchema.BLOCK_SIZE_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.GameMapSchema.DEPTH_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.GameMapSchema.HEIGHT_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.GameMapSchema.MAPID_FIELD;
@@ -47,6 +48,7 @@ public class GameMapStorage extends AbstractGameObjectStorage {
 		v.setProperty(WIDTH_FIELD, mb.getWidth());
 		v.setProperty(HEIGHT_FIELD, mb.getHeight());
 		v.setProperty(DEPTH_FIELD, mb.getDepth());
+		v.setProperty(BLOCK_SIZE_FIELD, mb.getBlockSize());
 		super.store(db, o, go);
 	}
 
@@ -59,6 +61,7 @@ public class GameMapStorage extends AbstractGameObjectStorage {
 		mb.setWidth(v.getProperty(WIDTH_FIELD));
 		mb.setHeight(v.getProperty(HEIGHT_FIELD));
 		mb.setDepth(v.getProperty(DEPTH_FIELD));
+		mb.setBlockSize(v.getProperty(BLOCK_SIZE_FIELD));
 		return super.retrieve(db, o, go);
 	}
 
