@@ -18,6 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.generate;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 
 import akka.actor.typed.ActorRef;
 import lombok.RequiredArgsConstructor;
@@ -56,15 +57,7 @@ public class GenerateMapMessage extends Message {
 
     public final ActorRef<GenerateResponseMessage> replyTo;
 
-	public final String name;
-
-	public final int mapid;
-
-	public final int width;
-
-	public final int height;
-
-	public final int depth;
+	public final GameMap gameMap;
 
 	public final int blockSize;
 
@@ -75,6 +68,6 @@ public class GenerateMapMessage extends Message {
 	public final String database;
 
 	public int getSize() {
-		return depth * height * width;
+		return gameMap.getSize();
 	}
 }

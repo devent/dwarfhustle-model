@@ -20,6 +20,8 @@ package com.anrisoftware.dwarfhustle.model.generate
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbTestUtils.*
 
 import java.time.Duration
+import java.time.LocalDateTime
+import java.time.Month
 import java.util.concurrent.CountDownLatch
 import java.util.logging.Filter
 
@@ -39,6 +41,8 @@ import org.lable.oss.uniqueid.IDGenerator
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.actor.ModelActorsModule
 import com.anrisoftware.dwarfhustle.model.api.objects.ApiModule
+import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
+import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap
 import com.anrisoftware.dwarfhustle.model.db.cache.JcsCacheModule
 import com.anrisoftware.dwarfhustle.model.db.cache.MapBlocksJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.db.cache.MapBlocksJcsCacheActor.MapBlocksJcsCacheActorFactory
@@ -108,7 +112,7 @@ class GenerateMap {
 			dbServerUtils.createServer(parentDir.absolutePath)
 		}
 		def s = 64
-		mapTilesParams = [parent_dir: parentDir, game_name: "test", mapid: 0, width: s, height: s, depth: s, block_size: 8]
+		mapTilesParams = [parent_dir: parentDir, game_name: "Endless World", mapid: 1, width: s, height: s, depth: s, block_size: 8]
 		cacheFile = new File(parentDir, "dwarfhustle_jcs_swap_${mapTilesParams.game_name}_mapBlocksCache_0_file")
 		injector = Guice.createInjector(
 				new ModelActorsModule(),
@@ -153,7 +157,19 @@ class GenerateMap {
 	void "test generate"() {
 		def cacheActor = testKit.spawn(MapBlocksJcsCacheActor.create(injector, injector.getInstance(MapBlocksJcsCacheActorFactory), MapBlocksJcsCacheActor.createInitCacheAsync(mapTilesParams), mapTilesParams), "MapBlocksJcsCacheActor");
 		def cache = retrieveCache(cacheActor)
-		def m = new GenerateMapMessage(null, "foo", 0, mapTilesParams.width, mapTilesParams.height, mapTilesParams.depth, mapTilesParams.block_size, dbTestUtils.user, dbTestUtils.password, dbTestUtils.database)
+		def wm = new WorldMap(gen.generate())
+		wm.name = mapTilesParams.game_name
+		wm.distanceLat = 1
+		wm.distanceLon = 1
+		wm.time = LocalDateTime.of(500, Month.APRIL, 1, 8, 0)
+		def gm = new GameMap(gen.generate())
+		gm.mapid = mapTilesParams.mapid
+		gm.name = "Stone Fortress"
+		gm.width = mapTilesParams.width
+		gm.height = mapTilesParams.height
+		gm.depth = mapTilesParams.depth
+		wm.addMap(gm)
+		def m = new GenerateMapMessage(null, gm, mapTilesParams.block_size, dbTestUtils.user, dbTestUtils.password, dbTestUtils.database)
 		def worker = workerFactory.create(cache, dbTestUtils.db)
 		def thread = Thread.start {
 			worker.generate(m)

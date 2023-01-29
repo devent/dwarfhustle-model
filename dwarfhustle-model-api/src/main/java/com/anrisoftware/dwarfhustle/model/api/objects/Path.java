@@ -85,7 +85,7 @@ public abstract class Path implements Serializable {
 	 */
 	public static class NePath extends Path {
 
-		private static final long serialVersionUID = 3054151071034723680L;
+		private static final long serialVersionUID = 1L;
 
 		public static final String TYPE = "NePath";
 
@@ -129,7 +129,7 @@ public abstract class Path implements Serializable {
 	 */
 	public static class SePath extends Path {
 
-		private static final long serialVersionUID = 2689371414754700945L;
+		private static final long serialVersionUID = 1L;
 
 		public static final String TYPE = "SePath";
 
@@ -151,7 +151,7 @@ public abstract class Path implements Serializable {
 	 */
 	public static class SPath extends Path {
 
-		private static final long serialVersionUID = 3704178211401371110L;
+		private static final long serialVersionUID = 1L;
 
 		public static final String TYPE = "SPath";
 
@@ -173,7 +173,7 @@ public abstract class Path implements Serializable {
 	 */
 	public static class SwPath extends Path {
 
-		private static final long serialVersionUID = 7539263062673888640L;
+		private static final long serialVersionUID = 1L;
 
 		public static final String TYPE = "SwPath";
 
@@ -217,7 +217,7 @@ public abstract class Path implements Serializable {
 	 */
 	public static class NwPath extends Path {
 
-		private static final long serialVersionUID = 86841775509001362L;
+		private static final long serialVersionUID = 1L;
 
 		public static final String TYPE = "NwPath";
 
@@ -261,7 +261,7 @@ public abstract class Path implements Serializable {
 	 */
 	public static class UnePath extends Path {
 
-		private static final long serialVersionUID = 8280591626858337383L;
+		private static final long serialVersionUID = 1L;
 
 		public static final String TYPE = "UnePath";
 
@@ -437,7 +437,7 @@ public abstract class Path implements Serializable {
 	 */
 	public static class DnePath extends Path {
 
-		private static final long serialVersionUID = 5753439966867824366L;
+		private static final long serialVersionUID = 1L;
 
 		public static final String TYPE = "DnePath";
 
@@ -525,7 +525,7 @@ public abstract class Path implements Serializable {
 	 */
 	public static class DswPath extends Path {
 
-		private static final long serialVersionUID = 3551373555482429126L;
+		private static final long serialVersionUID = 1L;
 
 		public static final String TYPE = "DswPath";
 
@@ -547,7 +547,7 @@ public abstract class Path implements Serializable {
 	 */
 	public static class DwPath extends Path {
 
-		private static final long serialVersionUID = 4118628586618935458L;
+		private static final long serialVersionUID = 1L;
 
 		public static final String TYPE = "DwPath";
 
@@ -591,7 +591,7 @@ public abstract class Path implements Serializable {
 	 */
 	public static class UPath extends Path {
 
-		private static final long serialVersionUID = 4045875178934642770L;
+		private static final long serialVersionUID = 1L;
 
 		public static final String TYPE = "UPath";
 
@@ -628,7 +628,7 @@ public abstract class Path implements Serializable {
 		}
 	}
 
-	private static final long serialVersionUID = 7665488179490574548L;
+	private static final long serialVersionUID = 1L;
 
 	public static final String TYPE = "Path";
 

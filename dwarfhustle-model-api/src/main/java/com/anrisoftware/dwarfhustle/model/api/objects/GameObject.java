@@ -22,7 +22,6 @@ import java.io.Serializable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
 /**
@@ -34,10 +33,9 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Getter
-@Setter
 public class GameObject implements Serializable {
 
-	private static final long serialVersionUID = 8715034096848467783L;
+	private static final long serialVersionUID = 1L;
 
 	public static final String OBJECT_TYPE = GameObject.class.getSimpleName();
 
@@ -62,6 +60,11 @@ public class GameObject implements Serializable {
 	private long id;
 
 	/**
+	 * Record ID set after the object was once stored in the database.
+	 */
+	private Serializable rid = null;
+
+	/**
 	 * Set to true if the object had changed state and should be stored in the
 	 * database.
 	 */
@@ -77,5 +80,17 @@ public class GameObject implements Serializable {
 
 	public String getObjectType() {
 		return OBJECT_TYPE;
+	}
+
+	public void setDirty(boolean dirty) {
+		this.dirty = dirty;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	public void setRid(Serializable rid) {
+		this.rid = rid;
 	}
 }

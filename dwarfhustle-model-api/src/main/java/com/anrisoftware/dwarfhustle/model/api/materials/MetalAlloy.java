@@ -31,7 +31,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class MetalAlloy extends Material {
 
-	private static final long serialVersionUID = 8455084483504021084L;
+	private static final long serialVersionUID = 1L;
 
 	public static final String TYPE = "Metal-Alloy";
 

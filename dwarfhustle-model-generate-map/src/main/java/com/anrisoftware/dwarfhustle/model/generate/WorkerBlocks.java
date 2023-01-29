@@ -35,6 +35,8 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameMapPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapTile;
+import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.WorldMapSchema;
 import com.google.inject.assistedinject.Assisted;
 import com.orientechnologies.orient.core.db.ODatabaseSession;
 import com.orientechnologies.orient.core.db.OrientDB;
@@ -79,11 +81,14 @@ public class WorkerBlocks {
 
 	private GameObjectStorage gameMapStore;
 
+	private GameObjectStorage worldMapStore;
+
 	public WorkerBlocks() {
 	}
 
 	@Inject
 	public void setStorages(Map<String, GameObjectStorage> storages) {
+		this.worldMapStore = storages.get(WorldMap.OBJECT_TYPE);
 		this.gameMapStore = storages.get(GameMap.OBJECT_TYPE);
 		this.mapBlockStore = storages.get(MapBlock.OBJECT_TYPE);
 	}
@@ -101,9 +106,9 @@ public class WorkerBlocks {
 		log.debug("generate {}", m);
 		this.blocksDone = 0;
 		this.generateDone = false;
-		int w1 = m.width;
-		int h1 = m.height;
-		int d1 = m.depth;
+		int w1 = m.gameMap.getWidth();
+		int h1 = m.gameMap.getHeight();
+		int d1 = m.gameMap.getDepth();
 		var pos = pos(m, 0, 0, 0);
 		var endPos = pos(m, w1, h1, d1);
 		try (var db = orientdb.open(m.database, m.user, m.password)) {
@@ -117,14 +122,14 @@ public class WorkerBlocks {
 	}
 
 	private void saveGameMap(GenerateMapMessage m, ODatabaseSession db) throws GeneratorException {
-		var gamemap = new GameMap(generator.generate());
-		gamemap.setName(m.name);
-		gamemap.setWidth(m.width);
-		gamemap.setHeight(m.height);
-		gamemap.setDepth(m.depth);
-		var v = db.newVertex(GameMap.OBJECT_TYPE);
-		gameMapStore.store(db, v, gamemap);
-		v.save();
+		var gmv = db.newVertex(GameMap.OBJECT_TYPE);
+		gameMapStore.store(db, gmv, m.gameMap);
+		gmv.save();
+		var wmv = db.newVertex(WorldMap.OBJECT_TYPE);
+		worldMapStore.store(db, wmv, m.gameMap.getWorld().get());
+		wmv.save();
+		var e = wmv.addEdge(gmv, WorldMapSchema.WORLD_CLASS);
+		e.save();
 	}
 
 	private MapBlock generateMapBlock(GenerateMapMessage m, ODatabaseSession db,
@@ -201,7 +206,7 @@ public class WorkerBlocks {
 	}
 
 	private GameMapPos pos(GenerateMapMessage m, int x, int y, int z) {
-		return new GameMapPos(m.mapid, x, y, z);
+		return new GameMapPos(m.gameMap.getMapid(), x, y, z);
 	}
 
 	private MutableObjectLongMap<GameBlockPos> createBlocksMap() {

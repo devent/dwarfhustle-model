@@ -31,7 +31,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class Stone extends Material {
 
-	private static final long serialVersionUID = 8269626284334971192L;
+	private static final long serialVersionUID = 1L;
 
 	public static final String TYPE = "Stone";
 

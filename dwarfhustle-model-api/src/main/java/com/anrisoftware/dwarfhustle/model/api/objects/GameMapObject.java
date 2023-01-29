@@ -17,8 +17,6 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import java.io.Serializable;
-
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,16 +35,11 @@ import lombok.ToString;
 @Setter
 public class GameMapObject extends GameObject {
 
-	private static final long serialVersionUID = 8715034096848467783L;
+	private static final long serialVersionUID = 1L;
 
 	public static final String OBJECT_TYPE = GameMapObject.class.getSimpleName();
 
 	private GameMapPos pos = new GameMapPos();
-
-	/**
-	 * Record ID set after the object was once stored in the database.
-	 */
-	private Serializable rid = null;
 
 	public GameMapObject(long id) {
 		super(id);

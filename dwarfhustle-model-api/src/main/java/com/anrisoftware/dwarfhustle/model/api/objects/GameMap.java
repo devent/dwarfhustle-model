@@ -17,6 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.util.Objects;
+import java.util.Optional;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.EqualsAndHashCode;
@@ -48,6 +51,8 @@ public class GameMap extends GameObject {
 	private int height;
 
 	private int depth;
+
+	private Optional<WorldMap> world = Optional.empty();
 
 	public GameMap(long id) {
 		super(id);
@@ -94,6 +99,21 @@ public class GameMap extends GameObject {
 		if (this.depth != depth) {
 			setDirty(true);
 			this.depth = depth;
+		}
+	}
+
+	public int getSize() {
+		return depth * height * width;
+	}
+
+	public void setWorld(WorldMap world) {
+		this.world.ifPresentOrElse((w) -> updateWorld(w, world), () -> updateWorld(null, world));
+	}
+
+	private void updateWorld(WorldMap ov, WorldMap nv) {
+		if (!Objects.equals(ov, nv)) {
+			this.world = Optional.of(nv);
+			setDirty(true);
 		}
 	}
 }

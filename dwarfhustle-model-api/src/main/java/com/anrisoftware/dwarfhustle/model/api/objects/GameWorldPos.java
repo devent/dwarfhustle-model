@@ -15,29 +15,38 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api.materials;
+package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import lombok.Data;
+import java.io.Serializable;
+
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
- * Metal ore material type.
+ * Latitude and longitude position of a {@link GameMap} on the world.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class MetalOre extends Material {
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
+@EqualsAndHashCode
+@Getter
+public class GameWorldPos implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = -5516716263162698581L;
 
-	public static final String TYPE = "Metal-Ore";
+	/**
+	 * Latitude position on the game map
+	 */
+	private float lat = -1;
 
-	public MetalOre(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
-			float thermalConductivity) {
-		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);
-	}
+	/**
+	 * Longitude position on the game map
+	 */
+	private float lon = -1;
 
 }

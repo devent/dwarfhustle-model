@@ -39,7 +39,7 @@ import lombok.ToString;
 @Getter
 public class GameMapPos implements Serializable {
 
-	private static final long serialVersionUID = 8842532533035915317L;
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * The game map id.

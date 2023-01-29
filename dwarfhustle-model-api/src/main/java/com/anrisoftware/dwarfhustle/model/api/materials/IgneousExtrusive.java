@@ -31,7 +31,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class IgneousExtrusive extends StoneLayer {
 
-	private static final long serialVersionUID = 4493424467422404411L;
+	private static final long serialVersionUID = 1L;
 
 	public static final String TYPE = "Igneous-Extrusive";
 

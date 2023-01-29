@@ -28,6 +28,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapTile;
+import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsDbActor.ObjectsDbActorFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -56,6 +57,7 @@ public class ObjectsDbModule extends AbstractModule {
 		mapBlockStorage.setStorages(map);
 		map.put(MapBlock.OBJECT_TYPE, mapBlockStorage);
 		map.put(GameMap.OBJECT_TYPE, new GameMapStorage());
+		map.put(WorldMap.OBJECT_TYPE, new WorldMapStorage());
 		return map;
 	}
 
@@ -65,6 +67,7 @@ public class ObjectsDbModule extends AbstractModule {
 		var list = new ArrayList<GameObjectSchema>();
 		list.add(new GameObjectSchemaSchema());
 		list.add(new GameMapObjectSchema());
+		list.add(new WorldMapSchema());
 		list.add(new GameMapSchema());
 		list.add(new MapTileSchema());
 		list.add(new MapBlockSchema());
