@@ -15,32 +15,44 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
+package com.anrisoftware.dwarfhustle.model.db.orientdb.objects;
 
-import java.util.function.Function;
-
-import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 import akka.actor.typed.ActorRef;
-import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
- * Message to execute a command on the database.
+ * Message to load a {@link GameObject} from the database. Responds with either
+ * {@link LoadObjectSuccessMessage} or {@link LoadObjectErrorMessage}.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@RequiredArgsConstructor
 @ToString(callSuper = true)
-public class DbCommandReplyMessage extends Message {
+public class AbstractLoadObjectMessage extends AbstractObjectsReplyMessage {
 
-	/**
-	 * Reply to {@link ActorRef}.
-	 */
-	public final ActorRef<DbResponseMessage> replyTo;
+	@ToString(callSuper = true)
+	public static class LoadObjectSuccessMessage extends ObjectsSuccessMessage {
 
-	public final Function<Throwable, Object> onError;
+		public final GameObject go;
 
-	public final Function<ODatabaseDocument, Object> command;
+		public LoadObjectSuccessMessage(AbstractLoadObjectMessage om, GameObject go) {
+			super(om);
+			this.go = go;
+		}
+
+	}
+
+	@ToString(callSuper = true)
+	public static class LoadObjectErrorMessage extends ObjectsErrorMessage {
+		public LoadObjectErrorMessage(AbstractLoadObjectMessage om, Throwable error) {
+			super(om, error);
+		}
+
+	}
+
+	public AbstractLoadObjectMessage(ActorRef<ObjectsResponseMessage> replyTo) {
+		super(replyTo);
+	}
+
 }

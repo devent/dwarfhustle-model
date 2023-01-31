@@ -21,19 +21,28 @@ import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.create
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
+import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandReplyMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandSuccessMessage.DbCommandErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.AbstractLoadObjectMessage.LoadObjectErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.AbstractLoadObjectMessage.LoadObjectSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.AbstractObjectsReplyMessage.ObjectsErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.AbstractObjectsReplyMessage.ObjectsSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.CreateSchemasMessage.CreatedSchemasErrorResult;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.CreateSchemasMessage.CreatedSchemasSuccessResult;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
@@ -45,6 +54,7 @@ import akka.actor.typed.javadsl.BehaviorBuilder;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.receptionist.ServiceKey;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -59,7 +69,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ObjectsDbActor {
 
-	public static final ServiceKey<Message> KEY = ServiceKey.create(Message.class, ObjectsDbActor.class.getSimpleName());
+	public static final ServiceKey<Message> KEY = ServiceKey.create(Message.class,
+			ObjectsDbActor.class.getSimpleName());
 
 	public static final String NAME = ObjectsDbActor.class.getSimpleName();
 
@@ -108,9 +119,10 @@ public class ObjectsDbActor {
 	@Inject
 	private List<GameObjectSchema> schemas;
 
-	private ActorRef<DbResponseMessage> dbResponseAdapter;
+	@Inject
+	private Map<String, GameObjectStorage> storages;
 
-	private Optional<CreateSchemasMessage> createSchemasMessage = Optional.empty();
+	private ActorRef<DbResponseMessage> dbResponseAdapter;
 
 	/**
 	 * Returns a behavior for the messages from {@link #getInitialBehavior()}
@@ -126,12 +138,43 @@ public class ObjectsDbActor {
 	 */
 	private Behavior<Message> onCreateSchemas(CreateSchemasMessage m) {
 		log.debug("onCreateSchemas {}", m);
-		this.createSchemasMessage = Optional.of(m);
-		db.tell(new DbCommandReplyMessage(dbResponseAdapter, db -> {
+		db.tell(new DbCommandReplyMessage(dbResponseAdapter, ex -> {
+			return new CreatedSchemasErrorResult(m, ex);
+		}, db -> {
 			createSchemas(db);
-			return null;
+			return new CreatedSchemasSuccessResult(m);
 		}));
 		return Behaviors.same();
+	}
+
+	/**
+	 * Returns a behavior for the messages from {@link #getInitialBehavior()}
+	 */
+	private Behavior<Message> onLoadWorldMap(LoadWorldMapMessage m) {
+		log.debug("onLoadWorldMap {}", m);
+		db.tell(new DbCommandReplyMessage(dbResponseAdapter, ex -> {
+			return new LoadObjectErrorMessage(m, ex);
+		}, db -> {
+			var wm = loadWorldMap(db);
+			return new LoadObjectSuccessMessage(m, wm);
+		}));
+		return Behaviors.same();
+	}
+
+	@SneakyThrows
+	private GameObject loadWorldMap(ODatabaseDocument db) {
+		var query = "SELECT * from ? limit 1";
+		var rs = db.query(query, WorldMap.OBJECT_TYPE);
+		try {
+			while (rs.hasNext()) {
+				var item = rs.next();
+				var wm = storages.get(WorldMap.OBJECT_TYPE).retrieve(db, item, new WorldMap());
+				return wm;
+			}
+		} finally {
+			rs.close();
+		}
+		throw new LoadObjectException("no world map found");
 	}
 
 	/**
@@ -144,18 +187,21 @@ public class ObjectsDbActor {
 	 */
 	private Behavior<Message> onWrappedDbResponse(WrappedDbResponse m) {
 		log.debug("onWrappedDbResponse {}", m);
-		if (createSchemasMessage.isEmpty()) {
-			return Behaviors.same();
-		}
 		var response = m.response;
-		var om = createSchemasMessage.get();
-		if (response instanceof DbErrorMessage) {
-			var rm = (DbErrorMessage) response;
+		if (response instanceof DbCommandErrorMessage) {
+			var rm = (DbCommandErrorMessage) response;
 			log.error("Db error", rm);
-			om.replyTo.tell(new ObjectsErrorMessage(om, rm.error));
+			if (rm.onError instanceof CreatedSchemasErrorResult) {
+				var res = (CreatedSchemasErrorResult) rm.onError;
+				res.om.replyTo.tell(res);
+			}
 			return Behaviors.stopped();
-		} else if (response instanceof DbSuccessMessage) {
-			om.replyTo.tell(new ObjectsSuccessMessage(om));
+		} else if (response instanceof DbCommandSuccessMessage) {
+			var rm = (DbCommandSuccessMessage) response;
+			if (rm.value instanceof CreatedSchemasSuccessResult) {
+				var res = (CreatedSchemasSuccessResult) rm.value;
+				res.om.replyTo.tell(res);
+			}
 		}
 		return Behaviors.same();
 	}
@@ -165,12 +211,14 @@ public class ObjectsDbActor {
 	 *
 	 * <ul>
 	 * <li>{@link CreateSchemasMessage}
+	 * <li>{@link LoadWorldMapMessage}
 	 * <li>{@link WrappedDbResponse}
 	 * </ul>
 	 */
 	private BehaviorBuilder<Message> getInitialBehavior() {
 		return Behaviors.receive(Message.class)//
 				.onMessage(CreateSchemasMessage.class, this::onCreateSchemas)//
+				.onMessage(LoadWorldMapMessage.class, this::onLoadWorldMap)//
 				.onMessage(WrappedDbResponse.class, this::onWrappedDbResponse)//
 		;
 	}

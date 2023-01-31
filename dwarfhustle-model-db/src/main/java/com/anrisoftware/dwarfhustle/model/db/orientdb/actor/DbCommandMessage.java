@@ -37,5 +37,7 @@ public class DbCommandMessage extends Message {
 
 	public final ActorRef<Message> caller;
 
+	public final Function<Throwable, Object> onError;
+
 	public final Function<ODatabaseDocument, Object> command;
 }

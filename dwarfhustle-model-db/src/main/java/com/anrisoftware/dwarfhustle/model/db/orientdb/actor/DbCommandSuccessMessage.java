@@ -30,6 +30,22 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class DbCommandSuccessMessage extends DbSuccessMessage {
 
+	/**
+	 * Database command error response with return value.
+	 *
+	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+	 */
+	@ToString(callSuper = true)
+	public static class DbCommandErrorMessage extends DbErrorMessage {
+
+		public final Object onError;
+
+		public DbCommandErrorMessage(Message om, Exception error, Object onError) {
+			super(om, error);
+			this.onError = onError;
+		}
+	}
+
 	public final Object value;
 
 	public DbCommandSuccessMessage(Message om, Object value) {

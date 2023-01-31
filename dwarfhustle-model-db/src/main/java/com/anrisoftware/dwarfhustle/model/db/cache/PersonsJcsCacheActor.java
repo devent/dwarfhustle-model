@@ -165,7 +165,9 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, MapT
 
 	private void loadMapTiles() {
 		CompletionStage<DbResponseMessage> stage = AskPattern.ask(db,
-				replyTo -> new DbCommandReplyMessage(replyTo, db -> {
+				replyTo -> new DbCommandReplyMessage(replyTo, ex -> {
+					return null;
+				}, db -> {
 					return loadMapTilesAsync(db);
 				}), timeout, context.getSystem().scheduler());
 		context.pipeToSelf(stage, (result, cause) -> {
@@ -198,7 +200,9 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, MapT
 	@Override
 	protected MapTile retrieveValueFromDb(AbstractGetMessage<?> m) {
 		CompletionStage<DbResponseMessage> result = AskPattern.ask(db,
-				replyTo -> new DbCommandReplyMessage(replyTo, db -> {
+				replyTo -> new DbCommandReplyMessage(replyTo, ex -> {
+					return null;
+				}, db -> {
 					return retrieveGameObjectAsync(db, m);
 				}), timeout, context.getSystem().scheduler());
 		var future = result.toCompletableFuture();
@@ -240,7 +244,9 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, MapT
 	@Override
 	protected void storeValueDb(AbstractPutMessage<?> m) {
 		CompletionStage<DbResponseMessage> result = AskPattern.ask(db,
-				replyTo -> new DbCommandReplyMessage(replyTo, db -> {
+				replyTo -> new DbCommandReplyMessage(replyTo, ex -> {
+					return null;
+				}, db -> {
 					return storeValueDbAsync(db, m);
 				}), timeout, context.getSystem().scheduler());
 		result.whenComplete((response, throwable) -> {

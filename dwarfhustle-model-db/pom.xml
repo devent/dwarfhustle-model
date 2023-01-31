@@ -46,6 +46,11 @@
             <artifactId>akka-actor-testkit-typed_${scala.binary.version}</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-swing</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <!-- Compile dependencies -->
         <dependency>

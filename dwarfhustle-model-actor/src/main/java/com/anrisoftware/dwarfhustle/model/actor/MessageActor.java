@@ -21,8 +21,11 @@ import javax.inject.Inject;
 
 import com.google.inject.assistedinject.Assisted;
 
+import akka.actor.typed.ActorRef;
 import akka.actor.typed.javadsl.AbstractBehavior;
 import akka.actor.typed.javadsl.ActorContext;
+import akka.actor.typed.javadsl.AskPattern;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -40,6 +43,32 @@ public abstract class MessageActor<T extends MessageActor.Message> extends Abstr
     @ToString
     public static class Message {
     }
+
+	/**
+	 * Actor message that contains the caller. The message can only be used by
+	 * {@code tell()}.
+	 *
+	 * @author Erwin Müller {@literal <erwin@mullerlpublic.de}
+	 */
+	@RequiredArgsConstructor
+	@ToString
+	public static class CallerMessage extends Message {
+
+		public final ActorRef<Message> caller;
+	}
+
+	/**
+	 * Actor message that contains the reply to. The message is used by
+	 * {@link AskPattern#ask(akka.actor.typed.RecipientRef, akka.japi.function.Function, java.time.Duration, akka.actor.typed.Scheduler)}
+	 *
+	 * @author Erwin Müller {@literal <erwin@mullerlpublic.de}
+	 */
+	@RequiredArgsConstructor
+	@ToString
+	public static class ReplyMessage<T> extends Message {
+
+		public final ActorRef<T> replyTo;
+	}
 
     @SuppressWarnings("unchecked")
     @Inject

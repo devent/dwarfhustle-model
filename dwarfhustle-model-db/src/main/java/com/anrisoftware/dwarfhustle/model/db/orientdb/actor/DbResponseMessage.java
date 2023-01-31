@@ -43,6 +43,7 @@ public class DbResponseMessage extends Message {
 		public final Message om;
 
 		public final Exception error;
+
 	}
 
 	/**

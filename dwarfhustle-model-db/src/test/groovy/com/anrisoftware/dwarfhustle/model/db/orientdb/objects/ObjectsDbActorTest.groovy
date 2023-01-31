@@ -32,13 +32,13 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
 import org.lable.oss.uniqueid.IDGenerator
 
+import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.actor.ModelActorsModule
 import com.anrisoftware.dwarfhustle.model.api.objects.ApiModule
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMapPos
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock
 import com.anrisoftware.dwarfhustle.model.api.objects.MapTile
-import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandReplyMessage
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbServerUtils
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbTestUtils
@@ -124,7 +124,7 @@ class ObjectsDbActorTest {
 		def result =
 				AskPattern.ask(
 				orientDbActor, {replyTo ->
-					new DbCommandReplyMessage(replyTo, { db ->
+					new DbCommandReplyMessage(replyTo, { ex -> }, { db ->
 						def parentMapBlock = new MapBlock(gen.generate(), new GameBlockPos(0, 0, 0, 0, 8, 8, 8))
 						def mapBlock = new MapBlock(gen.generate(), new GameBlockPos(0, 0, 0, 0, 4, 4, 4))
 						mapBlockId = mapBlock.id
@@ -166,7 +166,7 @@ class ObjectsDbActorTest {
 		def result =
 				AskPattern.ask(
 				orientDbActor, {replyTo ->
-					new DbCommandReplyMessage(replyTo, { db ->
+					new DbCommandReplyMessage(replyTo, { ex -> }, { db ->
 						def rs = db.query("SELECT FROM ? WHERE objecttype=? and mapid=? and sx=? and sy=? and sz=? and ex=? and ey=? and ez=?",
 								MapBlock.OBJECT_TYPE, MapBlock.OBJECT_TYPE,
 								0, 0, 0, 0, 8, 8, 8);

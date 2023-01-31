@@ -26,6 +26,7 @@ import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.ActorSystem;
+import akka.actor.typed.Scheduler;
 import akka.actor.typed.javadsl.Behaviors;
 
 /**
@@ -61,5 +62,13 @@ public class ActorSystemProvider implements Provider<ActorRef<Message>> {
     public ActorRef<Message> get() {
         return actors;
     }
+
+	public void tell(Message m) {
+		mainActor.tell(m);
+	}
+
+	public Scheduler getScheduler() {
+		return actors.scheduler();
+	}
 
 }

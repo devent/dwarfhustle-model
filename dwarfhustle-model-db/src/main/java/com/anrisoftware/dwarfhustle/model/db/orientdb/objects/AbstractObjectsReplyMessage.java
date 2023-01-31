@@ -50,7 +50,7 @@ public class AbstractObjectsReplyMessage extends Message {
 	@EqualsAndHashCode(callSuper = false)
 	public static class ObjectsErrorMessage extends ObjectsResponseMessage {
 
-		public final AbstractObjectsReplyMessage originalMessage;
+		public final AbstractObjectsReplyMessage om;
 
 		public final Throwable error;
 	}
@@ -64,7 +64,7 @@ public class AbstractObjectsReplyMessage extends Message {
 	@EqualsAndHashCode(callSuper = false)
 	public static class ObjectsSuccessMessage extends ObjectsResponseMessage {
 
-		public final AbstractObjectsReplyMessage originalMessage;
+		public final AbstractObjectsReplyMessage om;
 	}
 
 	/**

@@ -18,17 +18,29 @@
 package com.anrisoftware.dwarfhustle.model.db.orientdb.objects;
 
 import akka.actor.typed.ActorRef;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * Message to create the schemas and indexes for a new database.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@Data
-@EqualsAndHashCode(callSuper = false)
+@ToString(callSuper = true)
 public class CreateSchemasMessage extends AbstractObjectsReplyMessage {
+
+	public static class CreatedSchemasSuccessResult extends ObjectsSuccessMessage {
+		public CreatedSchemasSuccessResult(CreateSchemasMessage om) {
+			super(om);
+		}
+
+	}
+
+	public static class CreatedSchemasErrorResult extends ObjectsErrorMessage {
+		public CreatedSchemasErrorResult(CreateSchemasMessage om, Throwable error) {
+			super(om, error);
+		}
+
+	}
 
 	public CreateSchemasMessage(ActorRef<ObjectsResponseMessage> replyTo) {
 		super(replyTo);

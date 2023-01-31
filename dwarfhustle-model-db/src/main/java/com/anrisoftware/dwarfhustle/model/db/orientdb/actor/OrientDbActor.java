@@ -28,6 +28,7 @@ import javax.inject.Inject;
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CreateDbMessage.DbAlreadyExistMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandSuccessMessage.DbCommandErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DeleteDbMessage.DbNotExistMessage;
@@ -257,7 +258,7 @@ public class OrientDbActor {
 			m.replyTo.tell(new DbCommandSuccessMessage(m, ret));
 		} catch (Exception e) {
 			log.error("onDbReplyCommand", e);
-			m.replyTo.tell(new DbErrorMessage(m, e));
+			m.replyTo.tell(new DbCommandErrorMessage(m, e, m.onError.apply(e)));
 		}
 		return Behaviors.same();
 	}
@@ -282,7 +283,7 @@ public class OrientDbActor {
 			}
 			m.caller.tell(new DbCommandSuccessMessage(m, ret));
 		} catch (Exception e) {
-			m.caller.tell(new DbErrorMessage(m, e));
+			m.caller.tell(new DbCommandErrorMessage(m, e, m.onError.apply(e)));
 		}
 		return Behaviors.same();
 	}
