@@ -32,10 +32,15 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandSuccessMess
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DeleteDbMessage.DbNotExistMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StartEmbeddedServerMessage.StartEmbeddedServerSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StopEmbeddedServerMessage.StopEmbeddedServerSuccessMessage;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
+import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.db.OrientDB;
 import com.orientechnologies.orient.core.db.OrientDBConfig;
+import com.orientechnologies.orient.server.OServer;
+import com.orientechnologies.orient.server.OServerMain;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -94,31 +99,66 @@ public class OrientDbActor {
 
 	private String database;
 
+	private Optional<OServer> server;
+
 	/**
-	 * Initial behavior. Returns a behavior for the messages:
-	 *
-	 * <ul>
-	 * <li>{@link ConnectDbRemoteMessage}
-	 * <li>{@link ConnectDbEmbeddedMessage}
-	 * </ul>
+	 * Initial behavior. Returns a behavior for the messages from
+	 * {@link #getInitialBehavior()}.
 	 */
 	public Behavior<Message> start() {
 		this.orientdb = Optional.empty();
+		this.server = Optional.empty();
+		return getInitialBehavior().build();
+	}
+
+	/**
+	 * Reacts to {@link StartEmbeddedServerMessage}. Replies with the
+	 * {@link StartEmbeddedServerSuccessMessage} on success and with
+	 * {@link DbErrorMessage} on failure. Returns a behavior for the messages from
+	 * {@link #getEmbeddedServerStartedBehavior()}.
+	 * </ul>
+	 */
+	private Behavior<Message> onStartEmbeddedServer(StartEmbeddedServerMessage m) {
+		log.debug("onStartEmbeddedServer {}", m);
+		try {
+			System.setProperty(Orient.ORIENTDB_HOME, m.root);
+			var server = OServerMain.create();
+			var config = m.config.openStream();
+			server.startup(config);
+			server.activate();
+			this.server = Optional.of(server);
+		} catch (Exception e) {
+			m.replyTo.tell(new DbErrorMessage(m, e));
+			return Behaviors.same();
+		}
+		m.replyTo.tell(new StartEmbeddedServerSuccessMessage(m, server.get()));
+		return getEmbeddedServerStartedBehavior().build();
+	}
+
+	/**
+	 * Reacts to {@link StopEmbeddedServerMessage}. Replies with the
+	 * {@link StopEmbeddedServerSuccessMessage} on success and with
+	 * {@link DbErrorMessage} on failure. Returns a behavior for the messages from
+	 * {@link #getInitialBehavior()}.
+	 * </ul>
+	 */
+	private Behavior<Message> onStopEmbeddedServer(StopEmbeddedServerMessage m) {
+		log.debug("onStopEmbeddedServer {}", m);
+		try {
+			server.ifPresent((s) -> s.shutdown());
+		} catch (Exception e) {
+			m.replyTo.tell(new DbErrorMessage(m, e));
+			return Behaviors.same();
+		}
+		m.replyTo.tell(new StopEmbeddedServerSuccessMessage(m));
 		return getInitialBehavior().build();
 	}
 
 	/**
 	 * Reacts to {@link ConnectDbRemoteMessage}. Replies with the
 	 * {@link ConnectDbSuccessMessage} on success and with {@link DbErrorMessage} on
-	 * failure. Returns a behavior for the messages:
-	 *
-	 * <ul>
-	 * <li>{@link CloseDbMessage}
-	 * <li>{@link CreateDbMessage}
-	 * <li>{@link DeleteDbMessage}
-	 * <li>{@link DbCommandReplyMessage}
-	 * <li>{@link DbCommandMessage}
-	 * </ul>
+	 * failure. Returns a behavior for the messages from
+	 * {@link #getConnectedBehavior()}.
 	 */
 	private Behavior<Message> onConnectDbRemote(ConnectDbRemoteMessage m) {
 		log.debug("onConnectDbRemote {}", m);
@@ -139,15 +179,8 @@ public class OrientDbActor {
 	/**
 	 * Reacts to {@link ConnectDbEmbeddedMessage}. Replies with the
 	 * {@link ConnectDbSuccessMessage} on success and with {@link DbErrorMessage} on
-	 * failure. Returns a behavior for the messages:
-	 *
-	 * <ul>
-	 * <li>{@link CloseDbMessage}
-	 * <li>{@link CreateDbMessage}
-	 * <li>{@link DeleteDbMessage}
-	 * <li>{@link DbCommandReplyMessage}
-	 * <li>{@link DbCommandMessage}
-	 * </ul>
+	 * failure. Returns a behavior for the messages from
+	 * {@link #getConnectedBehavior()}.
 	 */
 	private Behavior<Message> onConnectDbEmbedded(ConnectDbEmbeddedMessage m) {
 		log.debug("onConnectDbEmbedded {}", m);
@@ -165,11 +198,8 @@ public class OrientDbActor {
 	}
 
 	/**
-	 * Reacts to {@link CloseDbMessage}. Returns a behavior for the messages:
-	 *
-	 * <ul>
-	 * <li>{@link ConnectDbRemoteMessage}
-	 * </ul>
+	 * Reacts to {@link CloseDbMessage}. Returns a behavior for the messages from
+	 * {@link #getInitialBehavior()}.
 	 */
 	private Behavior<Message> onCloseDb(CloseDbMessage m) {
 		log.debug("onCloseDb {}", m);
@@ -181,18 +211,9 @@ public class OrientDbActor {
 	}
 
 	/**
-	 * Reacts to {@link ConnectDbRemoteMessage}. Replies with
-	 * {@link DbSuccessMessage} on success, with {@link DbAlreadyExistMessage} if
-	 * the database already exist or with {@link DbErrorMessage} on failure. Returns
-	 * a behavior for the messages:
-	 *
-	 * <ul>
-	 * <li>{@link CloseDbMessage}
-	 * <li>{@link CreateDbMessage}
-	 * <li>{@link DeleteDbMessage}
-	 * <li>{@link DbCommandReplyMessage}
-	 * <li>{@link DbCommandMessage}
-	 * </ul>
+	 * Reacts to {@link CreateDbMessage}. Replies with {@link DbSuccessMessage} on
+	 * success, with {@link DbAlreadyExistMessage} if the database already exist or
+	 * with {@link DbErrorMessage} on failure.
 	 */
 	private Behavior<Message> onCreateDb(CreateDbMessage m) {
 		log.debug("onCreateDb {}", m);
@@ -211,15 +232,7 @@ public class OrientDbActor {
 	}
 
 	/**
-	 * Reacts to {@link DeleteDbMessage}. Returns a behavior for the messages:
-	 *
-	 * <ul>
-	 * <li>{@link CloseDbMessage}
-	 * <li>{@link CreateDbMessage}
-	 * <li>{@link DeleteDbMessage}
-	 * <li>{@link DbCommandReplyMessage}
-	 * <li>{@link DbCommandMessage}
-	 * </ul>
+	 * Reacts to {@link DeleteDbMessage}.
 	 */
 	private Behavior<Message> onDeleteDb(DeleteDbMessage m) {
 		log.debug("onDeleteDb {}", m);
@@ -238,15 +251,7 @@ public class OrientDbActor {
 	}
 
 	/**
-	 * Reacts to {@link DbCommandReplyMessage}. Returns a behavior for the messages:
-	 *
-	 * <ul>
-	 * <li>{@link CloseDbMessage}
-	 * <li>{@link CreateDbMessage}
-	 * <li>{@link DeleteDbMessage}
-	 * <li>{@link DbCommandReplyMessage}
-	 * <li>{@link DbCommandMessage}
-	 * </ul>
+	 * Reacts to {@link DbCommandReplyMessage}.
 	 */
 	private Behavior<Message> onDbReplyCommand(DbCommandReplyMessage m) {
 		log.debug("onDbReplyCommand {}", m);
@@ -264,15 +269,7 @@ public class OrientDbActor {
 	}
 
 	/**
-	 * Reacts to {@link DbCommandReplyMessage}. Returns a behavior for the messages:
-	 *
-	 * <ul>
-	 * <li>{@link CloseDbMessage}
-	 * <li>{@link CreateDbMessage}
-	 * <li>{@link DeleteDbMessage}
-	 * <li>{@link DbCommandReplyMessage}
-	 * <li>{@link DbCommandMessage}
-	 * </ul>
+	 * Reacts to {@link DbCommandReplyMessage}.
 	 */
 	private Behavior<Message> onDbCommand(DbCommandMessage m) {
 		log.debug("onDbCommand {}", m);
@@ -292,19 +289,53 @@ public class OrientDbActor {
 	 * Returns a behavior for the messages:
 	 *
 	 * <ul>
+	 * <li>{@link StartEmbeddedServerMessage}
+	 * <li>{@link StopEmbeddedServerMessage}
 	 * <li>{@link ConnectDbRemoteMessage}
 	 * <li>{@link ConnectDbEmbeddedMessage}
 	 * </ul>
 	 */
 	private BehaviorBuilder<Message> getInitialBehavior() {
 		return Behaviors.receive(Message.class)//
+				.onMessage(StartEmbeddedServerMessage.class, this::onStartEmbeddedServer)//
+				.onMessage(StopEmbeddedServerMessage.class, this::onStopEmbeddedServer)//
 				.onMessage(ConnectDbRemoteMessage.class, this::onConnectDbRemote)//
 				.onMessage(ConnectDbEmbeddedMessage.class, this::onConnectDbEmbedded)//
 		;
 	}
 
+	/**
+	 * Returns a behavior for the messages:
+	 *
+	 * <ul>
+	 * <li>{@link StopEmbeddedServerMessage}
+	 * <li>{@link ConnectDbRemoteMessage}
+	 * <li>{@link ConnectDbEmbeddedMessage}
+	 * </ul>
+	 */
+	private BehaviorBuilder<Message> getEmbeddedServerStartedBehavior() {
+		return Behaviors.receive(Message.class)//
+				.onMessage(StopEmbeddedServerMessage.class, this::onStopEmbeddedServer)//
+				.onMessage(ConnectDbRemoteMessage.class, this::onConnectDbRemote)//
+				.onMessage(ConnectDbEmbeddedMessage.class, this::onConnectDbEmbedded)//
+		;
+	}
+
+	/**
+	 * Returns a behavior for the messages:
+	 *
+	 * <ul>
+	 * <li>{@link StopEmbeddedServerMessage}
+	 * <li>{@link CloseDbMessage}
+	 * <li>{@link CreateDbMessage}
+	 * <li>{@link DeleteDbMessage}
+	 * <li>{@link DbCommandReplyMessage}
+	 * <li>{@link DbCommandMessage}
+	 * </ul>
+	 */
 	private BehaviorBuilder<Message> getConnectedBehavior() {
 		return Behaviors.receive(Message.class)//
+				.onMessage(StopEmbeddedServerMessage.class, this::onStopEmbeddedServer)//
 				.onMessage(CloseDbMessage.class, this::onCloseDb)//
 				.onMessage(CreateDbMessage.class, this::onCreateDb)//
 				.onMessage(DeleteDbMessage.class, this::onDeleteDb)//

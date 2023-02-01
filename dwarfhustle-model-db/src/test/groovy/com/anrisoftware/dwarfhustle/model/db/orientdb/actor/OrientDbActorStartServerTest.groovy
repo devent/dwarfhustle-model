@@ -17,16 +17,20 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.actor
 
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbTestUtils.log_reply_failure
+
 import java.time.Duration
 import java.util.concurrent.CountDownLatch
 
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.actor.ModelActorsModule
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StartEmbeddedServerMessage.StartEmbeddedServerSuccessMessage
 import com.google.inject.Guice
 import com.google.inject.Injector
 import com.orientechnologies.orient.core.db.ODatabaseType
@@ -41,9 +45,7 @@ import groovy.util.logging.Slf4j
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
-class OrientDbActorTest {
-
-	static final EMBEDDED_SERVER_PROPERTY = System.getProperty("com.anrisoftware.dwarfhustle.model.db.orientdb.objects.embedded-server", "yes")
+class OrientDbActorStartServerTest {
 
 	static final ActorTestKit testKit = ActorTestKit.create()
 
@@ -55,65 +57,40 @@ class OrientDbActorTest {
 
 	static DbServerUtils dbServerUtils
 
+	@TempDir
+	static File tempDir
+
 	@BeforeAll
 	static void setupActor() {
-		if (EMBEDDED_SERVER_PROPERTY == "yes") {
-			dbServerUtils = new DbServerUtils()
-			dbServerUtils.createServer()
-		}
 		injector = Guice.createInjector(new ModelActorsModule(), new OrientDbModule())
 		orientDbActor = testKit.spawn(OrientDbActor.create(injector), "OrientDbActor");
 	}
 
 	@AfterAll
 	static void closeDb() {
-		deleteDatabase()
-		orientDbActor.tell(new CloseDbMessage())
+		AskPattern.ask(
+				orientDbActor,
+				{replyTo -> new CloseDbMessage(replyTo)},
+				timeout,
+				testKit.scheduler())
+		stopServer()
 		testKit.shutdown(testKit.system(), timeout)
-		if (EMBEDDED_SERVER_PROPERTY == "yes") {
-			dbServerUtils.shutdownServer()
-		}
 	}
 
-	static void deleteDatabase() {
+	@Test
+	void start_server() {
 		def lock = new CountDownLatch(1)
 		def result =
 				AskPattern.ask(
 				orientDbActor,
-				{replyTo -> new DeleteDbMessage(replyTo)},
+				{replyTo -> new StartEmbeddedServerMessage(replyTo, tempDir.absolutePath, OrientDbActorStartServerTest.class.getResource("/orientdb-test-config.xml"))},
 				timeout,
 				testKit.scheduler())
 		result.whenComplete( {reply, failure ->
-			log.info "Delete database reply {} failure {}", reply, failure
-			lock.countDown()
-		})
-		lock.await()
-	}
-
-	@Test
-	void connect_db_message_create_db() {
-		def lock = new CountDownLatch(1)
-		def result
-		if (EMBEDDED_SERVER_PROPERTY == "yes") {
-			result =
-					AskPattern.ask(
-					orientDbActor,
-					{replyTo -> new ConnectDbEmbeddedMessage(replyTo, dbServerUtils.server, "test", "root", "admin")},
-					timeout,
-					testKit.scheduler())
-		} else {
-			result =
-					AskPattern.ask(
-					orientDbActor,
-					{replyTo -> new ConnectDbRemoteMessage(replyTo, "remote:localhost", "test", "root", "admin")},
-					timeout,
-					testKit.scheduler())
-		}
-		result.whenComplete( {reply, failure ->
-			log.info "Connect database reply {} failure {}", reply, failure
+			log_reply_failure "StartEmbeddedServerMessage", reply, failure
 			switch (reply) {
-				case ConnectDbSuccessMessage:
-					createDatabase(lock)
+				case StartEmbeddedServerSuccessMessage:
+					connectDatabase(lock, reply.server)
 					break
 				case DbErrorMessage:
 					lock.countDown()
@@ -125,37 +102,44 @@ class OrientDbActorTest {
 		lock.await()
 	}
 
+	void connectDatabase(def lock, def server) {
+		def result =
+				AskPattern.ask(
+				orientDbActor,
+				{replyTo -> new ConnectDbEmbeddedMessage(replyTo, server, "test", "root", "admin")},
+				timeout,
+				testKit.scheduler())
+		result.whenComplete( {reply, failure ->
+			log_reply_failure "ConnectDbEmbeddedMessage", reply, failure
+			createDatabase(lock)
+		})
+	}
+
 	void createDatabase(def lock) {
 		def result =
 				AskPattern.ask(
 				orientDbActor,
-				{replyTo -> new CreateDbMessage(replyTo, ODatabaseType.MEMORY)},
+				{replyTo -> new CreateDbMessage(replyTo, ODatabaseType.PLOCAL)},
 				timeout,
 				testKit.scheduler())
 		result.whenComplete( {reply, failure ->
 			log.info "Create database reply {} failure {}", reply, failure
-			executeCommand(lock)
+			lock.countDown()
 		})
 	}
 
-	void executeCommand(def lock) {
+	static void stopServer() {
+		def lock = new CountDownLatch(1)
 		def result =
 				AskPattern.ask(
-				orientDbActor, {replyTo ->
-					new DbCommandReplyMessage(replyTo, { ex -> }, { db ->
-						def cl = db.createClassIfNotExist("Person", "V")
-						db.begin();
-						def doc = db.newVertex(cl);
-						doc.setProperty("name", "John");
-						doc.save();
-						db.commit()
-					})
-				},
+				orientDbActor,
+				{replyTo -> new StopEmbeddedServerMessage(replyTo)},
 				timeout,
 				testKit.scheduler())
 		result.whenComplete( {reply, failure ->
-			log.info "Execute command reply {} failure {}", reply, failure
+			log_reply_failure "StopEmbeddedServerMessage", reply, failure
 			lock.countDown()
 		})
+		lock.await()
 	}
 }
