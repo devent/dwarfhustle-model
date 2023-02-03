@@ -85,9 +85,11 @@ public class WorldMapStorage extends AbstractGameObjectStorage {
 		var rs = db.query(query, WorldMap.OBJECT_TYPE);
 		try {
 			while (rs.hasNext()) {
-				var item = rs.next();
-				var gm = gameMapStorage.retrieve(db, item, gameMapStorage.create());
-				wm.addMap((GameMap) gm);
+				var item = rs.next().getVertex();
+				if (item.isPresent()) {
+					var gm = gameMapStorage.retrieve(db, item.get(), gameMapStorage.create());
+					wm.addMap((GameMap) gm);
+				}
 			}
 		} finally {
 			rs.close();
@@ -95,7 +97,7 @@ public class WorldMapStorage extends AbstractGameObjectStorage {
 	}
 
 	private LocalDateTime parseTime(String s) {
-		return (LocalDateTime) DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(s);
+		return LocalDateTime.parse(s, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 	}
 
 	@Override

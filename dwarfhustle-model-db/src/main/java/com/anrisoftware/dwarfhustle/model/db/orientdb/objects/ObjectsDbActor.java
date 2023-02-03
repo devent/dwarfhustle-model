@@ -167,9 +167,11 @@ public class ObjectsDbActor {
 		var rs = db.query(query, WorldMap.OBJECT_TYPE);
 		try {
 			while (rs.hasNext()) {
-				var item = rs.next();
-				var wm = storages.get(WorldMap.OBJECT_TYPE).retrieve(db, item, new WorldMap());
-				return wm;
+				var v = rs.next().getVertex();
+				if (v.isPresent()) {
+					var wm = storages.get(WorldMap.OBJECT_TYPE).retrieve(db, v.get(), new WorldMap());
+					return wm;
+				}
 			}
 		} finally {
 			rs.close();

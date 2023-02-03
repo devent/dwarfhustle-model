@@ -57,7 +57,9 @@ public class ObjectsDbModule extends AbstractModule {
 		mapBlockStorage.setStorages(map);
 		map.put(MapBlock.OBJECT_TYPE, mapBlockStorage);
 		map.put(GameMap.OBJECT_TYPE, new GameMapStorage());
-		map.put(WorldMap.OBJECT_TYPE, new WorldMapStorage());
+		var worldMapStorage = new WorldMapStorage();
+		worldMapStorage.setStorages(map);
+		map.put(WorldMap.OBJECT_TYPE, worldMapStorage);
 		return map;
 	}
 
