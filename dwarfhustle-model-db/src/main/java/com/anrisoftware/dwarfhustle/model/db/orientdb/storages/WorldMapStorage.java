@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.db.orientdb.objects;
+package com.anrisoftware.dwarfhustle.model.db.orientdb.storages;
 
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.WorldMapSchema.DIST_LAT_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.WorldMapSchema.DIST_LON_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.WorldMapSchema.NAME_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.WorldMapSchema.TIME_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.WorldMapSchema.DIST_LAT_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.WorldMapSchema.DIST_LON_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.WorldMapSchema.NAME_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.WorldMapSchema.TIME_FIELD;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

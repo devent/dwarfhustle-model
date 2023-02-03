@@ -15,44 +15,38 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.db.orientdb.objects;
+package com.anrisoftware.dwarfhustle.model.db.orientdb.schemas;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 
 /**
- * Creates the schema for the {@link GameMap}.
+ * Creates the schema for the {@link GameMapObject}.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-public class GameMapSchema implements GameObjectSchema {
+public class GameMapObjectSchema implements GameObjectSchema {
 
-	public static final String NAME_FIELD = "name";
+	public static final String Z_FIELD = "z";
+
+	public static final String Y_FIELD = "y";
+
+	public static final String X_FIELD = "x";
 
 	public static final String MAPID_FIELD = "mapid";
-
-	public static final String WIDTH_FIELD = "width";
-
-	public static final String HEIGHT_FIELD = "height";
-
-	public static final String DEPTH_FIELD = "depth";
-
-	public static final String BLOCK_SIZE_FIELD = "blockSize";
 
 	@Override
 	public void createSchema(Object db) {
 		var odb = (ODatabaseDocument) db;
-		var c = odb.createClass(GameMap.OBJECT_TYPE, GameObject.OBJECT_TYPE);
-		c.createProperty(NAME_FIELD, OType.STRING);
+		var c = odb.createClass(GameMapObject.OBJECT_TYPE, GameObject.OBJECT_TYPE);
 		c.createProperty(MAPID_FIELD, OType.INTEGER);
-		c.createProperty(WIDTH_FIELD, OType.INTEGER);
-		c.createProperty(HEIGHT_FIELD, OType.INTEGER);
-		c.createProperty(DEPTH_FIELD, OType.INTEGER);
-		c.createProperty(BLOCK_SIZE_FIELD, OType.INTEGER);
+		c.createProperty(X_FIELD, OType.INTEGER);
+		c.createProperty(Y_FIELD, OType.INTEGER);
+		c.createProperty(Z_FIELD, OType.INTEGER);
 		try (var q = odb.command(
-				"CREATE INDEX GameMap_name ON GameMap (objecttype, name) NOTUNIQUE METADATA {ignoreNullValues: false}")) {
+				"CREATE INDEX GameMapObject_type_pos ON GameMapObject (objecttype, mapid, x, y, z) NOTUNIQUE METADATA {ignoreNullValues: false}")) {
 		}
 	}
 

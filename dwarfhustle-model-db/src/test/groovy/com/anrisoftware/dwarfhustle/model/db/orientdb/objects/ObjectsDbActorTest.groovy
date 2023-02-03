@@ -44,6 +44,7 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbServerUtils
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbTestUtils
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbModule
+import com.anrisoftware.dwarfhustle.model.db.orientdb.storages.MapBlockStorage
 import com.google.inject.Guice
 import com.google.inject.Injector
 

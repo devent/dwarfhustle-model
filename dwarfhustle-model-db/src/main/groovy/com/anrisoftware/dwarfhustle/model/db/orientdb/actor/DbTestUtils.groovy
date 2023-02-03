@@ -24,7 +24,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameMapPos
 import com.anrisoftware.dwarfhustle.model.api.objects.MapTile
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.CreateSchemasMessage
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.MapTileStorage
+import com.anrisoftware.dwarfhustle.model.db.orientdb.storages.MapTileStorage
 import com.orientechnologies.orient.core.db.ODatabaseType
 import com.orientechnologies.orient.core.db.OrientDB
 

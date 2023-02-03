@@ -15,27 +15,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.db.orientdb.objects;
+package com.anrisoftware.dwarfhustle.model.db.orientdb.schemas;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
-import com.anrisoftware.dwarfhustle.model.api.objects.MapTile;
-import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
-import com.orientechnologies.orient.core.metadata.schema.OType;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 /**
- * Creates the schema for the {@link MapTile}.
+ * Creates the schema for the {@link GameObject}.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-public class MapTileSchema implements GameObjectSchema {
+public interface GameObjectSchema {
 
-	public static final String MATERIAL_FIELD = "material";
-
-	@Override
-	public void createSchema(Object db) {
-		var odb = (ODatabaseDocument) db;
-		var c = odb.createClass(MapTile.OBJECT_TYPE, GameMapObject.OBJECT_TYPE);
-		c.createProperty(MATERIAL_FIELD, OType.STRING);
-	}
-
+	void createSchema(Object db);
 }

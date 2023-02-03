@@ -15,14 +15,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.db.orientdb.objects;
+package com.anrisoftware.dwarfhustle.model.db.orientdb.storages;
 
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.GameMapSchema.BLOCK_SIZE_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.GameMapSchema.DEPTH_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.GameMapSchema.HEIGHT_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.GameMapSchema.MAPID_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.GameMapSchema.NAME_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.GameMapSchema.WIDTH_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.BLOCK_SIZE_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.DEPTH_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.HEIGHT_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.MAPID_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.NAME_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.WIDTH_FIELD;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;

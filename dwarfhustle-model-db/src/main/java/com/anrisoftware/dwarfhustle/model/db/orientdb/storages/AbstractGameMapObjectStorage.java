@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.db.orientdb.objects;
+package com.anrisoftware.dwarfhustle.model.db.orientdb.storages;
 
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.GameMapObjectSchema.MAPID_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.GameMapObjectSchema.X_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.GameMapObjectSchema.Y_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.GameMapObjectSchema.Z_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapObjectSchema.MAPID_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapObjectSchema.X_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapObjectSchema.Y_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapObjectSchema.Z_FIELD;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMapPos;

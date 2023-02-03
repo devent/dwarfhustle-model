@@ -15,19 +15,19 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.db.orientdb.objects;
+package com.anrisoftware.dwarfhustle.model.db.orientdb.storages;
 
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.MapBlockSchema.BLOCKS_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.MapBlockSchema.BLOCK_ID_CLASS;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.MapBlockSchema.END_X_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.MapBlockSchema.END_Y_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.MapBlockSchema.END_Z_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.MapBlockSchema.MAPID_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.MapBlockSchema.OBJECTID_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.MapBlockSchema.START_X_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.MapBlockSchema.START_Y_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.MapBlockSchema.START_Z_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.objects.MapBlockSchema.TILES_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapBlockSchema.BLOCKS_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapBlockSchema.BLOCK_ID_CLASS;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapBlockSchema.END_X_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapBlockSchema.END_Y_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapBlockSchema.END_Z_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapBlockSchema.MAPID_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapBlockSchema.OBJECTID_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapBlockSchema.START_X_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapBlockSchema.START_Y_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapBlockSchema.START_Z_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapBlockSchema.TILES_FIELD;
 
 import java.util.Map;
 
