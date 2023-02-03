@@ -27,6 +27,7 @@ import javax.inject.Inject;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+import com.anrisoftware.dwarfhustle.model.actor.ShutdownMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CreateDbMessage.DbAlreadyExistMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandSuccessMessage.DbCommandErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage;
@@ -145,7 +146,7 @@ public class OrientDbActor {
 	private Behavior<Message> onStopEmbeddedServer(StopEmbeddedServerMessage m) {
 		log.debug("onStopEmbeddedServer {}", m);
 		try {
-			server.ifPresent((s) -> s.shutdown());
+			shutdownServer();
 		} catch (Exception e) {
 			m.replyTo.tell(new DbErrorMessage(m, e));
 			return Behaviors.same();
@@ -203,10 +204,8 @@ public class OrientDbActor {
 	 */
 	private Behavior<Message> onCloseDb(CloseDbMessage m) {
 		log.debug("onCloseDb {}", m);
-		orientdb.ifPresent(o -> {
-			o.close();
-			m.replyTo.tell(new DbSuccessMessage(m));
-		});
+		closeDb();
+		m.replyTo.tell(new DbSuccessMessage(m));
 		return getInitialBehavior().build();
 	}
 
@@ -286,6 +285,28 @@ public class OrientDbActor {
 	}
 
 	/**
+	 * <ul>
+	 * <li>
+	 * </ul>
+	 */
+	private Behavior<Message> onShutdown(ShutdownMessage m) {
+		log.debug("onShutdown {}", m);
+		closeDb();
+		shutdownServer();
+		return Behaviors.stopped();
+	}
+
+	private void shutdownServer() {
+		server.ifPresent((s) -> s.shutdown());
+	}
+
+	private void closeDb() {
+		orientdb.ifPresent(o -> {
+			o.close();
+		});
+	}
+
+	/**
 	 * Returns a behavior for the messages:
 	 *
 	 * <ul>
@@ -325,6 +346,7 @@ public class OrientDbActor {
 	 * Returns a behavior for the messages:
 	 *
 	 * <ul>
+	 * <li>{@link ShutdownMessage}
 	 * <li>{@link StopEmbeddedServerMessage}
 	 * <li>{@link CloseDbMessage}
 	 * <li>{@link CreateDbMessage}
@@ -335,6 +357,7 @@ public class OrientDbActor {
 	 */
 	private BehaviorBuilder<Message> getConnectedBehavior() {
 		return Behaviors.receive(Message.class)//
+				.onMessage(ShutdownMessage.class, this::onShutdown)//
 				.onMessage(StopEmbeddedServerMessage.class, this::onStopEmbeddedServer)//
 				.onMessage(CloseDbMessage.class, this::onCloseDb)//
 				.onMessage(CreateDbMessage.class, this::onCreateDb)//
