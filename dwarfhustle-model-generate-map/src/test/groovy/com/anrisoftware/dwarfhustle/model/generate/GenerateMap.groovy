@@ -169,6 +169,7 @@ class GenerateMap {
 		gm.height = mapTilesParams.height
 		gm.depth = mapTilesParams.depth
 		gm.blockSize = mapTilesParams.block_size
+		wm.currentMapid = gm.mapid
 		wm.addMap(gm)
 		def m = new GenerateMapMessage(null, gm, mapTilesParams.block_size, dbTestUtils.user, dbTestUtils.password, dbTestUtils.database)
 		def worker = workerFactory.create(cache, dbTestUtils.db)

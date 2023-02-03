@@ -30,7 +30,6 @@ import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
-import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandReplyMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandSuccessMessage.DbCommandErrorMessage;
@@ -151,26 +150,26 @@ public class ObjectsDbActor {
 	/**
 	 * Returns a behavior for the messages from {@link #getInitialBehavior()}
 	 */
-	private Behavior<Message> onLoadWorldMap(LoadWorldMapMessage m) {
+	private Behavior<Message> onLoadWorldMap(LoadGameObjectMessage m) {
 		log.debug("onLoadWorldMap {}", m);
 		db.tell(new DbCommandReplyMessage(dbResponseAdapter, ex -> {
 			return new LoadObjectErrorMessage(m, ex);
 		}, db -> {
-			var wm = loadWorldMap(db);
+			var wm = loadWorldMap(m, db);
 			return new LoadObjectSuccessMessage(m, wm);
 		}));
 		return Behaviors.same();
 	}
 
 	@SneakyThrows
-	private GameObject loadWorldMap(ODatabaseDocument db) {
-		var query = "SELECT * from ? limit 1";
-		var rs = db.query(query, WorldMap.OBJECT_TYPE);
+	private GameObject loadWorldMap(LoadGameObjectMessage m, ODatabaseDocument db) {
+		var rs = m.query.apply(db);
 		try {
 			while (rs.hasNext()) {
 				var v = rs.next().getVertex();
 				if (v.isPresent()) {
-					var wm = storages.get(WorldMap.OBJECT_TYPE).retrieve(db, v.get(), new WorldMap());
+					var gos = storages.get(m.objectType);
+					var wm = gos.retrieve(db, v.get(), gos.create());
 					return wm;
 				}
 			}
@@ -204,6 +203,9 @@ public class ObjectsDbActor {
 			if (rm.value instanceof CreatedSchemasSuccessResult) {
 				var res = (CreatedSchemasSuccessResult) rm.value;
 				res.om.replyTo.tell(res);
+			} else if (rm.value instanceof LoadObjectSuccessMessage) {
+				var res = (LoadObjectSuccessMessage) rm.value;
+				res.om.replyTo.tell(res);
 			}
 		}
 		return Behaviors.same();
@@ -214,14 +216,14 @@ public class ObjectsDbActor {
 	 *
 	 * <ul>
 	 * <li>{@link CreateSchemasMessage}
-	 * <li>{@link LoadWorldMapMessage}
+	 * <li>{@link LoadGameObjectMessage}
 	 * <li>{@link WrappedDbResponse}
 	 * </ul>
 	 */
 	private BehaviorBuilder<Message> getInitialBehavior() {
 		return Behaviors.receive(Message.class)//
 				.onMessage(CreateSchemasMessage.class, this::onCreateSchemas)//
-				.onMessage(LoadWorldMapMessage.class, this::onLoadWorldMap)//
+				.onMessage(LoadGameObjectMessage.class, this::onLoadWorldMap)//
 				.onMessage(WrappedDbResponse.class, this::onWrappedDbResponse)//
 		;
 	}

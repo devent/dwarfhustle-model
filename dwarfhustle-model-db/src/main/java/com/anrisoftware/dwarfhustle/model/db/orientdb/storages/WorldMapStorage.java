@@ -17,6 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.storages;
 
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.WorldMapSchema.CURRENT_MAPID_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.WorldMapSchema.DIST_LAT_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.WorldMapSchema.DIST_LON_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.WorldMapSchema.NAME_FIELD;
@@ -61,6 +62,7 @@ public class WorldMapStorage extends AbstractGameObjectStorage {
 		v.setProperty(DIST_LAT_FIELD, wm.getDistanceLat());
 		v.setProperty(DIST_LON_FIELD, wm.getDistanceLon());
 		v.setProperty(TIME_FIELD, toString(wm.getTime()));
+		v.setProperty(CURRENT_MAPID_FIELD, wm.getCurrentMapid());
 		super.store(db, o, go);
 	}
 
@@ -76,6 +78,7 @@ public class WorldMapStorage extends AbstractGameObjectStorage {
 		wm.setName(v.getProperty(NAME_FIELD));
 		wm.setDistance(v.getProperty(DIST_LAT_FIELD), v.getProperty(DIST_LON_FIELD));
 		wm.setTime(parseTime(v.getProperty(TIME_FIELD)));
+		wm.setCurrentMapid(v.getProperty(CURRENT_MAPID_FIELD));
 		retrieveGameMaps(v, wm, odb);
 		return super.retrieve(db, o, go);
 	}
@@ -102,6 +105,6 @@ public class WorldMapStorage extends AbstractGameObjectStorage {
 
 	@Override
 	public GameObject create() {
-		return new GameMap();
+		return new WorldMap();
 	}
 }

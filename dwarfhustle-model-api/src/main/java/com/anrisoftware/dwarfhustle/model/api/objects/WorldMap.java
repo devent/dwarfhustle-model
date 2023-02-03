@@ -69,6 +69,11 @@ public class WorldMap extends GameObject {
 	 */
 	private MutableIntLongMap maps = IntLongMaps.mutable.empty();
 
+	/**
+	 * The current {@link GameMap} mapid.
+	 */
+	private int currentMapid = 0;
+
 	public WorldMap(long id) {
 		super(id);
 	}
@@ -125,13 +130,20 @@ public class WorldMap extends GameObject {
 	 */
 	public void setTime(LocalDateTime time) {
 		if (!this.time.equals(time)) {
-			setDirty(true);
 			this.time = time;
+			setDirty(true);
 		}
 	}
 
 	public void addMap(GameMap map) {
 		this.maps.put(map.getMapid(), map.getId());
 		map.setWorld(this);
+	}
+
+	public void setCurrentMapid(int currentMapid) {
+		if (this.currentMapid != currentMapid) {
+			this.currentMapid = currentMapid;
+			setDirty(true);
+		}
 	}
 }

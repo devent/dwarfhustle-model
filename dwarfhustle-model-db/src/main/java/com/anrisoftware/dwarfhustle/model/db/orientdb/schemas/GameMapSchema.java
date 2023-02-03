@@ -54,6 +54,9 @@ public class GameMapSchema implements GameObjectSchema {
 		try (var q = odb.command(
 				"CREATE INDEX GameMap_name ON GameMap (objecttype, name) NOTUNIQUE METADATA {ignoreNullValues: false}")) {
 		}
+		try (var q = odb.command(
+				"CREATE INDEX GameMap_mapid ON GameMap (objecttype, mapid) UNIQUE METADATA {ignoreNullValues: false}")) {
+		}
 	}
 
 }
