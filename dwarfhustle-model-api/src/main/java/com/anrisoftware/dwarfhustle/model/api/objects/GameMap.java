@@ -18,7 +18,6 @@
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import java.util.Objects;
-import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -54,7 +53,7 @@ public class GameMap extends GameObject {
 
 	private int blockSize;
 
-	private Optional<WorldMap> world = Optional.empty();
+	private WorldMap world;
 
 	public GameMap(long id) {
 		super(id);
@@ -116,12 +115,8 @@ public class GameMap extends GameObject {
 	}
 
 	public void setWorld(WorldMap world) {
-		this.world.ifPresentOrElse((w) -> updateWorld(w, world), () -> updateWorld(null, world));
-	}
-
-	private void updateWorld(WorldMap ov, WorldMap nv) {
-		if (!Objects.equals(ov, nv)) {
-			this.world = Optional.of(nv);
+		if (!Objects.equals(this.world, world)) {
+			this.world = world;
 			setDirty(true);
 		}
 	}
