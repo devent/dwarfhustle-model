@@ -41,6 +41,16 @@ public class GameMapSchema implements GameObjectSchema {
 
 	public static final String BLOCK_SIZE_FIELD = "blockSize";
 
+	public static final String TIME_ZONE_FIELD = "timeZone";
+
+	public static final String AREA_NW_LAT_FIELD = "areaNwLat";
+
+	public static final String AREA_NW_LON_FIELD = "areaNwLon";
+
+	public static final String AREA_SE_LAT_FIELD = "areaSeLat";
+
+	public static final String AREA_SE_LON_FIELD = "areaSeLon";
+
 	@Override
 	public void createSchema(Object db) {
 		var odb = (ODatabaseDocument) db;
@@ -51,6 +61,11 @@ public class GameMapSchema implements GameObjectSchema {
 		c.createProperty(HEIGHT_FIELD, OType.INTEGER);
 		c.createProperty(DEPTH_FIELD, OType.INTEGER);
 		c.createProperty(BLOCK_SIZE_FIELD, OType.INTEGER);
+		c.createProperty(TIME_ZONE_FIELD, OType.INTEGER);
+		c.createProperty(AREA_NW_LAT_FIELD, OType.FLOAT);
+		c.createProperty(AREA_NW_LON_FIELD, OType.FLOAT);
+		c.createProperty(AREA_SE_LAT_FIELD, OType.FLOAT);
+		c.createProperty(AREA_SE_LON_FIELD, OType.FLOAT);
 		try (var q = odb.command(
 				"CREATE INDEX GameMap_name ON GameMap (objecttype, name) NOTUNIQUE METADATA {ignoreNullValues: false}")) {
 		}

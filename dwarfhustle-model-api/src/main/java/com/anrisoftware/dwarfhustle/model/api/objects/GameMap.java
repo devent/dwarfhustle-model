@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
@@ -37,7 +39,7 @@ import lombok.ToString;
 @Getter
 public class GameMap extends GameObject {
 
-	private static final long serialVersionUID = -7953315879308051159L;
+	private static final long serialVersionUID = 1L;
 
 	public static final String OBJECT_TYPE = GameMap.class.getSimpleName();
 
@@ -54,6 +56,12 @@ public class GameMap extends GameObject {
 	private int blockSize;
 
 	private WorldMap world;
+
+	private ZoneOffset timeZone = ZoneOffset.of("Z");
+
+	private OffsetDateTime time;
+
+	private MapArea area;
 
 	public GameMap(long id) {
 		super(id);
@@ -117,6 +125,26 @@ public class GameMap extends GameObject {
 	public void setWorld(WorldMap world) {
 		if (!Objects.equals(this.world, world)) {
 			this.world = world;
+			if (timeZone != null) {
+				this.time = OffsetDateTime.of(world.getTime(), timeZone);
+			}
+			setDirty(true);
+		}
+	}
+
+	public void setTimeZone(ZoneOffset timeZone) {
+		if (!Objects.equals(this.timeZone, timeZone)) {
+			this.timeZone = timeZone;
+			if (world != null) {
+				this.time = OffsetDateTime.of(world.getTime(), timeZone);
+			}
+			setDirty(true);
+		}
+	}
+
+	public void setArea(MapArea area) {
+		if (!Objects.equals(this.area, area)) {
+			this.area = area;
 			setDirty(true);
 		}
 	}

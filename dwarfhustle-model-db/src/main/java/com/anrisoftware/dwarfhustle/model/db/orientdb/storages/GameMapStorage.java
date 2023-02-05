@@ -17,15 +17,24 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.storages;
 
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.AREA_NW_LAT_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.AREA_NW_LON_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.AREA_SE_LAT_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.AREA_SE_LON_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.BLOCK_SIZE_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.DEPTH_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.HEIGHT_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.MAPID_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.NAME_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.TIME_ZONE_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.WIDTH_FIELD;
+
+import java.time.ZoneOffset;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapArea;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapCoordinate;
 import com.orientechnologies.orient.core.record.OElement;
 
 /**
@@ -49,6 +58,11 @@ public class GameMapStorage extends AbstractGameObjectStorage {
 		v.setProperty(HEIGHT_FIELD, mb.getHeight());
 		v.setProperty(DEPTH_FIELD, mb.getDepth());
 		v.setProperty(BLOCK_SIZE_FIELD, mb.getBlockSize());
+		v.setProperty(TIME_ZONE_FIELD, mb.getTimeZone().getTotalSeconds());
+		v.setProperty(AREA_NW_LAT_FIELD, mb.getArea().nw.lat);
+		v.setProperty(AREA_NW_LON_FIELD, mb.getArea().nw.lon);
+		v.setProperty(AREA_SE_LAT_FIELD, mb.getArea().se.lat);
+		v.setProperty(AREA_SE_LON_FIELD, mb.getArea().se.lon);
 		super.store(db, o, go);
 	}
 
@@ -62,6 +76,9 @@ public class GameMapStorage extends AbstractGameObjectStorage {
 		mb.setHeight(v.getProperty(HEIGHT_FIELD));
 		mb.setDepth(v.getProperty(DEPTH_FIELD));
 		mb.setBlockSize(v.getProperty(BLOCK_SIZE_FIELD));
+		mb.setTimeZone(ZoneOffset.ofTotalSeconds(v.getProperty(TIME_ZONE_FIELD)));
+		mb.setArea(new MapArea(new MapCoordinate(v.getProperty(AREA_NW_LAT_FIELD), v.getProperty(AREA_NW_LON_FIELD)),
+				new MapCoordinate(v.getProperty(AREA_SE_LAT_FIELD), v.getProperty(AREA_SE_LON_FIELD))));
 		return super.retrieve(db, o, go);
 	}
 

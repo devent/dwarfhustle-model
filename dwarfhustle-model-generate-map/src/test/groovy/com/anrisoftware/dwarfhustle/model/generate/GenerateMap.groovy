@@ -17,11 +17,13 @@
  */
 package com.anrisoftware.dwarfhustle.model.generate
 
+import static com.anrisoftware.dwarfhustle.model.api.objects.MapCoordinate.toDecimalDegrees
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbTestUtils.*
 
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.Month
+import java.time.ZoneOffset
 import java.util.concurrent.CountDownLatch
 import java.util.logging.Filter
 
@@ -42,6 +44,7 @@ import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.actor.ModelActorsModule
 import com.anrisoftware.dwarfhustle.model.api.objects.ApiModule
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
+import com.anrisoftware.dwarfhustle.model.api.objects.MapArea
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap
 import com.anrisoftware.dwarfhustle.model.db.cache.JcsCacheModule
 import com.anrisoftware.dwarfhustle.model.db.cache.MapBlocksJcsCacheActor
@@ -169,6 +172,8 @@ class GenerateMap {
 		gm.height = mapTilesParams.height
 		gm.depth = mapTilesParams.depth
 		gm.blockSize = mapTilesParams.block_size
+		gm.timeZone = ZoneOffset.ofHours(1)
+		gm.area = MapArea.create(toDecimalDegrees(54, 47, 24), toDecimalDegrees(17, 30, 12), toDecimalDegrees(54, 42, 02), toDecimalDegrees(17, 35, 22))
 		wm.currentMapid = gm.mapid
 		wm.addMap(gm)
 		def m = new GenerateMapMessage(null, gm, mapTilesParams.block_size, dbTestUtils.user, dbTestUtils.password, dbTestUtils.database)

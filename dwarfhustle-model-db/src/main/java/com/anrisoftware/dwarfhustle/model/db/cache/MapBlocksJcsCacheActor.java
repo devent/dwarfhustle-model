@@ -79,6 +79,18 @@ public class MapBlocksJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Ma
 
 	/**
 	 * Creates the {@link MapBlocksJcsCacheActor}.
+	 *
+	 * @param injector the {@link Injector} injector.
+	 * @param timeout  the {@link Duration} timeout.
+	 * @param params   additional parameters:
+	 *                 <ul>
+	 *                 <li>parent_dir
+	 *                 <li>mapid
+	 *                 <li>width
+	 *                 <li>height
+	 *                 <li>depth
+	 *                 <li>block_size
+	 *                 </ul>
 	 */
 	public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout,
 			Map<String, Object> params) {
@@ -89,9 +101,7 @@ public class MapBlocksJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Ma
 	}
 
 	public static CompletableFuture<CacheAccess<Object, Object>> createInitCacheAsync(Map<String, Object> params) {
-		var initCache = CompletableFuture.supplyAsync(() -> {
-			return createCache(params);
-		});
+		var initCache = CompletableFuture.supplyAsync(() -> createCache(params));
 		return initCache;
 	}
 
@@ -103,7 +113,7 @@ public class MapBlocksJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Ma
 			var height = (int) params.get("height");
 			var depth = (int) params.get("depth");
 			var size = (int) params.get("block_size");
-			int blocks = MapBlock.calculateBlocksCount(width, height, depth, size);
+			var blocks = MapBlock.calculateBlocksCount(width, height, depth, size);
 			params.put("cache_name", cacheName);
 			params.put("max_objects", blocks);
 			params.put("is_eternal", true);
