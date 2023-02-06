@@ -49,7 +49,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap
 import com.anrisoftware.dwarfhustle.model.db.cache.JcsCacheModule
 import com.anrisoftware.dwarfhustle.model.db.cache.MapBlocksJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.db.cache.MapBlocksJcsCacheActor.MapBlocksJcsCacheActorFactory
-import com.anrisoftware.dwarfhustle.model.db.cache.RetrieveCacheMessage
+import com.anrisoftware.dwarfhustle.model.db.cache.CacheRetrieveMessage
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbServerUtils
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbTestUtils
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor
@@ -228,7 +228,7 @@ class WorkerBlocksTest {
 		def result =
 				AskPattern.ask(
 				mapTilesCacheActor, { replyTo ->
-					new RetrieveCacheMessage(replyTo)
+					new CacheRetrieveMessage(replyTo)
 				},
 				timeout,
 				testKit.scheduler())

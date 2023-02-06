@@ -155,11 +155,11 @@ public class MapBlocksJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Ma
 	}
 
 	@Override
-	protected MapBlock retrieveValueFromDb(AbstractGetMessage<?> m) {
+	protected MapBlock retrieveValueFromDb(AbstractCacheGetMessage<?> m) {
 		return null;
 	}
 
 	@Override
-	protected void storeValueDb(AbstractPutMessage<?> m) {
+	protected void storeValueDb(AbstractCachePutMessage<?> m) {
 	}
 }

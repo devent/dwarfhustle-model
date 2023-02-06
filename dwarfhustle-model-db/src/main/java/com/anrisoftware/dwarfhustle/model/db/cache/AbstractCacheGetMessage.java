@@ -32,7 +32,7 @@ import lombok.ToString;
  */
 @RequiredArgsConstructor
 @ToString(callSuper = true)
-public abstract class AbstractGetMessage<T extends Message> extends Message {
+public abstract class AbstractCacheGetMessage<T extends Message> extends Message {
 
 	/**
 	 * Message to get {@link GameObject} game objects from the cache.
@@ -40,8 +40,8 @@ public abstract class AbstractGetMessage<T extends Message> extends Message {
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
 	@ToString(callSuper = true)
-	public static class GetMessage extends AbstractGetMessage<Message> {
-		public GetMessage(ActorRef<Message> replyTo, String type, Object value) {
+	public static class CacheGetMessage extends AbstractCacheGetMessage<Message> {
+		public CacheGetMessage(ActorRef<Message> replyTo, String type, Object value) {
 			super(replyTo, type, value);
 		}
 	}
@@ -52,8 +52,8 @@ public abstract class AbstractGetMessage<T extends Message> extends Message {
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
 	@ToString(callSuper = true)
-	public static class GetReplyMessage extends AbstractGetMessage<CacheResponseMessage> {
-		public GetReplyMessage(ActorRef<CacheResponseMessage> replyTo, String type, Object value) {
+	public static class CacheGetReplyMessage extends AbstractCacheGetMessage<CacheResponseMessage> {
+		public CacheGetReplyMessage(ActorRef<CacheResponseMessage> replyTo, String type, Object value) {
 			super(replyTo, type, value);
 		}
 	}
@@ -64,11 +64,11 @@ public abstract class AbstractGetMessage<T extends Message> extends Message {
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
 	@ToString(callSuper = true)
-	public static class GetSuccessMessage extends CacheSuccessMessage {
+	public static class CacheGetSuccessMessage extends CacheSuccessMessage {
 
 		public final GameObject go;
 
-		public GetSuccessMessage(Message m, GameObject go) {
+		public CacheGetSuccessMessage(Message m, GameObject go) {
 			super(m);
 			this.go = go;
 		}

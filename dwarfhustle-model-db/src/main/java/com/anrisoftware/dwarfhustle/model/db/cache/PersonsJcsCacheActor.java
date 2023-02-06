@@ -198,7 +198,7 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, MapT
 	}
 
 	@Override
-	protected MapTile retrieveValueFromDb(AbstractGetMessage<?> m) {
+	protected MapTile retrieveValueFromDb(AbstractCacheGetMessage<?> m) {
 		CompletionStage<DbResponseMessage> result = AskPattern.ask(db,
 				replyTo -> new DbCommandReplyMessage(replyTo, ex -> {
 					return null;
@@ -214,7 +214,7 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, MapT
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void translateDbResponse(AbstractGetMessage m, DbResponseMessage response, Throwable throwable) {
+	private void translateDbResponse(AbstractCacheGetMessage m, DbResponseMessage response, Throwable throwable) {
 		if (throwable != null) {
 			m.replyTo.tell(new CacheErrorMessage(m, throwable));
 		} else {
@@ -227,7 +227,7 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, MapT
 		}
 	}
 
-	private MapTile retrieveGameObjectAsync(ODatabaseDocument db, AbstractGetMessage<?> m) {
+	private MapTile retrieveGameObjectAsync(ODatabaseDocument db, AbstractCacheGetMessage<?> m) {
 		var pos = (GameMapPos) m.key;
 		var rs = db.query("SELECT FROM ? where objecttype = ? and mapid = ? and x = ? and y = ? and z = ?",
 				MapTile.OBJECT_TYPE, pos.getMapid(), pos.getX(), pos.getY(), pos.getZ());
@@ -242,7 +242,7 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, MapT
 	}
 
 	@Override
-	protected void storeValueDb(AbstractPutMessage<?> m) {
+	protected void storeValueDb(AbstractCachePutMessage<?> m) {
 		CompletionStage<DbResponseMessage> result = AskPattern.ask(db,
 				replyTo -> new DbCommandReplyMessage(replyTo, ex -> {
 					return null;
@@ -257,11 +257,11 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, MapT
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void tellCacheError(AbstractPutMessage m, Throwable throwable) {
+	private void tellCacheError(AbstractCachePutMessage m, Throwable throwable) {
 		m.replyTo.tell(new CacheErrorMessage(m, throwable));
 	}
 
-	private Void storeValueDbAsync(ODatabaseDocument db, AbstractPutMessage<?> m) {
+	private Void storeValueDbAsync(ODatabaseDocument db, AbstractCachePutMessage<?> m) {
 		var go = (MapTile) m.value;
 		if (!go.isDirty()) {
 			return null;

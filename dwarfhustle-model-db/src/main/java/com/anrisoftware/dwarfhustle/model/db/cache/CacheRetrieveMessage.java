@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.cache;
 
+import org.apache.commons.jcs3.access.CacheAccess;
+
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 
 import akka.actor.typed.ActorRef;
@@ -24,45 +26,31 @@ import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
- * Message to put an object in the cache.
+ * Message to return the cache.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @RequiredArgsConstructor
 @ToString(callSuper = true)
-public abstract class AbstractPutMessage<T extends Message> extends Message {
+public class CacheRetrieveMessage<K, V> extends Message {
 
 	/**
-	 * Message to put an object in the cache.
+	 * Cache success response.
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
+	@RequiredArgsConstructor
 	@ToString(callSuper = true)
-	public static class PutMessage extends AbstractPutMessage<Message> {
-		public PutMessage(ActorRef<Message> replyTo, Object key, Object value) {
-			super(replyTo, key, value);
-		}
-	}
+	public static class CacheRetrieveResponseMessage<K, V> extends Message {
 
-	/**
-	 * Message to put an object in the cache.
-	 *
-	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
-	 */
-	@ToString(callSuper = true)
-	public static class PutReplyMessage extends AbstractPutMessage<CacheResponseMessage> {
-		public PutReplyMessage(ActorRef<CacheResponseMessage> replyTo, Object key, Object value) {
-			super(replyTo, key, value);
-		}
+		@ToString.Exclude
+		public final Message m;
+
+		public final CacheAccess<K, V> cache;
 	}
 
 	/**
 	 * Reply to {@link ActorRef}.
 	 */
-	public final ActorRef<T> replyTo;
-
-	public final Object key;
-
-	public final Object value;
-
+	public final ActorRef<CacheRetrieveResponseMessage<K, V>> replyTo;
 }
