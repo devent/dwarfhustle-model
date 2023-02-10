@@ -150,19 +150,19 @@ public class ObjectsDbActor {
 	/**
 	 * Returns a behavior for the messages from {@link #getInitialBehavior()}
 	 */
-	private Behavior<Message> onLoadWorldMap(LoadGameObjectMessage m) {
+	private Behavior<Message> onLoadGameObject(LoadGameObjectMessage m) {
 		log.debug("onLoadWorldMap {}", m);
 		db.tell(new DbCommandReplyMessage(dbResponseAdapter, ex -> {
 			return new LoadObjectErrorMessage(m, ex);
 		}, db -> {
-			var wm = loadWorldMap(m, db);
+			var wm = loadGameObject(m, db);
 			return new LoadObjectSuccessMessage(m, wm);
 		}));
 		return Behaviors.same();
 	}
 
 	@SneakyThrows
-	private GameObject loadWorldMap(LoadGameObjectMessage m, ODatabaseDocument db) {
+	private GameObject loadGameObject(LoadGameObjectMessage m, ODatabaseDocument db) {
 		var rs = m.query.apply(db);
 		try {
 			while (rs.hasNext()) {
@@ -223,7 +223,7 @@ public class ObjectsDbActor {
 	private BehaviorBuilder<Message> getInitialBehavior() {
 		return Behaviors.receive(Message.class)//
 				.onMessage(CreateSchemasMessage.class, this::onCreateSchemas)//
-				.onMessage(LoadGameObjectMessage.class, this::onLoadWorldMap)//
+				.onMessage(LoadGameObjectMessage.class, this::onLoadGameObject)//
 				.onMessage(WrappedDbResponse.class, this::onWrappedDbResponse)//
 		;
 	}

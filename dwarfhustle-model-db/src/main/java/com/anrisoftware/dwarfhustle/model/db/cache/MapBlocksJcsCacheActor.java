@@ -25,6 +25,8 @@ import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import javax.inject.Inject;
+
 import org.apache.commons.jcs3.JCS;
 import org.apache.commons.jcs3.access.CacheAccess;
 import org.apache.commons.jcs3.access.exception.CacheException;
@@ -34,15 +36,24 @@ import org.eclipse.collections.impl.factory.primitive.LongSets;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMapPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.AbstractLoadObjectMessage.LoadObjectErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.AbstractLoadObjectMessage.LoadObjectSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.AbstractObjectsReplyMessage.ObjectsResponseMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadGameObjectMessage;
 import com.google.inject.Injector;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.ActorContext;
+import akka.actor.typed.javadsl.BehaviorBuilder;
+import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.StashBuffer;
 import akka.actor.typed.receptionist.ServiceKey;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -59,6 +70,12 @@ public class MapBlocksJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Ma
 	public static final String NAME = MapBlocksJcsCacheActor.class.getSimpleName();
 
 	public static final int ID = KEY.hashCode();
+
+	@RequiredArgsConstructor
+	@ToString(callSuper = true)
+	private static class WrappedObjectsResponse extends Message {
+		private final ObjectsResponseMessage response;
+	}
 
 	/**
 	 * Factory to create {@link MapBlocksJcsCacheActor}.
@@ -129,6 +146,9 @@ public class MapBlocksJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Ma
 		}
 	}
 
+	@Inject
+	private ActorSystemProvider actor;
+
 	private int mapid;
 
 	private int width;
@@ -139,9 +159,12 @@ public class MapBlocksJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Ma
 
 	private MutableLongSet ids;
 
+	private ActorRef<ObjectsResponseMessage> objectsResponseAdapter;
+
 	@Override
 	protected Behavior<Message> initialStage(InitialStateMessage<GameMapPos, MapBlock> m) {
 		log.debug("initialStage {}", m);
+		this.objectsResponseAdapter = context.messageAdapter(ObjectsResponseMessage.class, WrappedObjectsResponse::new);
 		this.mapid = (int) params.get("mapid");
 		this.width = (int) params.get("width");
 		this.height = (int) params.get("height");
@@ -156,10 +179,49 @@ public class MapBlocksJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Ma
 
 	@Override
 	protected MapBlock retrieveValueFromDb(AbstractCacheGetMessage<?> m) {
+		if (m.key instanceof GameBlockPos p) {
+			return retrieveMapBlock(p);
+		}
+		return null;
+	}
+
+	private MapBlock retrieveMapBlock(GameBlockPos p) {
+		actor.tell(new LoadGameObjectMessage(objectsResponseAdapter, MapBlock.OBJECT_TYPE, db -> {
+			var query = "SELECT * from ? where objecttype = ? and mapid = ? and sx = ? and sy = ? and sz = ? and ex = ? and ey = ? and ez = ? limit 1";
+			return db.query(query, MapBlock.OBJECT_TYPE, MapBlock.OBJECT_TYPE, p.getMapid(), p.getX(), p.getY(),
+					p.getZ(), p.getEndPos().getX(), p.getEndPos().getY(), p.getEndPos().getZ());
+		}));
+
+		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	protected void storeValueDb(AbstractCachePutMessage<?> m) {
+	}
+
+	/**
+	 * <ul>
+	 * <li>
+	 * </ul>
+	 */
+	private Behavior<Message> onWrappedObjectsResponse(WrappedObjectsResponse m) {
+		log.debug("onWrappedObjectsResponse {}", m);
+		var response = m.response;
+		if (response instanceof LoadObjectErrorMessage rm) {
+			log.error("Objects error", rm);
+			return Behaviors.stopped();
+		} else if (response instanceof LoadObjectSuccessMessage rm) {
+			if (rm.go instanceof MapBlock wm) {
+			}
+		}
+		return Behaviors.same();
+	}
+
+	@Override
+	protected BehaviorBuilder<Message> getInitialBehavior() {
+		return super.getInitialBehavior()//
+				.onMessage(WrappedObjectsResponse.class, this::onWrappedObjectsResponse)//
+		;
 	}
 }

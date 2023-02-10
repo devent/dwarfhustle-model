@@ -64,7 +64,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
-public abstract class AbstractJcsCacheActor<K, V> implements IElementEventHandler {
+public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements IElementEventHandler {
 
 	public static final ServiceKey<Message> KEY = ServiceKey.create(Message.class,
 			AbstractJcsCacheActor.class.getSimpleName());
@@ -280,9 +280,11 @@ public abstract class AbstractJcsCacheActor<K, V> implements IElementEventHandle
 		try {
 			var v = cache.get((K) m.key);
 			if (v == null) {
-				v = retrieveValueFromDb(m);
+				context.getSelf().tell(new CacheRetrieveFromBackendMessage(m, go -> {
+					m.replyTo.tell(new CacheGetSuccessMessage(m, v));
+				}));
 			} else {
-				m.replyTo.tell(new CacheGetSuccessMessage(m, (GameObject) v));
+				m.replyTo.tell(new CacheGetSuccessMessage(m, v));
 			}
 		} catch (CacheException e) {
 			m.replyTo.tell(new CacheErrorMessage(m, e));
@@ -311,6 +313,17 @@ public abstract class AbstractJcsCacheActor<K, V> implements IElementEventHandle
 	}
 
 	/**
+	 * Handle {@link CacheRetrieveFromBackendMessage}. Returns a behavior for the
+	 * messages from {@link #getInitialBehavior()}
+	 */
+	protected Behavior<Message> onCacheRetrieveFromBackend(CacheRetrieveFromBackendMessage m) {
+		log.debug("onCacheRetrieveFrom {}", m);
+		var go = retrieveValueFromDb(m.m);
+		m.consumer.accept(go);
+		return Behaviors.same();
+	}
+
+	/**
 	 * Unstash all messages kept in the buffer and return the initial behavior.
 	 * Returns a behavior for the messages from {@link #getInitialBehavior()}
 	 */
@@ -330,6 +343,7 @@ public abstract class AbstractJcsCacheActor<K, V> implements IElementEventHandle
 	 * <li>{@link CacheGetReplyMessage}
 	 * <li>{@link CacheGetMessage}
 	 * <li>{@link CacheRetrieveMessage}
+	 * <li>{@link CacheRetrieveFromBackendMessage}
 	 * <li>{@link CacheElementEventMessage}
 	 * </ul>
 	 */
@@ -340,6 +354,7 @@ public abstract class AbstractJcsCacheActor<K, V> implements IElementEventHandle
 				.onMessage(CacheGetReplyMessage.class, this::onCacheGetReply)//
 				.onMessage(CacheGetMessage.class, this::onCacheGet)//
 				.onMessage(CacheRetrieveMessage.class, this::onCacheRetrieve)//
+				.onMessage(CacheRetrieveFromBackendMessage.class, this::onCacheRetrieveFromBackend)//
 				.onMessage(CacheElementEventMessage.class, this::onCacheElementEvent)//
 		;
 	}
