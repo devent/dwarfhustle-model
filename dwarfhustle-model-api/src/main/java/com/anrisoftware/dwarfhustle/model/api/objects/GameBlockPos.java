@@ -51,7 +51,11 @@ public class GameBlockPos extends GameMapPos {
 	}
 
 	/**
-	 * Returns string that can be used to store the block position.
+	 * Returns string that can be used to store the block position. For example:
+	 * <ul>
+	 * <li>{@code 0/0/0/0/0/0/0}
+	 * <li>{@code 1/0/0/0/64/64/64}
+	 * </ul>
 	 */
 	@Override
 	public String toSaveString() {

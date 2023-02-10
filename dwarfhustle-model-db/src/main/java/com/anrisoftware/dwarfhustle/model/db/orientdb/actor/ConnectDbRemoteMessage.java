@@ -18,13 +18,16 @@
 package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage;
 
 import akka.actor.typed.ActorRef;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
- * Message to connect to a remote OrientDb database.
+ * Message to connect to a remote OrientDb database. Returns with a
+ * {@link ConnectDbSuccessMessage} on success and with a {@link DbErrorMessage}
+ * on error.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */

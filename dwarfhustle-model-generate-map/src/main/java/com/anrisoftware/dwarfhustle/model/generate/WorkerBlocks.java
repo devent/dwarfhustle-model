@@ -83,6 +83,8 @@ public class WorkerBlocks {
 
 	private GameObjectStorage worldMapStore;
 
+	private boolean rootset;
+
 	public WorkerBlocks() {
 	}
 
@@ -106,6 +108,7 @@ public class WorkerBlocks {
 		log.debug("generate {}", m);
 		this.blocksDone = 0;
 		this.generateDone = false;
+		this.rootset = false;
 		int w1 = m.gameMap.getWidth();
 		int h1 = m.gameMap.getHeight();
 		int d1 = m.gameMap.getDepth();
@@ -134,12 +137,12 @@ public class WorkerBlocks {
 
 	private MapBlock generateMapBlock(GenerateMapMessage m, ODatabaseSession db,
 			MutableObjectLongMap<GameBlockPos> parent, GameMapPos pos, GameMapPos endPos) throws GeneratorException {
-		int w1 = endPos.getDiffX(pos);
-		int h1 = endPos.getDiffY(pos);
-		int d1 = endPos.getDiffZ(pos);
-		int w2 = endPos.getDiffX(pos) / 2;
-		int h2 = endPos.getDiffY(pos) / 2;
-		int d2 = endPos.getDiffZ(pos) / 2;
+		var w1 = endPos.getDiffX(pos);
+		var h1 = endPos.getDiffY(pos);
+		var d1 = endPos.getDiffZ(pos);
+		var w2 = endPos.getDiffX(pos) / 2;
+		var h2 = endPos.getDiffY(pos) / 2;
+		var d2 = endPos.getDiffZ(pos) / 2;
 		if (w2 == m.blockSize / 2) {
 			var block = createBlock(m, db, pos, endPos);
 			createMapTiles(db, block);
@@ -149,11 +152,15 @@ public class WorkerBlocks {
 			return block;
 		}
 		var block = createBlock(m, db, pos, endPos);
+		if (!rootset) {
+			block.setRoot(true);
+			rootset = true;
+		}
 		parent.put(block.getPos(), block.getId());
 		var map = createBlocksMap();
-		int x = pos.getX();
-		int y = pos.getY();
-		int z = pos.getZ();
+		var x = pos.getX();
+		var y = pos.getY();
+		var z = pos.getZ();
 		var b0 = generateMapBlock(m, db, map, pos(m, x, y, z), pos(m, x + w2, y + h2, z + d2));
 		map.put(b0.getPos(), b0.getId());
 		var b1 = generateMapBlock(m, db, map, pos(m, x + w2, y, z), pos(m, x + w1, y + h2, z + d2));
@@ -184,18 +191,18 @@ public class WorkerBlocks {
 	}
 
 	private void createMapTiles(ODatabaseSession db, MapBlock block) throws GeneratorException {
-		int w = block.getEndPos().getDiffX(block.getPos());
-		int h = block.getEndPos().getDiffY(block.getPos());
-		int d = block.getEndPos().getDiffZ(block.getPos());
-		int mapid = block.getPos().getMapid();
+		var w = block.getEndPos().getDiffX(block.getPos());
+		var h = block.getEndPos().getDiffY(block.getPos());
+		var d = block.getEndPos().getDiffZ(block.getPos());
+		var mapid = block.getPos().getMapid();
 		var tiles = createTilesMap(w * h * d);
 		var ids = generator.batch(w * h * d);
-		for (int z = 0; z < d; z++) {
-			for (int y = 0; y < h; y++) {
-				for (int x = 0; x < w; x++) {
-					int xx = x + block.getPos().getX();
-					int yy = y + block.getPos().getY();
-					int zz = z + block.getPos().getZ();
+		for (var z = 0; z < d; z++) {
+			for (var y = 0; y < h; y++) {
+				for (var x = 0; x < w; x++) {
+					var xx = x + block.getPos().getX();
+					var yy = y + block.getPos().getY();
+					var zz = z + block.getPos().getZ();
 					var tile = new MapTile(ids.pop());
 					tile.setPos(new GameMapPos(mapid, xx, yy, zz));
 					tiles.put(tile.getPos(), tile);

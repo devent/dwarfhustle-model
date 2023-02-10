@@ -57,10 +57,10 @@ public class MapBlock extends GameObject {
 	 * </ul>
 	 */
 	public static int calculateBlocksCount(int width, int height, int depth, int size) {
-		int blocks = 1;
-		int w = width;
-		int h = height;
-		int d = depth;
+		var blocks = 1;
+		var w = width;
+		var h = height;
+		var d = depth;
 		while (true) {
 			if (w < 8 || h < 8 || d < 8) {
 				break;
@@ -82,6 +82,8 @@ public class MapBlock extends GameObject {
 	private MapIterable<GameMapPos, MapTile> tiles = Maps.immutable.empty();
 
 	private GameBlockPos pos = new GameBlockPos();
+
+	private boolean root = false;
 
 	public MapBlock(long id) {
 		super(id);
@@ -127,7 +129,34 @@ public class MapBlock extends GameObject {
 		}
 	}
 
+	public GameMapPos getStartPos() {
+		return pos;
+	}
+
 	public GameMapPos getEndPos() {
 		return pos.getEndPos();
 	}
+
+	public float getWidth() {
+		return getEndPos().getDiffX(getStartPos());
+	}
+
+	public float getHeight() {
+		return getEndPos().getDiffY(getStartPos());
+	}
+
+	public float getDepth() {
+		return getEndPos().getDiffZ(getStartPos());
+	}
+
+	/**
+	 * Sets that this block is the top most block.
+	 */
+	public void setRoot(boolean root) {
+		if (this.root != root) {
+			setDirty(true);
+			this.root = root;
+		}
+	}
+
 }
