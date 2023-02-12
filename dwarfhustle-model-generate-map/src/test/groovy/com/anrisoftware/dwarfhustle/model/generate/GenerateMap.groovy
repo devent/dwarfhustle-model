@@ -46,10 +46,10 @@ import com.anrisoftware.dwarfhustle.model.api.objects.ApiModule
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
 import com.anrisoftware.dwarfhustle.model.api.objects.MapArea
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap
+import com.anrisoftware.dwarfhustle.model.db.cache.CacheRetrieveMessage
 import com.anrisoftware.dwarfhustle.model.db.cache.JcsCacheModule
 import com.anrisoftware.dwarfhustle.model.db.cache.MapBlocksJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.db.cache.MapBlocksJcsCacheActor.MapBlocksJcsCacheActorFactory
-import com.anrisoftware.dwarfhustle.model.db.cache.CacheRetrieveMessage
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbServerUtils
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbTestUtils
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor
@@ -109,13 +109,14 @@ class GenerateMap {
 
 	@BeforeAll
 	static void setupActor() {
-		def parentDir = File.createTempDir()
+		def s = 256
+		def blockSize = 8
+		def parentDir = File.createTempDir("size_${s}_${blockSize}")
 		if (EMBEDDED_SERVER_PROPERTY == "yes") {
 			dbServerUtils = new DbServerUtils()
 			dbServerUtils.createServer(parentDir.absolutePath)
 		}
-		def s = 64
-		mapTilesParams = [parent_dir: parentDir, game_name: "Endless World", mapid: 1, width: s, height: s, depth: s, block_size: 8]
+		mapTilesParams = [parent_dir: parentDir, game_name: "Endless World", mapid: 1, width: s, height: s, depth: s, block_size: blockSize]
 		cacheFile = new File(parentDir, "dwarfhustle_jcs_swap_${mapTilesParams.game_name}_mapBlocksCache_0_file")
 		injector = Guice.createInjector(
 				new ModelActorsModule(),

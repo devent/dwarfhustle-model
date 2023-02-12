@@ -55,6 +55,12 @@ public class MapBlock extends GameObject {
 	 * <li>128x128x128 8 = 4680+1
 	 * <li>256x256x256 8 = 37448+1
 	 * </ul>
+	 * <ul>
+	 * <li>32x32x32 16 = 8+1
+	 * <li>64x64x64 8 = 72+1
+	 * <li>128x128x128 8 = 584+1
+	 * <li>256x256x256 8 = 4680+1
+	 * </ul>
 	 */
 	public static int calculateBlocksCount(int width, int height, int depth, int size) {
 		var blocks = 1;

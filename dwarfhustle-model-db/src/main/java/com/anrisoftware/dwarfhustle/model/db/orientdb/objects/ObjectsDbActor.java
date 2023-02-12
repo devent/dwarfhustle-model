@@ -95,9 +95,7 @@ public class ObjectsDbActor {
 	 * Creates the {@link ObjectsDbActor}.
 	 */
 	public static Behavior<Message> create(Injector injector, ActorRef<Message> db) {
-		return Behaviors.setup((context) -> {
-			return injector.getInstance(ObjectsDbActorFactory.class).create(context, db).start();
-		});
+		return Behaviors.setup(context -> injector.getInstance(ObjectsDbActorFactory.class).create(context, db).start());
 	}
 
 	/**
@@ -138,9 +136,7 @@ public class ObjectsDbActor {
 	 */
 	private Behavior<Message> onCreateSchemas(CreateSchemasMessage m) {
 		log.debug("onCreateSchemas {}", m);
-		db.tell(new DbCommandReplyMessage(dbResponseAdapter, ex -> {
-			return new CreatedSchemasErrorResult(m, ex);
-		}, db -> {
+		db.tell(new DbCommandReplyMessage(dbResponseAdapter, ex -> new CreatedSchemasErrorResult(m, ex), db -> {
 			createSchemas(db);
 			return new CreatedSchemasSuccessResult(m);
 		}));
@@ -151,10 +147,8 @@ public class ObjectsDbActor {
 	 * Returns a behavior for the messages from {@link #getInitialBehavior()}
 	 */
 	private Behavior<Message> onLoadGameObject(LoadGameObjectMessage m) {
-		log.debug("onLoadWorldMap {}", m);
-		db.tell(new DbCommandReplyMessage(dbResponseAdapter, ex -> {
-			return new LoadObjectErrorMessage(m, ex);
-		}, db -> {
+		log.debug("onLoadGameObject {}", m);
+		db.tell(new DbCommandReplyMessage(dbResponseAdapter, ex -> new LoadObjectErrorMessage(m, ex), db -> {
 			var wm = loadGameObject(m, db);
 			return new LoadObjectSuccessMessage(m, wm);
 		}));
@@ -176,7 +170,36 @@ public class ObjectsDbActor {
 		} finally {
 			rs.close();
 		}
-		throw new LoadObjectException("no world map found");
+		throw new LoadObjectException("no game object found");
+	}
+
+	/**
+	 * Returns a behavior for the messages from {@link #getInitialBehavior()}
+	 */
+	private Behavior<Message> onLoadGameObjects(LoadGameObjectsMessage m) {
+		log.debug("onLoadGameObjects {}", m);
+		db.tell(new DbCommandReplyMessage(dbResponseAdapter, ex -> new LoadObjectErrorMessage(m, ex), db -> {
+			loadGameObjects(m, db);
+			return null;
+		}));
+		return Behaviors.same();
+	}
+
+	@SneakyThrows
+	private void loadGameObjects(LoadGameObjectsMessage m, ODatabaseDocument db) {
+		var rs = m.query.apply(db);
+		try {
+			while (rs.hasNext()) {
+				var v = rs.next().getVertex();
+				if (v.isPresent()) {
+					var gos = storages.get(m.objectType);
+					var go = gos.retrieve(db, v.get(), gos.create());
+					m.consumer.accept(go);
+				}
+			}
+		} finally {
+			rs.close();
+		}
 	}
 
 	/**
@@ -190,21 +213,16 @@ public class ObjectsDbActor {
 	private Behavior<Message> onWrappedDbResponse(WrappedDbResponse m) {
 		log.debug("onWrappedDbResponse {}", m);
 		var response = m.response;
-		if (response instanceof DbCommandErrorMessage) {
-			var rm = (DbCommandErrorMessage) response;
+		if (response instanceof DbCommandErrorMessage rm) {
 			log.error("Db error", rm);
-			if (rm.onError instanceof CreatedSchemasErrorResult) {
-				var res = (CreatedSchemasErrorResult) rm.onError;
+			if (rm.onError instanceof CreatedSchemasErrorResult res) {
 				res.om.replyTo.tell(res);
 			}
 			return Behaviors.stopped();
-		} else if (response instanceof DbCommandSuccessMessage) {
-			var rm = (DbCommandSuccessMessage) response;
-			if (rm.value instanceof CreatedSchemasSuccessResult) {
-				var res = (CreatedSchemasSuccessResult) rm.value;
+		} else if (response instanceof DbCommandSuccessMessage rm) {
+			if (rm.value instanceof CreatedSchemasSuccessResult res) {
 				res.om.replyTo.tell(res);
-			} else if (rm.value instanceof LoadObjectSuccessMessage) {
-				var res = (LoadObjectSuccessMessage) rm.value;
+			} else if (rm.value instanceof LoadObjectSuccessMessage res) {
 				res.om.replyTo.tell(res);
 			}
 		}
@@ -217,6 +235,7 @@ public class ObjectsDbActor {
 	 * <ul>
 	 * <li>{@link CreateSchemasMessage}
 	 * <li>{@link LoadGameObjectMessage}
+	 * <li>{@link LoadGameObjectsMessage}
 	 * <li>{@link WrappedDbResponse}
 	 * </ul>
 	 */
@@ -224,6 +243,7 @@ public class ObjectsDbActor {
 		return Behaviors.receive(Message.class)//
 				.onMessage(CreateSchemasMessage.class, this::onCreateSchemas)//
 				.onMessage(LoadGameObjectMessage.class, this::onLoadGameObject)//
+				.onMessage(LoadGameObjectsMessage.class, this::onLoadGameObjects)//
 				.onMessage(WrappedDbResponse.class, this::onWrappedDbResponse)//
 		;
 	}

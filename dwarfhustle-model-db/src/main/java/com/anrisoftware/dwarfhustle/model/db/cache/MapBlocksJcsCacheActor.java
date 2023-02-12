@@ -45,6 +45,7 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.AbstractLoadObject
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.AbstractLoadObjectMessage.LoadObjectSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.AbstractObjectsReplyMessage.ObjectsResponseMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadGameObjectMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadGameObjectsMessage;
 import com.google.inject.Injector;
 
 import akka.actor.typed.ActorRef;
@@ -186,14 +187,6 @@ public class MapBlocksJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Ma
 		}
 	}
 
-	private void retrieveMapBlock(GameBlockPos p, Consumer<GameObject> consumer) {
-		actor.tell(new LoadGameObjectMessage(objectsResponseAdapter, MapBlock.OBJECT_TYPE, consumer, db -> {
-			var query = "SELECT * from ? where objecttype = ? and mapid = ? and sx = ? and sy = ? and sz = ? and ex = ? and ey = ? and ez = ? limit 1";
-			return db.query(query, MapBlock.OBJECT_TYPE, MapBlock.OBJECT_TYPE, p.getMapid(), p.getX(), p.getY(),
-					p.getZ(), p.getEndPos().getX(), p.getEndPos().getY(), p.getEndPos().getZ());
-		}));
-	}
-
 	@Override
 	protected void storeValueDb(CachePutMessage<?> m) {
 	}
@@ -211,18 +204,33 @@ public class MapBlocksJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Ma
 			return Behaviors.stopped();
 		} else if (response instanceof LoadObjectSuccessMessage rm) {
 			if (rm.go instanceof MapBlock wm) {
-				Consumer<GameObject> put = go -> {
-					var mb = (MapBlock) go;
-					cache.put(mb.getPos(), mb);
-				};
-				wm.getBlocks().forEachKey(pos -> {
-					retrieveMapBlock(pos, put);
-				});
+				if (!wm.getBlocks().isEmpty()) {
+					retrieveChildMapBlocks(wm.getPos());
+				}
 				var lm = (LoadGameObjectMessage) rm.om;
 				lm.consumer.accept(wm);
 			}
 		}
 		return Behaviors.same();
+	}
+
+	private void retrieveChildMapBlocks(GameBlockPos p) {
+		actor.tell(new LoadGameObjectsMessage(objectsResponseAdapter, MapBlock.OBJECT_TYPE, go -> {
+			var mb = (MapBlock) go;
+			cache.put(mb.getPos(), mb);
+		}, db -> {
+			var query = "SELECT * from ? where mapid = ? and sx >= ? and sy >= ? and sz >= ? and ex <= ? and ey <= ? and ez <= ?";
+			return db.query(query, MapBlock.OBJECT_TYPE, p.getMapid(), p.getX(), p.getY(), p.getZ(),
+					p.getEndPos().getX(), p.getEndPos().getY(), p.getEndPos().getZ());
+		}));
+	}
+
+	private void retrieveMapBlock(GameBlockPos p, Consumer<GameObject> consumer) {
+		actor.tell(new LoadGameObjectMessage(objectsResponseAdapter, MapBlock.OBJECT_TYPE, consumer, db -> {
+			var query = "SELECT * from ? where objecttype = ? and mapid = ? and sx = ? and sy = ? and sz = ? and ex = ? and ey = ? and ez = ? limit 1";
+			return db.query(query, MapBlock.OBJECT_TYPE, MapBlock.OBJECT_TYPE, p.getMapid(), p.getX(), p.getY(),
+					p.getZ(), p.getEndPos().getX(), p.getEndPos().getY(), p.getEndPos().getZ());
+		}));
 	}
 
 	@Override

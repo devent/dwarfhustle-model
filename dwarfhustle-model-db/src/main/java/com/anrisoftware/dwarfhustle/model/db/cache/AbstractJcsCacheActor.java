@@ -254,8 +254,9 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
 			var v = cache.get((K) m.key);
 			if (v == null) {
 				context.getSelf().tell(new CacheRetrieveFromBackendMessage(m, go -> {
-					cache.put((K) m.key, (V) go);
-					m.replyTo.tell(new CacheGetSuccessMessage(m, v));
+					var vgo = (V) go;
+					cache.put((K) m.key, vgo);
+					m.replyTo.tell(new CacheGetSuccessMessage(m, vgo));
 				}));
 			} else {
 				m.replyTo.tell(new CacheGetSuccessMessage(m, v));
