@@ -25,6 +25,7 @@ import java.util.EventObject;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Consumer;
 
 import javax.inject.Inject;
 
@@ -37,11 +38,7 @@ import org.apache.commons.jcs3.engine.control.event.behavior.IElementEventHandle
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
-import com.anrisoftware.dwarfhustle.model.db.cache.AbstractCacheGetMessage.CacheGetMessage;
-import com.anrisoftware.dwarfhustle.model.db.cache.AbstractCacheGetMessage.CacheGetReplyMessage;
-import com.anrisoftware.dwarfhustle.model.db.cache.AbstractCacheGetMessage.CacheGetSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.db.cache.AbstractCachePutMessage.CachePutMessage;
-import com.anrisoftware.dwarfhustle.model.db.cache.AbstractCachePutMessage.CachePutReplyMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.CacheGetMessage.CacheGetSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage.CacheErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage.CacheSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheRetrieveMessage.CacheRetrieveResponseMessage;
@@ -234,21 +231,9 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
 	/**
 	 * Returns a behavior for the messages from {@link #getInitialBehavior()}.
 	 */
-	private Behavior<Message> onCachePutReply(CachePutReplyMessage m) {
-		log.debug("onCachePutReply {}", m);
-		return doPut(m);
-	}
-
-	/**
-	 * Returns a behavior for the messages from {@link #getInitialBehavior()}.
-	 */
-	private Behavior<Message> onCachePut(CachePutMessage m) {
+	@SuppressWarnings("unchecked")
+	private Behavior<Message> onCachePut(@SuppressWarnings("rawtypes") CachePutMessage m) {
 		log.debug("onCachePut {}", m);
-		return doPut(m);
-	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private Behavior<Message> doPut(AbstractCachePutMessage m) {
 		try {
 			cache.put((K) m.key, (V) m.value);
 			storeValueDb(m);
@@ -262,25 +247,14 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
 	/**
 	 * Returns a behavior for the messages from {@link #getInitialBehavior()}.
 	 */
-	private Behavior<Message> onCacheGetReply(CacheGetReplyMessage m) {
-		log.debug("onCacheGetReply {}", m);
-		return doGet(m);
-	}
-
-	/**
-	 * Returns a behavior for the messages from {@link #getInitialBehavior()}.
-	 */
-	private Behavior<Message> onCacheGet(CacheGetMessage m) {
+	@SuppressWarnings("unchecked")
+	private Behavior<Message> onCacheGet(@SuppressWarnings("rawtypes") CacheGetMessage m) {
 		log.debug("onCacheGet {}", m);
-		return doGet(m);
-	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private Behavior<Message> doGet(AbstractCacheGetMessage m) {
 		try {
 			var v = cache.get((K) m.key);
 			if (v == null) {
 				context.getSelf().tell(new CacheRetrieveFromBackendMessage(m, go -> {
+					cache.put((K) m.key, (V) go);
 					m.replyTo.tell(new CacheGetSuccessMessage(m, v));
 				}));
 			} else {
@@ -317,9 +291,8 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
 	 * messages from {@link #getInitialBehavior()}
 	 */
 	protected Behavior<Message> onCacheRetrieveFromBackend(CacheRetrieveFromBackendMessage m) {
-		log.debug("onCacheRetrieveFrom {}", m);
-		var go = retrieveValueFromDb(m.m);
-		m.consumer.accept(go);
+		log.debug("onCacheRetrieveFromBackend {}", m);
+		retrieveValueFromDb(m.m, m.consumer);
 		return Behaviors.same();
 	}
 
@@ -338,23 +311,19 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
 	 * the messages:
 	 *
 	 * <ul>
-	 * <li>{@link CachePutReplyMessage}
 	 * <li>{@link CachePutMessage}
-	 * <li>{@link CacheGetReplyMessage}
 	 * <li>{@link CacheGetMessage}
-	 * <li>{@link CacheRetrieveMessage}
 	 * <li>{@link CacheRetrieveFromBackendMessage}
+	 * <li>{@link CacheRetrieveMessage}
 	 * <li>{@link CacheElementEventMessage}
 	 * </ul>
 	 */
 	protected BehaviorBuilder<Message> getInitialBehavior() {
 		return Behaviors.receive(Message.class)//
-				.onMessage(CachePutReplyMessage.class, this::onCachePutReply)//
 				.onMessage(CachePutMessage.class, this::onCachePut)//
-				.onMessage(CacheGetReplyMessage.class, this::onCacheGetReply)//
 				.onMessage(CacheGetMessage.class, this::onCacheGet)//
-				.onMessage(CacheRetrieveMessage.class, this::onCacheRetrieve)//
 				.onMessage(CacheRetrieveFromBackendMessage.class, this::onCacheRetrieveFromBackend)//
+				.onMessage(CacheRetrieveMessage.class, this::onCacheRetrieve)//
 				.onMessage(CacheElementEventMessage.class, this::onCacheElementEvent)//
 		;
 	}
@@ -362,7 +331,7 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
 	/**
 	 * Stores the put value in the database.
 	 */
-	protected abstract void storeValueDb(AbstractCachePutMessage<?> m);
+	protected abstract void storeValueDb(CachePutMessage<?> m);
 
 	/**
 	 * Retrieves the value from the database. Example send a database command:
@@ -375,6 +344,6 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
 	 * });
 	 * </pre>
 	 */
-	protected abstract V retrieveValueFromDb(AbstractCacheGetMessage<?> m);
+	protected abstract void retrieveValueFromDb(CacheGetMessage<?> m, Consumer<GameObject> consumer);
 
 }

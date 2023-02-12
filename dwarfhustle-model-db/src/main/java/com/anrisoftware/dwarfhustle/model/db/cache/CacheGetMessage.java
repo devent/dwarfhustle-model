@@ -22,7 +22,6 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage.CacheSuccessMessage;
 
 import akka.actor.typed.ActorRef;
-import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -30,33 +29,8 @@ import lombok.ToString;
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@RequiredArgsConstructor
 @ToString(callSuper = true)
-public abstract class AbstractCacheGetMessage<T extends Message> extends Message {
-
-	/**
-	 * Message to get {@link GameObject} game objects from the cache.
-	 *
-	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
-	 */
-	@ToString(callSuper = true)
-	public static class CacheGetMessage extends AbstractCacheGetMessage<Message> {
-		public CacheGetMessage(ActorRef<Message> replyTo, String type, Object value) {
-			super(replyTo, type, value);
-		}
-	}
-
-	/**
-	 * Message to get {@link GameObject} game objects from the cache.
-	 *
-	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
-	 */
-	@ToString(callSuper = true)
-	public static class CacheGetReplyMessage extends AbstractCacheGetMessage<CacheResponseMessage> {
-		public CacheGetReplyMessage(ActorRef<CacheResponseMessage> replyTo, String type, Object value) {
-			super(replyTo, type, value);
-		}
-	}
+public class CacheGetMessage<T extends Message> extends Message {
 
 	/**
 	 * Message to get {@link GameObject} game objects from the cache.
@@ -82,5 +56,11 @@ public abstract class AbstractCacheGetMessage<T extends Message> extends Message
 	public final String type;
 
 	public final Object key;
+
+	public CacheGetMessage(ActorRef<T> replyTo, String type, Object key) {
+		this.replyTo = replyTo;
+		this.type = type;
+		this.key = key;
+	}
 
 }

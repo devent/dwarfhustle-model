@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Consumer;
 
 import javax.inject.Inject;
 
@@ -38,6 +39,7 @@ import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMapPos;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.AbstractLoadObjectMessage.LoadObjectErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.AbstractLoadObjectMessage.LoadObjectSuccessMessage;
@@ -178,26 +180,22 @@ public class MapBlocksJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Ma
 	}
 
 	@Override
-	protected MapBlock retrieveValueFromDb(AbstractCacheGetMessage<?> m) {
+	protected void retrieveValueFromDb(CacheGetMessage<?> m, Consumer<GameObject> consumer) {
 		if (m.key instanceof GameBlockPos p) {
-			return retrieveMapBlock(p);
+			retrieveMapBlock(p, consumer);
 		}
-		return null;
 	}
 
-	private MapBlock retrieveMapBlock(GameBlockPos p) {
-		actor.tell(new LoadGameObjectMessage(objectsResponseAdapter, MapBlock.OBJECT_TYPE, db -> {
+	private void retrieveMapBlock(GameBlockPos p, Consumer<GameObject> consumer) {
+		actor.tell(new LoadGameObjectMessage(objectsResponseAdapter, MapBlock.OBJECT_TYPE, consumer, db -> {
 			var query = "SELECT * from ? where objecttype = ? and mapid = ? and sx = ? and sy = ? and sz = ? and ex = ? and ey = ? and ez = ? limit 1";
 			return db.query(query, MapBlock.OBJECT_TYPE, MapBlock.OBJECT_TYPE, p.getMapid(), p.getX(), p.getY(),
 					p.getZ(), p.getEndPos().getX(), p.getEndPos().getY(), p.getEndPos().getZ());
 		}));
-
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
-	protected void storeValueDb(AbstractCachePutMessage<?> m) {
+	protected void storeValueDb(CachePutMessage<?> m) {
 	}
 
 	/**
@@ -213,6 +211,15 @@ public class MapBlocksJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Ma
 			return Behaviors.stopped();
 		} else if (response instanceof LoadObjectSuccessMessage rm) {
 			if (rm.go instanceof MapBlock wm) {
+				Consumer<GameObject> put = go -> {
+					var mb = (MapBlock) go;
+					cache.put(mb.getPos(), mb);
+				};
+				wm.getBlocks().forEachKey(pos -> {
+					retrieveMapBlock(pos, put);
+				});
+				var lm = (LoadGameObjectMessage) rm.om;
+				lm.consumer.accept(wm);
 			}
 		}
 		return Behaviors.same();

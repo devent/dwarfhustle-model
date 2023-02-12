@@ -1,5 +1,6 @@
 package com.anrisoftware.dwarfhustle.model.db.orientdb.objects;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
@@ -18,15 +19,26 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class LoadGameObjectMessage extends AbstractLoadObjectMessage {
 
+	private static final Consumer<GameObject> EMPTY_CONSUMER = go -> {
+	};
+
 	public final String objectType;
+
+	public final Consumer<GameObject> consumer;
 
 	public final Function<ODatabaseDocument, OResultSet> query;
 
 	public LoadGameObjectMessage(ActorRef<ObjectsResponseMessage> replyTo, String objectType,
 			Function<ODatabaseDocument, OResultSet> query) {
+		this(replyTo, objectType, EMPTY_CONSUMER, query);
+	}
+
+	public LoadGameObjectMessage(ActorRef<ObjectsResponseMessage> replyTo, String objectType,
+			Consumer<GameObject> consumer, Function<ODatabaseDocument, OResultSet> query) {
 		super(replyTo);
 		this.objectType = objectType;
 		this.query = query;
+		this.consumer = consumer;
 	}
 
 }

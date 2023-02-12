@@ -23,6 +23,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Consumer;
 
 import javax.inject.Inject;
 
@@ -35,6 +36,7 @@ import org.eclipse.collections.impl.factory.primitive.LongSets;
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMapPos;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapTile;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage.CacheErrorMessage;
@@ -116,9 +118,7 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, MapT
 	}
 
 	public static CompletableFuture<CacheAccess<Object, Object>> createInitCacheAsync() {
-		var initCache = CompletableFuture.supplyAsync(() -> {
-			return loadCache();
-		});
+		var initCache = CompletableFuture.supplyAsync(PersonsJcsCacheActor::loadCache);
 		return initCache;
 	}
 
@@ -165,17 +165,12 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, MapT
 
 	private void loadMapTiles() {
 		CompletionStage<DbResponseMessage> stage = AskPattern.ask(db,
-				replyTo -> new DbCommandReplyMessage(replyTo, ex -> {
-					return null;
-				}, db -> {
-					return loadMapTilesAsync(db);
-				}), timeout, context.getSystem().scheduler());
+				replyTo -> new DbCommandReplyMessage(replyTo, ex -> null, this::loadMapTilesAsync), timeout, context.getSystem().scheduler());
 		context.pipeToSelf(stage, (result, cause) -> {
 			if (cause != null) {
 				return new SetupErrorMessage(cause);
 			} else {
-				if (result instanceof DbErrorMessage) {
-					DbErrorMessage m = (DbErrorMessage) result;
+				if (result instanceof DbErrorMessage m) {
 					return new SetupErrorMessage(m.error);
 				} else {
 					return new MapTilesInitialLoadDoneMessage();
@@ -198,36 +193,30 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, MapT
 	}
 
 	@Override
-	protected MapTile retrieveValueFromDb(AbstractCacheGetMessage<?> m) {
+	protected void retrieveValueFromDb(CacheGetMessage<?> m, Consumer<GameObject> consumer) {
 		CompletionStage<DbResponseMessage> result = AskPattern.ask(db,
-				replyTo -> new DbCommandReplyMessage(replyTo, ex -> {
-					return null;
-				}, db -> {
-					return retrieveGameObjectAsync(db, m);
-				}), timeout, context.getSystem().scheduler());
+				replyTo -> new DbCommandReplyMessage(replyTo, ex -> null, db -> retrieveGameObjectAsync(db, m)), timeout, context.getSystem().scheduler());
 		var future = result.toCompletableFuture();
 		result.whenComplete((response, throwable) -> {
 			translateDbResponse(m, response, throwable);
 		});
 		future.join();
-		return null;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void translateDbResponse(AbstractCacheGetMessage m, DbResponseMessage response, Throwable throwable) {
+	private void translateDbResponse(CacheGetMessage m, DbResponseMessage response, Throwable throwable) {
 		if (throwable != null) {
 			m.replyTo.tell(new CacheErrorMessage(m, throwable));
 		} else {
 			if (response instanceof DbSuccessMessage) {
 				m.replyTo.tell(new CacheSuccessMessage(m));
-			} else if (response instanceof DbErrorMessage) {
-				var ret = (DbErrorMessage) response;
+			} else if (response instanceof DbErrorMessage ret) {
 				m.replyTo.tell(new CacheErrorMessage(m, ret.error));
 			}
 		}
 	}
 
-	private MapTile retrieveGameObjectAsync(ODatabaseDocument db, AbstractCacheGetMessage<?> m) {
+	private MapTile retrieveGameObjectAsync(ODatabaseDocument db, CacheGetMessage<?> m) {
 		var pos = (GameMapPos) m.key;
 		var rs = db.query("SELECT FROM ? where objecttype = ? and mapid = ? and x = ? and y = ? and z = ?",
 				MapTile.OBJECT_TYPE, pos.getMapid(), pos.getX(), pos.getY(), pos.getZ());
@@ -242,13 +231,9 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, MapT
 	}
 
 	@Override
-	protected void storeValueDb(AbstractCachePutMessage<?> m) {
+	protected void storeValueDb(CachePutMessage<?> m) {
 		CompletionStage<DbResponseMessage> result = AskPattern.ask(db,
-				replyTo -> new DbCommandReplyMessage(replyTo, ex -> {
-					return null;
-				}, db -> {
-					return storeValueDbAsync(db, m);
-				}), timeout, context.getSystem().scheduler());
+				replyTo -> new DbCommandReplyMessage(replyTo, ex -> null, db -> storeValueDbAsync(db, m)), timeout, context.getSystem().scheduler());
 		result.whenComplete((response, throwable) -> {
 			if (throwable != null) {
 				tellCacheError(m, throwable);
@@ -257,11 +242,11 @@ public class PersonsJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, MapT
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void tellCacheError(AbstractCachePutMessage m, Throwable throwable) {
+	private void tellCacheError(CachePutMessage m, Throwable throwable) {
 		m.replyTo.tell(new CacheErrorMessage(m, throwable));
 	}
 
-	private Void storeValueDbAsync(ODatabaseDocument db, AbstractCachePutMessage<?> m) {
+	private Void storeValueDbAsync(ODatabaseDocument db, CachePutMessage<?> m) {
 		var go = (MapTile) m.value;
 		if (!go.isDirty()) {
 			return null;

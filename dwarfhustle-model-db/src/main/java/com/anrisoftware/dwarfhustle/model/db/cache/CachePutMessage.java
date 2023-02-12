@@ -30,31 +30,7 @@ import lombok.ToString;
  */
 @RequiredArgsConstructor
 @ToString(callSuper = true)
-public abstract class AbstractCachePutMessage<T extends Message> extends Message {
-
-	/**
-	 * Message to put an object in the cache.
-	 *
-	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
-	 */
-	@ToString(callSuper = true)
-	public static class CachePutMessage extends AbstractCachePutMessage<Message> {
-		public CachePutMessage(ActorRef<Message> replyTo, Object key, Object value) {
-			super(replyTo, key, value);
-		}
-	}
-
-	/**
-	 * Message to put an object in the cache.
-	 *
-	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
-	 */
-	@ToString(callSuper = true)
-	public static class CachePutReplyMessage extends AbstractCachePutMessage<CacheResponseMessage> {
-		public CachePutReplyMessage(ActorRef<CacheResponseMessage> replyTo, Object key, Object value) {
-			super(replyTo, key, value);
-		}
-	}
+public class CachePutMessage<T extends Message> extends Message {
 
 	/**
 	 * Reply to {@link ActorRef}.
