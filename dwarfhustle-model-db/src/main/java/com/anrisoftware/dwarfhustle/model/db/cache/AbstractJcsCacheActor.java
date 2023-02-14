@@ -18,6 +18,8 @@
 package com.anrisoftware.dwarfhustle.model.db.cache;
 
 import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasKey;
 
 import java.io.File;
 import java.time.Duration;
@@ -126,7 +128,19 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
 		return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, actorFactory, initCache, params));
 	}
 
+    /**
+     * Creates the cache from the configuration and additional parameters.
+     *
+     * @param config the {@link Properties} with the cache configuration.
+     * @param params additional parameters:
+     *               <ul>
+     *               <li>cache_name
+     *               <li>max_objects
+     *               <li>is_eternal
+     *               </ul>
+     */
 	public static void createCache(Properties config, Map<String, Object> params) {
+        validateParamsCache(params);
 		var cacheName = params.get("cache_name");
 		var maxObjects = params.get("max_objects");
 		var isEternal = params.get("is_eternal");
@@ -143,7 +157,26 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
 		config.put(region + ".elementattributes.IsEternal", toString(isEternal));
 	}
 
+    private static void validateParamsCache(Map<String, Object> params) {
+        assertThat(params, hasKey("cache_name"));
+        assertThat(params, hasKey("max_objects"));
+        assertThat(params, hasKey("is_eternal"));
+    }
+
+    /**
+     * Creates the auxiliary file cache from the configuration and additional
+     * parameters.
+     *
+     * @param config the {@link Properties} with the cache configuration.
+     * @param params additional parameters:
+     *               <ul>
+     *               <li>cache_name
+     *               <li>max_key_size
+     *               <li>parent_dir
+     *               </ul>
+     */
 	public static void createFileAuxCache(Properties config, Map<String, Object> params) {
+        validateParamsFile(params);
 		var cacheName = params.get("cache_name") + "_file";
 		var maxKeySize = params.get("max_key_size");
 		var parentDir = (File) params.get("parent_dir");
@@ -158,6 +191,12 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
 		config.put(aux + ".attributes.OptimizeOnShutdown", toString(true));
 		config.put(aux + ".attributes.DiskLimitType", "COUNT");
 	}
+
+    private static void validateParamsFile(Map<String, Object> params) {
+        assertThat(params, hasKey("cache_name"));
+        assertThat(params, hasKey("max_key_size"));
+        assertThat(params, hasKey("parent_dir"));
+    }
 
 	private static String toString(Object v) {
 		return v.toString();
@@ -256,10 +295,10 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
 				context.getSelf().tell(new CacheRetrieveFromBackendMessage(m, go -> {
 					var vgo = (V) go;
 					cache.put((K) m.key, vgo);
-					m.replyTo.tell(new CacheGetSuccessMessage(m, vgo));
+                    m.replyTo.tell(new CacheGetSuccessMessage<>(m, vgo));
 				}));
 			} else {
-				m.replyTo.tell(new CacheGetSuccessMessage(m, v));
+                m.replyTo.tell(new CacheGetSuccessMessage<>(m, v));
 			}
 		} catch (CacheException e) {
 			m.replyTo.tell(new CacheErrorMessage(m, e));
@@ -332,7 +371,7 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
 	/**
 	 * Stores the put value in the database.
 	 */
-	protected abstract void storeValueDb(CachePutMessage<?> m);
+    protected abstract void storeValueDb(CachePutMessage<?, K, V> m);
 
 	/**
 	 * Retrieves the value from the database. Example send a database command:

@@ -142,7 +142,7 @@ class OrientDbActorTest {
 		def result =
 				AskPattern.ask(
 				orientDbActor, {replyTo ->
-					new DbCommandReplyMessage(replyTo, { ex -> }, { db ->
+					new DbCommandMessage(replyTo, { ex -> }, { db ->
 						def cl = db.createClassIfNotExist("Person", "V")
 						db.begin();
 						def doc = db.newVertex(cl);

@@ -17,6 +17,10 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.objects;
 
+import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsResponseMessage.ObjectsErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsResponseMessage.ObjectsSuccessMessage;
+
 import akka.actor.typed.ActorRef;
 import lombok.ToString;
 
@@ -25,25 +29,27 @@ import lombok.ToString;
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@ToString(callSuper = true)
-public class CreateSchemasMessage extends AbstractObjectsReplyMessage {
+@ToString
+public class CreateSchemasMessage<T extends Message> extends ObjectsMessage<T> {
 
-	public static class CreatedSchemasSuccessResult extends ObjectsSuccessMessage {
-		public CreatedSchemasSuccessResult(CreateSchemasMessage om) {
-			super(om);
-		}
+    public static class CreatedSchemasSuccessMessage<T extends Message>
+            extends ObjectsSuccessMessage<CreateSchemasMessage<T>> {
+        public CreatedSchemasSuccessMessage(CreateSchemasMessage<T> om) {
+            super(om);
+        }
 
-	}
+    }
 
-	public static class CreatedSchemasErrorResult extends ObjectsErrorMessage {
-		public CreatedSchemasErrorResult(CreateSchemasMessage om, Throwable error) {
-			super(om, error);
-		}
+    public static class CreatedSchemasErrorMessage<T extends Message>
+            extends ObjectsErrorMessage<CreateSchemasMessage<T>> {
+        public CreatedSchemasErrorMessage(CreateSchemasMessage<T> om, Throwable error) {
+            super(om, error);
+        }
 
-	}
+    }
 
-	public CreateSchemasMessage(ActorRef<ObjectsResponseMessage> replyTo) {
-		super(replyTo);
-	}
+    public CreateSchemasMessage(ActorRef<T> replyTo) {
+        super(replyTo);
+    }
 
 }

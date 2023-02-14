@@ -23,7 +23,6 @@ import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 
 import akka.actor.typed.ActorRef;
-import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -31,13 +30,55 @@ import lombok.ToString;
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@RequiredArgsConstructor
 @ToString(callSuper = true)
-public class DbCommandMessage extends Message {
+public class DbCommandMessage<T extends Message> extends DbMessage<T> {
 
-	public final ActorRef<Message> caller;
+    /**
+     * Database command success response with return value.
+     *
+     * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+     */
+    @ToString
+    public static class DbCommandSuccessMessage<T extends DbMessage<?>> extends DbResponseMessage<T> {
 
-	public final Function<Throwable, Object> onError;
+        public final Object value;
 
-	public final Function<ODatabaseDocument, Object> command;
+        public DbCommandSuccessMessage(T om, Object value) {
+            super(om);
+            this.value = value;
+        }
+
+    }
+
+    /**
+     * Database command error response with return value.
+     *
+     * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+     */
+    @ToString
+    public static class DbCommandErrorMessage<T extends DbMessage<?>> extends DbResponseMessage<T> {
+
+        public final Throwable ex;
+
+        public final Object onError;
+
+        public DbCommandErrorMessage(T om, Throwable ex, Object onError) {
+            super(om);
+            this.ex = ex;
+            this.onError = onError;
+        }
+
+    }
+
+    public final Function<Throwable, Object> onError;
+
+    public final Function<ODatabaseDocument, Object> command;
+
+    public DbCommandMessage(ActorRef<T> replyTo, Function<Throwable, Object> onError,
+            Function<ODatabaseDocument, Object> command) {
+        super(replyTo);
+        this.onError = onError;
+        this.command = command;
+    }
+
 }

@@ -51,6 +51,20 @@ public class GameMapSchema implements GameObjectSchema {
 
 	public static final String AREA_SE_LON_FIELD = "areaSeLon";
 
+	public static final String CAMERA_POS_X_FIELD = "cameraPodX";
+
+	public static final String CAMERA_POS_Y_FIELD = "cameraPodY";
+
+	public static final String CAMERA_POS_Z_FIELD = "cameraPodZ";
+
+	public static final String CAMERA_ROT_X_FIELD = "cameraRotX";
+
+	public static final String CAMERA_ROT_Y_FIELD = "cameraRotY";
+
+	public static final String CAMERA_ROT_Z_FIELD = "cameraRotZ";
+
+	public static final String CAMERA_ROT_W_FIELD = "cameraRotW";
+
 	@Override
 	public void createSchema(Object db) {
 		var odb = (ODatabaseDocument) db;
@@ -66,6 +80,13 @@ public class GameMapSchema implements GameObjectSchema {
 		c.createProperty(AREA_NW_LON_FIELD, OType.FLOAT);
 		c.createProperty(AREA_SE_LAT_FIELD, OType.FLOAT);
 		c.createProperty(AREA_SE_LON_FIELD, OType.FLOAT);
+		c.createProperty(CAMERA_POS_X_FIELD, OType.FLOAT);
+		c.createProperty(CAMERA_POS_Y_FIELD, OType.FLOAT);
+		c.createProperty(CAMERA_POS_Z_FIELD, OType.FLOAT);
+		c.createProperty(CAMERA_ROT_X_FIELD, OType.FLOAT);
+		c.createProperty(CAMERA_ROT_Y_FIELD, OType.FLOAT);
+		c.createProperty(CAMERA_ROT_Z_FIELD, OType.FLOAT);
+		c.createProperty(CAMERA_ROT_W_FIELD, OType.FLOAT);
 		try (var q = odb.command(
 				"CREATE INDEX GameMap_name ON GameMap (objecttype, name) NOTUNIQUE METADATA {ignoreNullValues: false}")) {
 		}

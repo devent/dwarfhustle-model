@@ -20,7 +20,6 @@ package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 
 /**
  * Base class of database responses.
@@ -28,34 +27,36 @@ import lombok.ToString;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @RequiredArgsConstructor
-@ToString(callSuper = true)
-public class DbResponseMessage extends Message {
+public class DbResponseMessage<T extends DbMessage<?>> extends Message {
 
-	/**
-	 * Database error response.
-	 *
-	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
-	 */
-	@RequiredArgsConstructor
-	@ToString(callSuper = true)
-	public static class DbErrorMessage extends DbResponseMessage {
+    /**
+     * Database error response.
+     *
+     * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+     */
+    public static class DbErrorMessage<T extends DbMessage<?>> extends DbResponseMessage<T> {
 
-		public final Message om;
+        public final Exception error;
 
-		public final Exception error;
+        public DbErrorMessage(T om, Exception error) {
+            super(om);
+            this.error = error;
+        }
 
-	}
+    }
 
-	/**
-	 * Database success response.
-	 *
-	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
-	 */
-	@RequiredArgsConstructor
-	@ToString(callSuper = true)
-	public static class DbSuccessMessage extends DbResponseMessage {
+    /**
+     * Database success response.
+     *
+     * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+     */
+    public static class DbSuccessMessage<T extends DbMessage<?>> extends DbResponseMessage<T> {
 
-		public final Message om;
-	}
+        public DbSuccessMessage(T om) {
+            super(om);
+        }
 
+    }
+
+    public final T om;
 }

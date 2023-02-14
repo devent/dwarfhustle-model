@@ -22,6 +22,13 @@ import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSche
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.AREA_SE_LAT_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.AREA_SE_LON_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.BLOCK_SIZE_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CAMERA_POS_X_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CAMERA_POS_Y_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CAMERA_POS_Z_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CAMERA_ROT_W_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CAMERA_ROT_X_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CAMERA_ROT_Y_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CAMERA_ROT_Z_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.DEPTH_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.HEIGHT_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.MAPID_FIELD;
@@ -63,6 +70,13 @@ public class GameMapStorage extends AbstractGameObjectStorage {
 		v.setProperty(AREA_NW_LON_FIELD, mb.getArea().nw.lon);
 		v.setProperty(AREA_SE_LAT_FIELD, mb.getArea().se.lat);
 		v.setProperty(AREA_SE_LON_FIELD, mb.getArea().se.lon);
+		v.setProperty(CAMERA_POS_X_FIELD, mb.getCameraPos()[0]);
+		v.setProperty(CAMERA_POS_Y_FIELD, mb.getCameraPos()[1]);
+		v.setProperty(CAMERA_POS_Z_FIELD, mb.getCameraPos()[2]);
+		v.setProperty(CAMERA_ROT_X_FIELD, mb.getCameraRot()[0]);
+		v.setProperty(CAMERA_ROT_Y_FIELD, mb.getCameraRot()[1]);
+		v.setProperty(CAMERA_ROT_Z_FIELD, mb.getCameraRot()[2]);
+		v.setProperty(CAMERA_ROT_W_FIELD, mb.getCameraRot()[3]);
 		super.store(db, o, go);
 	}
 
@@ -79,6 +93,10 @@ public class GameMapStorage extends AbstractGameObjectStorage {
 		mb.setTimeZone(ZoneOffset.ofTotalSeconds(v.getProperty(TIME_ZONE_FIELD)));
 		mb.setArea(new MapArea(new MapCoordinate(v.getProperty(AREA_NW_LAT_FIELD), v.getProperty(AREA_NW_LON_FIELD)),
 				new MapCoordinate(v.getProperty(AREA_SE_LAT_FIELD), v.getProperty(AREA_SE_LON_FIELD))));
+		mb.setCameraPos(v.getProperty(CAMERA_POS_X_FIELD), v.getProperty(CAMERA_POS_Y_FIELD),
+				v.getProperty(CAMERA_POS_Z_FIELD));
+		mb.setCameraRot(v.getProperty(CAMERA_ROT_X_FIELD), v.getProperty(CAMERA_ROT_Y_FIELD),
+				v.getProperty(CAMERA_ROT_Z_FIELD), v.getProperty(CAMERA_ROT_W_FIELD));
 		return super.retrieve(db, o, go);
 	}
 

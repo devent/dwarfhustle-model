@@ -37,7 +37,7 @@ public class CacheResponseMessage extends Message {
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
 	@RequiredArgsConstructor
-	@ToString(callSuper = true)
+    @ToString
 	public static class CacheErrorMessage extends CacheResponseMessage {
 
 		@ToString.Exclude
@@ -52,7 +52,7 @@ public class CacheResponseMessage extends Message {
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
 	@RequiredArgsConstructor
-	@ToString(callSuper = true)
+    @ToString
 	public static class CacheSuccessMessage extends CacheResponseMessage {
 
 		@ToString.Exclude

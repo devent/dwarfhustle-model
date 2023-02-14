@@ -20,7 +20,6 @@ package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 
 import akka.actor.typed.ActorRef;
-import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -28,25 +27,25 @@ import lombok.ToString;
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@RequiredArgsConstructor
-@ToString(callSuper = true)
-public class StopEmbeddedServerMessage extends Message {
+@ToString
+public class StopEmbeddedServerMessage<T extends Message> extends DbMessage<T> {
 
-	/**
-	 * Message that the embedded OrientDb server was stopped successfully.
-	 *
-	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
-	 */
-	@RequiredArgsConstructor
-	@ToString(callSuper = true)
-	public static class StopEmbeddedServerSuccessMessage extends DbResponseMessage {
+    /**
+     * Message that the embedded OrientDb server was stopped successfully.
+     *
+     * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+     */
+    @ToString
+    public static class StopEmbeddedServerSuccessMessage<T extends DbMessage<?>> extends DbResponseMessage<T> {
 
-		@ToString.Exclude
-		public final Message om;
-	}
+        public StopEmbeddedServerSuccessMessage(T om) {
+            super(om);
+        }
 
-	/**
-	 * Reply to {@link ActorRef}.
-	 */
-	public final ActorRef<DbResponseMessage> replyTo;
+    }
+
+    public StopEmbeddedServerMessage(ActorRef<T> replyTo) {
+        super(replyTo);
+    }
+
 }

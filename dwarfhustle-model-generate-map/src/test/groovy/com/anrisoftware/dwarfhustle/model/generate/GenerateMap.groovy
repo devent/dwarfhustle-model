@@ -109,9 +109,9 @@ class GenerateMap {
 
 	@BeforeAll
 	static void setupActor() {
-		def s = 256
+		def s = 64
 		def blockSize = 8
-		def parentDir = File.createTempDir("size_${s}_${blockSize}")
+		def parentDir = File.createTempDir("size_${s}_${blockSize}_")
 		if (EMBEDDED_SERVER_PROPERTY == "yes") {
 			dbServerUtils = new DbServerUtils()
 			dbServerUtils.createServer(parentDir.absolutePath)
@@ -175,6 +175,8 @@ class GenerateMap {
 		gm.blockSize = mapTilesParams.block_size
 		gm.timeZone = ZoneOffset.ofHours(1)
 		gm.area = MapArea.create(toDecimalDegrees(54, 47, 24), toDecimalDegrees(17, 30, 12), toDecimalDegrees(54, 42, 02), toDecimalDegrees(17, 35, 22))
+		gm.setCameraPos(0.0f, 0.0f, 10.0f)
+		gm.setCameraRot(0.0f, 1.0f, 0.0f, 0.0f)
 		wm.currentMapid = gm.mapid
 		wm.addMap(gm)
 		def m = new GenerateMapMessage(null, gm, mapTilesParams.block_size, dbTestUtils.user, dbTestUtils.password, dbTestUtils.database)

@@ -21,30 +21,27 @@ import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.orientechnologies.orient.core.db.ODatabaseType;
 
 import akka.actor.typed.ActorRef;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 
 /**
  * Message to create a new database.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@RequiredArgsConstructor
-@ToString(callSuper = true)
-public class CreateDbMessage extends Message {
+public class CreateDbMessage<T extends Message> extends DbMessage<T> {
 
-	@RequiredArgsConstructor
-	@ToString(callSuper = true)
-	public static class DbAlreadyExistMessage extends DbResponseMessage {
+    public static class DbAlreadyExistMessage<T extends CreateDbMessage<?>> extends DbResponseMessage<T> {
 
-		public final CreateDbMessage originalMessage;
+        public DbAlreadyExistMessage(T om) {
+            super(om);
+        }
 
 	}
 
-	/**
-	 * Reply to {@link ActorRef}.
-	 */
-	public final ActorRef<DbResponseMessage> replyTo;
+    public final ODatabaseType type;
 
-	public final ODatabaseType type;
+    public CreateDbMessage(ActorRef<T> replyTo, ODatabaseType type) {
+        super(replyTo);
+        this.type = type;
+    }
+
 }

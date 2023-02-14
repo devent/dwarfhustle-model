@@ -18,6 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.db.cache;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 import akka.actor.typed.ActorRef;
 import lombok.RequiredArgsConstructor;
@@ -30,15 +31,15 @@ import lombok.ToString;
  */
 @RequiredArgsConstructor
 @ToString(callSuper = true)
-public class CachePutMessage<T extends Message> extends Message {
+public class CachePutMessage<T extends Message, V, W extends GameObject> extends Message {
 
 	/**
 	 * Reply to {@link ActorRef}.
 	 */
 	public final ActorRef<T> replyTo;
 
-	public final Object key;
+    public final V key;
 
-	public final Object value;
+    public final W value;
 
 }

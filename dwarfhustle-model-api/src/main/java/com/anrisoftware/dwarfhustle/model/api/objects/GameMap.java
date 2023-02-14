@@ -63,6 +63,10 @@ public class GameMap extends GameObject {
 
 	private MapArea area;
 
+	private float[] cameraPos = new float[3];
+
+	private float[] cameraRot = new float[4];
+
 	public GameMap(long id) {
 		super(id);
 	}
@@ -148,4 +152,43 @@ public class GameMap extends GameObject {
 			setDirty(true);
 		}
 	}
+
+	public void setCameraPos(float[] pos) {
+		if (!Objects.equals(this.cameraPos, pos)) {
+			this.cameraPos[0] = pos[0];
+			this.cameraPos[1] = pos[1];
+			this.cameraPos[2] = pos[2];
+			setDirty(true);
+		}
+	}
+
+	public void setCameraPos(float x, float y, float z) {
+		if (this.cameraPos[0] != x || this.cameraPos[1] != y || this.cameraPos[2] != z) {
+			this.cameraPos[0] = x;
+			this.cameraPos[1] = y;
+			this.cameraPos[2] = z;
+			setDirty(true);
+		}
+	}
+
+	public void setCameraRot(float[] rot) {
+		if (!Objects.equals(this.cameraRot, rot)) {
+			this.cameraRot[0] = rot[0];
+			this.cameraRot[1] = rot[1];
+			this.cameraRot[2] = rot[2];
+			this.cameraRot[3] = rot[3];
+			setDirty(true);
+		}
+	}
+
+	public void setCameraRot(float x, float y, float z, float w) {
+		if (this.cameraRot[0] != x || this.cameraRot[1] != y || this.cameraRot[2] != z || this.cameraRot[3] != w) {
+			this.cameraRot[0] = x;
+			this.cameraRot[1] = y;
+			this.cameraRot[2] = z;
+			this.cameraRot[3] = w;
+			setDirty(true);
+		}
+	}
+
 }

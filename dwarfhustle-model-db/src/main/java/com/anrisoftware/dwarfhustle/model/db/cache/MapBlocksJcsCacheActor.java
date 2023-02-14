@@ -18,6 +18,8 @@
 package com.anrisoftware.dwarfhustle.model.db.cache;
 
 import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasKey;
 
 import java.time.Duration;
 import java.util.Map;
@@ -32,8 +34,6 @@ import org.apache.commons.jcs3.JCS;
 import org.apache.commons.jcs3.access.CacheAccess;
 import org.apache.commons.jcs3.access.exception.CacheException;
 import org.apache.commons.jcs3.engine.control.event.behavior.IElementEvent;
-import org.eclipse.collections.api.set.primitive.MutableLongSet;
-import org.eclipse.collections.impl.factory.primitive.LongSets;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
@@ -41,11 +41,11 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMapPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.AbstractLoadObjectMessage.LoadObjectErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.AbstractLoadObjectMessage.LoadObjectSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.AbstractObjectsReplyMessage.ObjectsResponseMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadGameObjectMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadGameObjectsMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadObjectMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadObjectMessage.LoadObjectErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadObjectMessage.LoadObjectSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadObjectsMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsResponseMessage;
 import com.google.inject.Injector;
 
 import akka.actor.typed.ActorRef;
@@ -77,7 +77,7 @@ public class MapBlocksJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Ma
 	@RequiredArgsConstructor
 	@ToString(callSuper = true)
 	private static class WrappedObjectsResponse extends Message {
-		private final ObjectsResponseMessage response;
+        private final ObjectsResponseMessage<?> response;
 	}
 
 	/**
@@ -127,6 +127,7 @@ public class MapBlocksJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Ma
 
 	private static CacheAccess<Object, Object> createCache(Map<String, Object> params) {
 		try {
+            validateParams(params);
 			var mapid = params.get("mapid");
 			var cacheName = "mapBlocksCache_" + mapid;
 			var width = (int) params.get("width");
@@ -149,30 +150,25 @@ public class MapBlocksJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Ma
 		}
 	}
 
+    private static void validateParams(Map<String, Object> params) {
+        assertThat(params, hasKey("parent_dir"));
+        assertThat(params, hasKey("mapid"));
+        assertThat(params, hasKey("width"));
+        assertThat(params, hasKey("height"));
+        assertThat(params, hasKey("depth"));
+        assertThat(params, hasKey("block_size"));
+    }
+
 	@Inject
 	private ActorSystemProvider actor;
 
-	private int mapid;
-
-	private int width;
-
-	private int height;
-
-	private int depth;
-
-	private MutableLongSet ids;
-
-	private ActorRef<ObjectsResponseMessage> objectsResponseAdapter;
+    @SuppressWarnings("rawtypes")
+    private ActorRef<ObjectsResponseMessage> objectsResponseAdapter;
 
 	@Override
 	protected Behavior<Message> initialStage(InitialStateMessage<GameMapPos, MapBlock> m) {
 		log.debug("initialStage {}", m);
 		this.objectsResponseAdapter = context.messageAdapter(ObjectsResponseMessage.class, WrappedObjectsResponse::new);
-		this.mapid = (int) params.get("mapid");
-		this.width = (int) params.get("width");
-		this.height = (int) params.get("height");
-		this.depth = (int) params.get("depth");
-		this.ids = LongSets.mutable.withInitialCapacity(width * height * depth);
 		return super.initialStage(m);
 	}
 
@@ -188,7 +184,7 @@ public class MapBlocksJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Ma
 	}
 
 	@Override
-	protected void storeValueDb(CachePutMessage<?> m) {
+    protected void storeValueDb(CachePutMessage<?, GameMapPos, MapBlock> m) {
 	}
 
 	/**
@@ -199,15 +195,15 @@ public class MapBlocksJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Ma
 	private Behavior<Message> onWrappedObjectsResponse(WrappedObjectsResponse m) {
 		log.debug("onWrappedObjectsResponse {}", m);
 		var response = m.response;
-		if (response instanceof LoadObjectErrorMessage rm) {
+        if (response instanceof LoadObjectErrorMessage<?> rm) {
 			log.error("Objects error", rm);
 			return Behaviors.stopped();
-		} else if (response instanceof LoadObjectSuccessMessage rm) {
+        } else if (response instanceof LoadObjectSuccessMessage<?> rm) {
 			if (rm.go instanceof MapBlock wm) {
 				if (!wm.getBlocks().isEmpty()) {
 					retrieveChildMapBlocks(wm.getPos());
 				}
-				var lm = (LoadGameObjectMessage) rm.om;
+				var lm = rm.om;
 				lm.consumer.accept(wm);
 			}
 		}
@@ -215,7 +211,7 @@ public class MapBlocksJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Ma
 	}
 
 	private void retrieveChildMapBlocks(GameBlockPos p) {
-		actor.tell(new LoadGameObjectsMessage(objectsResponseAdapter, MapBlock.OBJECT_TYPE, go -> {
+        actor.tell(new LoadObjectsMessage<>(objectsResponseAdapter, MapBlock.OBJECT_TYPE, go -> {
 			var mb = (MapBlock) go;
 			cache.put(mb.getPos(), mb);
 		}, db -> {
@@ -226,7 +222,7 @@ public class MapBlocksJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Ma
 	}
 
 	private void retrieveMapBlock(GameBlockPos p, Consumer<GameObject> consumer) {
-		actor.tell(new LoadGameObjectMessage(objectsResponseAdapter, MapBlock.OBJECT_TYPE, consumer, db -> {
+        actor.tell(new LoadObjectMessage<>(objectsResponseAdapter, MapBlock.OBJECT_TYPE, consumer, db -> {
 			var query = "SELECT * from ? where objecttype = ? and mapid = ? and sx = ? and sy = ? and sz = ? and ex = ? and ey = ? and ez = ? limit 1";
 			return db.query(query, MapBlock.OBJECT_TYPE, MapBlock.OBJECT_TYPE, p.getMapid(), p.getX(), p.getY(),
 					p.getZ(), p.getEndPos().getX(), p.getEndPos().getY(), p.getEndPos().getZ());

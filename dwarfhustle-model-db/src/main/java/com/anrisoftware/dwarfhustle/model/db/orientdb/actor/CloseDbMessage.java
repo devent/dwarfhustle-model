@@ -21,7 +21,6 @@ import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbSuccessMessage;
 
 import akka.actor.typed.ActorRef;
-import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -30,13 +29,11 @@ import lombok.ToString;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  * @see DbSuccessMessage
  */
-@RequiredArgsConstructor
-@ToString(callSuper = true)
-public class CloseDbMessage extends Message {
+@ToString
+public class CloseDbMessage<T extends Message> extends DbMessage<T> {
 
-	/**
-	 * Reply to {@link ActorRef}.
-	 */
-	public final ActorRef<DbResponseMessage> replyTo;
+    public CloseDbMessage(ActorRef<T> replyTo) {
+        super(replyTo);
+    }
 
 }

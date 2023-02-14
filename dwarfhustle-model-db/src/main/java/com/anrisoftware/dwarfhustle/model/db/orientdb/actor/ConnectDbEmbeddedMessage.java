@@ -22,7 +22,6 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.Db
 import com.orientechnologies.orient.server.OServer;
 
 import akka.actor.typed.ActorRef;
-import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -32,14 +31,8 @@ import lombok.ToString;
  * @see ConnectDbSuccessMessage
  * @see DbErrorMessage
  */
-@RequiredArgsConstructor
-@ToString(callSuper = true)
-public class ConnectDbEmbeddedMessage extends Message {
-
-	/**
-	 * Reply to {@link ActorRef}.
-	 */
-	public final ActorRef<DbResponseMessage> replyTo;
+@ToString
+public class ConnectDbEmbeddedMessage<T extends Message> extends DbMessage<T> {
 
 	public final OServer server;
 
@@ -48,4 +41,14 @@ public class ConnectDbEmbeddedMessage extends Message {
 	public final String user;
 
 	public final String password;
+
+    public ConnectDbEmbeddedMessage(ActorRef<T> replyTo, OServer server, String database, String user,
+            String password) {
+        super(replyTo);
+        this.server = server;
+        this.database = database;
+        this.user = user;
+        this.password = password;
+    }
+
 }

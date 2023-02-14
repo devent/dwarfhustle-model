@@ -90,6 +90,10 @@
             <groupId>com.google.auto.service</groupId>
             <artifactId>auto-service</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+        </dependency>
 
         <!-- Own modules dependencies -->
         <dependency>
@@ -107,10 +111,6 @@
             <groupId>com.anrisoftware.dwarfhustle</groupId>
             <artifactId>dwarfhustle-model-actor</artifactId>
             <version>0.1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
         </dependency>
     </dependencies>
 

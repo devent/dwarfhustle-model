@@ -29,7 +29,8 @@ import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.actor.ShutdownMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CreateDbMessage.DbAlreadyExistMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandSuccessMessage.DbCommandErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage.DbCommandErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage.DbCommandSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DeleteDbMessage.DbNotExistMessage;
@@ -75,9 +76,7 @@ public class OrientDbActor {
 	}
 
 	public static Behavior<Message> create(Injector injector) {
-		return Behaviors.setup((context) -> {
-			return injector.getInstance(OrientDbActorFactory.class).create(context).start();
-		});
+		return Behaviors.setup(context -> injector.getInstance(OrientDbActorFactory.class).create(context).start());
 	}
 
 	/**
@@ -119,7 +118,8 @@ public class OrientDbActor {
 	 * {@link #getEmbeddedServerStartedBehavior()}.
 	 * </ul>
 	 */
-	private Behavior<Message> onStartEmbeddedServer(StartEmbeddedServerMessage m) {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private Behavior<Message> onStartEmbeddedServer(StartEmbeddedServerMessage m) {
 		log.debug("onStartEmbeddedServer {}", m);
 		try {
 			System.setProperty(Orient.ORIENTDB_HOME, m.root);
@@ -129,7 +129,7 @@ public class OrientDbActor {
 			server.activate();
 			this.server = Optional.of(server);
 		} catch (Exception e) {
-			m.replyTo.tell(new DbErrorMessage(m, e));
+            m.replyTo.tell(new DbErrorMessage(m, e));
 			return Behaviors.same();
 		}
 		m.replyTo.tell(new StartEmbeddedServerSuccessMessage(m, server.get()));
@@ -143,6 +143,7 @@ public class OrientDbActor {
 	 * {@link #getInitialBehavior()}.
 	 * </ul>
 	 */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
 	private Behavior<Message> onStopEmbeddedServer(StopEmbeddedServerMessage m) {
 		log.debug("onStopEmbeddedServer {}", m);
 		try {
@@ -161,6 +162,7 @@ public class OrientDbActor {
 	 * failure. Returns a behavior for the messages from
 	 * {@link #getConnectedBehavior()}.
 	 */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
 	private Behavior<Message> onConnectDbRemote(ConnectDbRemoteMessage m) {
 		log.debug("onConnectDbRemote {}", m);
 		try {
@@ -183,6 +185,7 @@ public class OrientDbActor {
 	 * failure. Returns a behavior for the messages from
 	 * {@link #getConnectedBehavior()}.
 	 */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
 	private Behavior<Message> onConnectDbEmbedded(ConnectDbEmbeddedMessage m) {
 		log.debug("onConnectDbEmbedded {}", m);
 		try {
@@ -202,6 +205,7 @@ public class OrientDbActor {
 	 * Reacts to {@link CloseDbMessage}. Returns a behavior for the messages from
 	 * {@link #getInitialBehavior()}.
 	 */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
 	private Behavior<Message> onCloseDb(CloseDbMessage m) {
 		log.debug("onCloseDb {}", m);
 		closeDb();
@@ -214,6 +218,7 @@ public class OrientDbActor {
 	 * success, with {@link DbAlreadyExistMessage} if the database already exist or
 	 * with {@link DbErrorMessage} on failure.
 	 */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
 	private Behavior<Message> onCreateDb(CreateDbMessage m) {
 		log.debug("onCreateDb {}", m);
 		try {
@@ -233,6 +238,7 @@ public class OrientDbActor {
 	/**
 	 * Reacts to {@link DeleteDbMessage}.
 	 */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
 	private Behavior<Message> onDeleteDb(DeleteDbMessage m) {
 		log.debug("onDeleteDb {}", m);
 		try {
@@ -250,9 +256,10 @@ public class OrientDbActor {
 	}
 
 	/**
-	 * Reacts to {@link DbCommandReplyMessage}.
+	 * Reacts to {@link DbCommandMessage}.
 	 */
-	private Behavior<Message> onDbReplyCommand(DbCommandReplyMessage m) {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	private Behavior<Message> onDbReplyCommand(DbCommandMessage m) {
 		log.debug("onDbReplyCommand {}", m);
 		try {
 			Object ret = null;
@@ -268,8 +275,9 @@ public class OrientDbActor {
 	}
 
 	/**
-	 * Reacts to {@link DbCommandReplyMessage}.
+	 * Reacts to {@link DbCommandMessage}.
 	 */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
 	private Behavior<Message> onDbCommand(DbCommandMessage m) {
 		log.debug("onDbCommand {}", m);
 		try {
@@ -277,9 +285,9 @@ public class OrientDbActor {
 			try (var db = orientdb.get().open(database, user, password)) {
 				ret = m.command.apply(db);
 			}
-			m.caller.tell(new DbCommandSuccessMessage(m, ret));
+            m.replyTo.tell(new DbCommandSuccessMessage(m, ret));
 		} catch (Exception e) {
-			m.caller.tell(new DbCommandErrorMessage(m, e, m.onError.apply(e)));
+            m.replyTo.tell(new DbCommandErrorMessage(m, e, m.onError.apply(e)));
 		}
 		return Behaviors.same();
 	}
@@ -297,7 +305,7 @@ public class OrientDbActor {
 	}
 
 	private void shutdownServer() {
-		server.ifPresent((s) -> s.shutdown());
+		server.ifPresent(OServer::shutdown);
 	}
 
 	private void closeDb() {
@@ -351,7 +359,7 @@ public class OrientDbActor {
 	 * <li>{@link CloseDbMessage}
 	 * <li>{@link CreateDbMessage}
 	 * <li>{@link DeleteDbMessage}
-	 * <li>{@link DbCommandReplyMessage}
+	 * <li>{@link DbCommandMessage}
 	 * <li>{@link DbCommandMessage}
 	 * </ul>
 	 */
@@ -362,7 +370,7 @@ public class OrientDbActor {
 				.onMessage(CloseDbMessage.class, this::onCloseDb)//
 				.onMessage(CreateDbMessage.class, this::onCreateDb)//
 				.onMessage(DeleteDbMessage.class, this::onDeleteDb)//
-				.onMessage(DbCommandReplyMessage.class, this::onDbReplyCommand)//
+				.onMessage(DbCommandMessage.class, this::onDbReplyCommand)//
 				.onMessage(DbCommandMessage.class, this::onDbCommand)//
 		;
 	}

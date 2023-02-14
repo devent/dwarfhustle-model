@@ -21,7 +21,6 @@ import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage;
 
 import akka.actor.typed.ActorRef;
-import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -31,14 +30,8 @@ import lombok.ToString;
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@RequiredArgsConstructor
-@ToString(callSuper = true)
-public class ConnectDbRemoteMessage extends Message {
-
-	/**
-	 * Reply to {@link ActorRef}.
-	 */
-	public final ActorRef<DbResponseMessage> replyTo;
+@ToString
+public class ConnectDbRemoteMessage<T extends Message> extends DbMessage<T> {
 
 	public final String url;
 
@@ -47,5 +40,13 @@ public class ConnectDbRemoteMessage extends Message {
 	public final String user;
 
 	public final String password;
+
+    public ConnectDbRemoteMessage(ActorRef<T> replyTo, String url, String database, String user, String password) {
+        super(replyTo);
+        this.url = url;
+        this.database = database;
+        this.user = user;
+        this.password = password;
+    }
 
 }

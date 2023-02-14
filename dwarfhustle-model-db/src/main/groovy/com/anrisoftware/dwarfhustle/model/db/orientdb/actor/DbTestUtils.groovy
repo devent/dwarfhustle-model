@@ -147,7 +147,7 @@ class DbTestUtils {
 		def result =
 				AskPattern.ask(
 				orientDbActor, {replyTo ->
-					new DbCommandReplyMessage(replyTo, { db ->
+					new DbCommandMessage(replyTo, { db ->
 						def go = new MapTile(generator.generate())
 						go.pos = new GameMapPos(0, 10, 20, 2)
 						go.material = "Sandstone"

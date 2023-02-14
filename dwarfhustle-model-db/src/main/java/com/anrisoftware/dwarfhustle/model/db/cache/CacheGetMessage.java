@@ -29,7 +29,7 @@ import lombok.ToString;
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@ToString(callSuper = true)
+@ToString
 public class CacheGetMessage<T extends Message> extends Message {
 
 	/**
@@ -37,12 +37,12 @@ public class CacheGetMessage<T extends Message> extends Message {
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
-	@ToString(callSuper = true)
-	public static class CacheGetSuccessMessage extends CacheSuccessMessage {
+    @ToString
+    public static class CacheGetSuccessMessage<T extends GameObject> extends CacheSuccessMessage {
 
-		public final GameObject go;
+        public final T go;
 
-		public CacheGetSuccessMessage(Message m, GameObject go) {
+        public CacheGetSuccessMessage(Message m, T go) {
 			super(m);
 			this.go = go;
 		}

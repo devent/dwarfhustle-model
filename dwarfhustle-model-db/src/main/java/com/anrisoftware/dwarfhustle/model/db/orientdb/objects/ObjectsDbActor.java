@@ -30,18 +30,19 @@ import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandReplyMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandSuccessMessage.DbCommandErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage.DbCommandErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage.DbCommandSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.AbstractLoadObjectMessage.LoadObjectErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.AbstractLoadObjectMessage.LoadObjectSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.AbstractObjectsReplyMessage.ObjectsErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.AbstractObjectsReplyMessage.ObjectsSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.CreateSchemasMessage.CreatedSchemasErrorResult;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.CreateSchemasMessage.CreatedSchemasSuccessResult;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.CreateSchemasMessage.CreatedSchemasErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.CreateSchemasMessage.CreatedSchemasSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadObjectMessage.LoadObjectErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadObjectMessage.LoadObjectSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadObjectsMessage.LoadObjectsErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsResponseMessage.ObjectsErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsResponseMessage.ObjectsSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameObjectSchema;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
@@ -79,7 +80,7 @@ public class ObjectsDbActor {
 	@RequiredArgsConstructor
 	@ToString(callSuper = true)
 	private static class WrappedDbResponse extends Message {
-		private final DbResponseMessage response;
+        private final DbResponseMessage<?> response;
 	}
 
 	/**
@@ -120,7 +121,8 @@ public class ObjectsDbActor {
 	@Inject
 	private Map<String, GameObjectStorage> storages;
 
-	private ActorRef<DbResponseMessage> dbResponseAdapter;
+    @SuppressWarnings("rawtypes")
+    private ActorRef<DbResponseMessage> dbResponseAdapter;
 
 	/**
 	 * Returns a behavior for the messages from {@link #getInitialBehavior()}
@@ -134,11 +136,11 @@ public class ObjectsDbActor {
 	/**
 	 * Returns a behavior for the messages from {@link #getInitialBehavior()}
 	 */
-	private Behavior<Message> onCreateSchemas(CreateSchemasMessage m) {
+    private Behavior<Message> onCreateSchemas(CreateSchemasMessage<?> m) {
 		log.debug("onCreateSchemas {}", m);
-		db.tell(new DbCommandReplyMessage(dbResponseAdapter, ex -> new CreatedSchemasErrorResult(m, ex), db -> {
+        db.tell(new DbCommandMessage<>(dbResponseAdapter, ex -> new CreatedSchemasErrorMessage<>(m, ex), db -> {
 			createSchemas(db);
-			return new CreatedSchemasSuccessResult(m);
+            return new CreatedSchemasSuccessMessage<>(m);
 		}));
 		return Behaviors.same();
 	}
@@ -146,17 +148,17 @@ public class ObjectsDbActor {
 	/**
 	 * Returns a behavior for the messages from {@link #getInitialBehavior()}
 	 */
-	private Behavior<Message> onLoadGameObject(LoadGameObjectMessage m) {
+    private Behavior<Message> onLoadGameObject(LoadObjectMessage<?> m) {
 		log.debug("onLoadGameObject {}", m);
-		db.tell(new DbCommandReplyMessage(dbResponseAdapter, ex -> new LoadObjectErrorMessage(m, ex), db -> {
+        db.tell(new DbCommandMessage<>(dbResponseAdapter, ex -> new LoadObjectErrorMessage<>(m, ex), db -> {
 			var wm = loadGameObject(m, db);
-			return new LoadObjectSuccessMessage(m, wm);
+            return new LoadObjectSuccessMessage<>(m, wm);
 		}));
 		return Behaviors.same();
 	}
 
 	@SneakyThrows
-	private GameObject loadGameObject(LoadGameObjectMessage m, ODatabaseDocument db) {
+    private GameObject loadGameObject(LoadObjectMessage<?> m, ODatabaseDocument db) {
 		var rs = m.query.apply(db);
 		try {
 			while (rs.hasNext()) {
@@ -176,9 +178,9 @@ public class ObjectsDbActor {
 	/**
 	 * Returns a behavior for the messages from {@link #getInitialBehavior()}
 	 */
-	private Behavior<Message> onLoadGameObjects(LoadGameObjectsMessage m) {
+    private Behavior<Message> onLoadGameObjects(LoadObjectsMessage<?> m) {
 		log.debug("onLoadGameObjects {}", m);
-		db.tell(new DbCommandReplyMessage(dbResponseAdapter, ex -> new LoadObjectErrorMessage(m, ex), db -> {
+        db.tell(new DbCommandMessage<>(dbResponseAdapter, ex -> new LoadObjectsErrorMessage<>(m, ex), db -> {
 			loadGameObjects(m, db);
 			return null;
 		}));
@@ -186,7 +188,7 @@ public class ObjectsDbActor {
 	}
 
 	@SneakyThrows
-	private void loadGameObjects(LoadGameObjectsMessage m, ODatabaseDocument db) {
+    private void loadGameObjects(LoadObjectsMessage<?> m, ODatabaseDocument db) {
 		var rs = m.query.apply(db);
 		try {
 			while (rs.hasNext()) {
@@ -210,20 +212,21 @@ public class ObjectsDbActor {
 	 * {@link DbSuccessMessage} and replies with {@link ObjectsSuccessMessage}.</li>
 	 * </ul>
 	 */
-	private Behavior<Message> onWrappedDbResponse(WrappedDbResponse m) {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private Behavior<Message> onWrappedDbResponse(WrappedDbResponse m) {
 		log.debug("onWrappedDbResponse {}", m);
 		var response = m.response;
 		if (response instanceof DbCommandErrorMessage rm) {
 			log.error("Db error", rm);
-			if (rm.onError instanceof CreatedSchemasErrorResult res) {
-				res.om.replyTo.tell(res);
+            if (rm.onError instanceof CreatedSchemasErrorMessage res) {
+                res.om.replyTo.tell(res);
 			}
 			return Behaviors.stopped();
 		} else if (response instanceof DbCommandSuccessMessage rm) {
-			if (rm.value instanceof CreatedSchemasSuccessResult res) {
+			if (rm.value instanceof CreatedSchemasSuccessMessage res) {
 				res.om.replyTo.tell(res);
-			} else if (rm.value instanceof LoadObjectSuccessMessage res) {
-				res.om.replyTo.tell(res);
+            } else if (rm.value instanceof LoadObjectSuccessMessage res) {
+                res.om.replyTo.tell(res);
 			}
 		}
 		return Behaviors.same();
@@ -234,16 +237,16 @@ public class ObjectsDbActor {
 	 *
 	 * <ul>
 	 * <li>{@link CreateSchemasMessage}
-	 * <li>{@link LoadGameObjectMessage}
-	 * <li>{@link LoadGameObjectsMessage}
+	 * <li>{@link LoadObjectMessage}
+	 * <li>{@link LoadObjectsMessage}
 	 * <li>{@link WrappedDbResponse}
 	 * </ul>
 	 */
 	private BehaviorBuilder<Message> getInitialBehavior() {
 		return Behaviors.receive(Message.class)//
 				.onMessage(CreateSchemasMessage.class, this::onCreateSchemas)//
-				.onMessage(LoadGameObjectMessage.class, this::onLoadGameObject)//
-				.onMessage(LoadGameObjectsMessage.class, this::onLoadGameObjects)//
+				.onMessage(LoadObjectMessage.class, this::onLoadGameObject)//
+				.onMessage(LoadObjectsMessage.class, this::onLoadGameObjects)//
 				.onMessage(WrappedDbResponse.class, this::onWrappedDbResponse)//
 		;
 	}
