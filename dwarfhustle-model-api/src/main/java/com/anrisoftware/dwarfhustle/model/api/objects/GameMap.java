@@ -39,6 +39,47 @@ import lombok.ToString;
 @Getter
 public class GameMap extends GameObject {
 
+    /**
+     * Calculates the total count of {@link MapBlock} blocks for the specified
+     * width, height, depth and block size.
+     * <ul>
+     * <li>16x16x16 4 = 72+1
+     * <li>32x32x32 4 = 584+1
+     * <li>64x64x64 4 = 4680+1
+     * <li>128x128x128 4 = 37448+1
+     * <li>256x256x256 4 = 299592+1
+     * </ul>
+     * <ul>
+     * <li>16x16x16 8 = 8+1
+     * <li>32x32x32 8 = 72+1
+     * <li>64x64x64 8 = 584+1
+     * <li>128x128x128 8 = 4680+1
+     * <li>256x256x256 8 = 37448+1
+     * </ul>
+     * <ul>
+     * <li>32x32x32 16 = 8+1
+     * <li>64x64x64 8 = 72+1
+     * <li>128x128x128 8 = 584+1
+     * <li>256x256x256 8 = 4680+1
+     * </ul>
+     */
+    public static int calculateBlocksCount(int width, int height, int depth, int size) {
+        var blocks = 1;
+        var w = width;
+        var h = height;
+        var d = depth;
+        while (true) {
+            if (w < 8 || h < 8 || d < 8) {
+                break;
+            }
+            blocks += w * h * d / (size * size * size);
+            w /= 2;
+            h /= 2;
+            d /= 2;
+        }
+        return blocks;
+    }
+
 	private static final long serialVersionUID = 1L;
 
 	public static final String OBJECT_TYPE = GameMap.class.getSimpleName();
@@ -125,6 +166,14 @@ public class GameMap extends GameObject {
 			this.blockSize = blockSize;
 		}
 	}
+
+    /**
+     * Calculates the total count of {@link MapBlock} blocks for the specified
+     * width, height, depth and block size.
+     */
+    public int getBlocksCount() {
+        return calculateBlocksCount(width, height, depth, blockSize);
+    }
 
 	public void setWorld(WorldMap world) {
 		if (!Objects.equals(this.world, world)) {

@@ -9,8 +9,8 @@ import akka.actor.typed.ActorRef;
 import lombok.ToString;
 
 /**
- * Message to load a {@link GameObject} from the database. Responds with either
- * {@link LoadObjectSuccessMessage} or {@link LoadObjectErrorMessage}.
+ * Message to save a {@link GameObject} in the database. Responds with either
+ * {@link SaveObjectSuccessMessage} or {@link SaveObjectErrorMessage}.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */

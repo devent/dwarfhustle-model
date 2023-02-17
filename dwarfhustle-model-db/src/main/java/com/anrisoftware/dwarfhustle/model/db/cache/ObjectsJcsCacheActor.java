@@ -18,12 +18,9 @@
 package com.anrisoftware.dwarfhustle.model.db.cache;
 
 import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasKey;
 
 import java.time.Duration;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
@@ -85,13 +82,13 @@ public class ObjectsJcsCacheActor extends AbstractJcsCacheActor<Long, GameObject
     public interface ObjectsJcsCacheActorFactory extends AbstractJcsCacheActorFactory {
 
         @Override
-        ObjectsJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash,
+        ObjectsJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, Class<?> keyType,
                 Map<String, Object> params);
     }
 
     public static <K, V> Behavior<Message> create(Injector injector, AbstractJcsCacheActorFactory actorFactory,
             CompletionStage<CacheAccess<K, V>> initCacheAsync, Map<String, Object> params) {
-        return AbstractJcsCacheActor.create(injector, actorFactory, initCacheAsync, params);
+        return AbstractJcsCacheActor.create(injector, actorFactory, initCacheAsync, Long.class, params);
     }
 
     /**
@@ -99,45 +96,24 @@ public class ObjectsJcsCacheActor extends AbstractJcsCacheActor<Long, GameObject
      *
      * @param injector the {@link Injector} injector.
      * @param timeout  the {@link Duration} timeout.
-     * @param params   additional parameters:
-     *                 <ul>
-     *                 <li>parent_dir
-     *                 </ul>
      */
     public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout,
             Map<String, Object> params) {
         var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
         var actorFactory = injector.getInstance(ObjectsJcsCacheActorFactory.class);
-        var initCache = createInitCacheAsync(params);
+        var initCache = createInitCacheAsync();
         return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, actorFactory, initCache, params));
     }
 
-    public static CompletableFuture<CacheAccess<Object, Object>> createInitCacheAsync(Map<String, Object> params) {
-        var initCache = CompletableFuture.supplyAsync(() -> createCache(params));
+    public static CompletableFuture<CacheAccess<Object, Object>> createInitCacheAsync() {
+        var initCache = CompletableFuture.supplyAsync(() -> {
+            try {
+                return JCS.getInstance("objects");
+            } catch (CacheException e) {
+                throw new RuntimeException(e);
+            }
+        });
         return initCache;
-    }
-
-    private static CacheAccess<Object, Object> createCache(Map<String, Object> params) {
-        try {
-            validateParams(params);
-            var cacheName = "objectsCache";
-            params.put("cache_name", cacheName);
-            params.put("max_objects", 10000);
-            params.put("is_eternal", false);
-            params.put("max_key_size", 10000);
-            var config = new Properties();
-            createFileAuxCache(config, params);
-            config.put("jcs.region." + cacheName, cacheName + "_file");
-            createCache(config, params);
-            JCS.setConfigProperties(config);
-            return JCS.getInstance(cacheName);
-        } catch (CacheException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static void validateParams(Map<String, Object> params) {
-        assertThat(params, hasKey("parent_dir"));
     }
 
     @Inject

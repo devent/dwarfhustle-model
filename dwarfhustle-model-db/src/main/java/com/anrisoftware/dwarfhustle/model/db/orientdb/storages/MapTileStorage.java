@@ -31,9 +31,6 @@ public class MapTileStorage extends AbstractGameMapObjectStorage {
 
 	@Override
 	public void store(Object db, Object o, GameObject go) {
-		if (!go.isDirty()) {
-			return;
-		}
 		var v = (OElement) o;
 		var mt = (MapTile) go;
 		v.setProperty(MapTileSchema.MATERIAL_FIELD, mt.getMaterial());

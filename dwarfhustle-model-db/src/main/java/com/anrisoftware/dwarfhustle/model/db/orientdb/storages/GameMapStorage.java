@@ -54,9 +54,6 @@ public class GameMapStorage extends AbstractGameObjectStorage {
 
 	@Override
 	public void store(Object db, Object o, GameObject go) {
-		if (!go.isDirty()) {
-			return;
-		}
 		var v = (OElement) o;
 		var mb = (GameMap) go;
 		v.setProperty(NAME_FIELD, mb.getName());

@@ -43,10 +43,13 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadObjectMessage.
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadObjectsMessage.LoadObjectsErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsResponseMessage.ObjectsErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsResponseMessage.ObjectsSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.SaveObjectMessage.SaveObjectErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameObjectSchema;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
+import com.orientechnologies.orient.core.id.ORID;
+import com.orientechnologies.orient.core.record.OElement;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -63,6 +66,9 @@ import lombok.extern.slf4j.Slf4j;
  * Acts on the messages:
  * <ul>
  * <li>{@link CreateSchemasMessage}</li>
+ * <li>{@link LoadObjectMessage}</li>
+ * <li>{@link LoadObjectsMessage}</li>
+ * <li>{@link SaveObjectMessage}</li>
  * </ul>
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
@@ -70,192 +76,234 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ObjectsDbActor {
 
-	public static final ServiceKey<Message> KEY = ServiceKey.create(Message.class,
-			ObjectsDbActor.class.getSimpleName());
+    public static final ServiceKey<Message> KEY = ServiceKey.create(Message.class,
+            ObjectsDbActor.class.getSimpleName());
 
-	public static final String NAME = ObjectsDbActor.class.getSimpleName();
+    public static final String NAME = ObjectsDbActor.class.getSimpleName();
 
-	public static final int ID = KEY.hashCode();
+    public static final int ID = KEY.hashCode();
 
-	@RequiredArgsConstructor
-	@ToString(callSuper = true)
-	private static class WrappedDbResponse extends Message {
+    @RequiredArgsConstructor
+    @ToString(callSuper = true)
+    private static class WrappedDbResponse extends Message {
         private final DbResponseMessage<?> response;
-	}
+    }
 
-	/**
-	 * Factory to create {@link ObjectsDbActor}.
-	 *
-	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
-	 */
-	public interface ObjectsDbActorFactory {
-		ObjectsDbActor create(ActorContext<Message> context, ActorRef<Message> db);
-	}
+    /**
+     * Factory to create {@link ObjectsDbActor}.
+     *
+     * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+     */
+    public interface ObjectsDbActorFactory {
+        ObjectsDbActor create(ActorContext<Message> context, ActorRef<Message> db);
+    }
 
-	/**
-	 * Creates the {@link ObjectsDbActor}.
-	 */
-	public static Behavior<Message> create(Injector injector, ActorRef<Message> db) {
-		return Behaviors.setup(context -> injector.getInstance(ObjectsDbActorFactory.class).create(context, db).start());
-	}
+    /**
+     * Creates the {@link ObjectsDbActor}.
+     */
+    public static Behavior<Message> create(Injector injector, ActorRef<Message> db) {
+        return Behaviors
+                .setup(context -> injector.getInstance(ObjectsDbActorFactory.class).create(context, db).start());
+    }
 
-	/**
-	 * Creates the {@link ObjectsDbActor}.
-	 */
-	public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout, ActorRef<Message> db) {
-		var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
-		return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, db));
-	}
+    /**
+     * Creates the {@link ObjectsDbActor}.
+     */
+    public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout, ActorRef<Message> db) {
+        var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
+        return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, db));
+    }
 
-	@Inject
-	@Assisted
-	private ActorContext<Message> context;
+    @Inject
+    @Assisted
+    private ActorContext<Message> context;
 
-	@Inject
-	@Assisted
-	private ActorRef<Message> db;
+    @Inject
+    @Assisted
+    private ActorRef<Message> db;
 
-	@Inject
-	private List<GameObjectSchema> schemas;
+    @Inject
+    private List<GameObjectSchema> schemas;
 
-	@Inject
-	private Map<String, GameObjectStorage> storages;
+    @Inject
+    private Map<String, GameObjectStorage> storages;
 
     @SuppressWarnings("rawtypes")
     private ActorRef<DbResponseMessage> dbResponseAdapter;
 
-	/**
-	 * Returns a behavior for the messages from {@link #getInitialBehavior()}
-	 */
-	public Behavior<Message> start() {
-		this.dbResponseAdapter = context.messageAdapter(DbResponseMessage.class, WrappedDbResponse::new);
-		return getInitialBehavior()//
-				.build();
-	}
+    /**
+     * Returns a behavior for the messages from {@link #getInitialBehavior()}
+     */
+    public Behavior<Message> start() {
+        this.dbResponseAdapter = context.messageAdapter(DbResponseMessage.class, WrappedDbResponse::new);
+        return getInitialBehavior()//
+                .build();
+    }
 
-	/**
-	 * Returns a behavior for the messages from {@link #getInitialBehavior()}
-	 */
+    /**
+     * Returns a behavior for the messages from {@link #getInitialBehavior()}
+     */
     private Behavior<Message> onCreateSchemas(CreateSchemasMessage<?> m) {
-		log.debug("onCreateSchemas {}", m);
+        log.debug("onCreateSchemas {}", m);
         db.tell(new DbCommandMessage<>(dbResponseAdapter, ex -> new CreatedSchemasErrorMessage<>(m, ex), db -> {
-			createSchemas(db);
+            createSchemas(db);
             return new CreatedSchemasSuccessMessage<>(m);
-		}));
-		return Behaviors.same();
-	}
+        }));
+        return Behaviors.same();
+    }
 
-	/**
-	 * Returns a behavior for the messages from {@link #getInitialBehavior()}
-	 */
+    /**
+     * Returns a behavior for the messages from {@link #getInitialBehavior()}
+     */
     private Behavior<Message> onLoadGameObject(LoadObjectMessage<?> m) {
-		log.debug("onLoadGameObject {}", m);
+        log.debug("onLoadGameObject {}", m);
         db.tell(new DbCommandMessage<>(dbResponseAdapter, ex -> new LoadObjectErrorMessage<>(m, ex), db -> {
-			var wm = loadGameObject(m, db);
+            var wm = loadGameObject(m, db);
             return new LoadObjectSuccessMessage<>(m, wm);
-		}));
-		return Behaviors.same();
-	}
+        }));
+        return Behaviors.same();
+    }
 
-	@SneakyThrows
+    @SneakyThrows
     private GameObject loadGameObject(LoadObjectMessage<?> m, ODatabaseDocument db) {
-		var rs = m.query.apply(db);
-		try {
-			while (rs.hasNext()) {
-				var v = rs.next().getVertex();
-				if (v.isPresent()) {
-					var gos = storages.get(m.objectType);
-					var wm = gos.retrieve(db, v.get(), gos.create());
-					return wm;
-				}
-			}
-		} finally {
-			rs.close();
-		}
-		throw new LoadObjectException("no game object found");
-	}
+        var rs = m.query.apply(db);
+        try {
+            while (rs.hasNext()) {
+                var v = rs.next().getVertex();
+                if (v.isPresent()) {
+                    var gos = storages.get(m.objectType);
+                    var wm = gos.retrieve(db, v.get(), gos.create());
+                    return wm;
+                }
+            }
+        } finally {
+            rs.close();
+        }
+        throw new LoadObjectException("no game object found");
+    }
 
-	/**
-	 * Returns a behavior for the messages from {@link #getInitialBehavior()}
-	 */
+    /**
+     * Returns a behavior for the messages from {@link #getInitialBehavior()}
+     */
     private Behavior<Message> onLoadGameObjects(LoadObjectsMessage<?> m) {
-		log.debug("onLoadGameObjects {}", m);
+        log.debug("onLoadGameObjects {}", m);
         db.tell(new DbCommandMessage<>(dbResponseAdapter, ex -> new LoadObjectsErrorMessage<>(m, ex), db -> {
-			loadGameObjects(m, db);
-			return null;
-		}));
-		return Behaviors.same();
-	}
+            loadGameObjects(m, db);
+            return null;
+        }));
+        return Behaviors.same();
+    }
 
-	@SneakyThrows
+    @SneakyThrows
     private void loadGameObjects(LoadObjectsMessage<?> m, ODatabaseDocument db) {
-		var rs = m.query.apply(db);
-		try {
-			while (rs.hasNext()) {
-				var v = rs.next().getVertex();
-				if (v.isPresent()) {
-					var gos = storages.get(m.objectType);
-					var go = gos.retrieve(db, v.get(), gos.create());
-					m.consumer.accept(go);
-				}
-			}
-		} finally {
-			rs.close();
-		}
-	}
+        var rs = m.query.apply(db);
+        try {
+            while (rs.hasNext()) {
+                var v = rs.next().getVertex();
+                if (v.isPresent()) {
+                    var gos = storages.get(m.objectType);
+                    var go = gos.retrieve(db, v.get(), gos.create());
+                    m.consumer.accept(go);
+                }
+            }
+        } finally {
+            rs.close();
+        }
+    }
 
-	/**
-	 * <ul>
-	 * <li>Stops the actor on {@link DbErrorMessage} and replies with
-	 * {@link ObjectsErrorMessage}.</li>
-	 * <li>Returns a behavior for the messages from {@link #getInitialBehavior()} on
-	 * {@link DbSuccessMessage} and replies with {@link ObjectsSuccessMessage}.</li>
-	 * </ul>
-	 */
+    /**
+     * Returns a behavior for the messages from {@link #getInitialBehavior()}
+     */
+    private Behavior<Message> onSaveObject(SaveObjectMessage<?> m) {
+        log.debug("onSaveObject {}", m);
+        db.tell(new DbCommandMessage<>(dbResponseAdapter, ex -> new SaveObjectErrorMessage<>(m, ex), db -> {
+            saveGameObjects(m, db);
+            return null;
+        }));
+        return Behaviors.same();
+    }
+
+    private void saveGameObjects(SaveObjectMessage<?> m, ODatabaseDocument db) {
+        if (!m.go.isDirty()) {
+            return;
+        }
+        OElement v = null;
+        var arid = m.go.getRid();
+        if (arid instanceof ORID rid) {
+            v = db.load(rid);
+        } else {
+            v = db.newVertex(m.go.getObjectType());
+        }
+        db.begin();
+        try {
+            storages.get(m.go.getObjectType()).store(db, v, m.go);
+            v.save();
+            db.commit();
+            if (arid == null) {
+                m.go.setRid(v.getIdentity());
+            }
+        } catch (Exception e) {
+            db.rollback();
+            throw e;
+        }
+    }
+
+    /**
+     * <ul>
+     * <li>Stops the actor on {@link DbErrorMessage} and replies with
+     * {@link ObjectsErrorMessage}.</li>
+     * <li>Returns a behavior for the messages from {@link #getInitialBehavior()} on
+     * {@link DbSuccessMessage} and replies with {@link ObjectsSuccessMessage}.</li>
+     * </ul>
+     */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private Behavior<Message> onWrappedDbResponse(WrappedDbResponse m) {
-		log.debug("onWrappedDbResponse {}", m);
-		var response = m.response;
-		if (response instanceof DbCommandErrorMessage rm) {
-			log.error("Db error", rm);
+        log.debug("onWrappedDbResponse {}", m);
+        var response = m.response;
+        if (response instanceof DbCommandErrorMessage rm) {
+            log.error("Db error", rm);
             if (rm.onError instanceof CreatedSchemasErrorMessage res) {
                 res.om.replyTo.tell(res);
-			}
-			return Behaviors.stopped();
-		} else if (response instanceof DbCommandSuccessMessage rm) {
-			if (rm.value instanceof CreatedSchemasSuccessMessage res) {
-				res.om.replyTo.tell(res);
+            } else if (rm.onError instanceof ObjectsErrorMessage res) {
+                res.om.replyTo.tell(res);
+            }
+            return Behaviors.stopped();
+        } else if (response instanceof DbCommandSuccessMessage rm) {
+            if (rm.value instanceof CreatedSchemasSuccessMessage res) {
+                res.om.replyTo.tell(res);
             } else if (rm.value instanceof LoadObjectSuccessMessage res) {
                 res.om.replyTo.tell(res);
-			}
-		}
-		return Behaviors.same();
-	}
+            }
+        }
+        return Behaviors.same();
+    }
 
-	/**
-	 * Returns a behavior for the messages:
-	 *
-	 * <ul>
-	 * <li>{@link CreateSchemasMessage}
-	 * <li>{@link LoadObjectMessage}
-	 * <li>{@link LoadObjectsMessage}
-	 * <li>{@link WrappedDbResponse}
-	 * </ul>
-	 */
-	private BehaviorBuilder<Message> getInitialBehavior() {
-		return Behaviors.receive(Message.class)//
-				.onMessage(CreateSchemasMessage.class, this::onCreateSchemas)//
-				.onMessage(LoadObjectMessage.class, this::onLoadGameObject)//
-				.onMessage(LoadObjectsMessage.class, this::onLoadGameObjects)//
-				.onMessage(WrappedDbResponse.class, this::onWrappedDbResponse)//
-		;
-	}
+    /**
+     * Returns a behavior for the messages:
+     *
+     * <ul>
+     * <li>{@link CreateSchemasMessage}
+     * <li>{@link LoadObjectMessage}
+     * <li>{@link LoadObjectsMessage}
+     * <li>{@link SaveObjectMessage}
+     * <li>{@link WrappedDbResponse}
+     * </ul>
+     */
+    private BehaviorBuilder<Message> getInitialBehavior() {
+        return Behaviors.receive(Message.class)//
+                .onMessage(CreateSchemasMessage.class, this::onCreateSchemas)//
+                .onMessage(LoadObjectMessage.class, this::onLoadGameObject)//
+                .onMessage(LoadObjectsMessage.class, this::onLoadGameObjects)//
+                .onMessage(SaveObjectMessage.class, this::onSaveObject)//
+                .onMessage(WrappedDbResponse.class, this::onWrappedDbResponse)//
+        ;
+    }
 
-	private void createSchemas(ODatabaseDocument db) {
-		for (GameObjectSchema schema : schemas) {
-			log.trace("createSchema {}", schema);
-			schema.createSchema(db);
-		}
-	}
+    private void createSchemas(ODatabaseDocument db) {
+        for (GameObjectSchema schema : schemas) {
+            log.trace("createSchema {}", schema);
+            schema.createSchema(db);
+        }
+    }
 
 }

@@ -65,9 +65,6 @@ public class MapBlockStorage extends AbstractGameObjectStorage {
 
 	@Override
 	public void store(Object db, Object o, GameObject go) {
-		if (!go.isDirty()) {
-			return;
-		}
 		var v = (OElement) o;
 		var mb = (MapBlock) go;
 		var odb = (ODatabaseDocument) db;

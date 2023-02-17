@@ -34,9 +34,6 @@ public abstract class AbstractGameObjectStorage implements GameObjectStorage {
 
 	@Override
 	public void store(Object db, Object o, GameObject go) {
-		if (!go.isDirty()) {
-			return;
-		}
 		var v = (OElement) o;
 		v.setProperty(OBJECTID_FIELD, go.getId());
 		v.setProperty(OBJECTTYPE_FIELD, go.getObjectType());
