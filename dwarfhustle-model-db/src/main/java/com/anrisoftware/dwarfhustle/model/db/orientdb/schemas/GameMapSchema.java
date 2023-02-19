@@ -65,6 +65,8 @@ public class GameMapSchema implements GameObjectSchema {
 
 	public static final String CAMERA_ROT_W_FIELD = "cameraRotW";
 
+    public static final String Z_FIELD = "z";
+
 	@Override
 	public void createSchema(Object db) {
 		var odb = (ODatabaseDocument) db;
@@ -87,6 +89,7 @@ public class GameMapSchema implements GameObjectSchema {
 		c.createProperty(CAMERA_ROT_Y_FIELD, OType.FLOAT);
 		c.createProperty(CAMERA_ROT_Z_FIELD, OType.FLOAT);
 		c.createProperty(CAMERA_ROT_W_FIELD, OType.FLOAT);
+        c.createProperty(Z_FIELD, OType.INTEGER);
 		try (var q = odb.command(
 				"CREATE INDEX GameMap_name ON GameMap (objecttype, name) NOTUNIQUE METADATA {ignoreNullValues: false}")) {
 		}

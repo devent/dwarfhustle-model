@@ -35,6 +35,7 @@ import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSche
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.NAME_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.TIME_ZONE_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.WIDTH_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.Z_FIELD;
 
 import java.time.ZoneOffset;
 
@@ -74,6 +75,7 @@ public class GameMapStorage extends AbstractGameObjectStorage {
 		v.setProperty(CAMERA_ROT_Y_FIELD, mb.getCameraRot()[1]);
 		v.setProperty(CAMERA_ROT_Z_FIELD, mb.getCameraRot()[2]);
 		v.setProperty(CAMERA_ROT_W_FIELD, mb.getCameraRot()[3]);
+        v.setProperty(Z_FIELD, mb.getZ());
 		super.store(db, o, go);
 	}
 
@@ -94,6 +96,7 @@ public class GameMapStorage extends AbstractGameObjectStorage {
 				v.getProperty(CAMERA_POS_Z_FIELD));
 		mb.setCameraRot(v.getProperty(CAMERA_ROT_X_FIELD), v.getProperty(CAMERA_ROT_Y_FIELD),
 				v.getProperty(CAMERA_ROT_Z_FIELD), v.getProperty(CAMERA_ROT_W_FIELD));
+        mb.setZ(v.getProperty(Z_FIELD));
 		return super.retrieve(db, o, go);
 	}
 

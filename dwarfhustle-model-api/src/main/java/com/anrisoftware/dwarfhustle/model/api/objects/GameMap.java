@@ -108,6 +108,8 @@ public class GameMap extends GameObject {
 
 	private float[] cameraRot = new float[4];
 
+    private int z;
+
 	public GameMap(long id) {
 		super(id);
 	}
@@ -240,4 +242,13 @@ public class GameMap extends GameObject {
 		}
 	}
 
+    /**
+     * Sets the current z level.
+     */
+    public void setZ(int z) {
+        if (this.z != z) {
+            this.z = z;
+            setDirty(true);
+        }
+    }
 }
