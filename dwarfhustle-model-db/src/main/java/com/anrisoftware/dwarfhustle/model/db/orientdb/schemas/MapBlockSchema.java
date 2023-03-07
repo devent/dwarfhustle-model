@@ -52,6 +52,8 @@ public class MapBlockSchema implements GameObjectSchema {
 
 	public static final String END_Z_FIELD = "ez";
 
+    public static final String ROOT_FIELD = "root";
+
 	@Override
 	public void createSchema(Object db) {
 		var odb = (ODatabaseDocument) db;
@@ -68,6 +70,7 @@ public class MapBlockSchema implements GameObjectSchema {
 		c.createProperty(END_X_FIELD, OType.INTEGER);
 		c.createProperty(END_Y_FIELD, OType.INTEGER);
 		c.createProperty(END_Z_FIELD, OType.INTEGER);
+        c.createProperty(ROOT_FIELD, OType.BOOLEAN);
 		try (var q = odb.command(
 				"CREATE INDEX MapBlock_type_pos ON MapBlock (objecttype, mapid, sx, sy, sz, ex, ey, ez) UNIQUE METADATA {ignoreNullValues: false}")) {
 		}

@@ -108,7 +108,7 @@ public class GameMap extends GameObject {
 
 	private float[] cameraRot = new float[4];
 
-    private int z;
+    private MapCursor cursor = new MapCursor(0, 0, 0);
 
 	public GameMap(long id) {
 		super(id);
@@ -242,13 +242,29 @@ public class GameMap extends GameObject {
 		}
 	}
 
-    /**
-     * Sets the current z level.
-     */
-    public void setZ(int z) {
-        if (this.z != z) {
-            this.z = z;
+    public void setCursor(int z, int y, int x) {
+        if (this.cursor.z != z || this.cursor.y != y || this.cursor.x != x) {
+            this.cursor = new MapCursor(z, y, x);
             setDirty(true);
         }
+    }
+
+    public void setCursor(MapCursor cursor) {
+        if (!Objects.equals(this.cursor, cursor)) {
+            this.cursor = cursor;
+            setDirty(true);
+        }
+    }
+
+    public void addZ(int dd) {
+        setCursor(new MapCursor(cursor.z + dd, cursor.y, cursor.x));
+    }
+
+    public boolean isCursor(int z, int y, int x) {
+        return cursor.equals(z, y, x);
+    }
+
+    public int getCursorZ() {
+        return cursor.z;
     }
 }
