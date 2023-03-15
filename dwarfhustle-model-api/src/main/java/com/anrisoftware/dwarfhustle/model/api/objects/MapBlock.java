@@ -38,7 +38,7 @@ import lombok.ToString;
 @Getter
 public class MapBlock extends GameObject {
 
-	private static final long serialVersionUID = -5242372790621414364L;
+    private static final long serialVersionUID = 1L;
 
 	public static final String OBJECT_TYPE = MapBlock.class.getSimpleName();
 
@@ -123,5 +123,4 @@ public class MapBlock extends GameObject {
 			this.root = root;
 		}
 	}
-
 }

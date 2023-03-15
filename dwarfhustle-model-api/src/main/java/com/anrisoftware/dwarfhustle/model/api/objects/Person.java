@@ -35,21 +35,48 @@ import lombok.ToString;
 @Setter
 public class Person extends GameMovingObject {
 
-	private static final long serialVersionUID = -6027695018525898404L;
+    private static final long serialVersionUID = -6027695018525898404L;
 
-	public static final String OBJECT_TYPE = Person.class.getSimpleName();
+    public static final String OBJECT_TYPE = Person.class.getSimpleName();
 
-	public Person(long id) {
-		super(id);
-	}
+    private String firstName;
 
-	public Person(byte[] idbuf) {
-		super(idbuf);
-	}
+    private String secondName;
 
-	@Override
-	public String getObjectType() {
-		return OBJECT_TYPE;
-	}
+    private String lastName;
+
+    public Person(long id) {
+        super(id);
+    }
+
+    public Person(byte[] idbuf) {
+        super(idbuf);
+    }
+
+    @Override
+    public String getObjectType() {
+        return OBJECT_TYPE;
+    }
+
+    public void setFirstName(String firstName) {
+        if (this.firstName != firstName) {
+            setDirty(true);
+            this.firstName = firstName;
+        }
+    }
+
+    public void setSecondName(String secondName) {
+        if (this.secondName != secondName) {
+            setDirty(true);
+            this.secondName = secondName;
+        }
+    }
+
+    public void setLastName(String lastName) {
+        if (this.lastName != lastName) {
+            setDirty(true);
+            this.lastName = lastName;
+        }
+    }
 
 }
