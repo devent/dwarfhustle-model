@@ -143,17 +143,8 @@ public class MapBlocksJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Ma
 
     @Override
     public <T> void handleElementEvent(IElementEvent<T> event) {
-    }
-
-    @Override
-    protected void retrieveValueFromDb(CacheGetMessage<?> m, Consumer<GameObject> consumer) {
-        if (m.key instanceof GameBlockPos p) {
-            retrieveMapBlock(p, consumer);
-        }
-    }
-
-    @Override
-    protected void storeValueDb(CachePutMessage<?, GameMapPos, MapBlock> m) {
+        System.out.println(event); // TODO
+        // MapBlock cache is eternal
     }
 
     /**
@@ -179,6 +170,21 @@ public class MapBlocksJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Ma
         return Behaviors.same();
     }
 
+    @Override
+    protected int getId() {
+        return ID;
+    }
+
+    @Override
+    protected void retrieveValueFromDb(CacheGetMessage<?> m, Consumer<GameObject> consumer) {
+        // save cast because actor is generic
+        retrieveMapBlock((GameBlockPos) m.key, consumer);
+    }
+
+    @Override
+    protected void storeValueDb(CachePutMessage<?, GameMapPos, MapBlock> m) {
+    }
+
     private void retrieveChildMapBlocks(GameBlockPos p) {
         actor.tell(new LoadObjectsMessage<>(objectsResponseAdapter, MapBlock.OBJECT_TYPE, go -> {
             var mb = (MapBlock) go;
@@ -196,6 +202,18 @@ public class MapBlocksJcsCacheActor extends AbstractJcsCacheActor<GameMapPos, Ma
             return db.query(query, MapBlock.OBJECT_TYPE, MapBlock.OBJECT_TYPE, p.getMapid(), p.getX(), p.getY(),
                     p.getZ(), p.getEndPos().getX(), p.getEndPos().getY(), p.getEndPos().getZ());
         }));
+    }
+
+    @Override
+    public MapBlock get(String type, GameMapPos key) {
+        // MapBlock cache is eternal, no need for a supply
+        return cache.get(key);
+    }
+
+    @Override
+    protected MapBlock retrieveValueFromDb(String type, GameMapPos key) {
+        // MapBlock cache is eternal
+        throw new UnsupportedOperationException();
     }
 
     @Override

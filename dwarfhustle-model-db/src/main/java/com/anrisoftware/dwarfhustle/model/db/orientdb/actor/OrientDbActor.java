@@ -259,25 +259,6 @@ public class OrientDbActor {
 	 * Reacts to {@link DbCommandMessage}.
 	 */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-	private Behavior<Message> onDbReplyCommand(DbCommandMessage m) {
-		log.debug("onDbReplyCommand {}", m);
-		try {
-			Object ret = null;
-			try (var db = orientdb.get().open(database, user, password)) {
-				ret = m.command.apply(db);
-			}
-			m.replyTo.tell(new DbCommandSuccessMessage(m, ret));
-		} catch (Exception e) {
-			log.error("onDbReplyCommand", e);
-			m.replyTo.tell(new DbCommandErrorMessage(m, e, m.onError.apply(e)));
-		}
-		return Behaviors.same();
-	}
-
-	/**
-	 * Reacts to {@link DbCommandMessage}.
-	 */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
 	private Behavior<Message> onDbCommand(DbCommandMessage m) {
 		log.debug("onDbCommand {}", m);
 		try {
@@ -360,7 +341,6 @@ public class OrientDbActor {
 	 * <li>{@link CreateDbMessage}
 	 * <li>{@link DeleteDbMessage}
 	 * <li>{@link DbCommandMessage}
-	 * <li>{@link DbCommandMessage}
 	 * </ul>
 	 */
 	private BehaviorBuilder<Message> getConnectedBehavior() {
@@ -370,7 +350,6 @@ public class OrientDbActor {
 				.onMessage(CloseDbMessage.class, this::onCloseDb)//
 				.onMessage(CreateDbMessage.class, this::onCreateDb)//
 				.onMessage(DeleteDbMessage.class, this::onDeleteDb)//
-				.onMessage(DbCommandMessage.class, this::onDbReplyCommand)//
 				.onMessage(DbCommandMessage.class, this::onDbCommand)//
 		;
 	}

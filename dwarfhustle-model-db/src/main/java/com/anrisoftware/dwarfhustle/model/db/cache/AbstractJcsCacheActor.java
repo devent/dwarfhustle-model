@@ -17,8 +17,6 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.cache;
 
-import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
-
 import java.time.Duration;
 import java.util.EventObject;
 import java.util.Map;
@@ -33,7 +31,6 @@ import org.apache.commons.jcs3.engine.CacheElement;
 import org.apache.commons.jcs3.engine.control.event.behavior.IElementEvent;
 import org.apache.commons.jcs3.engine.control.event.behavior.IElementEventHandler;
 
-import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheGetMessage.CacheGetSuccessMessage;
@@ -43,13 +40,11 @@ import com.anrisoftware.dwarfhustle.model.db.cache.CacheRetrieveMessage.CacheRet
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
 
-import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.BehaviorBuilder;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.StashBuffer;
-import akka.actor.typed.receptionist.ServiceKey;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -60,13 +55,6 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements IElementEventHandler {
-
-    public static final ServiceKey<Message> KEY = ServiceKey.create(Message.class,
-            AbstractJcsCacheActor.class.getSimpleName());
-
-    public static final String NAME = AbstractJcsCacheActor.class.getSimpleName();
-
-    public static final int ID = KEY.hashCode();
 
     @RequiredArgsConstructor
     @ToString(callSuper = true)
@@ -112,17 +100,6 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
                 return new SetupErrorMessage(cause);
             }
         });
-    }
-
-    /**
-     * Creates the {@link AbstractJcsCacheActor}.
-     */
-    public static <K, V> CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout,
-            AbstractJcsCacheActorFactory actorFactory, CompletionStage<CacheAccess<K, V>> initCache, Class<?> keyType,
-            Map<String, Object> params) {
-        var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
-        return createNamedActor(system, timeout, ID, KEY, NAME,
-                create(injector, actorFactory, initCache, keyType, params));
     }
 
     protected final Duration timeout = Duration.ofSeconds(300);
@@ -247,7 +224,9 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
      */
     protected Behavior<Message> onCacheRetrieve(CacheRetrieveMessage<K, V> m) {
         log.debug("onCacheRetrieve {}", m);
-        m.replyTo.tell(new CacheRetrieveResponseMessage<>(m, cache));
+        if (m.id == getId()) {
+            m.replyTo.tell(new CacheRetrieveResponseMessage<>(m, cache));
+        }
         return Behaviors.same();
     }
 
@@ -294,6 +273,11 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
     }
 
     /**
+     * Returns the ID of the cache.
+     */
+    protected abstract int getId();
+
+    /**
      * Stores the put value in the database.
      */
     protected abstract void storeValueDb(CachePutMessage<?, K, V> m);
@@ -302,13 +286,42 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
      * Retrieves the value from the database. Example send a database command:
      *
      * <pre>
-     * CompletionStage&lt;DbResponseMessage&gt; result = AskPattern.ask(db, replyTo -&gt; new DbCommandMessage(replyTo, db -&gt; {
-     *     retrieveGameObject(m, db);
-     * }), timeout, context.getSystem().scheduler());
-     * result.whenComplete((response, throwable) -&gt; {
-     * });
+     * actor.tell(new LoadObjectMessage&lt;&gt;(objectsResponseAdapter, OBJECT_TYPE, consumer, db -&gt; {
+     *     var query = "SELECT * from ? where ...";
+     *     return db.query(query, ...);
+     * }));
      * </pre>
      */
     protected abstract void retrieveValueFromDb(CacheGetMessage<?> m, Consumer<GameObject> consumer);
+
+    /**
+     * Retrieves the value from the database.
+     *
+     * <pre>
+     * CompletionStage&lt;DbResponseMessage&lt;?&gt;&gt; result = AskPattern.ask(actor.get(),
+     *         replyTo -&gt; new DbCommandMessage&lt;&gt;(replyTo, err -&gt; {
+     *             // db error
+     *             return null;
+     *         }, db -&gt; {
+     *             // query string
+     *             return null;
+     *         }), timeout, context.getSystem().scheduler());
+     * var ret = (DbCommandSuccessMessage&lt;?&gt;) result.toCompletableFuture().get();
+     * return ret.value;
+     * </pre>
+     */
+    protected abstract V retrieveValueFromDb(String type, K key);
+
+    /**
+     * Returns the value for the key directly from the cache without sending of
+     * messages. Should be used for performance critical code.
+     */
+    public V get(String type, K key) {
+        return cache.get(key, () -> supplyValue(type, key));
+    }
+
+    private V supplyValue(String type, K key) {
+        return retrieveValueFromDb(type, key);
+    }
 
 }

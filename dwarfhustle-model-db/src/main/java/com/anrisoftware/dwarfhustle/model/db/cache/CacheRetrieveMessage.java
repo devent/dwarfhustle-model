@@ -53,4 +53,6 @@ public class CacheRetrieveMessage<K, V> extends Message {
 	 * Reply to {@link ActorRef}.
 	 */
 	public final ActorRef<CacheRetrieveResponseMessage<K, V>> replyTo;
+
+    public final int id;
 }

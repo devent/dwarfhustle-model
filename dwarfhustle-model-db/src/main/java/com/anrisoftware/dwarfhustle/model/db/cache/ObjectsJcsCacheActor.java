@@ -34,7 +34,10 @@ import org.apache.commons.jcs3.access.exception.CacheException;
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
-import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage.DbCommandErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage.DbCommandSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadObjectMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadObjectMessage.LoadObjectErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadObjectMessage.LoadObjectSuccessMessage;
@@ -45,11 +48,13 @@ import com.google.inject.Injector;
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.ActorContext;
+import akka.actor.typed.javadsl.AskPattern;
 import akka.actor.typed.javadsl.BehaviorBuilder;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.StashBuffer;
 import akka.actor.typed.receptionist.ServiceKey;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -129,18 +134,6 @@ public class ObjectsJcsCacheActor extends AbstractJcsCacheActor<Long, GameObject
         return super.initialStage(m);
     }
 
-    @Override
-    protected void retrieveValueFromDb(CacheGetMessage<?> m, Consumer<GameObject> consumer) {
-        if (m.key instanceof Long id) {
-            retrieveGameObject(id, consumer);
-        }
-    }
-
-    @Override
-    protected void storeValueDb(CachePutMessage<?, Long, GameObject> m) {
-        actor.tell(new SaveObjectMessage<>(objectsResponseAdapter, m.value));
-    }
-
     /**
      * <ul>
      * <li>
@@ -159,11 +152,50 @@ public class ObjectsJcsCacheActor extends AbstractJcsCacheActor<Long, GameObject
         return Behaviors.same();
     }
 
-    private void retrieveGameObject(long id, Consumer<GameObject> consumer) {
-        actor.tell(new LoadObjectMessage<>(objectsResponseAdapter, MapBlock.OBJECT_TYPE, consumer, db -> {
+    @Override
+    protected int getId() {
+        return ID;
+    }
+
+    @Override
+    protected void retrieveValueFromDb(CacheGetMessage<?> m, Consumer<GameObject> consumer) {
+        if (m.key instanceof Long id) {
+            retrieveGameObject(m.type, id, consumer);
+        }
+    }
+
+    @Override
+    protected void storeValueDb(CachePutMessage<?, Long, GameObject> m) {
+        actor.tell(new SaveObjectMessage<>(objectsResponseAdapter, m.value));
+    }
+
+    private void retrieveGameObject(String type, long id, Consumer<GameObject> consumer) {
+        actor.tell(new LoadObjectMessage<>(objectsResponseAdapter, type, consumer, db -> {
             var query = "SELECT * from ? where objecttype = ? and objectid = ? limit 1";
-            return db.query(query, MapBlock.OBJECT_TYPE, MapBlock.OBJECT_TYPE, id);
+            return db.query(query, type, type, id);
         }));
+    }
+
+    @Override
+    @SneakyThrows
+    protected GameObject retrieveValueFromDb(String type, Long key) {
+        CompletionStage<DbResponseMessage<?>> result = AskPattern.ask(actor.get(),
+                replyTo -> new DbCommandMessage<>(replyTo, err -> {
+                    // db error
+                    return null;
+                }, db -> {
+                    var query = "SELECT * from ? where objecttype = ? and objectid = ? limit 1";
+                    return db.query(query, type, type, key);
+                }), timeout, context.getSystem().scheduler());
+        var res = result.toCompletableFuture().get();
+        if (res instanceof DbCommandSuccessMessage<?> ret) {
+            return (GameObject) ret.value;
+        } else if (res instanceof DbCommandErrorMessage<?> ret) {
+            log.error("retrieveValueFromDb", ret.ex);
+            throw ret.ex;
+        } else {
+            throw new IllegalArgumentException();
+        }
     }
 
     @Override
