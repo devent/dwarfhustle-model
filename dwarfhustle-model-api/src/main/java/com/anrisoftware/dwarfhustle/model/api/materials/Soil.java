@@ -17,8 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.materials;
 
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -26,18 +27,29 @@ import lombok.ToString;
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
 @ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
+@Getter
 public class Soil extends Material {
 
-	private static final long serialVersionUID = -5079031705039022133L;
+    private static final long serialVersionUID = 1L;
 
-	public static final String TYPE = "Soil";
+    public static final String OBJECT_TYPE = Soil.class.getSimpleName();
 
-	public Soil(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
-			float thermalConductivity) {
-		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);
-	}
+    public static final String TYPE = "Soil";
+
+    public Soil(byte[] idbuf) {
+        super(idbuf);
+    }
+
+    public Soil(long id) {
+        super(id);
+    }
+
+    @Override
+    public String getObjectType() {
+        return Soil.OBJECT_TYPE;
+    }
 
 }

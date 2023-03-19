@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.knowledge.powerloom
+package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl
 
 import java.util.stream.StreamSupport
 
@@ -31,23 +31,23 @@ import edu.isi.powerloom.logic.TruthValue
  */
 class PowerLoomUtils {
 
-	static void printPowerLoomRetrieve(String query, String module, Environment env) {
-		PlIterator answer = PLI.sRetrieve(query, module, env);
-		printSeparator();
-		println "Answers to query `$query`"
-		StreamSupport.stream(new PowerLoomSpliteratorSupport(answer.listify()).spliterator(), false).forEach({ v -> println v })
-		printSeparator();
-	}
+    static void printPowerLoomRetrieve(String query, String module, Environment env) {
+        PlIterator answer = PLI.sRetrieve(query, module, env);
+        printSeparator();
+        println "Answers to query `$query`"
+        StreamSupport.stream(new PowerLoomSpliteratorSupport(answer.listify()).spliterator(), false).forEach({ v -> println v })
+        printSeparator();
+    }
 
-	static void printPowerLoomAsk(String query, String module, Environment env) {
-		TruthValue answer = PLI.sAsk(query, module, env);
-		printSeparator();
-		println "Answers to query `$query`"
-		println answer
-		printSeparator();
-	}
+    static void printPowerLoomAsk(String query, String module, Environment env) {
+        TruthValue answer = PLI.sAsk(query, module, env);
+        printSeparator();
+        println "Answers to query `$query`"
+        println answer
+        printSeparator();
+    }
 
-	static void printSeparator() {
-		println "-----------------------------------------"
-	}
+    static void printSeparator() {
+        println "-----------------------------------------"
+    }
 }

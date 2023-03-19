@@ -17,8 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.materials;
 
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -26,18 +27,29 @@ import lombok.ToString;
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
 @ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
+@Getter
 public class IgneousIntrusive extends StoneLayer {
 
-	private static final long serialVersionUID = -7681776713433266564L;
+    private static final long serialVersionUID = 1L;
+
+    public static final String OBJECT_TYPE = IgneousIntrusive.class.getSimpleName();
 
 	public static final String TYPE = "Igneous-Intrusive";
 
-	public IgneousIntrusive(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
-			float thermalConductivity) {
-		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);
-	}
+    public IgneousIntrusive(byte[] idbuf) {
+        super(idbuf);
+    }
+
+    public IgneousIntrusive(long id) {
+        super(id);
+    }
+
+    @Override
+    public String getObjectType() {
+        return IgneousIntrusive.OBJECT_TYPE;
+    }
 
 }

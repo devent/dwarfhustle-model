@@ -33,11 +33,20 @@ public class IgneousExtrusive extends StoneLayer {
 
 	private static final long serialVersionUID = 1L;
 
+    public static final String OBJECT_TYPE = IgneousExtrusive.class.getSimpleName();
+
 	public static final String TYPE = "Igneous-Extrusive";
 
-	public IgneousExtrusive(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
-			float thermalConductivity) {
-		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);
-	}
+    public IgneousExtrusive(byte[] idbuf) {
+        super(idbuf);
+    }
 
+    public IgneousExtrusive(long id) {
+        super(id);
+    }
+
+    @Override
+    public String getObjectType() {
+        return IgneousExtrusive.OBJECT_TYPE;
+    }
 }

@@ -15,14 +15,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.knowledge.powerloom;
-
-import java.util.Map;
-
-import org.eclipse.collections.api.map.primitive.IntObjectMap;
+package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.api.materials.Material;
 
 import akka.actor.typed.ActorRef;
 import lombok.RequiredArgsConstructor;
@@ -35,42 +30,7 @@ import lombok.ToString;
  */
 @RequiredArgsConstructor
 @ToString(callSuper = true)
-public class KnowledgeBaseMessage<T extends Message> extends Message {
-
-	@ToString(callSuper = true)
-    public static class GetMessage<T extends Message> extends KnowledgeBaseMessage<T> {
-
-		public final String[] material;
-
-        public GetMessage(ActorRef<T> replyTo, String... material) {
-            super(replyTo);
-			this.material = material;
-		}
-	}
-
-	@RequiredArgsConstructor
-	@ToString(callSuper = true)
-	public static class ResponseMessage extends Message {
-
-	}
-
-	@RequiredArgsConstructor
-	@ToString(callSuper = true)
-	public static class ReplyMessage extends ResponseMessage {
-
-		@ToString.Exclude
-		public final Map<String, IntObjectMap<? extends Material>> materials;
-	}
-
-	@RequiredArgsConstructor
-	@ToString(callSuper = true)
-	public static class ErrorMessage extends ResponseMessage {
-
-		@ToString.Exclude
-        public final KnowledgeBaseMessage<?> originalMessage;
-
-		public final Exception error;
-	}
+public class KnowledgeMessage<T extends Message> extends Message {
 
     public final ActorRef<T> replyTo;
 

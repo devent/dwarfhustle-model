@@ -43,9 +43,9 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbModule
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsDbActor
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsDbModule
 import com.anrisoftware.dwarfhustle.model.generate.WorkerBlocks.WorkerBlocksFactory
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseActor
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.PowerLoomKnowledgeActor
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.PowerloomModule
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.pl.KnowledgeBaseActor
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.pl.PowerLoomKnowledgeActor
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.pl.PowerloomModule
 import com.anrisoftware.globalpom.threads.properties.internal.PropertiesThreadsModule
 import com.google.inject.Guice
 import com.google.inject.Injector

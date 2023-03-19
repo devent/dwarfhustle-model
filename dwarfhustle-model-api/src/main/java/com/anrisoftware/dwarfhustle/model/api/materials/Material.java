@@ -17,34 +17,52 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.materials;
 
-import java.io.Serializable;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Material what stuff is made of.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@Data
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class Material implements Serializable {
+@NoArgsConstructor
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
+@Getter
+@Setter
+public class Material extends GameObject {
 
-	private static final long serialVersionUID = -6527071336221066901L;
+    private static final long serialVersionUID = 1L;
+
+    public static final String OBJECT_TYPE = Material.class.getSimpleName();
 
 	public static final String TYPE = "Material";
 
-	@EqualsAndHashCode.Include
-	public final int id;
+    private String name;
 
-	public final String name;
+    private float meltingPoint;
 
-	public final float meltingPoint;
+    private float density;
 
-	public final float density;
+    private float specificHeatCapacity;
 
-	public final float specificHeatCapacity;
+    private float thermalConductivity;
 
-	public final float thermalConductivity;
+    public Material(byte[] idbuf) {
+        super(idbuf);
+    }
+
+    public Material(long id) {
+        super(id);
+    }
+
+    @Override
+    public String getObjectType() {
+        return Material.OBJECT_TYPE;
+    }
 }

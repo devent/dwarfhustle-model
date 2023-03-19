@@ -17,8 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.materials;
 
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -26,18 +27,29 @@ import lombok.ToString;
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
 @ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
+@Getter
 public class Metamorphic extends StoneLayer {
 
-	private static final long serialVersionUID = -300588915255253492L;
+    private static final long serialVersionUID = 1L;
+
+    public static final String OBJECT_TYPE = Metamorphic.class.getSimpleName();
 
 	public static final String TYPE = "Metamorphic";
 
-	public Metamorphic(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
-			float thermalConductivity) {
-		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);
-	}
+    public Metamorphic(byte[] idbuf) {
+        super(idbuf);
+    }
+
+    public Metamorphic(long id) {
+        super(id);
+    }
+
+    @Override
+    public String getObjectType() {
+        return Metamorphic.OBJECT_TYPE;
+    }
 
 }

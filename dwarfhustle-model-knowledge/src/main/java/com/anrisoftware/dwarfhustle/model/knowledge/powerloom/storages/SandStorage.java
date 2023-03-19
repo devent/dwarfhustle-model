@@ -15,41 +15,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api.materials;
+package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import com.anrisoftware.dwarfhustle.model.api.materials.Sand;
 
 /**
- * Sedimentary stone material.
+ * Granular material composed of finely divided mineral particles. Sand has
+ * various compositions but is defined by its grain size. Sand grains are
+ * smaller than gravel and coarser than silt.
  *
+ * @see Sand
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@NoArgsConstructor
-@ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
-@Getter
-public class Sedimentary extends StoneLayer {
-
-	private static final long serialVersionUID = 1L;
-
-    public static final String OBJECT_TYPE = Sedimentary.class.getSimpleName();
-
-	public static final String TYPE = "Sedimentary";
-
-    public Sedimentary(byte[] idbuf) {
-        super(idbuf);
-    }
-
-    public Sedimentary(long id) {
-        super(id);
-    }
-
-    @Override
-    public String getObjectType() {
-        return Sedimentary.OBJECT_TYPE;
-    }
-
+public class SandStorage extends SoilStorage {
 }

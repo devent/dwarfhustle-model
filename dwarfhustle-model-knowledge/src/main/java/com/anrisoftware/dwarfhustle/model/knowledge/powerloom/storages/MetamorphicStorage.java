@@ -1,5 +1,5 @@
 /*
- * dwarfhustle-model-knowledge - Manages the compile dependencies for the model.
+ * dwarfhustle-model-api - Manages the compile dependencies for the model.
  * Copyright © 2023 Erwin Müller (erwin.mueller@anrisoftware.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,27 +15,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.knowledge.powerloom;
+package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
-import java.util.function.Supplier;
-
-import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-
-import akka.actor.typed.ActorRef;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import com.anrisoftware.dwarfhustle.model.api.materials.Metamorphic;
 
 /**
- * Message to execute a command on the knowledge base.
+ * Metamorphic stone material.
  *
+ * @see Metamorphic
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@RequiredArgsConstructor
-@ToString(callSuper = true)
-public class KnowledgeCommandMessage<T extends Message> extends Message {
-
-    public final ActorRef<T> replyTo;
-
-	public final Supplier<Object> command;
-
+public class MetamorphicStorage extends StoneLayerStorage {
 }

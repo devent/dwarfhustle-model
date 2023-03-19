@@ -15,41 +15,21 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api.materials;
+package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import com.anrisoftware.dwarfhustle.model.api.materials.Metal;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 /**
- * Sedimentary stone material.
+ * Metal material type.
  *
+ * @see Metal
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@NoArgsConstructor
-@ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
-@Getter
-public class Sedimentary extends StoneLayer {
-
-	private static final long serialVersionUID = 1L;
-
-    public static final String OBJECT_TYPE = Sedimentary.class.getSimpleName();
-
-	public static final String TYPE = "Sedimentary";
-
-    public Sedimentary(byte[] idbuf) {
-        super(idbuf);
-    }
-
-    public Sedimentary(long id) {
-        super(id);
-    }
+public class MetalStorage extends MaterialStorage {
 
     @Override
-    public String getObjectType() {
-        return Sedimentary.OBJECT_TYPE;
+    public GameObject retrieve(Object db, Object o, GameObject go) {
+        return super.retrieve(db, o, go);
     }
-
 }

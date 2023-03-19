@@ -17,8 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.materials;
 
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -26,18 +27,29 @@ import lombok.ToString;
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
 @ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
+@Getter
 public class Seabed extends Soil {
 
-	private static final long serialVersionUID = -8063100762452949944L;
+    private static final long serialVersionUID = 1L;
+
+    public static final String OBJECT_TYPE = Seabed.class.getSimpleName();
 
 	public static final String TYPE = "Seabed";
 
-	public Seabed(int id, String name, float meltingPoint, float density, float specificHeatCapacity,
-			float thermalConductivity) {
-		super(id, name, meltingPoint, density, specificHeatCapacity, thermalConductivity);
-	}
+    public Seabed(byte[] idbuf) {
+        super(idbuf);
+    }
+
+    public Seabed(long id) {
+        super(id);
+    }
+
+    @Override
+    public String getObjectType() {
+        return Seabed.OBJECT_TYPE;
+    }
 
 }

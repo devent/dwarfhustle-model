@@ -1,5 +1,5 @@
 /*
- * dwarfhustle-model-api - Manages the compile dependencies for the model.
+ * dwarfhustle-model-knowledge - Manages the compile dependencies for the model.
  * Copyright © 2023 Erwin Müller (erwin.mueller@anrisoftware.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,41 +15,27 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api.materials;
+package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import java.util.function.Supplier;
+
+import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+
+import akka.actor.typed.ActorRef;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
- * Sedimentary stone material.
+ * Message to execute a command on the knowledge base.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@NoArgsConstructor
+@RequiredArgsConstructor
 @ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
-@Getter
-public class Sedimentary extends StoneLayer {
+public class KnowledgeCommandMessage<T extends Message> extends Message {
 
-	private static final long serialVersionUID = 1L;
+    public final ActorRef<T> replyTo;
 
-    public static final String OBJECT_TYPE = Sedimentary.class.getSimpleName();
-
-	public static final String TYPE = "Sedimentary";
-
-    public Sedimentary(byte[] idbuf) {
-        super(idbuf);
-    }
-
-    public Sedimentary(long id) {
-        super(id);
-    }
-
-    @Override
-    public String getObjectType() {
-        return Sedimentary.OBJECT_TYPE;
-    }
+	public final Supplier<Object> command;
 
 }

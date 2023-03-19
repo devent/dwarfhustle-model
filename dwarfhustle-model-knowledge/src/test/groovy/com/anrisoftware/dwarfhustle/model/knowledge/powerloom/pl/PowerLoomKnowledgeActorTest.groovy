@@ -15,35 +15,38 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.knowledge.powerloom
+package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl
+
+import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomUtils.*
 
 import java.time.Duration
 import java.util.concurrent.CountDownLatch
 
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.actor.ModelActorsModule
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.GetMessage
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.ReplyMessage
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandResponseMessage.KnowledgeCommandErrorMessage
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandErrorMessage
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandSuccessMessage
 import com.google.inject.Guice
 import com.google.inject.Injector
 
 import akka.actor.testkit.typed.javadsl.ActorTestKit
 import akka.actor.typed.ActorRef
 import akka.actor.typed.javadsl.AskPattern
+import edu.isi.powerloom.PLI
 import groovy.util.logging.Slf4j
 
 /**
- * @see KnowledgeBaseActor
+ * @see PowerLoomKnowledgeActor
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
-class KnowledgeBaseActorTest {
+class PowerLoomKnowledgeActorTest {
 
     static final ActorTestKit testKit = ActorTestKit.create()
 
@@ -51,13 +54,10 @@ class KnowledgeBaseActorTest {
 
     static ActorRef<Message> powerLoomKnowledgeActor
 
-    static ActorRef<Message> knowledgeBaseActor
-
     @BeforeAll
     static void setupActor() {
         injector = Guice.createInjector(new ModelActorsModule(), new PowerloomModule())
         powerLoomKnowledgeActor = testKit.spawn(PowerLoomKnowledgeActor.create(injector), "PowerLoomKnowledgeActor");
-        knowledgeBaseActor = testKit.spawn(KnowledgeBaseActor.create(injector, powerLoomKnowledgeActor), "KnowledgeBaseActor");
     }
 
     @AfterAll
@@ -65,23 +65,65 @@ class KnowledgeBaseActorTest {
         testKit.shutdown(testKit.system(), Duration.ofMinutes(1))
     }
 
-    @Test
-    @Timeout(15l)
-    void "test retrieve"() {
+    @ParameterizedTest
+    @ValueSource(strings = [
+        "all (Stone ?type)",
+        "all (Sedimentary ?x)",
+        "all (Metal-Ore ?type)",
+        "all (metal-ore-product ?x ?y Copper)",
+        "all ?x (and (melting-point-material ?x ?t) (> ?t 2000))",
+        "all ?t (melting-point-material Aluminium ?t)",
+        "all ?t (melting-point-material Something ?t)",
+    ])
+    @Timeout(10l)
+    void "test retrieve"(String retrieve) {
+        askKnowledgeCommandMessage({
+            printPowerLoomRetrieve(retrieve, PowerLoomKnowledgeActor.WORKING_MODULE, null);
+        })
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = [
+        "all (Stone ?type)",
+        "?t (melting-point-material Aluminium ?t)",
+        "?t (thermal-conductivity-of-material Clay ?t)",
+    ])
+    @Timeout(1000l)
+    void "test retrieve pop"(String retrieve) {
+        askKnowledgeCommandMessage({
+            def answer = PLI.sRetrieve(retrieve, PowerLoomKnowledgeActor.WORKING_MODULE, null);
+            def next
+            while((next = answer.pop()) != null){
+                println next
+            }
+        })
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = [
+        "?t (melting-point-material Aluminium ?t)",
+    ])
+    @Timeout(10l)
+    void "test ask pop"(String retrieve) {
+        askKnowledgeCommandMessage({
+            def answer = PLI.sAsk(retrieve, PowerLoomKnowledgeActor.WORKING_MODULE, null);
+            println answer
+        })
+    }
+
+    void askKnowledgeCommandMessage(def command) {
         def result =
                 AskPattern.ask(
-                knowledgeBaseActor, {replyTo ->
-                    new GetMessage(replyTo, "Sedimentary")
+                powerLoomKnowledgeActor, {replyTo ->
+                    new KnowledgeCommandMessage(replyTo, command)
                 },
-                Duration.ofSeconds(15),
+                Duration.ofSeconds(300),
                 testKit.scheduler())
         def lock = new CountDownLatch(1)
-        def materials
         result.whenComplete( {reply, failure ->
             log.info "Command reply {} failure {}", reply, failure
             switch (reply) {
-                case ReplyMessage:
-                    materials = reply.materials
+                case KnowledgeCommandSuccessMessage:
                     break
                 case KnowledgeCommandErrorMessage:
                     break
@@ -89,7 +131,5 @@ class KnowledgeBaseActorTest {
             lock.countDown()
         })
         lock.await()
-        assert materials.size() == 1
-        assert materials.get("Sedimentary").size() == 11
     }
 }

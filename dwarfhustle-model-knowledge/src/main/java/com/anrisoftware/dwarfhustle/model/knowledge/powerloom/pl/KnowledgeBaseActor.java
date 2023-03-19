@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.knowledge.powerloom;
+package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl;
 
 import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
-import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.PowerLoomKnowledgeActor.WORKING_MODULE;
+import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor.WORKING_MODULE;
 
 import java.time.Duration;
 import java.util.Map;
@@ -46,9 +46,9 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Sand;
 import com.anrisoftware.dwarfhustle.model.api.materials.Seabed;
 import com.anrisoftware.dwarfhustle.model.api.materials.Sedimentary;
 import com.anrisoftware.dwarfhustle.model.api.materials.Topsoil;
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.GetMessage;
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage.ReplyMessage;
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeCommandResponseMessage.KnowledgeCommandErrorMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandErrorMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeReplyMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.GameObjectKnowledge;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
 
@@ -237,6 +237,9 @@ public class KnowledgeBaseActor {
     @Assisted
     private StashBuffer<Message> buffer;
 
+    @Inject
+    private Map<String, GameObjectKnowledge> storages;
+
     /**
      * Stash behavior. Returns a behavior for the messages:
      *
@@ -248,7 +251,7 @@ public class KnowledgeBaseActor {
     public Behavior<Message> start() {
         return Behaviors.receive(Message.class)//
                 .onMessage(InitialStateMessage.class, this::onInitialState)//
-                .onMessage(GetMessage.class, this::stashOtherCommand)//
+                .onMessage(Message.class, this::stashOtherCommand)//
                 .build();
     }
 
@@ -277,16 +280,16 @@ public class KnowledgeBaseActor {
     }
 
     /**
-     * Reacts to {@link GetMessage}.
+     * Reacts to {@link KnowledgeGetMessage}.
      */
     @SuppressWarnings("unchecked")
-    private Behavior<Message> onGet(@SuppressWarnings("rawtypes") GetMessage m) {
+    private Behavior<Message> onGet(@SuppressWarnings("rawtypes") KnowledgeGetMessage m) {
         log.debug("onGet {}", m);
-        MutableMap<String, IntObjectMap<? extends Material>> map = Maps.mutable.withInitialCapacity(m.material.length);
-        for (String material : m.material) {
+        MutableMap<String, IntObjectMap<? extends Material>> map = Maps.mutable.withInitialCapacity(m.types.length);
+        for (String material : m.types) {
             map.put(material, materials.get(material));
         }
-        m.replyTo.tell(new ReplyMessage(map.asUnmodifiable()));
+        m.replyTo.tell(new KnowledgeReplyMessage(map.asUnmodifiable()));
         return Behaviors.same();
     }
 
@@ -294,12 +297,12 @@ public class KnowledgeBaseActor {
      * Returns a behavior for the messages:
      *
      * <ul>
-     * <li>{@link GetMessage}
+     * <li>{@link KnowledgeGetMessage}
      * </ul>
      */
     private BehaviorBuilder<Message> getInitialBehavior() {
         return Behaviors.receive(Message.class)//
-                .onMessage(GetMessage.class, this::onGet)//
+                .onMessage(KnowledgeGetMessage.class, this::onGet)//
         ;
     }
 

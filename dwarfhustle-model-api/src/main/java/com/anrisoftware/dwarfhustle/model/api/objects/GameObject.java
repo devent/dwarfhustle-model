@@ -79,7 +79,7 @@ public class GameObject implements Serializable {
 	}
 
 	public String getObjectType() {
-		return OBJECT_TYPE;
+        return GameObject.OBJECT_TYPE;
 	}
 
 	public void setDirty(boolean dirty) {
