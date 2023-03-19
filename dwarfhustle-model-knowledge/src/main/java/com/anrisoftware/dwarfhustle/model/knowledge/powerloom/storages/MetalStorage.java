@@ -29,7 +29,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 public class MetalStorage extends MaterialStorage {
 
     @Override
-    public GameObject retrieve(Object db, Object o, GameObject go) {
-        return super.retrieve(db, o, go);
+    public GameObject create() {
+        return new Metal();
     }
 }

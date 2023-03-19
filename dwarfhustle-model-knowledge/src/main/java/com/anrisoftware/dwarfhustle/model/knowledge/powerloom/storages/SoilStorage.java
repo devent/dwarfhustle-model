@@ -18,6 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
 import com.anrisoftware.dwarfhustle.model.api.materials.Soil;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 /**
  * Soil material.
@@ -26,4 +27,9 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Soil;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 public class SoilStorage extends MaterialStorage {
+
+    @Override
+    public GameObject create() {
+        return new Soil();
+    }
 }

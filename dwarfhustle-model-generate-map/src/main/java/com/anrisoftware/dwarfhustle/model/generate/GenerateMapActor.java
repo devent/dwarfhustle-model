@@ -32,9 +32,9 @@ import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.materials.IgneousExtrusive;
 import com.anrisoftware.dwarfhustle.model.api.materials.IgneousIntrusive;
-import com.anrisoftware.dwarfhustle.model.api.materials.Material;
 import com.anrisoftware.dwarfhustle.model.api.materials.Metamorphic;
 import com.anrisoftware.dwarfhustle.model.api.materials.Sedimentary;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.generate.GenerateMapMessage.GenerateErrorMessage;
 import com.anrisoftware.dwarfhustle.model.generate.WorkerBlocks.WorkerBlocksFactory;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeGetMessage;
@@ -83,7 +83,7 @@ public class GenerateMapActor {
     private static class MaterialsLoadSuccessMessage extends Message {
 
         @ToString.Exclude
-        public final Map<String, IntObjectMap<? extends Material>> materials;
+        public final Map<String, IntObjectMap<? extends GameObject>> materials;
 
     }
 
@@ -213,7 +213,7 @@ public class GenerateMapActor {
             generateMap.get().replyTo.tell(new GenerateErrorMessage(generateMap.get(), em.error));
             return Behaviors.stopped();
         } else if (response instanceof KnowledgeReplyMessage rm) {
-            context.getSelf().tell(new MaterialsLoadSuccessMessage(rm.materials));
+            context.getSelf().tell(new MaterialsLoadSuccessMessage(rm.go));
         }
         return Behaviors.same();
     }

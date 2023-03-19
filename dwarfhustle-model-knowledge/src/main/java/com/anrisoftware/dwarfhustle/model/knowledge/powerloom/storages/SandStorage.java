@@ -18,6 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
 import com.anrisoftware.dwarfhustle.model.api.materials.Sand;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 /**
  * Granular material composed of finely divided mineral particles. Sand has
@@ -28,4 +29,9 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Sand;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 public class SandStorage extends SoilStorage {
+
+    @Override
+    public GameObject create() {
+        return new Sand();
+    }
 }

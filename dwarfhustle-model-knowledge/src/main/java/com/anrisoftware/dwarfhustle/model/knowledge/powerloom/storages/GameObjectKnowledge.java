@@ -9,5 +9,10 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
  */
 public interface GameObjectKnowledge {
 
-    GameObject retrieve(Object db, Object o, GameObject go);
+    GameObject retrieve(Object o, GameObject go);
+
+    /**
+     * Returns a new {@link GameObject}.
+     */
+    GameObject create();
 }

@@ -18,6 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
 import com.anrisoftware.dwarfhustle.model.api.materials.Sedimentary;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 /**
  * Sedimentary stone material.
@@ -26,4 +27,9 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Sedimentary;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 public class SedimentaryStorage extends StoneLayerStorage {
+
+    @Override
+    public GameObject create() {
+        return new Sedimentary();
+    }
 }

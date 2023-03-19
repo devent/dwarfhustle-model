@@ -18,6 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
 import com.anrisoftware.dwarfhustle.model.api.materials.Stone;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 /**
  * Stone material.
@@ -26,4 +27,9 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Stone;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 public class StoneStorage extends MaterialStorage {
+
+    @Override
+    public GameObject create() {
+        return new Stone();
+    }
 }

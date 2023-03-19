@@ -50,7 +50,7 @@ public class MaterialStorage implements GameObjectKnowledge {
     }
 
     @Override
-    public GameObject retrieve(Object db, Object o, GameObject go) {
+    public GameObject retrieve(Object o, GameObject go) {
         var next = (LogicObject) o;
         var m = (Material) go;
         m.setRid(next.surrogateValueInverse.symbolId);
@@ -60,5 +60,10 @@ public class MaterialStorage implements GameObjectKnowledge {
         m.setSpecificHeatCapacity(retrieveFloat("specific-heat-capacity-of-material", m.getName()));
         m.setThermalConductivity(retrieveFloat("thermal-conductivity-of-material", m.getName()));
         return m;
+    }
+
+    @Override
+    public GameObject create() {
+        return new Material();
     }
 }

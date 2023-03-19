@@ -18,6 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
 import com.anrisoftware.dwarfhustle.model.api.materials.Clay;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 /**
  * Clay material type.
@@ -26,4 +27,9 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Clay;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 public class ClayStorage extends SoilStorage {
+
+    @Override
+    public GameObject create() {
+        return new Clay();
+    }
 }

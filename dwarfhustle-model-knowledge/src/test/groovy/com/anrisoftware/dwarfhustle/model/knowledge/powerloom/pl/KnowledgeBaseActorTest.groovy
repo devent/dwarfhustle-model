@@ -22,6 +22,7 @@ import java.util.concurrent.CountDownLatch
 
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 
@@ -65,6 +66,7 @@ class KnowledgeBaseActorTest {
     }
 
     @Test
+    @RepeatedTest(10)
     @Timeout(15l)
     void "test retrieve"() {
         def result =
@@ -75,20 +77,22 @@ class KnowledgeBaseActorTest {
                 Duration.ofSeconds(15),
                 testKit.scheduler())
         def lock = new CountDownLatch(1)
-        def materials
+        def go
         result.whenComplete( {reply, failure ->
-            log.info "Command reply {} failure {}", reply, failure
-            switch (reply) {
-                case KnowledgeReplyMessage:
-                    materials = reply.materials
-                    break
-                case KnowledgeCommandErrorMessage:
-                    break
+            log.info "Command reply ${reply} failure ${failure}"
+            if (failure == null) {
+                switch (reply) {
+                    case KnowledgeReplyMessage:
+                        go = reply.go
+                        break
+                    case KnowledgeCommandErrorMessage:
+                        break
+                }
             }
             lock.countDown()
         })
         lock.await()
-        assert materials.size() == 1
-        assert materials.get("Sedimentary").size() == 11
+        assert go.size() == 1
+        assert go.get("Sedimentary").size() == 11
     }
 }

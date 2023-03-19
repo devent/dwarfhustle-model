@@ -18,6 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
 import com.anrisoftware.dwarfhustle.model.api.materials.IgneousIntrusive;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -35,4 +36,9 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @Getter
 public class IgneousIntrusiveStorage extends StoneLayerStorage {
+
+    @Override
+    public GameObject create() {
+        return new IgneousIntrusive();
+    }
 }

@@ -5,7 +5,7 @@ import java.util.Map;
 import org.eclipse.collections.api.map.primitive.IntObjectMap;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.api.materials.Material;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -22,7 +22,7 @@ public abstract class KnowledgeResponseMessage extends Message {
     public static class KnowledgeReplyMessage extends KnowledgeResponseMessage {
 
         @ToString.Exclude
-        public final Map<String, IntObjectMap<? extends Material>> materials;
+        public final Map<String, IntObjectMap<? extends GameObject>> go;
     }
 
     @RequiredArgsConstructor
