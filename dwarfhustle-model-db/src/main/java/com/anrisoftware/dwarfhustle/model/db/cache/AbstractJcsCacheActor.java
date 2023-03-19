@@ -173,14 +173,15 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
     @SuppressWarnings("unchecked")
     private Behavior<Message> onCachePut(@SuppressWarnings("rawtypes") CachePutMessage m) {
         log.debug("onCachePut {}", m);
-        if (keyType.isInstance(m.key)) {
-            try {
-                cache.put((K) m.key, (V) m.value);
-                storeValueDb(m);
-                m.replyTo.tell(new CacheSuccessMessage(m));
-            } catch (CacheException e) {
-                m.replyTo.tell(new CacheErrorMessage(m, e));
-            }
+        if (!keyType.isInstance(m.key)) {
+            log.warn("Cache key type not match {}!={}", keyType, m.key.getClass());
+        }
+        try {
+            cache.put((K) m.key, (V) m.value);
+            storeValueDb(m);
+            m.replyTo.tell(new CacheSuccessMessage(m));
+        } catch (CacheException e) {
+            m.replyTo.tell(new CacheErrorMessage(m, e));
         }
         return Behaviors.same();
     }

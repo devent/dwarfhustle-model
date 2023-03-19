@@ -26,7 +26,6 @@ import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
 
-import org.apache.commons.jcs3.access.CacheAccess;
 import org.eclipse.collections.api.map.primitive.IntObjectMap;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
@@ -36,8 +35,6 @@ import com.anrisoftware.dwarfhustle.model.api.materials.IgneousIntrusive;
 import com.anrisoftware.dwarfhustle.model.api.materials.Material;
 import com.anrisoftware.dwarfhustle.model.api.materials.Metamorphic;
 import com.anrisoftware.dwarfhustle.model.api.materials.Sedimentary;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
-import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.anrisoftware.dwarfhustle.model.generate.GenerateMapMessage.GenerateErrorMessage;
 import com.anrisoftware.dwarfhustle.model.generate.WorkerBlocks.WorkerBlocksFactory;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.KnowledgeBaseMessage;
@@ -113,9 +110,7 @@ public class GenerateMapActor {
 	}
 
 	public static Behavior<Message> create(Injector injector, OrientDB db, ActorRef<Message> knowledge) {
-		return Behaviors.setup((context) -> {
-			return injector.getInstance(GenerateMapActorFactory.class).create(context, db, knowledge).start();
-		});
+		return Behaviors.setup(context -> injector.getInstance(GenerateMapActorFactory.class).create(context, db, knowledge).start());
 	}
 
 	/**
@@ -193,8 +188,7 @@ public class GenerateMapActor {
 	 */
 	protected Behavior<Message> onMaterialsLoadSuccess(MaterialsLoadSuccessMessage m) {
 		log.debug("onMaterialsLoadSuccess {}", m);
-		CacheAccess<GameBlockPos, MapBlock> cache = null;
-		var workerActor = workerActorFactory.create(cache, db);
+        var workerActor = workerActorFactory.create(db);
 		return Behaviors.same();
 	}
 
@@ -211,13 +205,11 @@ public class GenerateMapActor {
 	private Behavior<Message> onWrappedKnowledgeBaseResponse(WrappedKnowledgeBaseResponse m) {
 		log.debug("onWrappedKnowledgeBaseResponse {}", m);
 		var response = m.response;
-		if (response instanceof KnowledgeBaseMessage.ErrorMessage) {
-			var em = (KnowledgeBaseMessage.ErrorMessage) response;
+		if (response instanceof KnowledgeBaseMessage.ErrorMessage em) {
 			log.error("Error load materials", em.error);
 			generateMap.get().replyTo.tell(new GenerateErrorMessage(generateMap.get(), em.error));
 			return Behaviors.stopped();
-		} else if (response instanceof KnowledgeBaseMessage.ReplyMessage) {
-			var rm = (KnowledgeBaseMessage.ReplyMessage) response;
+		} else if (response instanceof KnowledgeBaseMessage.ReplyMessage rm) {
 			context.getSelf().tell(new MaterialsLoadSuccessMessage(rm.materials));
 		}
 		return Behaviors.same();

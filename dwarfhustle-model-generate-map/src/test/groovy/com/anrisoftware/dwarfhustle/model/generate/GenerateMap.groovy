@@ -18,20 +18,13 @@
 package com.anrisoftware.dwarfhustle.model.generate
 
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapCoordinate.toDecimalDegrees
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbTestUtils.*
 
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.Month
 import java.time.ZoneOffset
 import java.util.concurrent.CountDownLatch
-import java.util.logging.Filter
 
-import org.apache.commons.jcs3.JCS
-import org.apache.commons.jcs3.access.CacheAccess
-import org.apache.commons.jcs3.engine.control.CompositeCache
-import org.apache.commons.jcs3.log.JulLogAdapter
-import org.apache.commons.jcs3.log.LogManager
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation
@@ -47,10 +40,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
 import com.anrisoftware.dwarfhustle.model.api.objects.MapArea
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap
 import com.anrisoftware.dwarfhustle.model.db.cache.AppCachesConfig
-import com.anrisoftware.dwarfhustle.model.db.cache.CacheRetrieveMessage
 import com.anrisoftware.dwarfhustle.model.db.cache.JcsCacheModule
-import com.anrisoftware.dwarfhustle.model.db.cache.MapBlocksJcsCacheActor
-import com.anrisoftware.dwarfhustle.model.db.cache.MapBlocksJcsCacheActor.MapBlocksJcsCacheActorFactory
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbServerUtils
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbTestUtils
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor
@@ -68,7 +58,6 @@ import com.orientechnologies.orient.core.db.ODatabaseType
 
 import akka.actor.testkit.typed.javadsl.ActorTestKit
 import akka.actor.typed.ActorRef
-import akka.actor.typed.javadsl.AskPattern
 import groovy.util.logging.Slf4j
 
 /**
@@ -180,10 +169,8 @@ class GenerateMap {
         wm.addMap(gm)
         new AppCachesConfig().create(mapTilesParams.parent_dir, gm)
         mapTilesParams.gameMap = gm
-        def cacheActor = testKit.spawn(MapBlocksJcsCacheActor.create(injector, injector.getInstance(MapBlocksJcsCacheActorFactory), MapBlocksJcsCacheActor.createInitCacheAsync(mapTilesParams), mapTilesParams), "MapBlocksJcsCacheActor");
-        def cache = retrieveCache(cacheActor)
         def m = new GenerateMapMessage(null, gm, mapTilesParams.block_size, dbTestUtils.user, dbTestUtils.password, dbTestUtils.database)
-        def worker = workerFactory.create(cache, dbTestUtils.db)
+        def worker = workerFactory.create(dbTestUtils.db)
         def thread = Thread.start {
             worker.generate(m)
         }
@@ -192,37 +179,5 @@ class GenerateMap {
             log.info("Blocks done {}", worker.blocksDone)
         }
         log.info("generate done {}", worker.blocksDone)
-        testKit.stop(cacheActor)
-        shutdownJcs()
-    }
-
-    static CacheAccess retrieveCache(ActorRef<Message> mapTilesCacheActor) {
-        def cache
-        def lock = new CountDownLatch(1)
-        def result =
-                AskPattern.ask(
-                mapTilesCacheActor, { replyTo ->
-                    new CacheRetrieveMessage(replyTo)
-                },
-                timeout,
-                testKit.scheduler())
-        result.whenComplete( { reply, failure ->
-            log_reply_failure "retrieveCache", reply, failure
-            cache = reply.cache
-            lock.countDown()
-        })
-        lock.await()
-        return cache
-    }
-
-    static void shutdownJcs() {
-        log.info("shutdownJcs")
-        ((JulLogAdapter)LogManager.getLog(CompositeCache.class)).logger.setFilter({
-            isLoggable: {
-                !it.message.startsWith("No element event queue available for cache")
-            }
-        } as Filter)
-        JCS.shutdown()
-        log.info("shutdownJcs done.")
     }
 }

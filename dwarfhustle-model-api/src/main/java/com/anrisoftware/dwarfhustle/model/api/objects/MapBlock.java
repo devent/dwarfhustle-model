@@ -147,10 +147,9 @@ public class MapBlock extends GameObject {
                 int yy = y + eby - by;
                 int zz = z + ebz - bz;
                 if (bx <= x && by <= y && bz <= z && ebx <= xx && eby <= yy && ebz <= zz) {
-                    // long id = blocks.get(b);
-                    // var mb = blockRetriever.apply(id);
-                    // return mb.findMapTile(pos, blockRetriever);
-                    return null;
+                    long id = blocks.get(b);
+                    var mb = blockRetriever.apply(id);
+                    return mb.findMapTile(pos, blockRetriever);
                 }
             }
         }

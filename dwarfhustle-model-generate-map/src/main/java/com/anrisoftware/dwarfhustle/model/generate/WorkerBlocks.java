@@ -21,7 +21,6 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import org.apache.commons.jcs3.access.CacheAccess;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.map.primitive.MutableObjectLongMap;
 import org.eclipse.collections.impl.factory.Maps;
@@ -59,12 +58,8 @@ public class WorkerBlocks {
 	 */
 	public interface WorkerBlocksFactory {
 
-		WorkerBlocks create(CacheAccess<GameBlockPos, MapBlock> cache, OrientDB orientdb);
+        WorkerBlocks create(OrientDB orientdb);
 	}
-
-	@Inject
-	@Assisted
-	private CacheAccess<GameBlockPos, MapBlock> cache;
 
 	@Inject
 	@Assisted
@@ -146,7 +141,6 @@ public class WorkerBlocks {
 		if (w2 == m.blockSize / 2) {
 			var block = createBlock(m, db, pos, endPos);
 			createMapTiles(db, block);
-			cache.put(block.getPos(), block);
 			saveBlock(db, block);
 			blocksDone++;
 			return block;
@@ -178,7 +172,6 @@ public class WorkerBlocks {
 		var b7 = generateMapBlock(m, db, map, pos(m, x, y + h2, z + d2), pos(m, x + w2, y + h1, z + d1));
 		map.put(b7.getPos(), b7.getId());
 		block.setBlocks(map.asUnmodifiable());
-		cache.put(block.getPos(), block);
 		blocksDone++;
 		saveBlock(db, block);
 		return block;
