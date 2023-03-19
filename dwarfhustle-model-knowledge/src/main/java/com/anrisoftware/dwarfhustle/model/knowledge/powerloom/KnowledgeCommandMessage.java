@@ -32,9 +32,9 @@ import lombok.ToString;
  */
 @RequiredArgsConstructor
 @ToString(callSuper = true)
-public class KnowledgeCommandMessage extends Message {
+public class KnowledgeCommandMessage<T extends Message> extends Message {
 
-	public final ActorRef<Message> caller;
+    public final ActorRef<T> replyTo;
 
 	public final Supplier<Object> command;
 

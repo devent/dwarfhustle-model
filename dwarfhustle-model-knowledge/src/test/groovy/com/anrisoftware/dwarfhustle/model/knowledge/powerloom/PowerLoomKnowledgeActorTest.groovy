@@ -115,7 +115,7 @@ class PowerLoomKnowledgeActorTest {
 		def result =
 				AskPattern.ask(
 				powerLoomKnowledgeActor, {replyTo ->
-					new KnowledgeCommandReplyMessage(replyTo, command)
+					new KnowledgeCommandMessage(replyTo, command)
 				},
 				Duration.ofSeconds(300),
 				testKit.scheduler())

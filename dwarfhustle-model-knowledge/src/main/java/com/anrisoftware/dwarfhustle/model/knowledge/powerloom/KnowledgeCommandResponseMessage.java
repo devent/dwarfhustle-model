@@ -22,6 +22,11 @@ import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
+/**
+ * Response message to execute a command on the knowledge base.
+ *
+ * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+ */
 public class KnowledgeCommandResponseMessage extends Message {
 
 	@RequiredArgsConstructor

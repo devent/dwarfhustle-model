@@ -163,7 +163,7 @@ public class PowerLoomKnowledgeActor {
     public Behavior<Message> start() {
         return Behaviors.receive(Message.class)//
                 .onMessage(InitialStateMessage.class, this::onInitialState)//
-                .onMessage(Message.class, this::stashOtherCommand)//
+                .onMessage(KnowledgeCommandMessage.class, this::stashOtherCommand)//
                 .build();
     }
 
@@ -172,18 +172,11 @@ public class PowerLoomKnowledgeActor {
         try {
             buffer.stash(m);
         } catch (StashOverflowException e) {
+            log.warn("Stash message overflow");
         }
         return Behaviors.same();
     }
 
-    /**
-     * Returns a behavior for the messages:
-     *
-     * <ul>
-     * <li>{@link KnowledgeCommandReplyMessage}
-     * <li>{@link KnowledgeCommandMessage}
-     * </ul>
-     */
     private Behavior<Message> onInitialState(InitialStateMessage m) {
         log.debug("onInitialState");
         return buffer.unstashAll(getInitialBehavior()//
@@ -191,15 +184,11 @@ public class PowerLoomKnowledgeActor {
     }
 
     /**
-     * Reacts to {@link KnowledgeCommandReplyMessage}. Returns a behavior for the
-     * messages:
-     *
-     * <ul>
-     * <li>{@link KnowledgeCommandReplyMessage}
-     * <li>{@link KnowledgeCommandMessage}
-     * </ul>
+     * Reacts to {@link KnowledgeCommandMessage}. Returns a behavior for the
+     * messages from {@link #getInitialBehavior()}.
      */
-    private Behavior<Message> onKnowledgeReplyCommand(KnowledgeCommandReplyMessage m) {
+    @SuppressWarnings("unchecked")
+    private Behavior<Message> onKnowledgeCommand(@SuppressWarnings("rawtypes") KnowledgeCommandMessage m) {
         log.debug("onKnowledgeReplyCommand {}", m);
         try {
             var res = m.command.get();
@@ -211,28 +200,14 @@ public class PowerLoomKnowledgeActor {
     }
 
     /**
-     * Reacts to {@link KnowledgeCommandMessage}. Returns a behavior for the
-     * messages:
+     * Returns a behavior for the messages:
      *
      * <ul>
-     * <li>{@link KnowledgeCommandReplyMessage}
      * <li>{@link KnowledgeCommandMessage}
      * </ul>
      */
-    private Behavior<Message> onKnowledgeCommand(KnowledgeCommandMessage m) {
-        log.debug("onKnowledgeCommand {}", m);
-        try {
-            var res = m.command.get();
-            m.caller.tell(new KnowledgeCommandSuccessMessage(m, res));
-        } catch (Exception e) {
-            m.caller.tell(new KnowledgeCommandErrorMessage(m, e));
-        }
-        return Behaviors.same();
-    }
-
     private BehaviorBuilder<Message> getInitialBehavior() {
         return Behaviors.receive(Message.class)//
-                .onMessage(KnowledgeCommandReplyMessage.class, this::onKnowledgeReplyCommand)//
                 .onMessage(KnowledgeCommandMessage.class, this::onKnowledgeCommand)//
         ;
     }

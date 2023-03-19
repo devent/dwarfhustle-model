@@ -35,32 +35,15 @@ import lombok.ToString;
  */
 @RequiredArgsConstructor
 @ToString(callSuper = true)
-public class KnowledgeBaseMessage extends Message {
+public class KnowledgeBaseMessage<T extends Message> extends Message {
 
 	@ToString(callSuper = true)
-	public static class GetMessage extends KnowledgeBaseMessage {
-
-		public final ActorRef<Message> caller;
+    public static class GetMessage<T extends Message> extends KnowledgeBaseMessage<T> {
 
 		public final String[] material;
 
-		public GetMessage(ActorRef<Message> caller, String... material) {
-			super();
-			this.caller = caller;
-			this.material = material;
-		}
-	}
-
-	@ToString(callSuper = true)
-	public static class GetReplyMessage extends KnowledgeBaseMessage {
-
-		public final ActorRef<ResponseMessage> replyTo;
-
-		public final String[] material;
-
-		public GetReplyMessage(ActorRef<ResponseMessage> replyTo, String... material) {
-			super();
-			this.replyTo = replyTo;
+        public GetMessage(ActorRef<T> replyTo, String... material) {
+            super(replyTo);
 			this.material = material;
 		}
 	}
@@ -84,9 +67,11 @@ public class KnowledgeBaseMessage extends Message {
 	public static class ErrorMessage extends ResponseMessage {
 
 		@ToString.Exclude
-		public final KnowledgeBaseMessage originalMessage;
+        public final KnowledgeBaseMessage<?> originalMessage;
 
 		public final Exception error;
 	}
+
+    public final ActorRef<T> replyTo;
 
 }
