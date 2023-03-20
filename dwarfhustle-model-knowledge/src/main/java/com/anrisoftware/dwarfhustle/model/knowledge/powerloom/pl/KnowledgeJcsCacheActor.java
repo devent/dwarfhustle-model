@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.db.cache;
+package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl;
 
 import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
 
@@ -33,13 +33,10 @@ import org.apache.commons.jcs3.access.exception.CacheException;
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage.DbCommandErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage.DbCommandSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadObjectMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadObjectMessage.LoadObjectErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadObjectMessage.LoadObjectSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.AbstractJcsCacheActor;
+import com.anrisoftware.dwarfhustle.model.db.cache.CacheGetMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.CacheGetMessage.CacheGetMissMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.CachePutMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsResponseMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.SaveObjectMessage;
 import com.google.inject.Injector;
@@ -47,46 +44,35 @@ import com.google.inject.Injector;
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.ActorContext;
-import akka.actor.typed.javadsl.AskPattern;
-import akka.actor.typed.javadsl.BehaviorBuilder;
-import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.StashBuffer;
 import akka.actor.typed.receptionist.ServiceKey;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Cache for {@link GameObject} game objects.
+ * Cache for {@link GameKnwoledge} game knowledge objects.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
-public class ObjectsJcsCacheActor extends AbstractJcsCacheActor {
+public class KnowledgeJcsCacheActor extends AbstractJcsCacheActor {
 
     public static final ServiceKey<Message> KEY = ServiceKey.create(Message.class,
-            ObjectsJcsCacheActor.class.getSimpleName());
+            KnowledgeJcsCacheActor.class.getSimpleName());
 
-    public static final String NAME = ObjectsJcsCacheActor.class.getSimpleName();
+    public static final String NAME = KnowledgeJcsCacheActor.class.getSimpleName();
 
     public static final int ID = KEY.hashCode();
 
-    @RequiredArgsConstructor
-    @ToString(callSuper = true)
-    private static class WrappedObjectsResponse extends Message {
-        private final ObjectsResponseMessage<?> response;
-    }
-
     /**
-     * Factory to create {@link ObjectsJcsCacheActor}.
+     * Factory to create {@link KnowledgeJcsCacheActor}.
      *
      * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
      */
-    public interface ObjectsJcsCacheActorFactory extends AbstractJcsCacheActorFactory {
+    public interface KnowledgeJcsCacheActorFactory extends AbstractJcsCacheActorFactory {
 
         @Override
-        ObjectsJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash);
+        KnowledgeJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash);
     }
 
     public static Behavior<Message> create(Injector injector, AbstractJcsCacheActorFactory actorFactory,
@@ -95,14 +81,14 @@ public class ObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     /**
-     * Creates the {@link ObjectsJcsCacheActor}.
+     * Creates the {@link KnowledgeJcsCacheActor}.
      *
      * @param injector the {@link Injector} injector.
      * @param timeout  the {@link Duration} timeout.
      */
     public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout) {
         var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
-        var actorFactory = injector.getInstance(ObjectsJcsCacheActorFactory.class);
+        var actorFactory = injector.getInstance(KnowledgeJcsCacheActorFactory.class);
         var initCache = createInitCacheAsync();
         return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, actorFactory, initCache));
     }
@@ -110,7 +96,7 @@ public class ObjectsJcsCacheActor extends AbstractJcsCacheActor {
     public static CompletableFuture<CacheAccess<Object, GameObject>> createInitCacheAsync() {
         CompletableFuture<CacheAccess<Object, GameObject>> initCache = CompletableFuture.supplyAsync(() -> {
             try {
-                return JCS.getInstance("objects");
+                return JCS.getInstance("knowledge");
             } catch (CacheException e) {
                 throw new RuntimeException(e);
             }
@@ -127,26 +113,7 @@ public class ObjectsJcsCacheActor extends AbstractJcsCacheActor {
     @Override
     protected Behavior<Message> initialStage(InitialStateMessage m) {
         log.debug("initialStage {}", m);
-        this.objectsResponseAdapter = context.messageAdapter(ObjectsResponseMessage.class, WrappedObjectsResponse::new);
         return super.initialStage(m);
-    }
-
-    /**
-     * <ul>
-     * <li>
-     * </ul>
-     */
-    private Behavior<Message> onWrappedObjectsResponse(WrappedObjectsResponse m) {
-        log.debug("onWrappedObjectsResponse {}", m);
-        var response = m.response;
-        if (response instanceof LoadObjectErrorMessage<?> rm) {
-            log.error("Objects error", rm);
-            return Behaviors.stopped();
-        } else if (response instanceof LoadObjectSuccessMessage<?> rm) {
-            var lm = rm.om;
-            lm.consumer.accept(rm.go);
-        }
-        return Behaviors.same();
     }
 
     @Override
@@ -154,11 +121,15 @@ public class ObjectsJcsCacheActor extends AbstractJcsCacheActor {
         return ID;
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    protected void handleCacheMiss(@SuppressWarnings("rawtypes") CacheGetMessage m) {
+        m.replyTo.tell(new CacheGetMissMessage<>(m));
+    }
+
     @Override
     protected void retrieveValueFromDb(CacheGetMessage<?> m, Consumer<GameObject> consumer) {
-        if (m.key instanceof Long id) {
-            retrieveGameObject(m.type, id, consumer);
-        }
+        // nop
     }
 
     @Override
@@ -166,39 +137,10 @@ public class ObjectsJcsCacheActor extends AbstractJcsCacheActor {
         actor.tell(new SaveObjectMessage<>(objectsResponseAdapter, m.value));
     }
 
-    private void retrieveGameObject(String type, long id, Consumer<GameObject> consumer) {
-        actor.tell(new LoadObjectMessage<>(objectsResponseAdapter, type, consumer, db -> {
-            var query = "SELECT * from ? where objecttype = ? and objectid = ? limit 1";
-            return db.query(query, type, type, id);
-        }));
-    }
-
     @Override
     @SneakyThrows
     protected GameObject retrieveValueFromDb(String type, Object key) {
-        CompletionStage<DbResponseMessage<?>> result = AskPattern.ask(actor.get(),
-                replyTo -> new DbCommandMessage<>(replyTo, err -> {
-                    // db error
-                    return null;
-                }, db -> {
-                    var query = "SELECT * from ? where objecttype = ? and objectid = ? limit 1";
-                    return db.query(query, type, type, key);
-                }), timeout, context.getSystem().scheduler());
-        var res = result.toCompletableFuture().get();
-        if (res instanceof DbCommandSuccessMessage<?> ret) {
-            return (GameObject) ret.value;
-        } else if (res instanceof DbCommandErrorMessage<?> ret) {
-            log.error("retrieveValueFromDb", ret.ex);
-            throw ret.ex;
-        } else {
-            throw new IllegalArgumentException();
-        }
+        throw new IllegalArgumentException();
     }
 
-    @Override
-    protected BehaviorBuilder<Message> getInitialBehavior() {
-        return super.getInitialBehavior()//
-                .onMessage(WrappedObjectsResponse.class, this::onWrappedObjectsResponse)//
-        ;
-    }
 }

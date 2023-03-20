@@ -23,12 +23,14 @@ import java.util.concurrent.CountDownLatch
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.RepeatedTest
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 
+import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.actor.ModelActorsModule
+import com.anrisoftware.dwarfhustle.model.api.objects.ApiModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandErrorMessage
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor.KnowledgeJcsCacheActorFactory
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeReplyMessage
 import com.google.inject.Guice
 import com.google.inject.Injector
@@ -49,15 +51,25 @@ class KnowledgeBaseActorTest {
 
     static Injector injector
 
+    static ActorSystemProvider actor
+
     static ActorRef<Message> powerLoomKnowledgeActor
 
     static ActorRef<Message> knowledgeBaseActor
 
+    static ActorRef<Message> cacheActor
+
     @BeforeAll
     static void setupActor() {
-        injector = Guice.createInjector(new ModelActorsModule(), new PowerloomModule())
+        injector = Guice.createInjector(new ModelActorsModule(), new PowerloomModule(), new ApiModule())
+        actor = injector.getInstance(ActorSystemProvider)
         powerLoomKnowledgeActor = testKit.spawn(PowerLoomKnowledgeActor.create(injector), "PowerLoomKnowledgeActor");
         knowledgeBaseActor = testKit.spawn(KnowledgeBaseActor.create(injector, powerLoomKnowledgeActor), "KnowledgeBaseActor");
+        cacheActor = testKit.spawn(KnowledgeJcsCacheActor.create(injector, injector.getInstance(KnowledgeJcsCacheActorFactory), KnowledgeJcsCacheActor.createInitCacheAsync()), "KnowledgeJcsCacheActor");
+        while (actor.getMainActor() == null) {
+            Thread.sleep 10
+        }
+        actor.getMainActor().actors.put(KnowledgeJcsCacheActor.ID, cacheActor)
     }
 
     @AfterAll
@@ -65,7 +77,6 @@ class KnowledgeBaseActorTest {
         testKit.shutdown(testKit.system(), Duration.ofMinutes(1))
     }
 
-    @Test
     @RepeatedTest(10)
     @Timeout(15l)
     void "test retrieve"() {
@@ -77,7 +88,7 @@ class KnowledgeBaseActorTest {
                 Duration.ofSeconds(15),
                 testKit.scheduler())
         def lock = new CountDownLatch(1)
-        def go
+        KnowledgeObject go
         result.whenComplete( {reply, failure ->
             log.info "Command reply ${reply} failure ${failure}"
             if (failure == null) {
@@ -92,7 +103,7 @@ class KnowledgeBaseActorTest {
             lock.countDown()
         })
         lock.await()
-        assert go.size() == 1
-        assert go.get("Sedimentary").size() == 11
+        assert go.type == "Sedimentary"
+        assert go.objects.size() == 11
     }
 }

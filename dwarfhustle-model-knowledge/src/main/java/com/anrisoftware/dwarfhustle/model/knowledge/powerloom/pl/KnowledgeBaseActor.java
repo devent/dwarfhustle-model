@@ -26,15 +26,16 @@ import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
 
-import org.eclipse.collections.api.map.MutableMap;
-import org.eclipse.collections.api.map.primitive.IntObjectMap;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
-import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
+import org.lable.oss.uniqueid.IDGenerator;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.db.cache.CacheGetMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.CachePutMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandErrorMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeReplyMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.GameObjectKnowledge;
@@ -53,6 +54,7 @@ import akka.actor.typed.receptionist.ServiceKey;
 import edu.isi.powerloom.PLI;
 import edu.isi.powerloom.logic.LogicObject;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -79,8 +81,13 @@ public class KnowledgeBaseActor {
     @RequiredArgsConstructor
     @ToString(callSuper = true)
     private static class SetupErrorMessage extends Message {
-
         public final Throwable cause;
+    }
+
+    @RequiredArgsConstructor
+    @ToString(callSuper = true)
+    private static class WrappedCacheResponse extends Message {
+        private final CacheResponseMessage<?> response;
     }
 
     /**
@@ -96,7 +103,7 @@ public class KnowledgeBaseActor {
     public static Behavior<Message> create(Injector injector, ActorRef<Message> knowledge) {
         return Behaviors.withStash(100, stash -> Behaviors.setup(context -> {
             loadKnowledgeBase(context, knowledge);
-            return injector.getInstance(KnowledgeBaseActorFactory.class).create(context, stash).start();
+            return injector.getInstance(KnowledgeBaseActorFactory.class).create(context, stash).start(injector);
         }));
     }
 
@@ -140,6 +147,15 @@ public class KnowledgeBaseActor {
     @Inject
     private Map<String, GameObjectKnowledge> storages;
 
+    @Inject
+    private IDGenerator ids;
+
+    @Inject
+    private ActorSystemProvider actor;
+
+    @SuppressWarnings("rawtypes")
+    private ActorRef<CacheResponseMessage> cacheResponseAdapter;
+
     /**
      * Stash behavior. Returns a behavior for the messages:
      *
@@ -148,7 +164,8 @@ public class KnowledgeBaseActor {
      * <li>{@link Message}
      * </ul>
      */
-    public Behavior<Message> start() {
+    public Behavior<Message> start(Injector injector) {
+        this.cacheResponseAdapter = context.messageAdapter(CacheResponseMessage.class, WrappedCacheResponse::new);
         return Behaviors.receive(Message.class)//
                 .onMessage(InitialStateMessage.class, this::onInitialState)//
                 .onMessage(Message.class, this::stashOtherCommand)//
@@ -166,12 +183,7 @@ public class KnowledgeBaseActor {
     }
 
     /**
-     * Returns a behavior for the messages:
-     *
-     * <ul>
-     * <li>{@link GetReplyMessage}
-     * <li>{@link GetMessage}
-     * </ul>
+     * Returns a behavior for the messages from {@link #getInitialBehavior()}.
      */
     private Behavior<Message> onInitialState(InitialStateMessage m) {
         log.debug("onInitialState");
@@ -180,29 +192,49 @@ public class KnowledgeBaseActor {
     }
 
     /**
-     * Reacts to {@link KnowledgeGetMessage}.
+     * Reacts to {@link KnowledgeGetMessage}. Returns a behavior for the messages
+     * from {@link #getInitialBehavior()}.
      */
     @SuppressWarnings("unchecked")
+    @SneakyThrows
     private Behavior<Message> onKnowledgeGet(@SuppressWarnings("rawtypes") KnowledgeGetMessage m) {
         log.debug("onKnowledgeGet {}", m);
-        MutableMap<String, IntObjectMap<? extends GameObject>> map = Maps.mutable.withInitialCapacity(m.types.length);
-        for (String type : m.types) {
-            var sb = new StringBuilder();
-            sb.append("all (");
-            sb.append(type);
-            sb.append(" ?x)");
-            var answer = PLI.sRetrieve(sb.toString(), WORKING_MODULE, null);
-            MutableIntObjectMap<GameObject> mmap = IntObjectMaps.mutable.empty();
-            LogicObject next;
-            while ((next = (LogicObject) answer.pop()) != null) {
-                var s = storages.get(type);
-                var go = s.retrieve(next, s.create());
-                mmap.put((Integer) go.getRid(), go);
-            }
-            map.put(type, mmap);
-        }
-        m.replyTo.tell(new KnowledgeReplyMessage(map.asUnmodifiable()));
+        var cache = actor.getMainActor().getActor(KnowledgeJcsCacheActor.ID);
+        cache.tell(new CacheGetMessage<>(cacheResponseAdapter, KnowledgeObject.OBJECT_TYPE, m.type, go -> {
+            m.replyTo.tell(new KnowledgeReplyMessage((KnowledgeObject) go));
+        }, () -> {
+            var go = retrieveKnowledgeObject(m);
+            cache.tell(new CachePutMessage<>(cacheResponseAdapter, go.type, go));
+            m.replyTo.tell(new KnowledgeReplyMessage(go));
+        }));
         return Behaviors.same();
+    }
+
+    /**
+     * <ul>
+     * </ul>
+     */
+    private Behavior<Message> onWrappedCacheResponse(WrappedCacheResponse m) {
+        log.debug("onWrappedCacheResponse {}", m);
+        return Behaviors.same();
+    }
+
+    @SneakyThrows
+    private KnowledgeObject retrieveKnowledgeObject(KnowledgeGetMessage<?> m) {
+        var sb = new StringBuilder();
+        sb.append("all (");
+        sb.append(m.type);
+        sb.append(" ?x)");
+        var answer = PLI.sRetrieve(sb.toString(), WORKING_MODULE, null);
+        MutableIntObjectMap<GameObject> map = IntObjectMaps.mutable.empty();
+        LogicObject next;
+        while ((next = (LogicObject) answer.pop()) != null) {
+            var s = storages.get(m.type);
+            var go = s.retrieve(next, s.create());
+            go.setId(ids.generate());
+            map.put((Integer) go.getRid(), go);
+        }
+        return new KnowledgeObject(m.type, map);
     }
 
     /**
@@ -210,11 +242,13 @@ public class KnowledgeBaseActor {
      *
      * <ul>
      * <li>{@link KnowledgeGetMessage}
+     * <li>{@link WrappedCacheResponse}
      * </ul>
      */
     private BehaviorBuilder<Message> getInitialBehavior() {
         return Behaviors.receive(Message.class)//
                 .onMessage(KnowledgeGetMessage.class, this::onKnowledgeGet)//
+                .onMessage(WrappedCacheResponse.class, this::onWrappedCacheResponse)//
         ;
     }
 

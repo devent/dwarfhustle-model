@@ -28,35 +28,38 @@ import lombok.ToString;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @RequiredArgsConstructor
-@ToString(callSuper = true)
-public class CacheResponseMessage extends Message {
+@ToString
+public class CacheResponseMessage<T extends CacheMessage<?>> extends Message {
 
-	/**
-	 * Cache error response.
-	 *
-	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
-	 */
-	@RequiredArgsConstructor
+    /**
+     * Cache error response.
+     *
+     * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+     */
     @ToString
-	public static class CacheErrorMessage extends CacheResponseMessage {
+    public static class CacheErrorMessage<T extends CacheMessage<?>> extends CacheResponseMessage<T> {
 
-		@ToString.Exclude
-		public final Message m;
+        public final Throwable error;
 
-		public final Throwable error;
-	}
+        public CacheErrorMessage(T m, Throwable error) {
+            super(m);
+            this.error = error;
+        }
+    }
 
-	/**
-	 * Cache success response.
-	 *
-	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
-	 */
-	@RequiredArgsConstructor
+    /**
+     * Cache success response.
+     *
+     * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+     */
     @ToString
-	public static class CacheSuccessMessage extends CacheResponseMessage {
+    public static class CacheSuccessMessage<T extends CacheMessage<?>> extends CacheResponseMessage<T> {
+        public CacheSuccessMessage(T m) {
+            super(m);
+        }
+    }
 
-		@ToString.Exclude
-		public final Message m;
-	}
+    @ToString.Exclude
+    public final T m;
 
 }

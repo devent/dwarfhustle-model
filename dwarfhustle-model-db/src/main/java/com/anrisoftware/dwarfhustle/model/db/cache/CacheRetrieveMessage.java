@@ -20,6 +20,7 @@ package com.anrisoftware.dwarfhustle.model.db.cache;
 import org.apache.commons.jcs3.access.CacheAccess;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 import akka.actor.typed.ActorRef;
 import lombok.RequiredArgsConstructor;
@@ -32,27 +33,27 @@ import lombok.ToString;
  */
 @RequiredArgsConstructor
 @ToString(callSuper = true)
-public class CacheRetrieveMessage<K, V> extends Message {
+public class CacheRetrieveMessage extends Message {
 
-	/**
-	 * Cache success response.
-	 *
-	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
-	 */
-	@RequiredArgsConstructor
-	@ToString(callSuper = true)
-	public static class CacheRetrieveResponseMessage<K, V> extends Message {
+    /**
+     * Cache success response.
+     *
+     * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+     */
+    @RequiredArgsConstructor
+    @ToString(callSuper = true)
+    public static class CacheRetrieveResponseMessage extends Message {
 
-		@ToString.Exclude
-		public final Message m;
+        @ToString.Exclude
+        public final Message m;
 
-		public final CacheAccess<K, V> cache;
-	}
+        public final CacheAccess<Object, GameObject> cache;
+    }
 
-	/**
-	 * Reply to {@link ActorRef}.
-	 */
-	public final ActorRef<CacheRetrieveResponseMessage<K, V>> replyTo;
+    /**
+     * Reply to {@link ActorRef}.
+     */
+    public final ActorRef<CacheRetrieveResponseMessage> replyTo;
 
     public final int id;
 }

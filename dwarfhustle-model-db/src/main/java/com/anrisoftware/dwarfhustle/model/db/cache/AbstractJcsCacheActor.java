@@ -19,7 +19,6 @@ package com.anrisoftware.dwarfhustle.model.db.cache;
 
 import java.time.Duration;
 import java.util.EventObject;
-import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
@@ -54,13 +53,13 @@ import lombok.extern.slf4j.Slf4j;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
-public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements IElementEventHandler {
+public abstract class AbstractJcsCacheActor implements IElementEventHandler {
 
     @RequiredArgsConstructor
     @ToString(callSuper = true)
-    public static class InitialStateMessage<K, V> extends Message {
+    public static class InitialStateMessage extends Message {
 
-        public final CacheAccess<K, V> cache;
+        public final CacheAccess<Object, GameObject> cache;
     }
 
     @RequiredArgsConstructor
@@ -77,25 +76,22 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
      */
     public interface AbstractJcsCacheActorFactory {
 
-        @SuppressWarnings("rawtypes")
-        AbstractJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, Class<?> keyType,
-                Map<String, Object> params);
+        AbstractJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash);
     }
 
-    @SuppressWarnings("unchecked")
-    public static <K, V> Behavior<Message> create(Injector injector, AbstractJcsCacheActorFactory actorFactory,
-            CompletionStage<CacheAccess<K, V>> initCacheAsync, Class<?> keyType, Map<String, Object> params) {
+    public static Behavior<Message> create(Injector injector, AbstractJcsCacheActorFactory actorFactory,
+            CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
         return Behaviors.withStash(100, stash -> Behaviors.setup(context -> {
             initCache(context, initCacheAsync);
-            return actorFactory.create(context, stash, keyType, params).start();
+            return actorFactory.create(context, stash).start();
         }));
     }
 
-    private static <K, V> void initCache(ActorContext<Message> context,
-            CompletionStage<CacheAccess<K, V>> initCacheAsync) {
+    private static void initCache(ActorContext<Message> context,
+            CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
         context.pipeToSelf(initCacheAsync, (result, cause) -> {
             if (cause == null) {
-                return new InitialStateMessage<>(result);
+                return new InitialStateMessage(result);
             } else {
                 return new SetupErrorMessage(cause);
             }
@@ -112,11 +108,7 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
     @Assisted
     protected StashBuffer<Message> buffer;
 
-    @Inject
-    @Assisted
-    protected Class<?> keyType;
-
-    protected CacheAccess<K, V> cache;
+    protected CacheAccess<Object, GameObject> cache;
 
     /**
      * Stash behavior. Returns a behavior for the messages:
@@ -149,7 +141,7 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
     /**
      * Returns a behavior for the messages from {@link #getInitialBehavior()}.
      */
-    private Behavior<Message> onInitialState(InitialStateMessage<K, V> m) {
+    private Behavior<Message> onInitialState(InitialStateMessage m) {
         log.debug("onInitialState {}", m);
         this.cache = m.cache;
         var attributes = cache.getDefaultElementAttributes();
@@ -173,15 +165,12 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
     @SuppressWarnings("unchecked")
     private Behavior<Message> onCachePut(@SuppressWarnings("rawtypes") CachePutMessage m) {
         log.debug("onCachePut {}", m);
-        if (!keyType.isInstance(m.key)) {
-            log.warn("Cache key type not match {}!={}", keyType, m.key.getClass());
-        }
         try {
-            cache.put((K) m.key, (V) m.value);
+            cache.put(m.key, m.value);
             storeValueDb(m);
-            m.replyTo.tell(new CacheSuccessMessage(m));
+            m.replyTo.tell(new CacheSuccessMessage<>(m));
         } catch (CacheException e) {
-            m.replyTo.tell(new CacheErrorMessage(m, e));
+            m.replyTo.tell(new CacheErrorMessage<>(m, e));
         }
         return Behaviors.same();
     }
@@ -193,20 +182,26 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
     private Behavior<Message> onCacheGet(@SuppressWarnings("rawtypes") CacheGetMessage m) {
         log.debug("onCacheGet {}", m);
         try {
-            var v = cache.get((K) m.key);
+            var v = cache.get(m.key);
             if (v == null) {
-                context.getSelf().tell(new CacheRetrieveFromBackendMessage(m, go -> {
-                    var vgo = (V) go;
-                    cache.put((K) m.key, vgo);
-                    m.replyTo.tell(new CacheGetSuccessMessage<>(m, vgo));
-                }));
+                m.onMiss.run();
+                handleCacheMiss(m);
             } else {
+                m.consumer.accept(v);
                 m.replyTo.tell(new CacheGetSuccessMessage<>(m, v));
             }
         } catch (CacheException e) {
-            m.replyTo.tell(new CacheErrorMessage(m, e));
+            m.replyTo.tell(new CacheErrorMessage<>(m, e));
         }
         return Behaviors.same();
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void handleCacheMiss(@SuppressWarnings("rawtypes") CacheGetMessage m) {
+        context.getSelf().tell(new CacheRetrieveFromBackendMessage(m, go -> {
+            cache.put(m.key, go);
+            m.replyTo.tell(new CacheGetSuccessMessage<>(m, go));
+        }));
     }
 
     /**
@@ -223,10 +218,10 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
      * {@link CacheRetrieveResponseMessage} message. Returns a behavior for the
      * messages from {@link #getInitialBehavior()}
      */
-    protected Behavior<Message> onCacheRetrieve(CacheRetrieveMessage<K, V> m) {
+    protected Behavior<Message> onCacheRetrieve(CacheRetrieveMessage m) {
         log.debug("onCacheRetrieve {}", m);
         if (m.id == getId()) {
-            m.replyTo.tell(new CacheRetrieveResponseMessage<>(m, cache));
+            m.replyTo.tell(new CacheRetrieveResponseMessage(m, cache));
         }
         return Behaviors.same();
     }
@@ -245,7 +240,7 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
      * Unstash all messages kept in the buffer and return the initial behavior.
      * Returns a behavior for the messages from {@link #getInitialBehavior()}
      */
-    protected Behavior<Message> initialStage(InitialStateMessage<K, V> m) {
+    protected Behavior<Message> initialStage(InitialStateMessage m) {
         log.debug("initialStage {}", m);
         return buffer.unstashAll(getInitialBehavior()//
                 .build());
@@ -281,7 +276,7 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
     /**
      * Stores the put value in the database.
      */
-    protected abstract void storeValueDb(CachePutMessage<?, K, V> m);
+    protected abstract void storeValueDb(CachePutMessage<?> m);
 
     /**
      * Retrieves the value from the database. Example send a database command:
@@ -311,17 +306,17 @@ public abstract class AbstractJcsCacheActor<K, V extends GameObject> implements 
      * return ret.value;
      * </pre>
      */
-    protected abstract V retrieveValueFromDb(String type, K key);
+    protected abstract GameObject retrieveValueFromDb(String type, Object key);
 
     /**
      * Returns the value for the key directly from the cache without sending of
      * messages. Should be used for performance critical code.
      */
-    public V get(String type, K key) {
+    public GameObject get(String type, Object key) {
         return cache.get(key, () -> supplyValue(type, key));
     }
 
-    private V supplyValue(String type, K key) {
+    private GameObject supplyValue(String type, Object key) {
         return retrieveValueFromDb(type, key);
     }
 

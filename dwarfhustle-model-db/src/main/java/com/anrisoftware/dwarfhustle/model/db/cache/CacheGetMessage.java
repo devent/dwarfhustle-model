@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.cache;
 
+import java.util.function.Consumer;
+
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage.CacheSuccessMessage;
@@ -30,37 +32,62 @@ import lombok.ToString;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @ToString
-public class CacheGetMessage<T extends Message> extends Message {
+public class CacheGetMessage<T extends Message> extends CacheMessage<T> {
 
-	/**
-	 * Message to get {@link GameObject} game objects from the cache.
-	 *
-	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
-	 */
+    /**
+     * Message to get {@link GameObject} game objects from the cache.
+     *
+     * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+     */
     @ToString
-    public static class CacheGetSuccessMessage<T extends GameObject> extends CacheSuccessMessage {
+    public static class CacheGetSuccessMessage<T extends CacheMessage<?>> extends CacheSuccessMessage<T> {
 
-        public final T go;
+        public final GameObject go;
 
-        public CacheGetSuccessMessage(Message m, T go) {
-			super(m);
-			this.go = go;
-		}
-	}
+        public CacheGetSuccessMessage(T m, GameObject go) {
+            super(m);
+            this.go = go;
+        }
+    }
 
-	/**
-	 * Reply to {@link ActorRef}.
-	 */
-	public final ActorRef<T> replyTo;
+    /**
+     * Message that the cache does not contain the object.
+     *
+     * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+     */
+    @ToString
+    public static class CacheGetMissMessage<T extends CacheMessage<?>> extends CacheSuccessMessage<T> {
 
-	public final String type;
+        public CacheGetMissMessage(T m) {
+            super(m);
+        }
+    }
 
-	public final Object key;
+    private final static Consumer<GameObject> EMPTY_CONSUMER = go -> {
+    };
 
-	public CacheGetMessage(ActorRef<T> replyTo, String type, Object key) {
-		this.replyTo = replyTo;
-		this.type = type;
-		this.key = key;
-	}
+    private final static Runnable EMPTY_ON_MISS = () -> {
+    };
+
+    public final String type;
+
+    public final Object key;
+
+    public final Consumer<GameObject> consumer;
+
+    public final Runnable onMiss;
+
+    public CacheGetMessage(ActorRef<T> replyTo, String type, Object key) {
+        this(replyTo, type, key, EMPTY_CONSUMER, EMPTY_ON_MISS);
+    }
+
+    public CacheGetMessage(ActorRef<T> replyTo, String type, Object key, Consumer<GameObject> consumer,
+            Runnable onMiss) {
+        super(replyTo);
+        this.type = type;
+        this.key = key;
+        this.consumer = consumer;
+        this.onMiss = onMiss;
+    }
 
 }

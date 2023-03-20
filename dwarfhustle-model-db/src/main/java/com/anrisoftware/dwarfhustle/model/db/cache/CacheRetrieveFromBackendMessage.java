@@ -35,7 +35,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class CacheRetrieveFromBackendMessage extends Message {
 
-	public final CacheGetMessage<?> m;
+    public final CacheGetMessage<?> m;
 
 	public final Consumer<GameObject> consumer;
 }

@@ -33,7 +33,9 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Sedimentary;
 import com.anrisoftware.dwarfhustle.model.api.materials.Soil;
 import com.anrisoftware.dwarfhustle.model.api.materials.Stone;
 import com.anrisoftware.dwarfhustle.model.api.materials.StoneLayer;
+import com.anrisoftware.dwarfhustle.model.db.cache.AbstractJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeBaseActor.KnowledgeBaseActorFactory;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor.KnowledgeJcsCacheActorFactory;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor.PowerLoomKnowledgeActorFactory;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.ClayStorage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.GameObjectKnowledge;
@@ -65,6 +67,8 @@ public class PowerloomModule extends AbstractModule {
                 .build(PowerLoomKnowledgeActorFactory.class));
 		install(new FactoryModuleBuilder().implement(KnowledgeBaseActor.class, KnowledgeBaseActor.class)
 				.build(KnowledgeBaseActorFactory.class));
+        install(new FactoryModuleBuilder().implement(AbstractJcsCacheActor.class, KnowledgeJcsCacheActor.class)
+                .build(KnowledgeJcsCacheActorFactory.class));
     }
 
     @Singleton

@@ -33,11 +33,11 @@ import lombok.ToString;
 @Getter
 public class MapTile extends GameMapObject {
 
-	private static final long serialVersionUID = -6027695018525898404L;
+    private static final long serialVersionUID = 1L;
 
 	public static final String OBJECT_TYPE = MapTile.class.getSimpleName();
 
-	private String material;
+    private long material = -1;
 
 	public MapTile(long id) {
 		super(id);
@@ -52,7 +52,10 @@ public class MapTile extends GameMapObject {
 		return OBJECT_TYPE;
 	}
 
-	public void setMaterial(String material) {
+    /**
+     * Sets the ID of the material.
+     */
+    public void setMaterial(long material) {
 		if (this.material != material) {
 			setDirty(true);
 			this.material = material;

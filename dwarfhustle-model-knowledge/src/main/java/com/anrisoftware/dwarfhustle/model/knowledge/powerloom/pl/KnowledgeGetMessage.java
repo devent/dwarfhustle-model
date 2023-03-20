@@ -16,10 +16,10 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> {
 
-    public final String[] types;
+    public final String type;
 
-    public KnowledgeGetMessage(ActorRef<T> replyTo, String... type) {
+    public KnowledgeGetMessage(ActorRef<T> replyTo, String type) {
         super(replyTo);
-        this.types = type;
+        this.type = type;
     }
 }

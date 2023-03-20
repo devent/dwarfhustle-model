@@ -30,9 +30,6 @@ import org.eclipse.collections.api.map.primitive.IntObjectMap;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.api.materials.IgneousExtrusive;
-import com.anrisoftware.dwarfhustle.model.api.materials.IgneousIntrusive;
-import com.anrisoftware.dwarfhustle.model.api.materials.Metamorphic;
 import com.anrisoftware.dwarfhustle.model.api.materials.Sedimentary;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.generate.GenerateMapMessage.GenerateErrorMessage;
@@ -174,8 +171,7 @@ public class GenerateMapActor {
     protected Behavior<Message> onGenerateMap(GenerateMapMessage m) {
         log.debug("onGenerate {}", m);
         this.generateMap = Optional.of(m);
-        knowledge.tell(new KnowledgeGetMessage<>(knowledgeBaseResponseAdapter, Sedimentary.TYPE, IgneousIntrusive.TYPE,
-                IgneousExtrusive.TYPE, Metamorphic.TYPE));
+        knowledge.tell(new KnowledgeGetMessage<>(knowledgeBaseResponseAdapter, Sedimentary.TYPE));
         return Behaviors.same();
     }
 
@@ -213,7 +209,7 @@ public class GenerateMapActor {
             generateMap.get().replyTo.tell(new GenerateErrorMessage(generateMap.get(), em.error));
             return Behaviors.stopped();
         } else if (response instanceof KnowledgeReplyMessage rm) {
-            context.getSelf().tell(new MaterialsLoadSuccessMessage(rm.go));
+            // context.getSelf().tell(new MaterialsLoadSuccessMessage(rm.go));
         }
         return Behaviors.same();
     }

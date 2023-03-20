@@ -90,7 +90,12 @@ public class GameObject implements Serializable {
 		this.id = id;
 	}
 
+    public void setId(byte[] id) {
+        setId(toId(id));
+    }
+
 	public void setRid(Serializable rid) {
 		this.rid = rid;
 	}
+
 }
