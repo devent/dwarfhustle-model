@@ -55,7 +55,7 @@ public class MainActor extends MessageActor<Message> {
     }
 
     public static Behavior<Message> create(Injector injector) {
-        return Behaviors.setup((context) -> injector.getInstance(MainActorFactory.class).create(context));
+        return Behaviors.setup(context -> injector.getInstance(MainActorFactory.class).create(context));
     }
 
     @FunctionalInterface
@@ -108,14 +108,27 @@ public class MainActor extends MessageActor<Message> {
         return actors.get(id);
     }
 
+    public synchronized void waitActor(int id) throws InterruptedException {
+        while (!actors.containsKey(id)) {
+            wait(10);
+        }
+    }
+
     public boolean haveActor(int id) {
         return actors.containsKey(id);
     }
 
-	public MainActor tell(Message m) {
-		getContext().getSelf().tell(m);
-		return this;
-	}
+    public void putActor(int id, ActorRef<Message> actor) {
+        actors.put(id, actor);
+        synchronized (this) {
+            notify();
+        }
+    }
+
+    public MainActor tell(Message m) {
+        getContext().getSelf().tell(m);
+        return this;
+    }
 
     @Override
     public Receive<Message> createReceive() {
@@ -131,14 +144,14 @@ public class MainActor extends MessageActor<Message> {
         log.debug("onShutdown {}", m);
         forwardMessage(m);
         getContext().getSystem().terminate();
-		return this;
+        return this;
     }
 
     private Behavior<Message> onCreateNamedActor(CreateNamedActorMessage m) {
         log.debug("onCreateNamedActor {}", m);
         var actor = getContext().spawnAnonymous(m.actor);
         getContext().watchWith(actor, new ActorTerminatedMessage(m.id, m.key, actor));
-        actors.put(m.id, actor);
+        putActor(m.id, actor);
         m.replyTo.tell(StatusReply.success(actor));
         return this;
     }

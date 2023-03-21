@@ -1,6 +1,6 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl;
 
-import org.eclipse.collections.api.map.primitive.IntObjectMap;
+import org.eclipse.collections.api.list.ListIterable;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
@@ -8,6 +8,11 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+/**
+ * Stores loaded knowledge.
+ *
+ * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+ */
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
@@ -19,7 +24,7 @@ public class KnowledgeObject extends GameObject {
 
     public String type;
 
-    public IntObjectMap<? extends GameObject> objects;
+    public ListIterable<GameObject> objects;
 
     @Override
     public String getObjectType() {

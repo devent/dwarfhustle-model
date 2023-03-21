@@ -24,8 +24,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
-import javax.inject.Inject;
-
 import org.apache.commons.jcs3.JCS;
 import org.apache.commons.jcs3.access.CacheAccess;
 import org.apache.commons.jcs3.access.exception.CacheException;
@@ -37,8 +35,7 @@ import com.anrisoftware.dwarfhustle.model.db.cache.AbstractJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheGetMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheGetMessage.CacheGetMissMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CachePutMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsResponseMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.SaveObjectMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.CachePutsMessage;
 import com.google.inject.Injector;
 
 import akka.actor.typed.ActorRef;
@@ -72,12 +69,12 @@ public class KnowledgeJcsCacheActor extends AbstractJcsCacheActor {
     public interface KnowledgeJcsCacheActorFactory extends AbstractJcsCacheActorFactory {
 
         @Override
-        KnowledgeJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash);
+        KnowledgeJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, Class<?> keyType);
     }
 
     public static Behavior<Message> create(Injector injector, AbstractJcsCacheActorFactory actorFactory,
             CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
-        return AbstractJcsCacheActor.create(injector, actorFactory, initCacheAsync);
+        return AbstractJcsCacheActor.create(injector, actorFactory, String.class, initCacheAsync);
     }
 
     /**
@@ -104,12 +101,6 @@ public class KnowledgeJcsCacheActor extends AbstractJcsCacheActor {
         return initCache;
     }
 
-    @Inject
-    private ActorSystemProvider actor;
-
-    @SuppressWarnings("rawtypes")
-    private ActorRef<ObjectsResponseMessage> objectsResponseAdapter;
-
     @Override
     protected Behavior<Message> initialStage(InitialStateMessage m) {
         log.debug("initialStage {}", m);
@@ -134,7 +125,12 @@ public class KnowledgeJcsCacheActor extends AbstractJcsCacheActor {
 
     @Override
     protected void storeValueDb(CachePutMessage<?> m) {
-        actor.tell(new SaveObjectMessage<>(objectsResponseAdapter, m.value));
+        // nop
+    }
+
+    @Override
+    protected void storeValueDb(CachePutsMessage<?> m) {
+        // nop
     }
 
     @Override

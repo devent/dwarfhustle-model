@@ -86,12 +86,12 @@ public class ObjectsJcsCacheActor extends AbstractJcsCacheActor {
     public interface ObjectsJcsCacheActorFactory extends AbstractJcsCacheActorFactory {
 
         @Override
-        ObjectsJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash);
+        ObjectsJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, Class<?> keyType);
     }
 
     public static Behavior<Message> create(Injector injector, AbstractJcsCacheActorFactory actorFactory,
             CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
-        return AbstractJcsCacheActor.create(injector, actorFactory, initCacheAsync);
+        return AbstractJcsCacheActor.create(injector, actorFactory, Long.class, initCacheAsync);
     }
 
     /**
@@ -164,6 +164,13 @@ public class ObjectsJcsCacheActor extends AbstractJcsCacheActor {
     @Override
     protected void storeValueDb(CachePutMessage<?> m) {
         actor.tell(new SaveObjectMessage<>(objectsResponseAdapter, m.value));
+    }
+
+    @Override
+    protected void storeValueDb(CachePutsMessage<?> m) {
+        for (var go : m.value) {
+            actor.tell(new SaveObjectMessage<>(objectsResponseAdapter, go));
+        }
     }
 
     private void retrieveGameObject(String type, long id, Consumer<GameObject> consumer) {

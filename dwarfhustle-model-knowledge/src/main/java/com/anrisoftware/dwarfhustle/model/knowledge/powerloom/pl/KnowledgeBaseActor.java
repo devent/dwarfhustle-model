@@ -26,8 +26,8 @@ import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
 
-import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
-import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
 import org.lable.oss.uniqueid.IDGenerator;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
@@ -35,6 +35,7 @@ import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheGetMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CachePutMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.CachePutsMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandErrorMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeReplyMessage;
@@ -150,11 +151,21 @@ public class KnowledgeBaseActor {
     @Inject
     private IDGenerator ids;
 
-    @Inject
-    private ActorSystemProvider actor;
-
     @SuppressWarnings("rawtypes")
     private ActorRef<CacheResponseMessage> cacheResponseAdapter;
+
+    private ActorRef<Message> cacheActor;
+
+    private ActorRef<Message> actor;
+
+    @Inject
+    @SneakyThrows
+    public void setActor(ActorSystemProvider actor) {
+        this.actor = actor.get();
+        actor.waitMainActor();
+        actor.getMainActor().waitActor(KnowledgeJcsCacheActor.ID);
+        this.cacheActor = actor.getMainActor().getActor(KnowledgeJcsCacheActor.ID);
+    }
 
     /**
      * Stash behavior. Returns a behavior for the messages:
@@ -199,15 +210,20 @@ public class KnowledgeBaseActor {
     @SneakyThrows
     private Behavior<Message> onKnowledgeGet(@SuppressWarnings("rawtypes") KnowledgeGetMessage m) {
         log.debug("onKnowledgeGet {}", m);
-        var cache = actor.getMainActor().getActor(KnowledgeJcsCacheActor.ID);
-        cache.tell(new CacheGetMessage<>(cacheResponseAdapter, KnowledgeObject.OBJECT_TYPE, m.type, go -> {
-            m.replyTo.tell(new KnowledgeReplyMessage((KnowledgeObject) go));
+        cacheActor.tell(new CacheGetMessage<>(cacheResponseAdapter, KnowledgeObject.OBJECT_TYPE, m.type, go -> {
+            var ko = (KnowledgeObject) go;
+            cacheObjects(ko);
+            m.replyTo.tell(new KnowledgeReplyMessage(ko));
         }, () -> {
             var go = retrieveKnowledgeObject(m);
-            cache.tell(new CachePutMessage<>(cacheResponseAdapter, go.type, go));
+            cacheActor.tell(new CachePutMessage<>(cacheResponseAdapter, go.type, go));
             m.replyTo.tell(new KnowledgeReplyMessage(go));
         }));
         return Behaviors.same();
+    }
+
+    private void cacheObjects(KnowledgeObject ko) {
+        actor.tell(new CachePutsMessage<>(cacheResponseAdapter, Long.class, GameObject::getId, ko.objects));
     }
 
     /**
@@ -226,15 +242,15 @@ public class KnowledgeBaseActor {
         sb.append(m.type);
         sb.append(" ?x)");
         var answer = PLI.sRetrieve(sb.toString(), WORKING_MODULE, null);
-        MutableIntObjectMap<GameObject> map = IntObjectMaps.mutable.empty();
+        MutableList<GameObject> list = Lists.mutable.empty();
         LogicObject next;
         while ((next = (LogicObject) answer.pop()) != null) {
             var s = storages.get(m.type);
             var go = s.retrieve(next, s.create());
             go.setId(ids.generate());
-            map.put((Integer) go.getRid(), go);
+            list.add(go);
         }
-        return new KnowledgeObject(m.type, map);
+        return new KnowledgeObject(m.type, list.asUnmodifiable());
     }
 
     /**

@@ -66,10 +66,8 @@ class KnowledgeBaseActorTest {
         powerLoomKnowledgeActor = testKit.spawn(PowerLoomKnowledgeActor.create(injector), "PowerLoomKnowledgeActor");
         knowledgeBaseActor = testKit.spawn(KnowledgeBaseActor.create(injector, powerLoomKnowledgeActor), "KnowledgeBaseActor");
         cacheActor = testKit.spawn(KnowledgeJcsCacheActor.create(injector, injector.getInstance(KnowledgeJcsCacheActorFactory), KnowledgeJcsCacheActor.createInitCacheAsync()), "KnowledgeJcsCacheActor");
-        while (actor.getMainActor() == null) {
-            Thread.sleep 10
-        }
-        actor.getMainActor().actors.put(KnowledgeJcsCacheActor.ID, cacheActor)
+        actor.waitMainActor()
+        actor.getMainActor().putActor(KnowledgeJcsCacheActor.ID, cacheActor)
     }
 
     @AfterAll

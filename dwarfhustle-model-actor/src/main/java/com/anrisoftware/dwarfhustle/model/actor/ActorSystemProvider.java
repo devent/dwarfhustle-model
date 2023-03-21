@@ -44,10 +44,19 @@ public class ActorSystemProvider implements Provider<ActorRef<Message>> {
 
     @Inject
     public ActorSystemProvider(MainActorFactory mainFactory) {
-        this.actors = ActorSystem.create(Behaviors.setup((context) -> {
+        this.actors = ActorSystem.create(Behaviors.setup(context -> {
             mainActor = mainFactory.create(context);
+            synchronized (ActorSystemProvider.this) {
+                notify();
+            }
             return mainActor;
-		}), MainActor.class.getSimpleName());
+        }), MainActor.class.getSimpleName());
+    }
+
+    public synchronized void waitMainActor() throws InterruptedException {
+        while (mainActor == null) {
+            wait(10);
+        }
     }
 
     public MainActor getMainActor() {
@@ -63,12 +72,12 @@ public class ActorSystemProvider implements Provider<ActorRef<Message>> {
         return actors;
     }
 
-	public void tell(Message m) {
-		mainActor.tell(m);
-	}
+    public void tell(Message m) {
+        mainActor.tell(m);
+    }
 
-	public Scheduler getScheduler() {
-		return actors.scheduler();
-	}
+    public Scheduler getScheduler() {
+        return actors.scheduler();
+    }
 
 }
