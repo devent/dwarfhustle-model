@@ -18,6 +18,8 @@
 package com.anrisoftware.dwarfhustle.model.generate
 
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapCoordinate.toDecimalDegrees
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbTestUtils.log_reply_failure
+import static java.time.Duration.ofSeconds
 
 import java.time.Duration
 import java.time.LocalDateTime
@@ -33,13 +35,15 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
 import org.lable.oss.uniqueid.IDGenerator
 
+import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
+import com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.actor.ModelActorsModule
+import com.anrisoftware.dwarfhustle.model.actor.ShutdownMessage
 import com.anrisoftware.dwarfhustle.model.api.objects.ApiModule
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
 import com.anrisoftware.dwarfhustle.model.api.objects.MapArea
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap
-import com.anrisoftware.dwarfhustle.model.db.cache.AppCachesConfig
 import com.anrisoftware.dwarfhustle.model.db.cache.JcsCacheModule
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbServerUtils
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbTestUtils
@@ -47,8 +51,10 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbModule
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsDbActor
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsDbModule
+import com.anrisoftware.dwarfhustle.model.generate.GenerateMapMessage.GenerateProgressMessage
 import com.anrisoftware.dwarfhustle.model.generate.WorkerBlocks.WorkerBlocksFactory
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeBaseActor
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerloomModule
 import com.anrisoftware.globalpom.threads.properties.internal.PropertiesThreadsModule
@@ -56,8 +62,10 @@ import com.google.inject.Guice
 import com.google.inject.Injector
 import com.orientechnologies.orient.core.db.ODatabaseType
 
-import akka.actor.testkit.typed.javadsl.ActorTestKit
 import akka.actor.typed.ActorRef
+import akka.actor.typed.javadsl.AskPattern
+import akka.actor.typed.javadsl.Behaviors
+import akka.actor.typed.receptionist.ServiceKey
 import groovy.util.logging.Slf4j
 
 /**
@@ -71,9 +79,9 @@ class GenerateMap {
 
     static final EMBEDDED_SERVER_PROPERTY = System.getProperty("com.anrisoftware.dwarfhustle.model.db.orientdb.objects.embedded-server", "yes")
 
-    static final ActorTestKit testKit = ActorTestKit.create()
-
     static Injector injector
+
+    static ActorSystemProvider actor
 
     static DbServerUtils dbServerUtils
 
@@ -86,10 +94,6 @@ class GenerateMap {
     static WorkerBlocksFactory workerFactory
 
     static IDGenerator gen
-
-    static ActorRef<Message> orientDbActor
-
-    static ActorRef<Message> objectsDbActor
 
     static timeout = Duration.ofSeconds(300)
 
@@ -106,7 +110,13 @@ class GenerateMap {
             dbServerUtils = new DbServerUtils()
             dbServerUtils.createServer(parentDir.absolutePath)
         }
-        mapTilesParams = [parent_dir: parentDir, game_name: "Endless World", mapid: 1, width: s, height: s, depth: s, block_size: blockSize]
+        def p = [:]
+        p.ground_level_percent = 0.4f
+        p.soil_level_percent = 0.1f
+        p.sedimentary_level_percent = 0.1f
+        p.igneous_level_percent = 0.1f
+        p.magma_level_percent = 0.1f
+        mapTilesParams = [parent_dir: parentDir, game_name: "Endless World", mapid: 1, width: s, height: s, depth: s, block_size: blockSize, p: p]
         cacheFile = new File(parentDir, "dwarfhustle_jcs_swap_${mapTilesParams.game_name}_mapBlocksCache_0_file")
         injector = Guice.createInjector(
                 new ModelActorsModule(),
@@ -117,13 +127,32 @@ class GenerateMap {
                 new ApiModule(),
                 new JcsCacheModule(),
                 new PropertiesThreadsModule())
+        actor = injector.getInstance(ActorSystemProvider)
         workerFactory = injector.getInstance(WorkerBlocksFactory)
-        powerLoomKnowledgeActor = testKit.spawn(PowerLoomKnowledgeActor.create(injector), "PowerLoomKnowledgeActor");
-        knowledgeBaseActor = testKit.spawn(KnowledgeBaseActor.create(injector, powerLoomKnowledgeActor), "KnowledgeBaseActor");
-        orientDbActor = testKit.spawn(OrientDbActor.create(injector), "OrientDbActor");
-        objectsDbActor = testKit.spawn(ObjectsDbActor.create(injector, orientDbActor), "ObjectsDbActor");
+        KnowledgeJcsCacheActor.create(injector, ofSeconds(1)).whenComplete({ret, ex ->
+            log_reply_failure "KnowledgeJcsCacheActor.create", ret, ex
+        })
+        PowerLoomKnowledgeActor.create(injector, ofSeconds(1)).whenComplete({ret, ex ->
+            log_reply_failure "PowerLoomKnowledgeActor.create", ret, ex
+        })
+        actor.waitMainActor()
+        actor.getMainActor().waitActor(PowerLoomKnowledgeActor.ID)
+        actor.getMainActor().waitActor(KnowledgeJcsCacheActor.ID)
+        KnowledgeBaseActor.create(injector, ofSeconds(1), actor.getMainActor().getActor(PowerLoomKnowledgeActor.ID), actor.getMainActor().getActor(KnowledgeJcsCacheActor.ID)).whenComplete({ret, ex ->
+            log_reply_failure "KnowledgeBaseActor.create", ret, ex
+        })
+        OrientDbActor.create(injector, ofSeconds(1)).whenComplete({ret, ex ->
+            log_reply_failure "OrientDbActor.create", ret, ex
+        })
+        actor.getMainActor().waitActor(OrientDbActor.ID)
+        def dbActor = actor.getMainActor().getActor(OrientDbActor.ID)
+        ObjectsDbActor.create(injector, ofSeconds(1), dbActor).whenComplete({ret, ex ->
+            log_reply_failure "OrientDbActor.create", ret, ex
+        })
+        actor.getMainActor().waitActor(ObjectsDbActor.ID)
+        def objectsActor = actor.getMainActor().getActor(ObjectsDbActor.ID)
         gen = injector.getInstance(IDGenerator)
-        dbTestUtils = new DbTestUtils(orientDbActor, objectsDbActor, testKit, gen)
+        dbTestUtils = new DbTestUtils(dbActor, objectsActor, actor.scheduler, gen)
         dbTestUtils.type = ODatabaseType.PLOCAL
         dbTestUtils.fillDatabase = false
         def initDatabaseLock = new CountDownLatch(1)
@@ -140,7 +169,7 @@ class GenerateMap {
         def closeDatabaseLock = new CountDownLatch(1)
         dbTestUtils.closeDatabase(closeDatabaseLock)
         closeDatabaseLock.await()
-        testKit.shutdown(testKit.system(), timeout)
+        actor.getMainActor().tell(new ShutdownMessage())
         if (EMBEDDED_SERVER_PROPERTY == "yes") {
             dbServerUtils.shutdownServer()
         }
@@ -167,17 +196,33 @@ class GenerateMap {
         gm.setCameraRot(0.0f, 1.0f, 0.0f, 0.0f)
         wm.currentMapid = gm.mapid
         wm.addMap(gm)
-        new AppCachesConfig().create(mapTilesParams.parent_dir, gm)
         mapTilesParams.gameMap = gm
-        def m = new GenerateMapMessage(null, gm, mapTilesParams.block_size, dbTestUtils.user, dbTestUtils.password, dbTestUtils.database)
-        def worker = workerFactory.create(dbTestUtils.db)
-        def thread = Thread.start {
-            worker.generate(m)
-        }
-        while (!worker.generateDone) {
-            Thread.sleep(1000)
-            log.info("Blocks done {}", worker.blocksDone)
-        }
-        log.info("generate done {}", worker.blocksDone)
+        GenerateMapActor.create(injector, ofSeconds(1), dbTestUtils.db, actor.getMainActor().getActor(KnowledgeBaseActor.ID)).whenComplete({ret, ex ->
+            log_reply_failure "GenerateMapActor.create", ret, ex
+        })
+        actor.getMainActor().waitActor(GenerateMapActor.ID)
+        CreateActorMessage.createNamedActor(actor.actorSystem, ofSeconds(1), "progressActor".hashCode(), ServiceKey.create(Message.class, "progressActor"), "progressActor", Behaviors.setup({ context ->
+            Behaviors.receive(GenerateProgressMessage.class).onMessage(GenerateProgressMessage.class, { m ->
+                log.info m
+                return Behaviors.same();
+            }).build()
+        })).whenComplete({ ret, ex ->
+            log_reply_failure "progressActor.create", ret, ex
+        })
+        actor.getMainActor().waitActor("progressActor".hashCode())
+        def progressActor = actor.getMainActor().getActor("progressActor".hashCode())
+        def generateLock = new CountDownLatch(1)
+        def result =
+                AskPattern.ask(
+                actor.getMainActor().getActor(GenerateMapActor.ID),
+                { replyTo -> new GenerateMapMessage(replyTo, progressActor, gm, mapTilesParams.p, mapTilesParams.block_size, dbTestUtils.user, dbTestUtils.password, dbTestUtils.database) },
+                Duration.ofSeconds(30),
+                actor.scheduler)
+        result.whenComplete({ ret, ex ->
+            log_reply_failure "GenerateMapMessage", ret, ex
+            generateLock.countDown()
+        })
+        generateLock.await()
+        log.info("generate done {}")
     }
 }

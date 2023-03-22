@@ -112,6 +112,7 @@ public class PowerLoomKnowledgeActor {
             var resources = new ArrayList<InputStream>();
             resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials.plm"));
             resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("game-map.plm"));
+            resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-special-stone-layer.plm"));
             resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-sedimentary-stones.plm"));
             resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-igneous-intrusive-stones.plm"));
             resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-igneous-extrusive-stones.plm"));

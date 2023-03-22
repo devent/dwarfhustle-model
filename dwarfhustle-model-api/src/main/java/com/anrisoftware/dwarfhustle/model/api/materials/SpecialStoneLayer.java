@@ -17,16 +17,13 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.materials;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
-
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Material what stuff is made of.
+ * Special stone layer material.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
@@ -34,40 +31,25 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Getter
-@Setter
-public class Material extends GameObject {
+public class SpecialStoneLayer extends StoneLayer {
 
     private static final long serialVersionUID = 1L;
 
-    public static final String OBJECT_TYPE = Material.class.getSimpleName();
+    public static final String OBJECT_TYPE = SpecialStoneLayer.class.getSimpleName();
 
-	public static final String TYPE = "Material";
+    public static final String TYPE = "Special-Stone-Layer";
 
-    private String name;
-
-    private float meltingPoint;
-
-    private float density;
-
-    private float specificHeatCapacity;
-
-    private float thermalConductivity;
-
-    public Material(byte[] idbuf) {
+    public SpecialStoneLayer(byte[] idbuf) {
         super(idbuf);
     }
 
-    public Material(long id) {
+    public SpecialStoneLayer(long id) {
         super(id);
     }
 
     @Override
-    public long getId() {
-        return ((Number) getRid()).longValue();
+    public String getObjectType() {
+        return SpecialStoneLayer.OBJECT_TYPE;
     }
 
-    @Override
-    public String getObjectType() {
-        return Material.OBJECT_TYPE;
-    }
 }

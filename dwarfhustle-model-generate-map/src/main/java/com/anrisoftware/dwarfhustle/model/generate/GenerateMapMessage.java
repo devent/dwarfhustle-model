@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.generate;
 
+import java.util.Map;
+
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 
@@ -30,44 +32,76 @@ import lombok.ToString;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @RequiredArgsConstructor
-@ToString(callSuper = true)
+@ToString
 public class GenerateMapMessage extends Message {
 
-	@RequiredArgsConstructor
-	@ToString(callSuper = true)
+    @RequiredArgsConstructor
+    @ToString
     public static class GenerateResponseMessage extends Message {
 
     }
 
-	@RequiredArgsConstructor
-	@ToString(callSuper = true)
+    @RequiredArgsConstructor
+    @ToString
     public static class GenerateErrorMessage extends GenerateResponseMessage {
 
-        public final GenerateMapMessage originalMessage;
+        @ToString.Exclude
+        public final GenerateMapMessage om;
 
-		public final Throwable error;
+        public final Throwable error;
     }
 
-	@RequiredArgsConstructor
-	@ToString(callSuper = true)
+    @RequiredArgsConstructor
+    @ToString
     public static class GenerateSuccessMessage extends GenerateResponseMessage {
 
-        public final GenerateMapMessage originalMessage;
+        @ToString.Exclude
+        public final GenerateMapMessage om;
+    }
+
+    @RequiredArgsConstructor
+    @ToString
+    public static class GenerateProgressMessage extends GenerateResponseMessage {
+
+        @ToString.Exclude
+        public final GenerateMapMessage om;
+
+        public final int blocksDone;
+
+        public final boolean generateDone;
     }
 
     public final ActorRef<GenerateResponseMessage> replyTo;
 
-	public final GameMap gameMap;
+    public final ActorRef<GenerateProgressMessage> progressTo;
 
-	public final int blockSize;
+    public final GameMap gameMap;
 
-	public final String user;
+    /**
+     * Game map properties that are used to generate the map. Z level starts with 0
+     * which means the very top of the map.
+     * <ul>
+     * <li>{@code ground_level_percent} the ground level percent of the total
+     * height. Above this level will be air.
+     * <li>{@code soil_level_percent} soil level percent of the total height.
+     * <li>{@code sedimentary_level_percent} sedimentary stone level percent of the
+     * total height.
+     * <li>{@code igneous_level_percent} igneous stone level percent of the total
+     * height.
+     * <li>{@code magma_level_percent} magma level percent of the total height.
+     * </ul>
+     */
+    public final Map<String, Object> p;
 
-	public final String password;
+    public final int blockSize;
 
-	public final String database;
+    public final String user;
 
-	public int getSize() {
-		return gameMap.getSize();
-	}
+    public final String password;
+
+    public final String database;
+
+    public int getSize() {
+        return gameMap.getSize();
+    }
 }

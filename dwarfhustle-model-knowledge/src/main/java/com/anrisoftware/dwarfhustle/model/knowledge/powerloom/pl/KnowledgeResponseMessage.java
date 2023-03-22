@@ -14,14 +14,14 @@ public abstract class KnowledgeResponseMessage extends Message {
 
     @RequiredArgsConstructor
     @ToString(callSuper = true)
-    public static class KnowledgeReplyMessage extends KnowledgeResponseMessage {
+    public static class KnowledgeResponseSuccessMessage extends KnowledgeResponseMessage {
 
         public final KnowledgeObject go;
     }
 
     @RequiredArgsConstructor
     @ToString(callSuper = true)
-    public static class KnowledgeErrorMessage extends KnowledgeResponseMessage {
+    public static class KnowledgeResponseErrorMessage extends KnowledgeResponseMessage {
 
         @ToString.Exclude
         public final KnowledgeMessage<?> om;

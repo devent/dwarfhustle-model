@@ -38,7 +38,7 @@ import com.anrisoftware.dwarfhustle.model.db.cache.CachePutMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CachePutsMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandErrorMessage;
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeReplyMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.GameObjectKnowledge;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
@@ -98,13 +98,13 @@ public class KnowledgeBaseActor {
      */
     public interface KnowledgeBaseActorFactory {
 
-        KnowledgeBaseActor create(ActorContext<Message> context, StashBuffer<Message> stash);
+        KnowledgeBaseActor create(ActorContext<Message> context, StashBuffer<Message> stash, ActorRef<Message> cache);
     }
 
-    public static Behavior<Message> create(Injector injector, ActorRef<Message> knowledge) {
+    public static Behavior<Message> create(Injector injector, ActorRef<Message> knowledge, ActorRef<Message> cache) {
         return Behaviors.withStash(100, stash -> Behaviors.setup(context -> {
             loadKnowledgeBase(context, knowledge);
-            return injector.getInstance(KnowledgeBaseActorFactory.class).create(context, stash).start(injector);
+            return injector.getInstance(KnowledgeBaseActorFactory.class).create(context, stash, cache).start(injector);
         }));
     }
 
@@ -132,9 +132,9 @@ public class KnowledgeBaseActor {
      * Creates the {@link KnowledgeBaseActor}.
      */
     public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout,
-            ActorRef<Message> knowledge) {
+            ActorRef<Message> knowledge, ActorRef<Message> cache) {
         var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
-        return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, knowledge));
+        return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, knowledge, cache));
     }
 
     @Inject
@@ -154,18 +154,12 @@ public class KnowledgeBaseActor {
     @SuppressWarnings("rawtypes")
     private ActorRef<CacheResponseMessage> cacheResponseAdapter;
 
-    private ActorRef<Message> cacheActor;
-
-    private ActorRef<Message> actor;
+    @Inject
+    @Assisted
+    private ActorRef<Message> cache;
 
     @Inject
-    @SneakyThrows
-    public void setActor(ActorSystemProvider actor) {
-        this.actor = actor.get();
-        actor.waitMainActor();
-        actor.getMainActor().waitActor(KnowledgeJcsCacheActor.ID);
-        this.cacheActor = actor.getMainActor().getActor(KnowledgeJcsCacheActor.ID);
-    }
+    private ActorRef<Message> actor;
 
     /**
      * Stash behavior. Returns a behavior for the messages:
@@ -210,14 +204,14 @@ public class KnowledgeBaseActor {
     @SneakyThrows
     private Behavior<Message> onKnowledgeGet(@SuppressWarnings("rawtypes") KnowledgeGetMessage m) {
         log.debug("onKnowledgeGet {}", m);
-        cacheActor.tell(new CacheGetMessage<>(cacheResponseAdapter, KnowledgeObject.OBJECT_TYPE, m.type, go -> {
+        cache.tell(new CacheGetMessage<>(cacheResponseAdapter, KnowledgeObject.OBJECT_TYPE, m.type, go -> {
             var ko = (KnowledgeObject) go;
             cacheObjects(ko);
-            m.replyTo.tell(new KnowledgeReplyMessage(ko));
+            m.replyTo.tell(new KnowledgeResponseSuccessMessage(ko));
         }, () -> {
             var go = retrieveKnowledgeObject(m);
-            cacheActor.tell(new CachePutMessage<>(cacheResponseAdapter, go.type, go));
-            m.replyTo.tell(new KnowledgeReplyMessage(go));
+            cache.tell(new CachePutMessage<>(cacheResponseAdapter, go.type, go));
+            m.replyTo.tell(new KnowledgeResponseSuccessMessage(go));
         }));
         return Behaviors.same();
     }

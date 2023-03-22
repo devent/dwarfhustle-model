@@ -31,7 +31,7 @@ import com.anrisoftware.dwarfhustle.model.actor.ModelActorsModule
 import com.anrisoftware.dwarfhustle.model.api.objects.ApiModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandErrorMessage
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor.KnowledgeJcsCacheActorFactory
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeReplyMessage
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseSuccessMessage
 import com.google.inject.Guice
 import com.google.inject.Injector
 
@@ -91,7 +91,7 @@ class KnowledgeBaseActorTest {
             log.info "Command reply ${reply} failure ${failure}"
             if (failure == null) {
                 switch (reply) {
-                    case KnowledgeReplyMessage:
+                    case KnowledgeResponseSuccessMessage:
                         go = reply.go
                         break
                     case KnowledgeCommandErrorMessage:

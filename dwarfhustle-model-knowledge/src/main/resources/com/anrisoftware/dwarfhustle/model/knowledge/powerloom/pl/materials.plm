@@ -83,3 +83,6 @@
 
 (defconcept Metamorphic (?stone Stone-Layer)
   :documentation "Metamorphic stone material.")
+
+(defconcept Special-Stone-Layer (?stone Stone-Layer)
+  :documentation "Special stone layer material.")

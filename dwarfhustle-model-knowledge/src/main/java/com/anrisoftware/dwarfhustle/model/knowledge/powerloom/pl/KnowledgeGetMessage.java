@@ -1,15 +1,16 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeErrorMessage;
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeReplyMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseErrorMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseSuccessMessage;
 
 import akka.actor.typed.ActorRef;
 import lombok.ToString;
 
 /**
- * Message to retrieve knowledge. Replies with a {@link KnowledgeReplyMessage}
- * on success or with {@link KnowledgeErrorMessage} on error.
+ * Message to retrieve knowledge. Replies with a
+ * {@link KnowledgeResponseSuccessMessage} on success or with
+ * {@link KnowledgeResponseErrorMessage} on error.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */

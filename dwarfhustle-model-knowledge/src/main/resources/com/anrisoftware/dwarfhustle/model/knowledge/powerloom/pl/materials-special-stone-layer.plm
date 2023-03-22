@@ -1,0 +1,27 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Author: Erwin Mueller
+;;; Version: materials-magma.plm,v 0.1.0
+;;; Desciptions used from https://geology.com/
+;;; Specific heat capacity taken from http://www.endmemo.com/chem/specificheatsearch.php
+;;; Thermal conductivity taken from https://www.myengineeringtools.com/Data_Diagrams/Chemical_Compound_Thermal_Conductivity.html
+
+;;; Using Modules
+
+(defmodule "DWARFHUSTLE-MATERIALS-SPECIAL-STONE-LAYER"
+  :documentation "Defines magma material."
+  :includes ("PL-USER")
+  :uses ("LOGIC" "STELLA" "DWARFHUSTLE-MATERIALS")
+  )
+
+(in-module "DWARFHUSTLE-MATERIALS-SPECIAL-STONE-LAYER")
+
+;; clear any info from previous runs:
+(clear-module "DWARFHUSTLE-MATERIALS-SPECIAL-STONE-LAYER")
+(reset-features)
+
+(assert (DWARFHUSTLE-MATERIALS/Special-Stone-Layer Magma)) :documentation "Magma (from Ancient Greek μάγμα (mágma) 'thick unguent')[1] is the molten or semi-molten natural material from which all igneous rocks are formed."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Magma) 2300.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Magma) 2.25 ))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Magma) 1.00))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Magma) 2.00))
