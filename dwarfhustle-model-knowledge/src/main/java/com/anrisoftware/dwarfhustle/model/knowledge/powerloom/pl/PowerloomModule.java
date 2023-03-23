@@ -22,6 +22,7 @@ import java.util.Map;
 
 import javax.inject.Singleton;
 
+import com.anrisoftware.dwarfhustle.model.api.materials.Gas;
 import com.anrisoftware.dwarfhustle.model.api.materials.IgneousExtrusive;
 import com.anrisoftware.dwarfhustle.model.api.materials.IgneousIntrusive;
 import com.anrisoftware.dwarfhustle.model.api.materials.Material;
@@ -40,6 +41,7 @@ import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCac
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor.PowerLoomKnowledgeActorFactory;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.ClayStorage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.GameObjectKnowledge;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.GasStorage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.IgneousExtrusiveStorage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.IgneousIntrusiveStorage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.MaterialStorage;
@@ -109,6 +111,8 @@ public class PowerloomModule extends AbstractModule {
         map.put(Sedimentary.TYPE, sedimentary);
         var specialStoneLayer = new SpecialStoneLayerStorage();
         map.put(SpecialStoneLayer.TYPE, specialStoneLayer);
+        var gas = new GasStorage();
+        map.put(Gas.TYPE, gas);
         return map;
     }
 

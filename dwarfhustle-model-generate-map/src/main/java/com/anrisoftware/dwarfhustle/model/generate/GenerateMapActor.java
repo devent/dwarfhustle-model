@@ -31,6 +31,7 @@ import org.eclipse.collections.impl.factory.Maps;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+import com.anrisoftware.dwarfhustle.model.api.materials.Gas;
 import com.anrisoftware.dwarfhustle.model.api.materials.IgneousExtrusive;
 import com.anrisoftware.dwarfhustle.model.api.materials.IgneousIntrusive;
 import com.anrisoftware.dwarfhustle.model.api.materials.Metamorphic;
@@ -179,6 +180,7 @@ public class GenerateMapActor {
         knowledge.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Metamorphic.TYPE));
         knowledge.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, SpecialStoneLayer.TYPE));
         knowledge.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Soil.TYPE));
+        knowledge.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Gas.TYPE));
         return Behaviors.same();
     }
 
@@ -224,7 +226,7 @@ public class GenerateMapActor {
             return Behaviors.stopped();
         } else if (m.response instanceof KnowledgeResponseSuccessMessage rm) {
             materials.put(rm.go.type, rm.go.objects);
-            if (materials.size() == 6) {
+            if (materials.size() == 7) {
                 context.getSelf().tell(new MaterialsLoadSuccessMessage());
             }
         }

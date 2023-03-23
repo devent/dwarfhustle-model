@@ -90,7 +90,7 @@ class PowerLoomKnowledgeActorTest {
         "?t (melting-point-material Aluminium ?t)",
         "?t (thermal-conductivity-of-material Clay ?t)",
     ])
-    @Timeout(1000l)
+    @Timeout(10l)
     void "test retrieve pop"(String retrieve) {
         askKnowledgeCommandMessage({
             def answer = PLI.sRetrieve(retrieve, PowerLoomKnowledgeActor.WORKING_MODULE, null);

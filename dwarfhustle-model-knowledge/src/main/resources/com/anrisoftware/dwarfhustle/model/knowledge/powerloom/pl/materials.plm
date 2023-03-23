@@ -36,6 +36,10 @@
 (deffunction thermal-conductivity-of-material ((?material Material)) :-> (?conductivity NUMBER))
   :documentation "Thermal conductivity of a material in W·m−1·K−1."
 
+;; -------------------------
+;; Metals
+;; -------------------------
+
 (defconcept Metal (?material Material)
   :documentation "Metal material type.")
 
@@ -51,6 +55,10 @@
 (defrelation metal-alloy-material ((?material Material) (?ratio NUMBER) (?alloy Material)))
   :documentation "Material needed with the specified ratio to produce the alloy."
 
+;; -------------------------
+;; Soils, Sands, Clays
+;; -------------------------
+
 (defconcept Soil (?material Material)
   :documentation "Soil material.")
 
@@ -65,6 +73,10 @@
 
 (defconcept Clay (?material Soil)
   :documentation "Fine-grained natural soil material containing clay minerals.")
+
+;; -------------------------
+;; Stones
+;; -------------------------
 
 (defconcept Stone (?material Material)
   :documentation "Stone material.")
@@ -86,3 +98,10 @@
 
 (defconcept Special-Stone-Layer (?stone Stone-Layer)
   :documentation "Special stone layer material.")
+
+;; -------------------------
+;; Gases
+;; -------------------------
+
+(defconcept Gas (?material Material)
+  :documentation "Gas material.")

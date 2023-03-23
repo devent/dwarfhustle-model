@@ -29,7 +29,9 @@ import org.eclipse.collections.impl.factory.primitive.ObjectLongMaps;
 import org.lable.oss.uniqueid.GeneratorException;
 import org.lable.oss.uniqueid.IDGenerator;
 
-import com.anrisoftware.dwarfhustle.model.api.materials.IgneousExtrusive;
+import com.anrisoftware.dwarfhustle.model.api.materials.Gas;
+import com.anrisoftware.dwarfhustle.model.api.materials.IgneousIntrusive;
+import com.anrisoftware.dwarfhustle.model.api.materials.Material;
 import com.anrisoftware.dwarfhustle.model.api.materials.Sedimentary;
 import com.anrisoftware.dwarfhustle.model.api.materials.Soil;
 import com.anrisoftware.dwarfhustle.model.api.materials.SpecialStoneLayer;
@@ -73,14 +75,12 @@ public class WorkerBlocks {
 
     @Inject
     @Assisted
-    private Map<String, ListIterable<GameObject>> materials;
-
-    @Inject
-    @Assisted
     private Map<String, Object> p;
 
     @Inject
     private IDGenerator generator;
+
+    private Map<String, Map<String, GameObject>> materials = Maps.mutable.empty();
 
     private int blocksDone;
 
@@ -103,6 +103,17 @@ public class WorkerBlocks {
     private int sedimentary_level;
 
     private int igneous_level;
+
+    @Inject
+    public void setMaterials(@Assisted Map<String, ListIterable<GameObject>> materials) {
+        var mm = this.materials;
+        materials.forEach((type, ms) -> {
+            mm.put(type, Maps.mutable.empty());
+            ms.forEach(go -> {
+                mm.get(type).put(((Material) (go)).getName(), go);
+            });
+        });
+    }
 
     @Inject
     public void setStorages(Map<String, GameObjectStorage> storages) {
@@ -237,18 +248,19 @@ public class WorkerBlocks {
             tile.setMined(true);
             tile.setNaturalFloor(false);
             tile.setNaturalRoof(false);
+            tile.setMaterial(materials.get(Gas.TYPE).get("OXYGEN").getId());
         } else {
             tile.setMined(false);
             tile.setNaturalFloor(true);
             tile.setNaturalRoof(true);
             if (z <= soil_level) {
-                tile.setMaterial(materials.get(Soil.TYPE).get(0).getId());
+                tile.setMaterial(materials.get(Soil.TYPE).get("LOAM").getId());
             } else if (z <= sedimentary_level) {
-                tile.setMaterial(materials.get(Sedimentary.TYPE).get(0).getId());
+                tile.setMaterial(materials.get(Sedimentary.TYPE).get("SANDSTONE").getId());
             } else if (z <= igneous_level) {
-                tile.setMaterial(materials.get(IgneousExtrusive.TYPE).get(0).getId());
+                tile.setMaterial(materials.get(IgneousIntrusive.TYPE).get("GRANITE").getId());
             } else if (z <= magma_level) {
-                tile.setMaterial(materials.get(SpecialStoneLayer.TYPE).get(0).getId());
+                tile.setMaterial(materials.get(SpecialStoneLayer.TYPE).get("MAGMA").getId());
             }
         }
     }

@@ -124,6 +124,7 @@ public class PowerLoomKnowledgeActor {
             resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-sands.plm"));
             resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-seabeds.plm"));
             resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-topsoils.plm"));
+            resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-gases.plm"));
             resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("working.plm"));
             PLI.initialize();
             for (InputStream res : resources) {

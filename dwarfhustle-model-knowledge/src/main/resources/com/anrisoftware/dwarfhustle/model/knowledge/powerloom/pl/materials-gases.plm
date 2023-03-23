@@ -1,0 +1,52 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Author: Erwin Mueller
+;;; Version: materials-sands.plm,v 0.1.0
+;;; Descriptions used from https://en.wikipedia.org/
+;;; Specific heat capacity taken from http://www.endmemo.com/chem/specificheatsearch.php
+;;; Properties taken from https://www.chemicalbook.com/
+;;; Properties taken from https://www.periodic-table.org/
+
+;;; Using Modules
+
+(defmodule "DWARFHUSTLE-MATERIALS-GASES"
+  :documentation "Defines gas materials."
+  :includes ("PL-USER")
+  :uses ("LOGIC" "STELLA" "DWARFHUSTLE-MATERIALS")
+  )
+
+(in-module "DWARFHUSTLE-MATERIALS-GASES")
+
+;; clear any info from previous runs:
+(clear-module "DWARFHUSTLE-MATERIALS-GASES")
+(reset-features)
+
+(assert (DWARFHUSTLE-MATERIALS/Gas Vacuum)) :documentation "Not breathable vacuum."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Vacuum) 1260.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Vacuum) 0.0))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Vacuum) 0.00))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Vacuum) 0.09))
+
+(assert (DWARFHUSTLE-MATERIALS/Gas Oxygen)) :documentation "Breathenable fresh oxygen."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Air) 1260.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Air) 2.77))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Air) 0.00))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Air) 0.09))
+
+(assert (DWARFHUSTLE-MATERIALS/Gas Polluted-Oxygen)) :documentation "Still breathenable oxygen but with a foul stinch from rotting food, contains diseases."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Foul-Air) 1260.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Foul-Air) 2.77))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Foul-Air) 0.00))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Foul-Air) 0.09))
+
+(assert (DWARFHUSTLE-MATERIALS/Gas Carbon-Dioxide)) :documentation "Most animals and people breath out, toxic."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Foul-Air) 1260.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Foul-Air) 2.77))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Foul-Air) 0.00))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Foul-Air) 0.09))
+
+(assert (DWARFHUSTLE-MATERIALS/Gas Sulfur-Dioxide)) :documentation "Volcanic gas."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Foul-Air) 1260.00))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Foul-Air) 2.77))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Foul-Air) 0.00))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Foul-Air) 0.09))
