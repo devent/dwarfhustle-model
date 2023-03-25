@@ -200,20 +200,30 @@ public class KnowledgeBaseActor {
      * Reacts to {@link KnowledgeGetMessage}. Returns a behavior for the messages
      * from {@link #getInitialBehavior()}.
      */
-    @SuppressWarnings("unchecked")
     @SneakyThrows
-    private Behavior<Message> onKnowledgeGet(@SuppressWarnings("rawtypes") KnowledgeGetMessage m) {
+    private Behavior<Message> onKnowledgeGet(KnowledgeGetMessage<?> m) {
         log.debug("onKnowledgeGet {}", m);
         cache.tell(new CacheGetMessage<>(cacheResponseAdapter, KnowledgeObject.OBJECT_TYPE, m.type, go -> {
-            var ko = (KnowledgeObject) go;
-            cacheObjects(ko);
-            m.replyTo.tell(new KnowledgeResponseSuccessMessage(ko));
+            cacheHit(m, go);
         }, () -> {
-            var go = retrieveKnowledgeObject(m);
-            cache.tell(new CachePutMessage<>(cacheResponseAdapter, go.type, go));
-            m.replyTo.tell(new KnowledgeResponseSuccessMessage(go));
+            cacheMiss(m);
         }));
         return Behaviors.same();
+    }
+
+    @SuppressWarnings("unchecked")
+    private void cacheMiss(@SuppressWarnings("rawtypes") KnowledgeGetMessage m) {
+        var go = retrieveKnowledgeObject(m);
+        cacheObjects(go);
+        cache.tell(new CachePutMessage<>(cacheResponseAdapter, go.type, go));
+        m.replyTo.tell(new KnowledgeResponseSuccessMessage(go));
+    }
+
+    @SuppressWarnings("unchecked")
+    private void cacheHit(@SuppressWarnings("rawtypes") KnowledgeGetMessage m, GameObject go) {
+        var ko = (KnowledgeObject) go;
+        cacheObjects(ko);
+        m.replyTo.tell(new KnowledgeResponseSuccessMessage(ko));
     }
 
     private void cacheObjects(KnowledgeObject ko) {

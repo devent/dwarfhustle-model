@@ -69,6 +69,7 @@ class PowerLoomKnowledgeActorTest {
     @ParameterizedTest
     @ValueSource(strings = [
         "all (Special-Stone-Layer ?type)",
+        "all (Gas ?type)",
         "all (Stone ?type)",
         "all (Sedimentary ?x)",
         "all (Metal-Ore ?type)",

@@ -162,8 +162,6 @@ public class GenerateMapActor {
 
     private Map<String, ListIterable<GameObject>> materials;
 
-    private Optional<Thread> workerBlocksThread;
-
     private Optional<WorkerBlocks> workerBlocks;
 
     /**
@@ -172,7 +170,6 @@ public class GenerateMapActor {
      */
     public Behavior<Message> start() {
         this.generateMap = Optional.empty();
-        this.workerBlocksThread = Optional.empty();
         this.knowledgeResponseAdapter = context.messageAdapter(KnowledgeResponseMessage.class,
                 WrappedKnowledgeResponse::new);
         return getInitialBehavior().build();

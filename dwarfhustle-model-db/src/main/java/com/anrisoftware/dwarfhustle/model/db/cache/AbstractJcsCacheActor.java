@@ -93,6 +93,7 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler {
             if (cause == null) {
                 return new InitialStateMessage(result);
             } else {
+                log.error("Init cache", cause);
                 return new SetupErrorMessage(cause);
             }
         });

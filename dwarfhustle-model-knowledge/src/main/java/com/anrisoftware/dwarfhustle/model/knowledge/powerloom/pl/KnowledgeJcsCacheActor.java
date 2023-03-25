@@ -95,6 +95,7 @@ public class KnowledgeJcsCacheActor extends AbstractJcsCacheActor {
             try {
                 return JCS.getInstance("knowledge");
             } catch (CacheException e) {
+                log.error("JCS.getInstance", e);
                 throw new RuntimeException(e);
             }
         });

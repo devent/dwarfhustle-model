@@ -64,8 +64,8 @@ class KnowledgeBaseActorTest {
         injector = Guice.createInjector(new ModelActorsModule(), new PowerloomModule(), new ApiModule())
         actor = injector.getInstance(ActorSystemProvider)
         powerLoomKnowledgeActor = testKit.spawn(PowerLoomKnowledgeActor.create(injector), "PowerLoomKnowledgeActor");
-        knowledgeBaseActor = testKit.spawn(KnowledgeBaseActor.create(injector, powerLoomKnowledgeActor), "KnowledgeBaseActor");
         cacheActor = testKit.spawn(KnowledgeJcsCacheActor.create(injector, injector.getInstance(KnowledgeJcsCacheActorFactory), KnowledgeJcsCacheActor.createInitCacheAsync()), "KnowledgeJcsCacheActor");
+        knowledgeBaseActor = testKit.spawn(KnowledgeBaseActor.create(injector, powerLoomKnowledgeActor, cacheActor), "KnowledgeBaseActor");
         actor.waitMainActor()
         actor.getMainActor().putActor(KnowledgeJcsCacheActor.ID, cacheActor)
     }
