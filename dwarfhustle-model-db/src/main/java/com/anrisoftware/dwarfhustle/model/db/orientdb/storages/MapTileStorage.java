@@ -19,6 +19,7 @@ package com.anrisoftware.dwarfhustle.model.db.orientdb.storages;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapTile;
+import com.anrisoftware.dwarfhustle.model.api.objects.PropertiesSet;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapTileSchema;
 import com.orientechnologies.orient.core.record.OElement;
 
@@ -34,6 +35,7 @@ public class MapTileStorage extends AbstractGameMapObjectStorage {
 		var v = (OElement) o;
 		var mt = (MapTile) go;
 		v.setProperty(MapTileSchema.MATERIAL_FIELD, mt.getMaterial());
+        v.setProperty(MapTileSchema.PROPERTIES_FIELD, mt.getP().bits);
 		super.store(db, o, go);
 	}
 
@@ -42,6 +44,7 @@ public class MapTileStorage extends AbstractGameMapObjectStorage {
 		var v = (OElement) o;
 		var mt = (MapTile) go;
 		mt.setMaterial(v.getProperty("material"));
+        mt.setP(new PropertiesSet(v.getProperty(MapTileSchema.PROPERTIES_FIELD)));
 		return super.retrieve(db, o, go);
 	}
 

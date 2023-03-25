@@ -31,6 +31,7 @@ import org.eclipse.collections.impl.factory.Maps;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+import com.anrisoftware.dwarfhustle.model.actor.ShutdownMessage;
 import com.anrisoftware.dwarfhustle.model.api.materials.Gas;
 import com.anrisoftware.dwarfhustle.model.api.materials.IgneousExtrusive;
 import com.anrisoftware.dwarfhustle.model.api.materials.IgneousIntrusive;
@@ -88,6 +89,12 @@ public class GenerateMapActor {
     @RequiredArgsConstructor
     @ToString(callSuper = true)
     private static class MaterialsLoadSuccessMessage extends Message {
+    }
+
+    @RequiredArgsConstructor
+    @ToString(callSuper = true)
+    private static class StartGenerateMessage extends Message {
+        public final WorkerBlocks workerBlocks;
     }
 
     @RequiredArgsConstructor
@@ -155,12 +162,17 @@ public class GenerateMapActor {
 
     private Map<String, ListIterable<GameObject>> materials;
 
+    private Optional<Thread> workerBlocksThread;
+
+    private Optional<WorkerBlocks> workerBlocks;
+
     /**
      * Initial behavior. Returns a behavior for the messages from
      * {@link #getInitialBehavior()}.
      */
     public Behavior<Message> start() {
         this.generateMap = Optional.empty();
+        this.workerBlocksThread = Optional.empty();
         this.knowledgeResponseAdapter = context.messageAdapter(KnowledgeResponseMessage.class,
                 WrappedKnowledgeResponse::new);
         return getInitialBehavior().build();
@@ -190,12 +202,23 @@ public class GenerateMapActor {
      */
     protected Behavior<Message> onMaterialsLoadSuccess(MaterialsLoadSuccessMessage m) {
         log.debug("onMaterialsLoadSuccess {}", m);
-        var workerBlocks = workerBlocksFactory.create(db, materials, generateMap.get().p);
-        new Thread(() -> {
-            workerBlocks.generate(generateMap.get());
-        }).run();
-        timer.startTimerAtFixedRate(new SendGeneratorStatusMessage(generateMap.get(), workerBlocks),
+        this.workerBlocks = Optional.of(workerBlocksFactory.create(db, materials, generateMap.get().p));
+        context.getSelf().tell(new StartGenerateMessage(workerBlocks.get()));
+        timer.startTimerAtFixedRate(new SendGeneratorStatusMessage(generateMap.get(), workerBlocks.get()),
                 Duration.ofSeconds(5), Duration.ofSeconds(5));
+        return Behaviors.same();
+    }
+
+    /**
+     * Handle {@link StartGenerateMessage}. Returns a behavior for the messages from
+     * {@link #getInitialBehavior()}.
+     */
+    protected Behavior<Message> onStartGenerate(StartGenerateMessage m) {
+        log.debug("onStartGenerate {}", m);
+        var thread = new Thread(() -> {
+            m.workerBlocks.generate(generateMap.get());
+        });
+        thread.start();
         return Behaviors.same();
     }
 
@@ -205,10 +228,10 @@ public class GenerateMapActor {
      */
     protected Behavior<Message> onSendGeneratorStatus(SendGeneratorStatusMessage m) {
         log.debug("onSendGeneratorStatus {}", m);
-        m.om.replyTo.tell(new GenerateProgressMessage(generateMap.get(), m.workerBlocks.getBlocksDone(),
+        m.om.progressTo.tell(new GenerateProgressMessage(generateMap.get(), m.workerBlocks.getBlocksDone(),
                 m.workerBlocks.isGenerateDone()));
-        timer.cancelAll();
         if (m.workerBlocks.isGenerateDone()) {
+            timer.cancelAll();
             generateMap.get().replyTo.tell(new GenerateSuccessMessage(generateMap.get()));
         }
         return Behaviors.same();
@@ -234,12 +257,23 @@ public class GenerateMapActor {
     }
 
     /**
+     * Handles {@link ShutdownMessage}.
+     */
+    private Behavior<Message> onShutdown(ShutdownMessage m) {
+        log.debug("onShutdown {}", m);
+        workerBlocks.ifPresent(WorkerBlocks::cancel);
+        return Behaviors.stopped();
+    }
+
+    /**
      * Returns a behavior for the messages:
      *
      * <ul>
      * <li>{@link GenerateMapMessage}
      * <li>{@link MaterialsLoadSuccessMessage}
      * <li>{@link SendGeneratorStatusMessage}
+     * <li>{@link StartGenerateMessage}
+     * <li>{@link ShutdownMessage}
      * <li>{@link WrappedKnowledgeResponse}
      * </ul>
      */
@@ -248,7 +282,9 @@ public class GenerateMapActor {
                 .onMessage(GenerateMapMessage.class, this::onGenerateMap)//
                 .onMessage(MaterialsLoadSuccessMessage.class, this::onMaterialsLoadSuccess)//
                 .onMessage(SendGeneratorStatusMessage.class, this::onSendGeneratorStatus)//
+                .onMessage(StartGenerateMessage.class, this::onStartGenerate)//
                 .onMessage(WrappedKnowledgeResponse.class, this::onWrappedKnowledgeResponse)//
+                .onMessage(ShutdownMessage.class, this::onShutdown)//
         ;
     }
 

@@ -31,11 +31,14 @@ public class MapTileSchema implements GameObjectSchema {
 
 	public static final String MATERIAL_FIELD = "material";
 
+    public static final String PROPERTIES_FIELD = "p";
+
 	@Override
 	public void createSchema(Object db) {
 		var odb = (ODatabaseDocument) db;
 		var c = odb.createClass(MapTile.OBJECT_TYPE, GameMapObject.OBJECT_TYPE);
-		c.createProperty(MATERIAL_FIELD, OType.STRING);
+        c.createProperty(MATERIAL_FIELD, OType.LONG);
+        c.createProperty(PROPERTIES_FIELD, OType.INTEGER);
 	}
 
 }

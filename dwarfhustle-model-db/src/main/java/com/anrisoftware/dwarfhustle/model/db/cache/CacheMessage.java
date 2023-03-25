@@ -18,6 +18,7 @@ public class CacheMessage<T extends Message> extends Message {
     /**
      * Reply to {@link ActorRef}.
      */
+    @ToString.Exclude
     public final ActorRef<T> replyTo;
 
 }

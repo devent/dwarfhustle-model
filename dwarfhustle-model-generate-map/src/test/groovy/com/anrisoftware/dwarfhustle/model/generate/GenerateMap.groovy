@@ -203,7 +203,7 @@ class GenerateMap {
         actor.getMainActor().waitActor(GenerateMapActor.ID)
         CreateActorMessage.createNamedActor(actor.actorSystem, ofSeconds(1), "progressActor".hashCode(), ServiceKey.create(Message.class, "progressActor"), "progressActor", Behaviors.setup({ context ->
             Behaviors.receive(GenerateProgressMessage.class).onMessage(GenerateProgressMessage.class, { m ->
-                log.info m
+                log.info "Progress: $m"
                 return Behaviors.same();
             }).build()
         })).whenComplete({ ret, ex ->
@@ -216,7 +216,7 @@ class GenerateMap {
                 AskPattern.ask(
                 actor.getMainActor().getActor(GenerateMapActor.ID),
                 { replyTo -> new GenerateMapMessage(replyTo, progressActor, gm, mapTilesParams.p, mapTilesParams.block_size, dbTestUtils.user, dbTestUtils.password, dbTestUtils.database) },
-                Duration.ofSeconds(30),
+                Duration.ofMinutes(30),
                 actor.scheduler)
         result.whenComplete({ ret, ex ->
             log_reply_failure "GenerateMapMessage", ret, ex

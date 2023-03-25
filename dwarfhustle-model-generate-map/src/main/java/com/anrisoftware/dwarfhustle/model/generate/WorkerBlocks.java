@@ -104,6 +104,8 @@ public class WorkerBlocks {
 
     private int igneous_level;
 
+    private boolean cancelled = false;
+
     @Inject
     public void setMaterials(@Assisted Map<String, ListIterable<GameObject>> materials) {
         var mm = this.materials;
@@ -128,6 +130,10 @@ public class WorkerBlocks {
 
     public boolean isGenerateDone() {
         return generateDone;
+    }
+
+    public void cancel() {
+        this.cancelled = true;
     }
 
     @SneakyThrows
@@ -228,6 +234,9 @@ public class WorkerBlocks {
         var tiles = createTilesMap(w * h * d);
         var ids = generator.batch(w * h * d);
         for (var z = 0; z < d; z++) {
+            if (cancelled) {
+                return;
+            }
             for (var y = 0; y < h; y++) {
                 for (var x = 0; x < w; x++) {
                     var xx = x + block.getPos().getX();
