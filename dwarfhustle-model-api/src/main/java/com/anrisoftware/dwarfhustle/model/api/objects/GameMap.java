@@ -256,7 +256,7 @@ public class GameMap extends GameObject {
         }
     }
 
-    public void addZ(int dd) {
+    public void addCursorZ(int dd) {
         setCursor(new MapCursor(cursor.z + dd, cursor.y, cursor.x));
     }
 
