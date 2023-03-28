@@ -24,15 +24,18 @@
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Diorite) 2.50))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Diorite) 0.90))
 (assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Diorite) 0.09))
+(assert (material-color Diorite "gray"))
 
 (assert (DWARFHUSTLE-MATERIALS/Igneous-Intrusive Gabbro)) :documentation "Coarse-grained, dark-colored, intrusive igneous rock. It is usually black or dark green in color and composed mainly of the minerals plagioclase and augite. It is the most abundant rock in the deep oceanic crust. Gabbro has a variety of uses in the construction industry. It is used for everything from crushed stone base materials at construction sites to polished stone counter tops and floor tiles."
 (assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Gabbro) 1260.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Gabbro) 2.50))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Gabbro) 0.90))
 (assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Gabbro) 0.09))
+(assert (material-color Gabbro "black"))
 
 (assert (DWARFHUSTLE-MATERIALS/Igneous-Intrusive Granite)) :documentation "Light-colored igneous rock with grains large enough to be visible with the unaided eye. It forms from the slow crystallization of magma below Earth's surface."
 (assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Granite) 1260.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Granite) 2.50))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Granite) 0.90))
 (assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Granite) 0.09))
+(assert (material-color Granite "gray"))

@@ -198,22 +198,30 @@ public class WorkerBlocks {
         var x = pos.getX();
         var y = pos.getY();
         var z = pos.getZ();
-        var b0 = generateMapBlock(m, db, map, pos(m, x, y, z), pos(m, x + w2, y + h2, z + d2));
+        int xw1 = x + w1;
+        int yh1 = y + h1;
+        int zd1 = z + d1;
+        int xw2 = x + w2;
+        int yh2 = y + h2;
+        int zd2 = z + d2;
+        var b0 = generateMapBlock(m, db, map, pos(m, x, y, z), pos(m, xw2, yh2, zd2));
         map.put(b0.getPos(), b0.getId());
-        var b1 = generateMapBlock(m, db, map, pos(m, x + w2, y, z), pos(m, x + w1, y + h2, z + d2));
+        var b1 = generateMapBlock(m, db, map, pos(m, xw2, y, z), pos(m, xw1, yh2, zd2));
         map.put(b1.getPos(), b1.getId());
-        var b2 = generateMapBlock(m, db, map, pos(m, x + w2, y, z + d2), pos(m, x + w1, y + h2, z + d1));
+        var b2 = generateMapBlock(m, db, map, pos(m, x, yh2, z), pos(m, xw2, yh1, zd2));
         map.put(b2.getPos(), b2.getId());
-        var b3 = generateMapBlock(m, db, map, pos(m, x, y, z + d2), pos(m, x + w2, y + h2, z + d1));
+        var b3 = generateMapBlock(m, db, map, pos(m, xw2, yh2, z), pos(m, xw1, yh1, zd2));
         map.put(b3.getPos(), b3.getId());
-        var b4 = generateMapBlock(m, db, map, pos(m, x, y + h2, z), pos(m, x + w2, y + h1, z + d2));
+        //
+        var b4 = generateMapBlock(m, db, map, pos(m, x, y, zd2), pos(m, xw2, yh2, zd1));
         map.put(b4.getPos(), b4.getId());
-        var b5 = generateMapBlock(m, db, map, pos(m, x + w2, y + h2, z), pos(m, x + w1, y + h1, z + d2));
+        var b5 = generateMapBlock(m, db, map, pos(m, xw2, y, zd2), pos(m, xw1, yh2, zd1));
         map.put(b5.getPos(), b5.getId());
-        var b6 = generateMapBlock(m, db, map, pos(m, x + w2, y + h2, z + d2), pos(m, x + w1, y + h1, z + d1));
+        var b6 = generateMapBlock(m, db, map, pos(m, x, yh2, zd2), pos(m, xw2, yh1, zd1));
         map.put(b6.getPos(), b6.getId());
-        var b7 = generateMapBlock(m, db, map, pos(m, x, y + h2, z + d2), pos(m, x + w2, y + h1, z + d1));
+        var b7 = generateMapBlock(m, db, map, pos(m, xw2, yh2, zd2), pos(m, xw1, yh1, zd1));
         map.put(b7.getPos(), b7.getId());
+        //
         block.setBlocks(map.asUnmodifiable());
         blocksDone++;
         saveBlock(db, block);

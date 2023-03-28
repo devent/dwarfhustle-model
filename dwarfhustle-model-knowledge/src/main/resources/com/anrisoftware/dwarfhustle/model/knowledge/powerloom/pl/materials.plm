@@ -36,6 +36,17 @@
 (deffunction thermal-conductivity-of-material ((?material Material)) :-> (?conductivity NUMBER))
   :documentation "Thermal conductivity of a material in W·m−1·K−1."
 
+(defrelation material-color ((?c material) (?name STRING)))
+  :documentation "Primary color of the material."
+
+(defconcept Material-Property (?material)
+  :documentation "Special property of a material.")
+
+(defrelation material-properties ((?c material) (?property Material-Property)))
+  :documentation "Special properties of the material."
+
+(assert (Material-Property Flux)) :documentation "Flux stone"
+
 ;; -------------------------
 ;; Metals
 ;; -------------------------

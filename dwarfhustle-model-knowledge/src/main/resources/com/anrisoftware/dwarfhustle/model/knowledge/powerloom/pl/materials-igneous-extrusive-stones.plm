@@ -24,27 +24,32 @@
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Andesite) 2.77))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Andesite) 0.00))
 (assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Andesite) 0.09))
+(assert (material-color Andesite "gray"))
 
 (assert (DWARFHUSTLE-MATERIALS/Igneous-Extrusive Basalt)) :documentation "Dark-colored, fine-grained, igneous rock composed mainly of plagioclase and pyroxene minerals. It most commonly forms as an extrusive rock, such as a lava flow."
 (assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Basalt) 1450.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Basalt) 2.50))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Basalt) 0.84))
 (assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Basalt) 2.71))
+(assert (material-color Basalt "brown"))
 
 (assert (DWARFHUSTLE-MATERIALS/Igneous-Extrusive Dacite)) :documentation "Fine-grained igneous rock that is normally light in color. It is often porphyritic. Dacite is found in lava flows, lava domes, dikes, sills, and pyroclastic debris. It is a rock type usually found on continental crust above subduction zones, where a relatively young oceanic plate has melted below."
 (assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Dacite) 1260.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Dacite) 2.50))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Dacite) 0.90))
 (assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Dacite) 0.09))
+(assert (material-color Dacite "green"))
 
 (assert (DWARFHUSTLE-MATERIALS/Igneous-Extrusive Obsidian)) :documentation "Igneous rock that forms when molten rock material cools so rapidly that atoms are unable to arrange themselves into a crystalline structure. It is an amorphous material known as a mineraloid. The result is a volcanic glass with a smooth uniform texture that breaks with a conchoidal fracture."
 (assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Obsidian) 2300.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Obsidian) 2.50))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Obsidian) 0.90))
 (assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Obsidian) 0.09))
+(assert (material-color Obsidian "black"))
 
 (assert (DWARFHUSTLE-MATERIALS/Igneous-Extrusive Rhyolite)) :documentation "Extrusive igneous rock with a very high silica content. It is usually pink or gray in color with grains so small that they are difficult to observe without a hand lens. Rhyolite is made up of quartz, plagioclase, and sanidine, with minor amounts of hornblende and biotite. Trapped gases often produce vugs in the rock. These often contain crystals, opal, or glassy material."
 (assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Rhyolite) 700.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Rhyolite) 2.50))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Rhyolite) 0.90))
 (assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Rhyolite) 0.09))
+(assert (material-color Rhyolite "yellow"))

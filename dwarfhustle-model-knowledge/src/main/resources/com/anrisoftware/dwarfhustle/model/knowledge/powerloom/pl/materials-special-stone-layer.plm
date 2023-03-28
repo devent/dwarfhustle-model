@@ -25,3 +25,4 @@
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Magma) 2.25 ))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Magma) 1.00))
 (assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Magma) 2.00))
+(assert (material-color Magma "red"))
