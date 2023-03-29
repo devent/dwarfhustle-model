@@ -38,14 +38,14 @@
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Phyllite) 2.50))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Phyllite) 0.90))
 (assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Phyllite) 0.09))
-(assert (material-color Phyllite "brown"))
+(assert (material-color Phyllite "gray"))
 
 (assert (DWARFHUSTLE-MATERIALS/Metamorphic Quartzite)) :documentation "Nonfoliated metamorphic rock composed almost entirely of quartz. It forms when a quartz-rich sandstone is altered by the heat, pressure, and chemical activity of metamorphism."
 (assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Quartzite) 1612.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Quartzite) 2.50))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Quartzite) 0.90))
 (assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Quartzite) 0.09))
-(assert (material-color Quartzite "brown"))
+(assert (material-color Quartzite "purple"))
 
 (assert (DWARFHUSTLE-MATERIALS/Metamorphic Schist)) :documentation "Foliated metamorphic rock made up of plate-shaped mineral grains that are large enough to see with an unaided eye. It usually forms on a continental side of a convergent plate boundary where sedimentary rocks, such as shales and mudstones, have been subjected to compressive forces, heat, and chemical activity. This metamorphic environment is intense enough to convert the clay minerals of the sedimentary rocks into platy metamorphic minerals such as muscovite, biotite, and chlorite."
 (assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Schist) 1612.00))
@@ -59,4 +59,4 @@
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Slate) 2.50))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Slate) 0.90))
 (assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Slate) 0.09))
-(assert (material-color Slate "brown"))
+(assert (material-color Slate "gray"))

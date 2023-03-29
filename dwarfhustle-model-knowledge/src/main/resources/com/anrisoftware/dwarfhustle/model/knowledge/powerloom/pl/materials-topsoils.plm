@@ -24,31 +24,39 @@
 (assert (DWARFHUSTLE-MATERIALS/Topsoil Loam)) :documentation "Composition is about 40-20-40% concentration of sand-clay-silt, respectively."
 (assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Loam) 660.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Loam) 1.43))
+(assert (material-color Loam "brown"))
 
 (assert (DWARFHUSTLE-MATERIALS/Topsoil Loamy-Sand)) :documentation "Composition is about 80-5-15% concentration of sand-clay-silt, respectively."
 (assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Loamy-Sand) 660.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Loamy-Sand) 1.43))
+(assert (material-color Loamy-Sand "brown"))
 
 (assert (DWARFHUSTLE-MATERIALS/Topsoil Peat)) :documentation "Also known as turf, is an accumulation of partially decayed vegetation or organic matter. It is unique to natural areas called peatlands, bogs, mires, moors, or muskegs."
 (assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Peat) 660.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Peat) 0.40))
+(assert (material-color Peat "brown"))
 
 (assert (DWARFHUSTLE-MATERIALS/Topsoil Sandy-Clay-Loam)) :documentation "Composition is about 60-30-10% concentration of sand-clay-silt, respectively."
 (assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Loam) 660.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Loam) 1.50))
+(assert (material-color Sandy-Clay-Loam "orange"))
 
 (assert (DWARFHUSTLE-MATERIALS/Topsoil Sandy-Loam)) :documentation "Composition is about 65-10-25% concentration of sand-clay-silt, respectively."
 (assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Loam) 660.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Loam) 1.46))
+(assert (material-color Sandy-Loam "brown"))
 
 (assert (DWARFHUSTLE-MATERIALS/Topsoil Silt)) :documentation "Composition is about 10-5-85% concentration of sand-clay-silt, respectively."
 (assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Loam) 660.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Loam) 1.38))
+(assert (material-color Silt "brown"))
 
 (assert (DWARFHUSTLE-MATERIALS/Topsoil Silty-Clay-Loam)) :documentation "Composition is about 10-35-55% concentration of sand-clay-silt, respectively."
 (assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Loam) 660.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Loam) 1.30))
+(assert (material-color Silty-Clay-Loam "brown"))
 
 (assert (DWARFHUSTLE-MATERIALS/Topsoil Silt-Loam)) :documentation "Composition is about 20-15-65% concentration of sand-clay-silt, respectively."
 (assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Loam) 660.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Loam) 1.38))
+(assert (material-color Silt-Loam "brown"))
