@@ -5,7 +5,7 @@ package com.anrisoftware.dwarfhustle.model.api.objects;
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-public interface GameObjects<K, V extends GameObject> {
+public interface GameObjects {
 
-    public V get(K key);
+    public GameObject get(long key);
 }

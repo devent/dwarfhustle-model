@@ -57,15 +57,13 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler {
 
     @RequiredArgsConstructor
     @ToString(callSuper = true)
-    public static class InitialStateMessage extends Message {
-
+    protected static class InitialStateMessage extends Message {
         public final CacheAccess<Object, GameObject> cache;
     }
 
     @RequiredArgsConstructor
     @ToString(callSuper = true)
     protected static class SetupErrorMessage extends Message {
-
         public final Throwable cause;
     }
 

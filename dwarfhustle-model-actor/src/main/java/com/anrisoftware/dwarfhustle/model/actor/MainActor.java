@@ -96,7 +96,12 @@ public class MainActor extends MessageActor<Message> {
         return behavior;
     }
 
-    private final MutableIntObjectMap<ActorRef<Message>> actors;
+    @SuppressWarnings("unchecked")
+    public static <T extends Message> ActorRef<T> castActor(ActorRef<? extends Message> actor) {
+        return (ActorRef<T>) actor;
+    }
+
+    private final MutableIntObjectMap<ActorRef<? extends Message>> actors;
 
     @Inject
     MainActor(@Assisted ActorContext<Message> context) {
@@ -104,8 +109,8 @@ public class MainActor extends MessageActor<Message> {
         this.actors = new SynchronizedIntObjectMap<>(IntObjectMaps.mutable.empty());
     }
 
-    public ActorRef<Message> getActor(int id) {
-        return actors.get(id);
+    public <T extends Message> ActorRef<T> getActor(int id) {
+        return castActor(actors.get(id));
     }
 
     public synchronized void waitActor(int id) throws InterruptedException {
@@ -118,7 +123,7 @@ public class MainActor extends MessageActor<Message> {
         return actors.containsKey(id);
     }
 
-    public void putActor(int id, ActorRef<Message> actor) {
+    public void putActor(int id, ActorRef<? extends Message> actor) {
         actors.put(id, actor);
         synchronized (this) {
             notify();
@@ -152,7 +157,7 @@ public class MainActor extends MessageActor<Message> {
         var actor = getContext().spawnAnonymous(m.actor);
         getContext().watchWith(actor, new ActorTerminatedMessage(m.id, m.key, actor));
         putActor(m.id, actor);
-        m.replyTo.tell(StatusReply.success(actor));
+        m.replyTo.tell(StatusReply.success(castActor(actor)));
         return this;
     }
 
@@ -162,8 +167,10 @@ public class MainActor extends MessageActor<Message> {
         return this;
     }
 
+    @SuppressWarnings("unchecked")
     private Behavior<Message> forwardMessage(Message m) {
-        for (ActorRef<Message> actor : actors) {
+        for (@SuppressWarnings("rawtypes")
+        ActorRef actor : actors) {
             actor.tell(m);
         }
         return this;

@@ -36,8 +36,8 @@ public class ActorTerminatedMessage extends Message {
 
     public final int id;
 
-    public final ServiceKey<Message> key;
+    public final ServiceKey<? extends Message> key;
 
-    public final ActorRef<Message> actor;
+    public final ActorRef<? extends Message> actor;
 
 }

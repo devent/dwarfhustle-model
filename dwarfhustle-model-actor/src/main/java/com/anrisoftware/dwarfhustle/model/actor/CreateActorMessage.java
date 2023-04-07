@@ -41,7 +41,7 @@ import lombok.ToString;
 public abstract class CreateActorMessage extends Message {
 
     @ToString.Include
-    public final Behavior<Message> actor;
+    public final Behavior<? extends Message> actor;
 
     public final ActorRef<StatusReply<ActorRef<Message>>> replyTo;
 
@@ -53,7 +53,8 @@ public abstract class CreateActorMessage extends Message {
     @ToString(callSuper = true)
     public static class CreateAnonActorMessage extends CreateActorMessage {
 
-        public CreateAnonActorMessage(Behavior<Message> actor, ActorRef<StatusReply<ActorRef<Message>>> replyTo) {
+        public CreateAnonActorMessage(Behavior<? extends Message> actor,
+                ActorRef<StatusReply<ActorRef<Message>>> replyTo) {
             super(actor, replyTo);
         }
 
@@ -74,7 +75,7 @@ public abstract class CreateActorMessage extends Message {
         @ToString.Include
         public final String name;
 
-        public CreateNamedActorMessage(int id, ServiceKey<Message> key, String name, Behavior<Message> actor,
+        public CreateNamedActorMessage(int id, ServiceKey<Message> key, String name, Behavior<? extends Message> actor,
                 ActorRef<StatusReply<ActorRef<Message>>> replyTo) {
             super(actor, replyTo);
             this.id = id;
@@ -98,7 +99,7 @@ public abstract class CreateActorMessage extends Message {
      * is registered in the main actor.
      */
     public static CompletionStage<ActorRef<Message>> createNamedActor(ActorSystem<Message> system, Duration timeout,
-            int id, ServiceKey<Message> key, String name, Behavior<Message> actor) {
+            int id, ServiceKey<Message> key, String name, Behavior<? extends Message> actor) {
         return AskPattern.<Message, ActorRef<Message>>askWithStatus(system,
                 replyTo -> new CreateNamedActorMessage(id, key, name, actor, replyTo), timeout, system.scheduler());
     }
