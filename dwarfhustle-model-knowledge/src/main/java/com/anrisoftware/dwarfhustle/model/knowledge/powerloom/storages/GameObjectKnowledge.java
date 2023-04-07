@@ -1,18 +1,19 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
+import com.anrisoftware.dwarfhustle.model.api.materials.KnowledgeObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 /**
- * Retrieves {@link GameObject} game objects from the knowledge base.
+ * Retrieves {@link KnowledgeObject} knowledge objects from the knowledge base.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 public interface GameObjectKnowledge {
 
-    GameObject retrieve(Object o, GameObject go);
+    KnowledgeObject retrieve(Object o, GameObject go);
 
     /**
-     * Returns a new {@link GameObject}.
+     * Returns a new {@link KnowledgeObject}.
      */
-    GameObject create();
+    KnowledgeObject create();
 }

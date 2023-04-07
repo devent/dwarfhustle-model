@@ -39,10 +39,6 @@ public class Seabed extends Soil {
 
 	public static final String TYPE = "Seabed";
 
-    public Seabed(byte[] idbuf) {
-        super(idbuf);
-    }
-
     public Seabed(long id) {
         super(id);
     }

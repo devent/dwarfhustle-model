@@ -17,13 +17,16 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.materials;
 
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Stone material.
+ * Base for all knowledge objects.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
@@ -31,21 +34,38 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Getter
-public class Stone extends Material {
+@Setter
+public abstract class KnowledgeObject extends GameObject {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-    public static final String OBJECT_TYPE = Stone.class.getSimpleName();
+    public static final long ID_FLAG = 1;
 
-	public static final String TYPE = "Stone";
+    public static final String OBJECT_TYPE = KnowledgeObject.class.getSimpleName();
 
-    public Stone(long id) {
-        super(id);
+    /**
+     * Returns the game object ID from the knowledge RID.
+     */
+    public static long rid2Id(long rid) {
+        return (rid) << 32 & ID_FLAG;
+    }
+
+    public KnowledgeObject(long id) {
+        super(rid2Id(id));
+    }
+
+    @Override
+    public void setId(long id) {
+        super.setId(rid2Id(id));
     }
 
     @Override
     public String getObjectType() {
-        return Stone.OBJECT_TYPE;
+        return KnowledgeObject.OBJECT_TYPE;
     }
 
+    /**
+     * Type in the knowledge space.
+     */
+    public abstract String getKnowledgeType();
 }

@@ -17,30 +17,47 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
 import javax.inject.Provider;
+import javax.inject.Qualifier;
 
 import org.lable.oss.uniqueid.IDGenerator;
 import org.lable.oss.uniqueid.LocalUniqueIDGeneratorFactory;
 import org.lable.oss.uniqueid.bytes.Mode;
 
 /**
- * Provides a Id generator.
+ * Provides a Id generator for {@link GameObject} game objects.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-public class IdGeneratorProvider implements Provider<IDGenerator>{
+public class IdsObjectsProvider implements Provider<IDGenerator> {
 
-	private IDGenerator generator;
+    @Qualifier
+    @Target({ FIELD, PARAMETER, METHOD })
+    @Retention(RUNTIME)
+    public @interface IdsObjects {
+    }
 
-	public IdGeneratorProvider() {
-		final int generatorID = 0;
-		final int clusterID = 0;
-		this.generator = LocalUniqueIDGeneratorFactory.generatorFor(generatorID, clusterID, Mode.SPREAD);
-	}
+    public static final int GENERATOR_ID = 0;
 
-	@Override
-	public IDGenerator get() {
-		return generator;
-	}
+    public static final int CLUSTER_ID = 0;
+
+    private IDGenerator generator;
+
+    public IdsObjectsProvider() {
+        this.generator = LocalUniqueIDGeneratorFactory.generatorFor(GENERATOR_ID, CLUSTER_ID, Mode.SPREAD);
+    }
+
+    @Override
+    public IDGenerator get() {
+        return generator;
+    }
 
 }

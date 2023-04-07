@@ -39,10 +39,6 @@ public class Gas extends Material {
 
     public static final String TYPE = "Gas";
 
-    public Gas(byte[] idbuf) {
-        super(idbuf);
-    }
-
     public Gas(long id) {
         super(id);
     }

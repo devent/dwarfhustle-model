@@ -41,10 +41,6 @@ public class Sand extends Soil {
 
     public static final String TYPE = "Sand";
 
-    public Sand(byte[] idbuf) {
-        super(idbuf);
-    }
-
     public Sand(long id) {
         super(id);
     }

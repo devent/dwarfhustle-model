@@ -18,7 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
 import com.anrisoftware.dwarfhustle.model.api.materials.Gas;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.materials.KnowledgeObject;
 
 /**
  * Gas material.
@@ -29,7 +29,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 public class GasStorage extends MaterialStorage {
 
     @Override
-    public GameObject create() {
+    public KnowledgeObject create() {
         return new Gas();
     }
 }

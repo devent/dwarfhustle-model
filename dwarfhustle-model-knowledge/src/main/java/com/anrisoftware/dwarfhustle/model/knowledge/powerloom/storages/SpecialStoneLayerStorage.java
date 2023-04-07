@@ -17,8 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
+import com.anrisoftware.dwarfhustle.model.api.materials.KnowledgeObject;
 import com.anrisoftware.dwarfhustle.model.api.materials.SpecialStoneLayer;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 /**
  * SpecialStoneLayer stone material.
@@ -29,7 +29,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 public class SpecialStoneLayerStorage extends StoneLayerStorage {
 
     @Override
-    public GameObject create() {
+    public KnowledgeObject create() {
         return new SpecialStoneLayer();
     }
 }

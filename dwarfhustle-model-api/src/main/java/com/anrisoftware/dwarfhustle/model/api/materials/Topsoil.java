@@ -41,10 +41,6 @@ public class Topsoil extends Soil {
 
 	public static final String TYPE = "Topsoil";
 
-    public Topsoil(byte[] idbuf) {
-        super(idbuf);
-    }
-
     public Topsoil(long id) {
         super(id);
     }

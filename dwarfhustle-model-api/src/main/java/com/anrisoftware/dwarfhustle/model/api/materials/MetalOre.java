@@ -39,10 +39,6 @@ public class MetalOre extends Material {
 
 	public static final String TYPE = "Metal-Ore";
 
-    public MetalOre(byte[] idbuf) {
-        super(idbuf);
-    }
-
     public MetalOre(long id) {
         super(id);
     }

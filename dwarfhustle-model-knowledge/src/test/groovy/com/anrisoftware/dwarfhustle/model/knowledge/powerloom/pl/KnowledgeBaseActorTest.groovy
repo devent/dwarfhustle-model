@@ -86,7 +86,7 @@ class KnowledgeBaseActorTest {
                 Duration.ofSeconds(15),
                 testKit.scheduler())
         def lock = new CountDownLatch(1)
-        KnowledgeObject go
+        KnowledgeLoadedObject go
         result.whenComplete( {reply, failure ->
             log.info "Command reply ${reply} failure ${failure}"
             if (failure == null) {

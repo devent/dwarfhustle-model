@@ -39,10 +39,6 @@ public class Metamorphic extends StoneLayer {
 
 	public static final String TYPE = "Metamorphic";
 
-    public Metamorphic(byte[] idbuf) {
-        super(idbuf);
-    }
-
     public Metamorphic(long id) {
         super(id);
     }

@@ -16,7 +16,7 @@ public abstract class KnowledgeResponseMessage extends Message {
     @ToString(callSuper = true)
     public static class KnowledgeResponseSuccessMessage extends KnowledgeResponseMessage {
 
-        public final KnowledgeObject go;
+        public final KnowledgeLoadedObject go;
     }
 
     @RequiredArgsConstructor

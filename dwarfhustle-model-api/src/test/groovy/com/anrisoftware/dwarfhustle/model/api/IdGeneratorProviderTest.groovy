@@ -20,7 +20,7 @@ package com.anrisoftware.dwarfhustle.model.api
 import org.junit.jupiter.api.Test
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject
-import com.anrisoftware.dwarfhustle.model.api.objects.IdGeneratorProvider
+import com.anrisoftware.dwarfhustle.model.api.objects.IdsObjectsProvider
 
 /**
  * @see IdGeneratorProvider
@@ -31,7 +31,7 @@ class IdGeneratorProviderTest {
 
 	@Test
 	void generate_ids() {
-		def gen = new IdGeneratorProvider().get()
+		def gen = new IdsObjectsProvider().get()
 		def unique = new HashSet()
 		for (int i = 0; i < 100000; i++) {
 			def buf = gen.generate()

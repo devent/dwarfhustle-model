@@ -42,6 +42,7 @@ import com.anrisoftware.dwarfhustle.model.actor.ModelActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.ShutdownMessage
 import com.anrisoftware.dwarfhustle.model.api.objects.ApiModule
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
+import com.anrisoftware.dwarfhustle.model.api.objects.IdsObjectsProvider
 import com.anrisoftware.dwarfhustle.model.api.objects.MapArea
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap
 import com.anrisoftware.dwarfhustle.model.db.cache.JcsCacheModule
@@ -151,7 +152,7 @@ class GenerateMap {
         })
         actor.getMainActor().waitActor(ObjectsDbActor.ID)
         def objectsActor = actor.getMainActor().getActor(ObjectsDbActor.ID)
-        gen = injector.getInstance(IDGenerator)
+        gen = injector.getInstance(IdsObjectsProvider.class).get()
         dbTestUtils = new DbTestUtils(dbActor, objectsActor, actor.scheduler, gen)
         dbTestUtils.type = ODatabaseType.PLOCAL
         dbTestUtils.fillDatabase = false

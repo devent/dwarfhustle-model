@@ -28,7 +28,6 @@ import javax.inject.Inject;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
-import org.lable.oss.uniqueid.IDGenerator;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
@@ -148,9 +147,6 @@ public class KnowledgeBaseActor {
     @Inject
     private Map<String, GameObjectKnowledge> storages;
 
-    @Inject
-    private IDGenerator ids;
-
     @SuppressWarnings("rawtypes")
     private ActorRef<CacheResponseMessage> cacheResponseAdapter;
 
@@ -203,7 +199,7 @@ public class KnowledgeBaseActor {
     @SneakyThrows
     private Behavior<Message> onKnowledgeGet(KnowledgeGetMessage<?> m) {
         log.debug("onKnowledgeGet {}", m);
-        cache.tell(new CacheGetMessage<>(cacheResponseAdapter, KnowledgeObject.OBJECT_TYPE, m.type, go -> {
+        cache.tell(new CacheGetMessage<>(cacheResponseAdapter, KnowledgeLoadedObject.OBJECT_TYPE, m.type, go -> {
             cacheHit(m, go);
         }, () -> {
             cacheMiss(m);
@@ -221,12 +217,12 @@ public class KnowledgeBaseActor {
 
     @SuppressWarnings("unchecked")
     private void cacheHit(@SuppressWarnings("rawtypes") KnowledgeGetMessage m, GameObject go) {
-        var ko = (KnowledgeObject) go;
+        var ko = (KnowledgeLoadedObject) go;
         cacheObjects(ko);
         m.replyTo.tell(new KnowledgeResponseSuccessMessage(ko));
     }
 
-    private void cacheObjects(KnowledgeObject ko) {
+    private void cacheObjects(KnowledgeLoadedObject ko) {
         actor.tell(new CachePutsMessage<>(cacheResponseAdapter, Long.class, GameObject::getId, ko.objects));
     }
 
@@ -240,7 +236,7 @@ public class KnowledgeBaseActor {
     }
 
     @SneakyThrows
-    private KnowledgeObject retrieveKnowledgeObject(KnowledgeGetMessage<?> m) {
+    private KnowledgeLoadedObject retrieveKnowledgeObject(KnowledgeGetMessage<?> m) {
         var sb = new StringBuilder();
         sb.append("all (");
         sb.append(m.type);
@@ -251,10 +247,10 @@ public class KnowledgeBaseActor {
         while ((next = (LogicObject) answer.pop()) != null) {
             var s = storages.get(m.type);
             var go = s.retrieve(next, s.create());
-            go.setId(ids.generate());
+            go.setId((long) go.getRid());
             list.add(go);
         }
-        return new KnowledgeObject(m.type, list.asUnmodifiable());
+        return new KnowledgeLoadedObject(m.type, list.asUnmodifiable());
     }
 
     /**

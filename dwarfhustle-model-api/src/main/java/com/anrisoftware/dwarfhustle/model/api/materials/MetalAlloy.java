@@ -39,10 +39,6 @@ public class MetalAlloy extends Metal {
 
 	public static final String TYPE = "Metal-Alloy";
 
-    public MetalAlloy(byte[] idbuf) {
-        super(idbuf);
-    }
-
     public MetalAlloy(long id) {
         super(id);
     }

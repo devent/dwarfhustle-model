@@ -41,6 +41,7 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.CreateSchemasMessa
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadObjectMessage.LoadObjectErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadObjectMessage.LoadObjectSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadObjectsMessage.LoadObjectsErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadObjectsMessage.LoadObjectsSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsResponseMessage.ObjectsErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsResponseMessage.ObjectsSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.SaveObjectMessage.SaveObjectErrorMessage;
@@ -50,6 +51,7 @@ import com.google.inject.assistedinject.Assisted;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 import com.orientechnologies.orient.core.id.ORID;
 import com.orientechnologies.orient.core.record.OElement;
+import com.orientechnologies.orient.core.sql.executor.OResultSet;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -194,9 +196,10 @@ public class ObjectsDbActor {
         return Behaviors.same();
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @SneakyThrows
-    private void loadGameObjects(LoadObjectsMessage<?> m, ODatabaseDocument db) {
-        var rs = m.query.apply(db);
+    private void loadGameObjects(LoadObjectsMessage m, ODatabaseDocument db) {
+        var rs = (OResultSet) m.query.apply(db);
         try {
             while (rs.hasNext()) {
                 var v = rs.next().getVertex();
@@ -206,6 +209,7 @@ public class ObjectsDbActor {
                     m.consumer.accept(go);
                 }
             }
+            m.replyTo.tell(new LoadObjectsSuccessMessage(m));
         } finally {
             rs.close();
         }

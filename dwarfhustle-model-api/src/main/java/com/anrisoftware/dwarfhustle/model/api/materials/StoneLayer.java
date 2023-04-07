@@ -39,10 +39,6 @@ public class StoneLayer extends Stone {
 
 	public static final String TYPE = "Stone-Layer";
 
-    public StoneLayer(byte[] idbuf) {
-        super(idbuf);
-    }
-
     public StoneLayer(long id) {
         super(id);
     }

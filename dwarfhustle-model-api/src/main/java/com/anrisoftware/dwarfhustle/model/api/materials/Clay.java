@@ -39,10 +39,6 @@ public class Clay extends Soil {
 
 	public static final String TYPE = "Clay";
 
-    public Clay(byte[] idbuf) {
-        super(idbuf);
-    }
-
     public Clay(long id) {
         super(id);
     }

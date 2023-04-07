@@ -40,6 +40,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMapPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
+import com.anrisoftware.dwarfhustle.model.api.objects.IdsObjectsProvider.IdsObjects;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapTile;
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
@@ -78,6 +79,7 @@ public class WorkerBlocks {
     private Map<String, Object> p;
 
     @Inject
+    @IdsObjects
     private IDGenerator generator;
 
     private Map<String, Map<String, GameObject>> materials = Maps.mutable.empty();

@@ -19,6 +19,7 @@ package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import org.lable.oss.uniqueid.IDGenerator;
 
+import com.anrisoftware.dwarfhustle.model.api.objects.IdsObjectsProvider.IdsObjects;
 import com.google.inject.AbstractModule;
 
 /**
@@ -28,7 +29,7 @@ public class ApiModule extends AbstractModule {
 
     @Override
     protected void configure() {
-		bind(IDGenerator.class).toProvider(IdGeneratorProvider.class).asEagerSingleton();
+        bind(IDGenerator.class).annotatedWith(IdsObjects.class).toProvider(IdsObjectsProvider.class).asEagerSingleton();
     }
 
 }

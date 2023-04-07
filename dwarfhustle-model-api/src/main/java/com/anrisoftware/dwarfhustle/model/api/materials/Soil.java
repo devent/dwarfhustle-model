@@ -39,10 +39,6 @@ public class Soil extends Material {
 
     public static final String TYPE = "Soil";
 
-    public Soil(byte[] idbuf) {
-        super(idbuf);
-    }
-
     public Soil(long id) {
         super(id);
     }

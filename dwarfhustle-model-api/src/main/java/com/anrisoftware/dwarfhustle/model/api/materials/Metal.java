@@ -39,10 +39,6 @@ public class Metal extends Material {
 
 	public static final String TYPE = "Metal";
 
-    public Metal(byte[] idbuf) {
-        super(idbuf);
-    }
-
     public Metal(long id) {
         super(id);
     }

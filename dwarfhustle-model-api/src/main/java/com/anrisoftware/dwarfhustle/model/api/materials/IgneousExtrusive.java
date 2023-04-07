@@ -39,10 +39,6 @@ public class IgneousExtrusive extends StoneLayer {
 
 	public static final String TYPE = "Igneous-Extrusive";
 
-    public IgneousExtrusive(byte[] idbuf) {
-        super(idbuf);
-    }
-
     public IgneousExtrusive(long id) {
         super(id);
     }

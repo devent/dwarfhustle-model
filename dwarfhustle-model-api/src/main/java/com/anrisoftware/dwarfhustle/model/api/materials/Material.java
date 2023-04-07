@@ -17,8 +17,6 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.materials;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
-
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,7 +33,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-public class Material extends GameObject {
+public class Material extends KnowledgeObject {
 
     private static final long serialVersionUID = 1L;
 
@@ -53,21 +51,17 @@ public class Material extends GameObject {
 
     private float thermalConductivity;
 
-    public Material(byte[] idbuf) {
-        super(idbuf);
-    }
-
     public Material(long id) {
         super(id);
     }
 
     @Override
-    public long getId() {
-        return ((Number) getRid()).longValue();
+    public String getObjectType() {
+        return Material.OBJECT_TYPE;
     }
 
     @Override
-    public String getObjectType() {
-        return Material.OBJECT_TYPE;
+    public String getKnowledgeType() {
+        return Material.TYPE;
     }
 }

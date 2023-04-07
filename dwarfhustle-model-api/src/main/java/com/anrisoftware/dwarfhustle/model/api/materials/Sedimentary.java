@@ -39,10 +39,6 @@ public class Sedimentary extends StoneLayer {
 
 	public static final String TYPE = "Sedimentary";
 
-    public Sedimentary(byte[] idbuf) {
-        super(idbuf);
-    }
-
     public Sedimentary(long id) {
         super(id);
     }

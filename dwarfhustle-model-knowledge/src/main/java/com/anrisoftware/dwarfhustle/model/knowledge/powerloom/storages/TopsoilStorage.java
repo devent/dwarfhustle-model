@@ -17,8 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
+import com.anrisoftware.dwarfhustle.model.api.materials.KnowledgeObject;
 import com.anrisoftware.dwarfhustle.model.api.materials.Topsoil;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 /**
  * Upper layer of soil. It has the highest concentration of organic matter and
@@ -31,7 +31,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 public class TopsoilStorage extends SoilStorage {
 
     @Override
-    public GameObject create() {
+    public KnowledgeObject create() {
         return new Topsoil();
     }
 }

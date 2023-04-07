@@ -16,11 +16,11 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class KnowledgeObject extends GameObject {
+public class KnowledgeLoadedObject extends GameObject {
 
     private static final long serialVersionUID = 1L;
 
-    public static final String OBJECT_TYPE = KnowledgeObject.class.getSimpleName();
+    public static final String OBJECT_TYPE = KnowledgeLoadedObject.class.getSimpleName();
 
     public String type;
 
@@ -28,6 +28,6 @@ public class KnowledgeObject extends GameObject {
 
     @Override
     public String getObjectType() {
-        return KnowledgeObject.OBJECT_TYPE;
+        return KnowledgeLoadedObject.OBJECT_TYPE;
     }
 }

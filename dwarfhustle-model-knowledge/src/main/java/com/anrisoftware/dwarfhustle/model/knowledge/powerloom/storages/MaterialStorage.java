@@ -19,6 +19,7 @@ package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
 import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor.WORKING_MODULE;
 
+import com.anrisoftware.dwarfhustle.model.api.materials.KnowledgeObject;
 import com.anrisoftware.dwarfhustle.model.api.materials.Material;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
@@ -50,7 +51,7 @@ public class MaterialStorage implements GameObjectKnowledge {
     }
 
     @Override
-    public GameObject retrieve(Object o, GameObject go) {
+    public KnowledgeObject retrieve(Object o, GameObject go) {
         var next = (LogicObject) o;
         var m = (Material) go;
         m.setRid(next.surrogateValueInverse.symbolId);
@@ -63,7 +64,7 @@ public class MaterialStorage implements GameObjectKnowledge {
     }
 
     @Override
-    public GameObject create() {
+    public KnowledgeObject create() {
         return new Material();
     }
 }
