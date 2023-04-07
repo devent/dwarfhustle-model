@@ -54,7 +54,7 @@ public class MaterialStorage implements GameObjectKnowledge {
     public KnowledgeObject retrieve(Object o, GameObject go) {
         var next = (LogicObject) o;
         var m = (Material) go;
-        m.setRid(next.surrogateValueInverse.symbolId);
+        m.setRid((long) next.surrogateValueInverse.symbolId);
         m.setName(next.surrogateValueInverse.symbolName);
         m.setMeltingPoint(retrieveFloat("melting-point-material", m.getName()));
         m.setDensity(retrieveFloat("density-of-material", m.getName()));
