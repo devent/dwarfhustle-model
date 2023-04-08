@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>com.anrisoftware.dwarfhustle</groupId>
 		<artifactId>dwarfhustle-model</artifactId>
-		<version>0.1.0-SNAPSHOT</version>
+		<version>0.0.1</version>
 	</parent>
 
 	<artifactId>dwarfhustle-model-generate-map</artifactId>
@@ -59,17 +59,17 @@
         <dependency>
             <groupId>com.anrisoftware.dwarfhustle</groupId>
             <artifactId>dwarfhustle-model-actor</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>0.0.1</version>
         </dependency>
         <dependency>
             <groupId>com.anrisoftware.dwarfhustle</groupId>
             <artifactId>dwarfhustle-model-knowledge</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>0.0.1</version>
         </dependency>
         <dependency>
             <groupId>com.anrisoftware.dwarfhustle</groupId>
             <artifactId>dwarfhustle-model-db</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>0.0.1</version>
         </dependency>
         <dependency>
             <groupId>com.anrisoftware.globalpom</groupId>

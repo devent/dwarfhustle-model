@@ -25,10 +25,11 @@
     <parent>
         <groupId>com.anrisoftware.dwarfhustle</groupId>
         <artifactId>dwarfhustle-parent</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>0.0.1</version>
     </parent>
 
     <artifactId>dwarfhustle-model</artifactId>
+    <version>0.0.1</version>
     <packaging>pom</packaging>
     <name>Dwarf Hustle Model</name>
     <description>Manages the compile dependencies for the model.</description>
@@ -54,7 +55,7 @@
             <dependency>
                 <groupId>com.anrisoftware.dwarfhustle</groupId>
                 <artifactId>dwarfhustle-orientdb-dependencies</artifactId>
-                <version>0.1.0-SNAPSHOT</version>
+                <version>0.0.1</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
