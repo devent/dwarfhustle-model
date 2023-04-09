@@ -54,6 +54,16 @@
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy</artifactId>
         </dependency>
+        <dependency>
+            <groupId>edu.isi</groupId>
+            <artifactId>powerloom</artifactId>
+            <version>4.0.10-1</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.isi</groupId>
+            <artifactId>stella</artifactId>
+            <version>4.0.10-1</version>
+        </dependency>
 
         <!-- Own modules dependencies -->
         <dependency>

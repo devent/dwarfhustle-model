@@ -35,40 +35,40 @@ import com.anrisoftware.dwarfhustle.model.api.objects.MapCoordinate
  */
 class MapCoordinateTest {
 
-	static toDecimalDegrees() {
-		Stream.of(
-				of(0, 0, 0, 0),
-				of(30, 0, 0, 30),
-				of(30, 15, 50, 30.263888889f),
-				)
-	}
+    static toDecimalDegrees() {
+        Stream.of(
+                of(0, 0, 0, 0),
+                of(30, 0, 0, 30),
+                of(30, 15, 50, 30.263888889f),
+                )
+    }
 
-	@ParameterizedTest
-	@MethodSource
-	void toDecimalDegrees(float d, float m, float s, float expected) {
-		assertThat MapCoordinate.toDecimalDegrees(d, m, s), equalTo(expected)
-	}
+    @ParameterizedTest
+    @MethodSource
+    void toDecimalDegrees(float d, float m, float s, float expected) {
+        assertThat MapCoordinate.toDecimalDegrees(d, m, s), equalTo(expected)
+    }
 
-	@ParameterizedTest
-	@MethodSource("toDecimalDegrees")
-	void toDegreesMinSec(float exd, float exm, float exs, float dd) {
-		def res = MapCoordinate.toDegreesMinSec(dd, null)
-		assertThat res[0], equalTo(exd)
-		assertThat res[1], equalTo(exm)
-		assertThat res[2], equalTo(exs)
-	}
+    @ParameterizedTest
+    @MethodSource("toDecimalDegrees")
+    void toDegreesMinSec(float exd, float exm, float exs, float dd) {
+        def res = MapCoordinate.toDegreesMinSec(dd, null)
+        assertThat res[0], equalTo(exd)
+        assertThat res[1], equalTo(exm)
+        assertThat res[2], equalTo(exs)
+    }
 
-	static toString() {
-		Stream.of(
-				of(0, 0, """0°0'0"N,0°0'0"E"""),
-				of(30.263888889f, 30.263888889f, """30°15'50"N,30°15'50"E"""),
-				of(-30.263888889f, -30.263888889f, """30°15'50"S,30°15'50"W"""),
-				)
-	}
+    static check_toString() {
+        Stream.of(
+                of(0, 0, """0°0'0"N,0°0'0"E"""),
+                of(30.263888889f, 30.263888889f, """30°15'50"N,30°15'50"E"""),
+                of(-30.263888889f, -30.263888889f, """30°15'50"S,30°15'50"W"""),
+                )
+    }
 
-	@ParameterizedTest
-	@MethodSource
-	void toString(float lat, float lon, String expected) {
-		assertThat new MapCoordinate(lat, lon).toString(), equalTo(expected)
-	}
+    @ParameterizedTest
+    @MethodSource
+    void check_toString(float lat, float lon, String expected) {
+        assertThat new MapCoordinate(lat, lon).toString(), equalTo(expected)
+    }
 }

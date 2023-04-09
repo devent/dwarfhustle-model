@@ -29,6 +29,7 @@ import org.junit.jupiter.api.io.TempDir
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.actor.ModelActorsModule
+import com.anrisoftware.dwarfhustle.model.api.objects.ApiModule
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StartEmbeddedServerMessage.StartEmbeddedServerSuccessMessage
 import com.google.inject.Guice
@@ -47,99 +48,99 @@ import groovy.util.logging.Slf4j
 @Slf4j
 class OrientDbActorStartServerTest {
 
-	static final ActorTestKit testKit = ActorTestKit.create()
+    static final ActorTestKit testKit = ActorTestKit.create()
 
-	static Injector injector
+    static Injector injector
 
-	static ActorRef<Message> orientDbActor
+    static ActorRef<Message> orientDbActor
 
-	static timeout = Duration.ofMinutes(10)
+    static timeout = Duration.ofMinutes(10)
 
-	static DbServerUtils dbServerUtils
+    static DbServerUtils dbServerUtils
 
-	@TempDir
-	static File tempDir
+    @TempDir
+    static File tempDir
 
-	@BeforeAll
-	static void setupActor() {
-		injector = Guice.createInjector(new ModelActorsModule(), new OrientDbModule())
-		orientDbActor = testKit.spawn(OrientDbActor.create(injector), "OrientDbActor");
-	}
+    @BeforeAll
+    static void setupActor() {
+        injector = Guice.createInjector(new ModelActorsModule(), new OrientDbModule(), new ApiModule())
+        orientDbActor = testKit.spawn(OrientDbActor.create(injector), "OrientDbActor");
+    }
 
-	@AfterAll
-	static void closeDb() {
-		AskPattern.ask(
-				orientDbActor,
-				{replyTo -> new CloseDbMessage(replyTo)},
-				timeout,
-				testKit.scheduler())
-		stopServer()
-		testKit.shutdown(testKit.system(), timeout)
-	}
+    @AfterAll
+    static void closeDb() {
+        AskPattern.ask(
+                orientDbActor,
+                {replyTo -> new CloseDbMessage(replyTo)},
+                timeout,
+                testKit.scheduler())
+        stopServer()
+        testKit.shutdown(testKit.system(), timeout)
+    }
 
-	@Test
-	void start_server() {
-		def lock = new CountDownLatch(1)
-		def result =
-				AskPattern.ask(
-				orientDbActor,
-				{replyTo -> new StartEmbeddedServerMessage(replyTo, tempDir.absolutePath, OrientDbActorStartServerTest.class.getResource("/orientdb-test-config.xml"))},
-				timeout,
-				testKit.scheduler())
-		result.whenComplete( {reply, failure ->
-			log_reply_failure "StartEmbeddedServerMessage", reply, failure
-			switch (reply) {
-				case StartEmbeddedServerSuccessMessage:
-					connectDatabase(lock, reply.server)
-					break
-				case DbErrorMessage:
-					lock.countDown()
-					break
-				default:
-					lock.countDown()
-			}
-		})
-		lock.await()
-	}
+    @Test
+    void start_server() {
+        def lock = new CountDownLatch(1)
+        def result =
+                AskPattern.ask(
+                orientDbActor,
+                {replyTo -> new StartEmbeddedServerMessage(replyTo, tempDir.absolutePath, OrientDbActorStartServerTest.class.getResource("/orientdb-test-config.xml"))},
+                timeout,
+                testKit.scheduler())
+        result.whenComplete( {reply, failure ->
+            log_reply_failure "StartEmbeddedServerMessage", reply, failure
+            switch (reply) {
+                case StartEmbeddedServerSuccessMessage:
+                    connectDatabase(lock, reply.server)
+                    break
+                case DbErrorMessage:
+                    lock.countDown()
+                    break
+                default:
+                    lock.countDown()
+            }
+        })
+        lock.await()
+    }
 
-	void connectDatabase(def lock, def server) {
-		def result =
-				AskPattern.ask(
-				orientDbActor,
-				{replyTo -> new ConnectDbEmbeddedMessage(replyTo, server, "test", "root", "admin")},
-				timeout,
-				testKit.scheduler())
-		result.whenComplete( {reply, failure ->
-			log_reply_failure "ConnectDbEmbeddedMessage", reply, failure
-			createDatabase(lock)
-		})
-	}
+    void connectDatabase(def lock, def server) {
+        def result =
+                AskPattern.ask(
+                orientDbActor,
+                {replyTo -> new ConnectDbEmbeddedMessage(replyTo, server, "test", "root", "admin")},
+                timeout,
+                testKit.scheduler())
+        result.whenComplete( {reply, failure ->
+            log_reply_failure "ConnectDbEmbeddedMessage", reply, failure
+            createDatabase(lock)
+        })
+    }
 
-	void createDatabase(def lock) {
-		def result =
-				AskPattern.ask(
-				orientDbActor,
-				{replyTo -> new CreateDbMessage(replyTo, ODatabaseType.PLOCAL)},
-				timeout,
-				testKit.scheduler())
-		result.whenComplete( {reply, failure ->
-			log.info "Create database reply {} failure {}", reply, failure
-			lock.countDown()
-		})
-	}
+    void createDatabase(def lock) {
+        def result =
+                AskPattern.ask(
+                orientDbActor,
+                {replyTo -> new CreateDbMessage(replyTo, ODatabaseType.PLOCAL)},
+                timeout,
+                testKit.scheduler())
+        result.whenComplete( {reply, failure ->
+            log.info "Create database reply {} failure {}", reply, failure
+            lock.countDown()
+        })
+    }
 
-	static void stopServer() {
-		def lock = new CountDownLatch(1)
-		def result =
-				AskPattern.ask(
-				orientDbActor,
-				{replyTo -> new StopEmbeddedServerMessage(replyTo)},
-				timeout,
-				testKit.scheduler())
-		result.whenComplete( {reply, failure ->
-			log_reply_failure "StopEmbeddedServerMessage", reply, failure
-			lock.countDown()
-		})
-		lock.await()
-	}
+    static void stopServer() {
+        def lock = new CountDownLatch(1)
+        def result =
+                AskPattern.ask(
+                orientDbActor,
+                {replyTo -> new StopEmbeddedServerMessage(replyTo)},
+                timeout,
+                testKit.scheduler())
+        result.whenComplete( {reply, failure ->
+            log_reply_failure "StopEmbeddedServerMessage", reply, failure
+            lock.countDown()
+        })
+        lock.await()
+    }
 }

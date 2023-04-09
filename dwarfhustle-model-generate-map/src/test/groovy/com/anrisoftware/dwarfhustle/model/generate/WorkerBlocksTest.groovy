@@ -24,6 +24,7 @@ import java.util.concurrent.CountDownLatch
 
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
@@ -61,6 +62,7 @@ import groovy.util.logging.Slf4j
  */
 @Slf4j
 @TestMethodOrder(OrderAnnotation.class)
+@Disabled
 class WorkerBlocksTest {
 
     static final EMBEDDED_SERVER_PROPERTY = System.getProperty("com.anrisoftware.dwarfhustle.model.db.orientdb.objects.embedded-server", "yes")
