@@ -47,7 +47,7 @@ public abstract class KnowledgeObject extends GameObject {
      * Returns the game object ID from the knowledge RID.
      */
     public static long rid2Id(long rid) {
-        return (rid) << 32 & ID_FLAG;
+        return (rid << 32) | ID_FLAG;
     }
 
     public KnowledgeObject(long id) {
@@ -68,4 +68,14 @@ public abstract class KnowledgeObject extends GameObject {
      * Type in the knowledge space.
      */
     public abstract String getKnowledgeType();
+
+    @Override
+    public void setDirty(boolean dirty) {
+        // knowledge object is immutable
+    }
+
+    @Override
+    public boolean isDirty() {
+        return false;
+    }
 }

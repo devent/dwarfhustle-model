@@ -15,30 +15,43 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api
+package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import org.junit.jupiter.api.Test
-
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject
-import com.anrisoftware.dwarfhustle.model.api.objects.IdsObjectsProvider
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
- * @see IdGeneratorProvider
+ * Base for all game objects that are stored in the backend.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-class IdGeneratorProviderTest {
+@NoArgsConstructor
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
+@Getter
+@Setter
+public abstract class StoredObject extends GameObject {
 
-	@Test
-	void generate_ids() {
-		def gen = new IdsObjectsProvider().get()
-		def unique = new HashSet()
-		for (int i = 0; i < 100000; i++) {
-			def buf = gen.generate()
-			def id = GameObject.toId(buf)
-			if (!unique.add(id)) {
-				assert false
-			}
-		}
-	}
+    private static final long serialVersionUID = 1L;
+
+    public static final long ID_FLAG = 0;
+
+    public static final String OBJECT_TYPE = StoredObject.class.getSimpleName();
+
+    public StoredObject(byte[] idbuf) {
+        super(idbuf);
+    }
+
+    public StoredObject(long id) {
+        super(id);
+    }
+
+    @Override
+    public String getObjectType() {
+        return StoredObject.OBJECT_TYPE;
+    }
+
 }

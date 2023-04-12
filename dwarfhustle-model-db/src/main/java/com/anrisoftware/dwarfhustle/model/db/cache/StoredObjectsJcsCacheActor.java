@@ -33,6 +33,7 @@ import org.apache.commons.jcs3.access.exception.CacheException;
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage.DbCommandErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage.DbCommandSuccessMessage;
@@ -58,17 +59,17 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Cache for {@link GameObject} game objects.
+ * Cache for {@link StoredObject} backend stored game objects.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
-public class ObjectsJcsCacheActor extends AbstractJcsCacheActor {
+public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
 
     public static final ServiceKey<Message> KEY = ServiceKey.create(Message.class,
-            ObjectsJcsCacheActor.class.getSimpleName());
+            StoredObjectsJcsCacheActor.class.getSimpleName());
 
-    public static final String NAME = ObjectsJcsCacheActor.class.getSimpleName();
+    public static final String NAME = StoredObjectsJcsCacheActor.class.getSimpleName();
 
     public static final int ID = KEY.hashCode();
 
@@ -79,14 +80,14 @@ public class ObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     /**
-     * Factory to create {@link ObjectsJcsCacheActor}.
+     * Factory to create {@link StoredObjectsJcsCacheActor}.
      *
      * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
      */
-    public interface ObjectsJcsCacheActorFactory extends AbstractJcsCacheActorFactory {
+    public interface StoredObjectsJcsCacheActorFactory extends AbstractJcsCacheActorFactory {
 
         @Override
-        ObjectsJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, Class<?> keyType);
+        StoredObjectsJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, Class<?> keyType);
     }
 
     public static Behavior<Message> create(Injector injector, AbstractJcsCacheActorFactory actorFactory,
@@ -95,14 +96,14 @@ public class ObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     /**
-     * Creates the {@link ObjectsJcsCacheActor}.
+     * Creates the {@link StoredObjectsJcsCacheActor}.
      *
      * @param injector the {@link Injector} injector.
      * @param timeout  the {@link Duration} timeout.
      */
     public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout) {
         var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
-        var actorFactory = injector.getInstance(ObjectsJcsCacheActorFactory.class);
+        var actorFactory = injector.getInstance(StoredObjectsJcsCacheActorFactory.class);
         var initCache = createInitCacheAsync();
         return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, actorFactory, initCache));
     }
@@ -155,21 +156,32 @@ public class ObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @Override
-    protected void retrieveValueFromDb(CacheGetMessage<?> m, Consumer<GameObject> consumer) {
-        if (m.key instanceof Long id) {
-            retrieveGameObject(m.type, id, consumer);
+    protected void handleCacheMiss(@SuppressWarnings("rawtypes") CacheGetMessage m) {
+        if (m.key instanceof Long id && StoredObject.class.isAssignableFrom(m.typeClass)) {
+            super.handleCacheMiss(m);
         }
     }
 
     @Override
     protected void storeValueDb(CachePutMessage<?> m) {
-        actor.tell(new SaveObjectMessage<>(objectsResponseAdapter, m.value));
+        if (m.value instanceof StoredObject) {
+            actor.tell(new SaveObjectMessage<>(objectsResponseAdapter, m.value));
+        }
     }
 
     @Override
     protected void storeValueDb(CachePutsMessage<?> m) {
         for (var go : m.value) {
-            actor.tell(new SaveObjectMessage<>(objectsResponseAdapter, go));
+            if (m.value instanceof StoredObject) {
+                actor.tell(new SaveObjectMessage<>(objectsResponseAdapter, go));
+            }
+        }
+    }
+
+    @Override
+    protected void retrieveValueFromDb(CacheGetMessage<?> m, Consumer<GameObject> consumer) {
+        if (m.key instanceof Long id && StoredObject.class.isAssignableFrom(m.typeClass)) {
+            retrieveGameObject(m.type, id, consumer);
         }
     }
 
@@ -182,12 +194,9 @@ public class ObjectsJcsCacheActor extends AbstractJcsCacheActor {
 
     @Override
     @SneakyThrows
-    protected GameObject retrieveValueFromDb(String type, Object key) {
+    protected GameObject getValueFromDb(Class<? extends GameObject> typeClass, String type, Object key) {
         CompletionStage<DbResponseMessage<?>> result = AskPattern.ask(actor.get(),
-                replyTo -> new DbCommandMessage<>(replyTo, err -> {
-                    // db error
-                    return null;
-                }, db -> {
+                replyTo -> new DbCommandMessage<>(replyTo, err -> null, db -> {
                     var query = "SELECT * from ? where objecttype = ? and objectid = ? limit 1";
                     return db.query(query, type, type, key);
                 }), timeout, context.getSystem().scheduler());
@@ -199,6 +208,15 @@ public class ObjectsJcsCacheActor extends AbstractJcsCacheActor {
             throw ret.ex;
         } else {
             throw new IllegalArgumentException();
+        }
+    }
+
+    @Override
+    public GameObject get(Class<? extends GameObject> typeClass, String type, Object key) {
+        if (key instanceof Long id && StoredObject.class.isAssignableFrom(typeClass)) {
+            return super.get(typeClass, type, key);
+        } else {
+            throw new UnsupportedOperationException();
         }
     }
 

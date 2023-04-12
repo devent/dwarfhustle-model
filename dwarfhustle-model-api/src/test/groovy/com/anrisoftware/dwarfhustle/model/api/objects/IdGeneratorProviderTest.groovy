@@ -1,5 +1,5 @@
 /*
- * dwarfhustle-model-db - Manages the compile dependencies for the model.
+ * dwarfhustle-model-api - Manages the compile dependencies for the model.
  * Copyright © 2023 Erwin Müller (erwin.mueller@anrisoftware.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,21 +15,27 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.db.cache;
+package com.anrisoftware.dwarfhustle.model.api.objects
 
-import com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor.StoredObjectsJcsCacheActorFactory;
-import com.google.inject.AbstractModule;
-import com.google.inject.assistedinject.FactoryModuleBuilder;
+import org.junit.jupiter.api.Test
 
 /**
- * @author Erwin Müller
+ * @see IdGeneratorProvider
+ *
+ * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-public class JcsCacheModule extends AbstractModule {
+class IdGeneratorProviderTest {
 
-    @Override
-    protected void configure() {
-        install(new FactoryModuleBuilder().implement(StoredObjectsJcsCacheActor.class, StoredObjectsJcsCacheActor.class)
-                .build(StoredObjectsJcsCacheActorFactory.class));
+    @Test
+    void generate_ids() {
+        def gen = new IdsObjectsProvider().get()
+        def unique = new HashSet()
+        for (int i = 0; i < 100000; i++) {
+            def buf = gen.generate()
+            def id = GameObject.toId(buf)
+            if (!unique.add(id)) {
+                assert false
+            }
+        }
     }
-
 }

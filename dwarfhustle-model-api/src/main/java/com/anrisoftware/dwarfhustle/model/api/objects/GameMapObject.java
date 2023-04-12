@@ -33,7 +33,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-public class GameMapObject extends GameObject {
+public class GameMapObject extends StoredObject {
 
 	private static final long serialVersionUID = 1L;
 

@@ -41,7 +41,6 @@ public class CacheGetMessage<T extends Message> extends CacheMessage<T> {
      */
     @ToString
     public static class CacheGetSuccessMessage<T extends CacheMessage<?>> extends CacheSuccessMessage<T> {
-
         public final GameObject go;
 
         public CacheGetSuccessMessage(T m, GameObject go) {
@@ -57,7 +56,6 @@ public class CacheGetMessage<T extends Message> extends CacheMessage<T> {
      */
     @ToString
     public static class CacheGetMissMessage<T extends CacheMessage<?>> extends CacheSuccessMessage<T> {
-
         public CacheGetMissMessage(T m) {
             super(m);
         }
@@ -69,6 +67,8 @@ public class CacheGetMessage<T extends Message> extends CacheMessage<T> {
     private final static Runnable EMPTY_ON_MISS = () -> {
     };
 
+    public final Class<? extends GameObject> typeClass;
+
     public final String type;
 
     public final Object key;
@@ -77,13 +77,14 @@ public class CacheGetMessage<T extends Message> extends CacheMessage<T> {
 
     public final Runnable onMiss;
 
-    public CacheGetMessage(ActorRef<T> replyTo, String type, Object key) {
-        this(replyTo, type, key, EMPTY_CONSUMER, EMPTY_ON_MISS);
+    public CacheGetMessage(ActorRef<T> replyTo, Class<? extends GameObject> typeClass, String type, Object key) {
+        this(replyTo, typeClass, type, key, EMPTY_CONSUMER, EMPTY_ON_MISS);
     }
 
-    public CacheGetMessage(ActorRef<T> replyTo, String type, Object key, Consumer<GameObject> consumer,
-            Runnable onMiss) {
+    public CacheGetMessage(ActorRef<T> replyTo, Class<? extends GameObject> typeClass, String type, Object key,
+            Consumer<GameObject> consumer, Runnable onMiss) {
         super(replyTo);
+        this.typeClass = typeClass;
         this.type = type;
         this.key = key;
         this.consumer = consumer;
