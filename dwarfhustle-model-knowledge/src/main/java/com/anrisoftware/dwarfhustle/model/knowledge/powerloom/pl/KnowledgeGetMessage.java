@@ -18,6 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseErrorMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseSuccessMessage;
 
@@ -34,10 +35,13 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> {
 
+    public final Class<? extends GameObject> typeClass;
+
     public final String type;
 
-    public KnowledgeGetMessage(ActorRef<T> replyTo, String type) {
+    public KnowledgeGetMessage(ActorRef<T> replyTo, Class<? extends GameObject> typeClass, String type) {
         super(replyTo);
+        this.typeClass = typeClass;
         this.type = type;
     }
 }

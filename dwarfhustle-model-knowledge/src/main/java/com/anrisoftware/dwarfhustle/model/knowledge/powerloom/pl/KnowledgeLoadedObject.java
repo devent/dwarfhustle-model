@@ -43,8 +43,23 @@ public class KnowledgeLoadedObject extends GameObject {
 
     public ListIterable<GameObject> objects;
 
+    public KnowledgeLoadedObject(byte[] idbuf) {
+        super(idbuf);
+    }
+
+    public KnowledgeLoadedObject(long id) {
+        super(id);
+    }
+
+    public KnowledgeLoadedObject(byte[] idbuf, String type, ListIterable<GameObject> objects) {
+        this(idbuf);
+        this.type = type;
+        this.objects = objects;
+    }
+
     @Override
     public String getObjectType() {
         return KnowledgeLoadedObject.OBJECT_TYPE;
     }
+
 }

@@ -15,11 +15,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api
+package com.anrisoftware.dwarfhustle.model.api.objects
 
 import org.junit.jupiter.api.Test
-
-import com.anrisoftware.dwarfhustle.model.api.objects.MapTile
 
 /**
  * @see MapTile
@@ -28,9 +26,9 @@ import com.anrisoftware.dwarfhustle.model.api.objects.MapTile
  */
 class MapTileTest {
 
-	@Test
-	void map_tile_type() {
-		def go = new MapTile()
-		assert go.objectType == "MapTile"
-	}
+    @Test
+    void map_tile_type() {
+        def go = new MapTile()
+        assert go.objectType == "MapTile"
+    }
 }

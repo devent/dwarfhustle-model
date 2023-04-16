@@ -22,6 +22,8 @@ import java.util.Map;
 
 import javax.inject.Singleton;
 
+import org.lable.oss.uniqueid.IDGenerator;
+
 import com.anrisoftware.dwarfhustle.model.api.materials.Gas;
 import com.anrisoftware.dwarfhustle.model.api.materials.IgneousExtrusive;
 import com.anrisoftware.dwarfhustle.model.api.materials.IgneousIntrusive;
@@ -36,6 +38,7 @@ import com.anrisoftware.dwarfhustle.model.api.materials.SpecialStoneLayer;
 import com.anrisoftware.dwarfhustle.model.api.materials.Stone;
 import com.anrisoftware.dwarfhustle.model.api.materials.StoneLayer;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractJcsCacheActor;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.IdsKnowledgeProvider.IdsKnowledge;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeBaseActor.KnowledgeBaseActorFactory;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor.KnowledgeJcsCacheActorFactory;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor.PowerLoomKnowledgeActorFactory;
@@ -73,6 +76,8 @@ public class PowerloomModule extends AbstractModule {
 				.build(KnowledgeBaseActorFactory.class));
         install(new FactoryModuleBuilder().implement(AbstractJcsCacheActor.class, KnowledgeJcsCacheActor.class)
                 .build(KnowledgeJcsCacheActorFactory.class));
+        bind(IDGenerator.class).annotatedWith(IdsKnowledge.class).toProvider(IdsKnowledgeProvider.class)
+                .asEagerSingleton();
     }
 
     @Singleton

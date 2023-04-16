@@ -47,7 +47,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Cache for {@link GameKnwoledge} game knowledge objects.
+ * Cache for {@link KnowledgeLoadedObject} game knowledge objects.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
@@ -136,8 +136,8 @@ public class KnowledgeJcsCacheActor extends AbstractJcsCacheActor {
 
     @Override
     @SneakyThrows
-    protected GameObject retrieveValueFromDb(String type, Object key) {
-        throw new IllegalArgumentException();
+    protected GameObject getValueFromDb(Class<? extends GameObject> typeClass, String type, Object key) {
+        throw new UnsupportedOperationException();
     }
 
 }

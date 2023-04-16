@@ -37,7 +37,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Getter
-public class GameMap extends GameObject {
+public class GameMap extends StoredObject {
 
     /**
      * Calculates the total count of {@link MapBlock} blocks for the specified

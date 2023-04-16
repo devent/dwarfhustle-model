@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api
+package com.anrisoftware.dwarfhustle.model.api.objects
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -25,8 +25,6 @@ import java.util.stream.Stream
 
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
-
-import com.anrisoftware.dwarfhustle.model.api.objects.MapCoordinate
 
 /**
  * @see MapCoordinate

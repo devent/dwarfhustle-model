@@ -28,6 +28,7 @@ import javax.inject.Inject;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
+import org.lable.oss.uniqueid.IDGenerator;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
@@ -36,6 +37,7 @@ import com.anrisoftware.dwarfhustle.model.db.cache.CacheGetMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CachePutMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CachePutsMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.IdsKnowledgeProvider.IdsKnowledge;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandErrorMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.GameObjectKnowledge;
@@ -96,7 +98,6 @@ public class KnowledgeBaseActor {
      * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
      */
     public interface KnowledgeBaseActorFactory {
-
         KnowledgeBaseActor create(ActorContext<Message> context, StashBuffer<Message> stash, ActorRef<Message> cache);
     }
 
@@ -157,6 +158,10 @@ public class KnowledgeBaseActor {
     @Inject
     private ActorRef<Message> actor;
 
+    @IdsKnowledge
+    @Inject
+    private IDGenerator ids;
+
     /**
      * Stash behavior. Returns a behavior for the messages:
      *
@@ -199,20 +204,21 @@ public class KnowledgeBaseActor {
     @SneakyThrows
     private Behavior<Message> onKnowledgeGet(KnowledgeGetMessage<?> m) {
         log.debug("onKnowledgeGet {}", m);
-        cache.tell(new CacheGetMessage<>(cacheResponseAdapter, KnowledgeLoadedObject.OBJECT_TYPE, m.type, go -> {
-            cacheHit(m, go);
-        }, () -> {
-            cacheMiss(m);
-        }));
+        cache.tell(new CacheGetMessage<>(cacheResponseAdapter, KnowledgeLoadedObject.class,
+                KnowledgeLoadedObject.OBJECT_TYPE, m.type, go -> {
+                    cacheHit(m, go);
+                }, () -> {
+                    cacheMiss(m);
+                }));
         return Behaviors.same();
     }
 
     @SuppressWarnings("unchecked")
     private void cacheMiss(@SuppressWarnings("rawtypes") KnowledgeGetMessage m) {
-        var go = retrieveKnowledgeObject(m);
-        cacheObjects(go);
-        cache.tell(new CachePutMessage<>(cacheResponseAdapter, go.type, go));
-        m.replyTo.tell(new KnowledgeResponseSuccessMessage(go));
+        var glo = retrieveKnowledgeLoadedObject(m);
+        cacheObjects(glo);
+        cache.tell(new CachePutMessage<>(cacheResponseAdapter, glo.type, glo));
+        m.replyTo.tell(new KnowledgeResponseSuccessMessage(glo));
     }
 
     @SuppressWarnings("unchecked")
@@ -236,7 +242,7 @@ public class KnowledgeBaseActor {
     }
 
     @SneakyThrows
-    private KnowledgeLoadedObject retrieveKnowledgeObject(KnowledgeGetMessage<?> m) {
+    private KnowledgeLoadedObject retrieveKnowledgeLoadedObject(KnowledgeGetMessage<?> m) {
         var sb = new StringBuilder();
         sb.append("all (");
         sb.append(m.type);
@@ -250,7 +256,7 @@ public class KnowledgeBaseActor {
             go.setId((long) go.getRid());
             list.add(go);
         }
-        return new KnowledgeLoadedObject(m.type, list.asUnmodifiable());
+        return new KnowledgeLoadedObject(ids.generate(), m.type, list.asUnmodifiable());
     }
 
     /**

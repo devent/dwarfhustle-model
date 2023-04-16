@@ -76,7 +76,6 @@ public class PowerLoomKnowledgeActor {
     @RequiredArgsConstructor
     @ToString(callSuper = true)
     private static class SetupErrorMessage extends Message {
-
         public final Throwable cause;
     }
 
@@ -159,7 +158,7 @@ public class PowerLoomKnowledgeActor {
      *
      * <ul>
      * <li>{@link InitialStateMessage}
-     * <li>{@link Message}
+     * <li>{@link KnowledgeCommandMessage}
      * </ul>
      */
     public Behavior<Message> start() {

@@ -188,8 +188,9 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler {
         log.debug("onCachePuts {}", m);
         if (keyType.isAssignableFrom(m.keyType)) {
             try {
-                for (var go : m.value) {
-                    cache.put(m.key.apply(go), (GameObject) go);
+                for (var o : m.value) {
+                    var go = (GameObject) o;
+                    cache.put(m.key.apply(o), go);
                     storeValueDb(m);
                 }
                 m.replyTo.tell(new CacheSuccessMessage<>(m));
@@ -325,7 +326,7 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler {
     protected abstract void retrieveValueFromDb(CacheGetMessage<?> m, Consumer<GameObject> consumer);
 
     /**
-     * Retrieves the value from the database.
+     * Returns the value from the database.
      *
      * <pre>
      * CompletionStage&lt;DbResponseMessage&lt;?&gt;&gt; result = AskPattern.ask(actor.get(),
@@ -340,18 +341,18 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler {
      * return ret.value;
      * </pre>
      */
-    protected abstract GameObject retrieveValueFromDb(String type, Object key);
+    protected abstract GameObject getValueFromDb(Class<? extends GameObject> typeClass, String type, Object key);
 
     /**
      * Returns the value for the key directly from the cache without sending of
      * messages. Should be used for performance critical code.
      */
-    public GameObject get(String type, Object key) {
-        return cache.get(key, () -> supplyValue(type, key));
+    public GameObject get(Class<? extends GameObject> typeClass, String type, Object key) {
+        return cache.get(key, () -> supplyValue(typeClass, type, key));
     }
 
-    private GameObject supplyValue(String type, Object key) {
-        return retrieveValueFromDb(type, key);
+    private GameObject supplyValue(Class<? extends GameObject> typeClass, String type, Object key) {
+        return getValueFromDb(typeClass, type, key);
     }
 
 }

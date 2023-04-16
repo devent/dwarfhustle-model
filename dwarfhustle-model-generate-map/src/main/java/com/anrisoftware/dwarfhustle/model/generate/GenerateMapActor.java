@@ -183,14 +183,19 @@ public class GenerateMapActor {
         log.debug("onGenerate {}", m);
         this.materials = Maps.mutable.empty();
         this.generateMap = Optional.of(m);
-        knowledge.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Sedimentary.TYPE));
-        knowledge.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, IgneousIntrusive.TYPE));
-        knowledge.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, IgneousExtrusive.TYPE));
-        knowledge.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Metamorphic.TYPE));
-        knowledge.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, SpecialStoneLayer.TYPE));
-        knowledge.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Soil.TYPE));
-        knowledge.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Gas.TYPE));
+        knowledge.tell(createKgMessage(Sedimentary.class, Sedimentary.TYPE));
+        knowledge.tell(createKgMessage(IgneousIntrusive.class, IgneousIntrusive.TYPE));
+        knowledge.tell(createKgMessage(IgneousExtrusive.class, IgneousExtrusive.TYPE));
+        knowledge.tell(createKgMessage(Metamorphic.class, Metamorphic.TYPE));
+        knowledge.tell(createKgMessage(SpecialStoneLayer.class, SpecialStoneLayer.TYPE));
+        knowledge.tell(createKgMessage(Soil.class, Soil.TYPE));
+        knowledge.tell(createKgMessage(Gas.class, Gas.TYPE));
         return Behaviors.same();
+    }
+
+    private KnowledgeGetMessage<KnowledgeResponseMessage> createKgMessage(Class<? extends GameObject> typeClass,
+            String type) {
+        return new KnowledgeGetMessage<>(knowledgeResponseAdapter, typeClass, type);
     }
 
     /**
