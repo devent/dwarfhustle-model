@@ -104,7 +104,7 @@ class GenerateMap {
 
     @BeforeAll
     static void setupActor() {
-        def s = 8
+        def s = 64
         def blockSize = 4
         def parentDir = File.createTempDir("size_${s}_${blockSize}_")
         if (EMBEDDED_SERVER_PROPERTY == "yes") {
