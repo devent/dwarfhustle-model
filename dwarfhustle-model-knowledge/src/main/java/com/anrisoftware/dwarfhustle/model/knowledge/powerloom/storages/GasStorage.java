@@ -18,7 +18,8 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
 import com.anrisoftware.dwarfhustle.model.api.materials.Gas;
-import com.anrisoftware.dwarfhustle.model.api.materials.KnowledgeObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
+import com.google.auto.service.AutoService;
 
 /**
  * Gas material.
@@ -26,7 +27,13 @@ import com.anrisoftware.dwarfhustle.model.api.materials.KnowledgeObject;
  * @see Gas
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
+@AutoService(GameObjectKnowledge.class)
 public class GasStorage extends MaterialStorage {
+
+    @Override
+    public String getType() {
+        return Gas.TYPE;
+    }
 
     @Override
     public KnowledgeObject create() {

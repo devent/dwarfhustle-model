@@ -17,26 +17,31 @@
 (clear-module "DWARFHUSTLE-GAME-MAP")
 (reset-features)
 
-(defrelation Tile ((?x NUMBER) (?y NUMBER) (?z NUMBER) (?h NUMBER) (?type DWARFHUSTLE-MATERIALS/Material) (?light LightType) (?roof RoofType) (?floor FloorType))
-  :documentation "Defines one tile on the game map.")
+(defconcept TileType (?type)
+  :documentation "Tile type.")
+
+(assert (TileType tile-tile)) :documentation "Not mined out tile."
+(assert (TileType tile-mined)) :documentation "Mined out tile."
+(assert (TileType tile-ramp)) :documentation "Ramp tile."
+(assert (TileType tile-floor)) :documentation "Floor tile."
 
 (defconcept LightType (?type)
   :documentation "Light type.")
 
-(assert (LightType Dark)) :documentation "Dark is where no sun light can reach."
-(assert (LightType NaturalLight)) :documentation "Natural light is light from the sun."
-(assert (LightType ArtificialLight)) :documentation "Artificial light is light from some light source other than the sun."
+(assert (LightType light-dark)) :documentation "Dark is where no sun light can reach."
+(assert (LightType light-natural)) :documentation "Natural light is light from the sun."
+(assert (LightType light-artificial)) :documentation "Artificial light is light from some light source other than the sun."
 
 (defconcept RoofType (?type)
   :documentation "Roof type.")
 
-(assert (RoofType NoRoof)) :documentation "No roof."
-(assert (RoofType NaturalRoof)) :documentation "Natural roof."
-(assert (RoofType ConstructuredRoof)) :documentation "Constructed roof."
+(assert (RoofType roof-no)) :documentation "No roof."
+(assert (RoofType roof-natural)) :documentation "Natural roof."
+(assert (RoofType roof-cConstructured)) :documentation "Constructed roof."
 
 (defconcept FloorType (?type)
   :documentation "Floor type.")
 
-(assert (FloorType NoFloor)) :documentation "No Floor."
-(assert (FloorType NaturalFloor)) :documentation "Natural Floor."
-(assert (FloorType ConstructuredFloor)) :documentation "Constructed Floor."
+(assert (FloorType floor-no)) :documentation "No Floor."
+(assert (FloorType floor-natural)) :documentation "Natural Floor."
+(assert (FloorType floor-constructured)) :documentation "Constructed Floor."

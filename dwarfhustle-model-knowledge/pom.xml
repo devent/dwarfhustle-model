@@ -54,6 +54,11 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>com.google.auto.service</groupId>
+            <artifactId>auto-service</artifactId>
+            <scope>provided</scope>
+        </dependency>
 		<dependency>
 			<groupId>edu.isi</groupId>
 			<artifactId>powerloom</artifactId>

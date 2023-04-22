@@ -17,8 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
-import com.anrisoftware.dwarfhustle.model.api.materials.KnowledgeObject;
 import com.anrisoftware.dwarfhustle.model.api.materials.StoneLayer;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
+import com.google.auto.service.AutoService;
 
 /**
  * Stone that creates entire layers.
@@ -26,7 +27,13 @@ import com.anrisoftware.dwarfhustle.model.api.materials.StoneLayer;
  * @see StoneLayer
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
+@AutoService(GameObjectKnowledge.class)
 public class StoneLayerStorage extends StoneStorage {
+
+    @Override
+    public String getType() {
+        return StoneLayer.TYPE;
+    }
 
     @Override
     public KnowledgeObject create() {

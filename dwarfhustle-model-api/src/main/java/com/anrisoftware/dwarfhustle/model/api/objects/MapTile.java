@@ -35,11 +35,13 @@ import lombok.ToString;
 @Getter
 public class MapTile extends GameMapObject {
 
-    private static final int NATURAL_FLOOR = 2;
+    private static final int MINED_POS = 0;
 
     private static final int NATURAL_ROOF_POS = 1;
 
-    private static final int MINED_POS = 0;
+    private static final int NATURAL_FLOOR_POS = 2;
+
+    private static final int RAMP_POS = 3;
 
     private static final long serialVersionUID = 1L;
 
@@ -56,6 +58,7 @@ public class MapTile extends GameMapObject {
      * <li>{@code 0000 0000 0000 0000 0000 0000 0000 0001} - mined
      * <li>{@code 0000 0000 0000 0000 0000 0000 0000 0010} - natural roof
      * <li>{@code 0000 0000 0000 0000 0000 0000 0000 0100} - natural floor
+     * <li>{@code 0000 0000 0000 0000 0000 0000 0000 1000} - ramp
      * </ul>
      */
     private PropertiesSet p = new PropertiesSet();
@@ -109,11 +112,20 @@ public class MapTile extends GameMapObject {
     }
 
     public void setNaturalFloor(boolean floor) {
-        p.set(floor, NATURAL_FLOOR);
+        p.set(floor, NATURAL_FLOOR_POS);
         setDirty(true);
     }
 
     public boolean isNaturalFloor() {
-        return p.get(NATURAL_FLOOR);
+        return p.get(NATURAL_FLOOR_POS);
+    }
+
+    public void setRamp(boolean ramp) {
+        p.set(ramp, RAMP_POS);
+        setDirty(true);
+    }
+
+    public boolean isRamp() {
+        return p.get(RAMP_POS);
     }
 }

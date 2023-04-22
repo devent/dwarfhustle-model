@@ -15,9 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api.materials;
-
-import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
+package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -26,7 +24,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Material what stuff is made of.
+ * Base for all knowledge objects.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
@@ -35,35 +33,47 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-public class Material extends KnowledgeObject {
+public abstract class KnowledgeObject extends GameObject {
 
     private static final long serialVersionUID = 1L;
 
-    public static final String OBJECT_TYPE = Material.class.getSimpleName();
+    public static final long ID_FLAG = 1;
 
-	public static final String TYPE = "Material";
+    public static final String OBJECT_TYPE = KnowledgeObject.class.getSimpleName();
 
-    private String name;
+    /**
+     * Returns the game object ID from the knowledge RID.
+     */
+    public static long rid2Id(long rid) {
+        return (rid << 32) | ID_FLAG;
+    }
 
-    private float meltingPoint;
+    public KnowledgeObject(long id) {
+        super(rid2Id(id));
+    }
 
-    private float density;
-
-    private float specificHeatCapacity;
-
-    private float thermalConductivity;
-
-    public Material(long id) {
-        super(id);
+    @Override
+    public void setId(long id) {
+        super.setId(rid2Id(id));
     }
 
     @Override
     public String getObjectType() {
-        return Material.OBJECT_TYPE;
+        return KnowledgeObject.OBJECT_TYPE;
+    }
+
+    /**
+     * Type in the knowledge space.
+     */
+    public abstract String getKnowledgeType();
+
+    @Override
+    public void setDirty(boolean dirty) {
+        // knowledge object is immutable
     }
 
     @Override
-    public String getKnowledgeType() {
-        return Material.TYPE;
+    public boolean isDirty() {
+        return false;
     }
 }

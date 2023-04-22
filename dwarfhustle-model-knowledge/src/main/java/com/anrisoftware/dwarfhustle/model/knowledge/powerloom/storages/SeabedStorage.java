@@ -17,8 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
-import com.anrisoftware.dwarfhustle.model.api.materials.KnowledgeObject;
 import com.anrisoftware.dwarfhustle.model.api.materials.Seabed;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
+import com.google.auto.service.AutoService;
 
 /**
  * The bottom of the ocean. All floors of the ocean are known as seabeds.
@@ -26,7 +27,13 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Seabed;
  * @see Seabed
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
+@AutoService(GameObjectKnowledge.class)
 public class SeabedStorage extends SoilStorage {
+
+    @Override
+    public String getType() {
+        return Seabed.TYPE;
+    }
 
     @Override
     public KnowledgeObject create() {

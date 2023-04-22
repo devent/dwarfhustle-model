@@ -18,7 +18,8 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
 import com.anrisoftware.dwarfhustle.model.api.materials.IgneousExtrusive;
-import com.anrisoftware.dwarfhustle.model.api.materials.KnowledgeObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
+import com.google.auto.service.AutoService;
 
 /**
  * Igneous extrusive stone material.
@@ -26,7 +27,13 @@ import com.anrisoftware.dwarfhustle.model.api.materials.KnowledgeObject;
  * @see IgneousExtrusive
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
+@AutoService(GameObjectKnowledge.class)
 public class IgneousExtrusiveStorage extends StoneLayerStorage {
+
+    @Override
+    public String getType() {
+        return IgneousExtrusive.TYPE;
+    }
 
     @Override
     public KnowledgeObject create() {

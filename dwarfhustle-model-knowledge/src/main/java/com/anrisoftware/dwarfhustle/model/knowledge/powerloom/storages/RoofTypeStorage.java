@@ -17,26 +17,37 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
-import com.anrisoftware.dwarfhustle.model.api.materials.SpecialStoneLayer;
+import com.anrisoftware.dwarfhustle.model.api.map.RoofType;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.google.auto.service.AutoService;
 
+import edu.isi.powerloom.logic.LogicObject;
+
 /**
- * SpecialStoneLayer stone material.
  *
- * @see SpecialStoneLayer
+ * @see RoofType
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @AutoService(GameObjectKnowledge.class)
-public class SpecialStoneLayerStorage extends StoneLayerStorage {
+public class RoofTypeStorage implements GameObjectKnowledge {
 
     @Override
     public String getType() {
-        return SpecialStoneLayer.TYPE;
+        return RoofType.TYPE;
+    }
+
+    @Override
+    public KnowledgeObject retrieve(Object o, GameObject go) {
+        var next = (LogicObject) o;
+        var ko = (RoofType) go;
+        ko.setRid((long) next.surrogateValueInverse.symbolId);
+        ko.setType(next.surrogateValueInverse.symbolName);
+        return ko;
     }
 
     @Override
     public KnowledgeObject create() {
-        return new SpecialStoneLayer();
+        return new RoofType();
     }
 }

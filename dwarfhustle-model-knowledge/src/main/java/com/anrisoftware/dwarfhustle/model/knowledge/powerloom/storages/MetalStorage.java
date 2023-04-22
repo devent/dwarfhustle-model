@@ -17,8 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
-import com.anrisoftware.dwarfhustle.model.api.materials.KnowledgeObject;
 import com.anrisoftware.dwarfhustle.model.api.materials.Metal;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
+import com.google.auto.service.AutoService;
 
 /**
  * Metal material type.
@@ -26,7 +27,13 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Metal;
  * @see Metal
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
+@AutoService(GameObjectKnowledge.class)
 public class MetalStorage extends MaterialStorage {
+
+    @Override
+    public String getType() {
+        return Metal.TYPE;
+    }
 
     @Override
     public KnowledgeObject create() {

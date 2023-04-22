@@ -1,5 +1,5 @@
 /*
- * dwarfhustle-model-knowledge - Manages the compile dependencies for the model.
+ * dwarfhustle-model-api - Manages the compile dependencies for the model.
  * Copyright © 2023 Erwin Müller (erwin.mueller@anrisoftware.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,28 +15,47 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
+package com.anrisoftware.dwarfhustle.model.api.map;
 
-import com.anrisoftware.dwarfhustle.model.api.materials.SpecialStoneLayer;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
-import com.google.auto.service.AutoService;
+
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
- * SpecialStoneLayer stone material.
+ * Light type.
  *
- * @see SpecialStoneLayer
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@AutoService(GameObjectKnowledge.class)
-public class SpecialStoneLayerStorage extends StoneLayerStorage {
+@NoArgsConstructor
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
+@Getter
+@Setter
+public class LightType extends KnowledgeObject {
 
-    @Override
-    public String getType() {
-        return SpecialStoneLayer.TYPE;
+    private static final long serialVersionUID = 1L;
+
+    public static final String OBJECT_TYPE = LightType.class.getSimpleName();
+
+    public static final String TYPE = "LightType";
+
+    private String type;
+
+    public LightType(long id) {
+        super(id);
     }
 
     @Override
-    public KnowledgeObject create() {
-        return new SpecialStoneLayer();
+    public String getObjectType() {
+        return LightType.OBJECT_TYPE;
+    }
+
+    @Override
+    public String getKnowledgeType() {
+        return LightType.TYPE;
     }
 }

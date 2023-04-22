@@ -17,8 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
-import com.anrisoftware.dwarfhustle.model.api.materials.KnowledgeObject;
 import com.anrisoftware.dwarfhustle.model.api.materials.Metamorphic;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
+import com.google.auto.service.AutoService;
 
 /**
  * Metamorphic stone material.
@@ -26,7 +27,13 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Metamorphic;
  * @see Metamorphic
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
+@AutoService(GameObjectKnowledge.class)
 public class MetamorphicStorage extends StoneLayerStorage {
+
+    @Override
+    public String getType() {
+        return Metamorphic.TYPE;
+    }
 
     @Override
     public KnowledgeObject create() {

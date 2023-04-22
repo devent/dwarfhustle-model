@@ -17,15 +17,14 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
-import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor.WORKING_MODULE;
+import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.GameObjectKnowledge.retrieveFloat;
 
-import com.anrisoftware.dwarfhustle.model.api.materials.KnowledgeObject;
 import com.anrisoftware.dwarfhustle.model.api.materials.Material;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
+import com.google.auto.service.AutoService;
 
-import edu.isi.powerloom.PLI;
 import edu.isi.powerloom.logic.LogicObject;
-import edu.isi.stella.FloatWrapper;
 
 /**
  * Storage for {@link Material}.
@@ -33,21 +32,12 @@ import edu.isi.stella.FloatWrapper;
  * @see Material
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
+@AutoService(GameObjectKnowledge.class)
 public class MaterialStorage implements GameObjectKnowledge {
 
-    public static float retrieveFloat(String function, String name) {
-        var buff = new StringBuilder();
-        buff.append("?x (");
-        buff.append(function);
-        buff.append(" ");
-        buff.append(name);
-        buff.append(" ?x)");
-        var answer = PLI.sRetrieve(buff.toString(), WORKING_MODULE, null);
-        FloatWrapper next;
-        while ((next = (FloatWrapper) answer.pop()) != null) {
-            return (float) next.wrapperValue;
-        }
-        return -1;
+    @Override
+    public String getType() {
+        return Material.TYPE;
     }
 
     @Override

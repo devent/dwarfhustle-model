@@ -15,9 +15,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api.materials;
+package com.anrisoftware.dwarfhustle.model.api.map;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -26,7 +26,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Base for all knowledge objects.
+ * Roof type.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
@@ -35,47 +35,27 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-public abstract class KnowledgeObject extends GameObject {
+public class RoofType extends KnowledgeObject {
 
     private static final long serialVersionUID = 1L;
 
-    public static final long ID_FLAG = 1;
+    public static final String OBJECT_TYPE = RoofType.class.getSimpleName();
 
-    public static final String OBJECT_TYPE = KnowledgeObject.class.getSimpleName();
+    public static final String TYPE = "RootType";
 
-    /**
-     * Returns the game object ID from the knowledge RID.
-     */
-    public static long rid2Id(long rid) {
-        return (rid << 32) | ID_FLAG;
-    }
+    private String type;
 
-    public KnowledgeObject(long id) {
-        super(rid2Id(id));
-    }
-
-    @Override
-    public void setId(long id) {
-        super.setId(rid2Id(id));
+    public RoofType(long id) {
+        super(id);
     }
 
     @Override
     public String getObjectType() {
-        return KnowledgeObject.OBJECT_TYPE;
-    }
-
-    /**
-     * Type in the knowledge space.
-     */
-    public abstract String getKnowledgeType();
-
-    @Override
-    public void setDirty(boolean dirty) {
-        // knowledge object is immutable
+        return RoofType.OBJECT_TYPE;
     }
 
     @Override
-    public boolean isDirty() {
-        return false;
+    public String getKnowledgeType() {
+        return RoofType.TYPE;
     }
 }

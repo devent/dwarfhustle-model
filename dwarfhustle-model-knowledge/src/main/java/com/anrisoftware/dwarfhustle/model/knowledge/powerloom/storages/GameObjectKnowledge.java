@@ -17,8 +17,13 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
-import com.anrisoftware.dwarfhustle.model.api.materials.KnowledgeObject;
+import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor.WORKING_MODULE;
+
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
+
+import edu.isi.powerloom.PLI;
+import edu.isi.stella.FloatWrapper;
 
 /**
  * Retrieves {@link KnowledgeObject} knowledge objects from the knowledge base.
@@ -27,10 +32,36 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
  */
 public interface GameObjectKnowledge {
 
+    /**
+     * Retrieves a Float.
+     */
+    public static float retrieveFloat(String function, String name) {
+        var buff = new StringBuilder();
+        buff.append("?x (");
+        buff.append(function);
+        buff.append(" ");
+        buff.append(name);
+        buff.append(" ?x)");
+        var answer = PLI.sRetrieve(buff.toString(), WORKING_MODULE, null);
+        FloatWrapper next;
+        while ((next = (FloatWrapper) answer.pop()) != null) {
+            return (float) next.wrapperValue;
+        }
+        return -1;
+    }
+
+    /**
+     * Retrieves the {@link KnowledgeObject}.
+     */
     KnowledgeObject retrieve(Object o, GameObject go);
 
     /**
      * Returns a new {@link KnowledgeObject}.
      */
     KnowledgeObject create();
+
+    /**
+     * Returns the knowledge object type.
+     */
+    String getType();
 }

@@ -18,12 +18,8 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
 import com.anrisoftware.dwarfhustle.model.api.materials.IgneousIntrusive;
-import com.anrisoftware.dwarfhustle.model.api.materials.KnowledgeObject;
-
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
+import com.google.auto.service.AutoService;
 
 /**
  * Igneous intrusive stone material.
@@ -31,11 +27,13 @@ import lombok.ToString;
  * @see IgneousIntrusive
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@NoArgsConstructor
-@ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
-@Getter
+@AutoService(GameObjectKnowledge.class)
 public class IgneousIntrusiveStorage extends StoneLayerStorage {
+
+    @Override
+    public String getType() {
+        return IgneousIntrusive.TYPE;
+    }
 
     @Override
     public KnowledgeObject create() {
