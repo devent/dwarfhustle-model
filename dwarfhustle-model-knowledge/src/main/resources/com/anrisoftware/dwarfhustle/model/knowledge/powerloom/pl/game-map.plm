@@ -37,7 +37,7 @@
 
 (assert (RoofType roof-no)) :documentation "No roof."
 (assert (RoofType roof-natural)) :documentation "Natural roof."
-(assert (RoofType roof-cConstructured)) :documentation "Constructed roof."
+(assert (RoofType roof-constructured)) :documentation "Constructed roof."
 
 (defconcept FloorType (?type)
   :documentation "Floor type.")

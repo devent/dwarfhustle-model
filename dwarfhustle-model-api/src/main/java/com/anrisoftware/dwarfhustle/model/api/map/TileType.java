@@ -43,7 +43,7 @@ public class TileType extends KnowledgeObject {
 
     public static final String TYPE = "TileType";
 
-    private String type;
+    private String name;
 
     public TileType(long id) {
         super(id);

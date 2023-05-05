@@ -42,7 +42,7 @@ public class FloorTypeStorage implements GameObjectKnowledge {
         var next = (LogicObject) o;
         var ko = (FloorType) go;
         ko.setRid((long) next.surrogateValueInverse.symbolId);
-        ko.setType(next.surrogateValueInverse.symbolName);
+        ko.setName(next.surrogateValueInverse.symbolName);
         return ko;
     }
 

@@ -42,7 +42,7 @@ public class LightTypeStorage implements GameObjectKnowledge {
         var next = (LogicObject) o;
         var ko = (LightType) go;
         ko.setRid((long) next.surrogateValueInverse.symbolId);
-        ko.setType(next.surrogateValueInverse.symbolName);
+        ko.setName(next.surrogateValueInverse.symbolName);
         return ko;
     }
 

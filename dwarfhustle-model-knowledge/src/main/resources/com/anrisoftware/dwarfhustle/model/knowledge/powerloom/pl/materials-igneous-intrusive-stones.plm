@@ -38,4 +38,4 @@
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Granite) 2.50))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Granite) 0.90))
 (assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Granite) 0.09))
-(assert (material-color Granite "gray"))
+(assert (material-color Granite "pink"))

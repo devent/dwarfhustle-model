@@ -41,9 +41,9 @@ public class RoofType extends KnowledgeObject {
 
     public static final String OBJECT_TYPE = RoofType.class.getSimpleName();
 
-    public static final String TYPE = "RootType";
+    public static final String TYPE = "RoofType";
 
-    private String type;
+    private String name;
 
     public RoofType(long id) {
         super(id);

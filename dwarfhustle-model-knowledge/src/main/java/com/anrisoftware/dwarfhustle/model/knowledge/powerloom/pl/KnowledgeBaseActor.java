@@ -19,6 +19,8 @@ package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl;
 
 import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
 import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor.WORKING_MODULE;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasKey;
 
 import java.time.Duration;
 import java.util.Map;
@@ -251,6 +253,7 @@ public class KnowledgeBaseActor {
         MutableList<GameObject> list = Lists.mutable.empty();
         LogicObject next;
         while ((next = (LogicObject) answer.pop()) != null) {
+            assertThat(storages, hasKey(m.type));
             var s = storages.get(m.type);
             var go = s.retrieve(next, s.create());
             go.setId((long) go.getRid());

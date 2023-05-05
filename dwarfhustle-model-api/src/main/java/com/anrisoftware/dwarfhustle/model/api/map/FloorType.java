@@ -43,7 +43,7 @@ public class FloorType extends KnowledgeObject {
 
     public static final String TYPE = "FloorType";
 
-    private String type;
+    private String name;
 
     public FloorType(long id) {
         super(id);
