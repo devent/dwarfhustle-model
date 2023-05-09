@@ -17,6 +17,10 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.not;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -61,6 +65,7 @@ public class PowerloomModule extends AbstractModule {
         StreamSupport.stream(loader.spliterator(), true).forEach(s -> {
             map.put(s.getType(), s);
         });
+        assertThat(map.entrySet(), not(empty()));
         return map;
     }
 
