@@ -18,7 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
 /**
- * {@link Path} direction to connect two {@link MapTile} map tiles together.
+ * {@link Path} direction to connect two {@link MapBlock} map tiles together.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */

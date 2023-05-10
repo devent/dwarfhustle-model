@@ -20,11 +20,11 @@ package com.anrisoftware.dwarfhustle.model.db.orientdb.actor
 import java.time.Duration
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
-import com.anrisoftware.dwarfhustle.model.api.objects.GameMapPos
-import com.anrisoftware.dwarfhustle.model.api.objects.MapTile
+import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos
+import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.CreateSchemasMessage
-import com.anrisoftware.dwarfhustle.model.db.orientdb.storages.MapTileStorage
+import com.anrisoftware.dwarfhustle.model.db.orientdb.storages.MapBlockStorage
 import com.orientechnologies.orient.core.db.ODatabaseType
 import com.orientechnologies.orient.core.db.OrientDB
 
@@ -75,7 +75,7 @@ class DbTestUtils {
         def result =
                 AskPattern.ask(
                 orientDbActor,
-                {replyTo -> new ConnectDbRemoteMessage(replyTo, "remote:localhost", "test", "root", "admin")},
+                {replyTo -> new ConnectDbRemoteMessage(replyTo, url, "test", "root", "admin")},
                 timeout,
                 scheduler)
         result.whenComplete({reply, failure ->
@@ -148,12 +148,12 @@ class DbTestUtils {
                 AskPattern.ask(
                 orientDbActor, {replyTo ->
                     new DbCommandMessage(replyTo, { db ->
-                        def go = new MapTile(generator.generate())
-                        go.pos = new GameMapPos(0, 10, 20, 2)
+                        def go = new MapBlock(generator.generate())
+                        go.pos = new GameBlockPos(0, 10, 20, 2)
                         go.material = 1
                         def doc = db.newVertex(go.getType());
                         db.begin();
-                        new MapTileStorage().save(doc, go)
+                        new MapBlockStorage().save(doc, go)
                         doc.save();
                         db.commit();
                     })

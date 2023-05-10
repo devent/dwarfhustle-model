@@ -31,20 +31,20 @@ import groovy.util.logging.Slf4j
 @Slf4j
 class DbServerUtils {
 
-	OServer server
+    OServer server
 
-	def createServer(def rootPath = null) {
-		if (rootPath) {
-			System.setProperty(Orient.ORIENTDB_HOME, rootPath);
-		}
-		server = OServerMain.create();
-		def config = DbServerUtils.class.getResourceAsStream("/orientdb-test-config.xml")
-		assert config != null
-		server.startup(config)
-		server.activate();
-	}
+    def createServer(File rootPath = null) {
+        if (rootPath) {
+            System.setProperty(Orient.ORIENTDB_HOME, rootPath.absolutePath);
+        }
+        server = OServerMain.create();
+        def config = DbServerUtils.class.getResourceAsStream("/orientdb-test-config.xml")
+        assert config != null
+        server.startup(config)
+        server.activate();
+    }
 
-	def shutdownServer() {
-		server.shutdown()
-	}
+    def shutdownServer() {
+        server.shutdown()
+    }
 }

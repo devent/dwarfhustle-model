@@ -17,12 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import java.util.function.Function;
-
-import org.eclipse.collections.api.map.MapIterable;
-import org.eclipse.collections.api.map.primitive.ObjectLongMap;
-import org.eclipse.collections.impl.factory.Maps;
-import org.eclipse.collections.impl.factory.primitive.ObjectLongMaps;
+import com.google.common.base.Objects;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -38,19 +33,35 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Getter
-public class MapBlock extends StoredObject {
+public class MapBlock extends GameMapObject {
+
+    private static final int MINED_POS = 0;
+
+    private static final int NATURAL_ROOF_POS = 1;
+
+    private static final int NATURAL_FLOOR_POS = 2;
+
+    private static final int RAMP_POS = 3;
 
     private static final long serialVersionUID = 1L;
 
     public static final String OBJECT_TYPE = MapBlock.class.getSimpleName();
 
-    private ObjectLongMap<GameBlockPos> blocks = ObjectLongMaps.immutable.empty();
+    /**
+     * ID of the material.
+     */
+    private long material = -1;
 
-    private MapIterable<GameMapPos, MapTile> tiles = Maps.immutable.empty();
-
-    private GameBlockPos pos = new GameBlockPos();
-
-    private boolean root = false;
+    /**
+     * Bit field that defines the properties of the map tile.
+     * <ul>
+     * <li>{@code 0000 0000 0000 0000 0000 0000 0000 0001} - mined
+     * <li>{@code 0000 0000 0000 0000 0000 0000 0000 0010} - natural roof
+     * <li>{@code 0000 0000 0000 0000 0000 0000 0000 0100} - natural floor
+     * <li>{@code 0000 0000 0000 0000 0000 0000 0000 1000} - ramp
+     * </ul>
+     */
+    private PropertiesSet p = new PropertiesSet();
 
     public MapBlock(long id) {
         super(id);
@@ -60,96 +71,61 @@ public class MapBlock extends StoredObject {
         super(idbuf);
     }
 
-    public MapBlock(long id, GameBlockPos pos) {
-        super(id);
-        this.pos = pos;
-    }
-
-    public MapBlock(byte[] idbuf, GameBlockPos pos) {
-        super(idbuf);
-        this.pos = pos;
-    }
-
     @Override
     public String getObjectType() {
         return OBJECT_TYPE;
     }
 
-    public void setBlocks(ObjectLongMap<GameBlockPos> blocks) {
-        this.blocks = blocks;
+    /**
+     * Sets the ID of the material.
+     */
+    public void setMaterial(long material) {
+        if (this.material != material) {
+            setDirty(true);
+            this.material = material;
+        }
+    }
+
+    public void setP(PropertiesSet p) {
+        if (!Objects.equal(this.p, p)) {
+            setDirty(true);
+            this.p = p;
+        }
+    }
+
+    public void setMined(boolean mined) {
+        p.set(MINED_POS);
         setDirty(true);
     }
 
-    public void setTiles(MapIterable<GameMapPos, MapTile> tiles) {
-        this.tiles = tiles;
+    public boolean isMined() {
+        return p.get(MINED_POS);
+    }
+
+    public void setNaturalRoof(boolean roof) {
+        p.set(roof, NATURAL_ROOF_POS);
         setDirty(true);
     }
 
-    /**
-     * Sets the X, Y and Z start position and end position of a {@link MapBlock} on
-     * the game map.
-     */
-    public void setPos(GameBlockPos pos) {
-        if (!this.pos.equals(pos)) {
-            setDirty(true);
-            this.pos = pos;
-        }
+    public boolean isNaturalRoof() {
+        return p.get(NATURAL_ROOF_POS);
     }
 
-    public GameMapPos getStartPos() {
-        return pos;
+    public void setNaturalFloor(boolean floor) {
+        p.set(floor, NATURAL_FLOOR_POS);
+        setDirty(true);
     }
 
-    public GameMapPos getEndPos() {
-        return pos.getEndPos();
+    public boolean isNaturalFloor() {
+        return p.get(NATURAL_FLOOR_POS);
     }
 
-    public float getWidth() {
-        return getEndPos().getDiffX(getStartPos());
+    public void setRamp(boolean ramp) {
+        p.set(ramp, RAMP_POS);
+        setDirty(true);
     }
 
-    public float getHeight() {
-        return getEndPos().getDiffY(getStartPos());
-    }
-
-    public float getDepth() {
-        return getEndPos().getDiffZ(getStartPos());
-    }
-
-    /**
-     * Sets that this block is the top most block.
-     */
-    public void setRoot(boolean root) {
-        if (this.root != root) {
-            setDirty(true);
-            this.root = root;
-        }
-    }
-
-    public MapTile findMapTile(int z, int y, int x, Function<Long, MapBlock> blockRetriever) {
-        return findMapTile(new GameMapPos(pos.getMapid(), x, y, z), blockRetriever);
-    }
-
-    public MapTile findMapTile(GameMapPos pos, Function<Long, MapBlock> blockRetriever) {
-        int x = pos.getX();
-        int y = pos.getY();
-        int z = pos.getZ();
-        if (tiles.isEmpty()) {
-            for (GameBlockPos b : blocks.keysView()) {
-                int bx = b.getX();
-                int by = b.getY();
-                int bz = b.getZ();
-                var ep = b.getEndPos();
-                int ebx = ep.getX();
-                int eby = ep.getY();
-                int ebz = ep.getZ();
-                if (x >= bx && y >= by && z >= bz && x < ebx && y < eby && z < ebz) {
-                    long id = blocks.get(b);
-                    var mb = blockRetriever.apply(id);
-                    return mb.findMapTile(pos, blockRetriever);
-                }
-            }
-        }
-        return tiles.get(pos);
+    public boolean isRamp() {
+        return p.get(RAMP_POS);
     }
 }

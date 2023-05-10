@@ -40,7 +40,7 @@ import lombok.ToString;
 public class GameMap extends StoredObject {
 
     /**
-     * Calculates the total count of {@link MapBlock} blocks for the specified
+     * Calculates the total count of {@link MapChunk} blocks for the specified
      * width, height, depth and block size.
      * <ul>
      * <li>16x16x16 4 = 72+1
@@ -170,7 +170,7 @@ public class GameMap extends StoredObject {
 	}
 
     /**
-     * Calculates the total count of {@link MapBlock} blocks for the specified
+     * Calculates the total count of {@link MapChunk} blocks for the specified
      * width, height, depth and block size.
      */
     public int getBlocksCount() {

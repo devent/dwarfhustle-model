@@ -98,18 +98,18 @@ class GenerateMap {
 
     static timeout = Duration.ofSeconds(300)
 
-    static mapTilesParams
+    static mapParams
 
     static File cacheFile
 
     @BeforeAll
     static void setupActor() {
-        def s = 64
+        def s = 8
         def blockSize = 4
         def parentDir = File.createTempDir("size_${s}_${blockSize}_")
         if (EMBEDDED_SERVER_PROPERTY == "yes") {
             dbServerUtils = new DbServerUtils()
-            dbServerUtils.createServer(parentDir.absolutePath)
+            dbServerUtils.createServer(parentDir)
         }
         def p = [:]
         p.ground_level_percent = 0.4f
@@ -117,8 +117,8 @@ class GenerateMap {
         p.sedimentary_level_percent = 0.1f
         p.igneous_level_percent = 0.1f
         p.magma_level_percent = 0.1f
-        mapTilesParams = [parent_dir: parentDir, game_name: "Endless World", mapid: 1, width: s, height: s, depth: s, block_size: blockSize, p: p]
-        cacheFile = new File(parentDir, "dwarfhustle_jcs_swap_${mapTilesParams.game_name}_mapBlocksCache_0_file")
+        mapParams = [parent_dir: parentDir, game_name: "Endless World", mapid: 1, width: s, height: s, depth: s, block_size: blockSize, p: p]
+        cacheFile = new File(parentDir, "dwarfhustle_jcs_swap_${mapParams.game_name}_mapBlocksCache_0_file")
         injector = Guice.createInjector(
                 new ModelActorsModule(),
                 new ObjectsDbModule(),
@@ -180,24 +180,24 @@ class GenerateMap {
     @Order(1)
     void "test generate"() {
         def wm = new WorldMap(gen.generate())
-        wm.name = mapTilesParams.game_name
+        wm.name = mapParams.game_name
         wm.distanceLat = 1
         wm.distanceLon = 1
         wm.time = LocalDateTime.of(500, Month.APRIL, 1, 8, 0)
         def gm = new GameMap(gen.generate())
-        gm.mapid = mapTilesParams.mapid
+        gm.mapid = mapParams.mapid
         gm.name = "Stone Fortress"
-        gm.width = mapTilesParams.width
-        gm.height = mapTilesParams.height
-        gm.depth = mapTilesParams.depth
-        gm.blockSize = mapTilesParams.block_size
+        gm.width = mapParams.width
+        gm.height = mapParams.height
+        gm.depth = mapParams.depth
+        gm.blockSize = mapParams.block_size
         gm.timeZone = ZoneOffset.ofHours(1)
         gm.area = MapArea.create(toDecimalDegrees(54, 47, 24), toDecimalDegrees(17, 30, 12), toDecimalDegrees(54, 42, 02), toDecimalDegrees(17, 35, 22))
         gm.setCameraPos(0.0f, 0.0f, 10.0f)
         gm.setCameraRot(0.0f, 1.0f, 0.0f, 0.0f)
         wm.currentMapid = gm.mapid
         wm.addMap(gm)
-        mapTilesParams.gameMap = gm
+        mapParams.gameMap = gm
         GenerateMapActor.create(injector, ofSeconds(1), dbTestUtils.db, actor.getMainActor().getActor(KnowledgeBaseActor.ID)).whenComplete({ret, ex ->
             log_reply_failure "GenerateMapActor.create", ret, ex
         })
@@ -216,7 +216,7 @@ class GenerateMap {
         def result =
                 AskPattern.ask(
                 actor.getMainActor().getActor(GenerateMapActor.ID),
-                { replyTo -> new GenerateMapMessage(replyTo, progressActor, gm, mapTilesParams.p, mapTilesParams.block_size, dbTestUtils.user, dbTestUtils.password, dbTestUtils.database) },
+                { replyTo -> new GenerateMapMessage(replyTo, progressActor, gm, mapParams.p, mapParams.block_size, dbTestUtils.user, dbTestUtils.password, dbTestUtils.database) },
                 Duration.ofMinutes(30),
                 actor.scheduler)
         result.whenComplete({ ret, ex ->

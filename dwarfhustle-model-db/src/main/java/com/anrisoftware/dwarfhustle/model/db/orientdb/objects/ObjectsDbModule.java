@@ -26,20 +26,20 @@ import javax.inject.Singleton;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
-import com.anrisoftware.dwarfhustle.model.api.objects.MapTile;
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsDbActor.ObjectsDbActorFactory;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapObjectSchema;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameObjectSchema;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameObjectSchemaSchema;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapBlockSchema;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapTileSchema;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.WorldMapSchema;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.storages.GameMapStorage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.storages.MapChunkStorage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.storages.MapBlockStorage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.storages.MapTileStorage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.storages.WorldMapStorage;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -62,11 +62,11 @@ public class ObjectsDbModule extends AbstractModule {
 	@Provides
 	public Map<String, GameObjectStorage> getStorages() {
 		var map = new HashMap<String, GameObjectStorage>();
-		var mapTileStorage = new MapTileStorage();
-		map.put(MapTile.OBJECT_TYPE, mapTileStorage);
-		var mapBlockStorage = new MapBlockStorage();
+		var mapTileStorage = new MapBlockStorage();
+		map.put(MapBlock.OBJECT_TYPE, mapTileStorage);
+		var mapBlockStorage = new MapChunkStorage();
 		mapBlockStorage.setStorages(map);
-		map.put(MapBlock.OBJECT_TYPE, mapBlockStorage);
+		map.put(MapChunk.OBJECT_TYPE, mapBlockStorage);
 		map.put(GameMap.OBJECT_TYPE, new GameMapStorage());
 		var worldMapStorage = new WorldMapStorage();
 		worldMapStorage.setStorages(map);
@@ -82,8 +82,8 @@ public class ObjectsDbModule extends AbstractModule {
 		list.add(new GameMapObjectSchema());
 		list.add(new WorldMapSchema());
 		list.add(new GameMapSchema());
-		list.add(new MapTileSchema());
 		list.add(new MapBlockSchema());
+		list.add(new MapChunkSchema());
 		return list;
 	}
 }

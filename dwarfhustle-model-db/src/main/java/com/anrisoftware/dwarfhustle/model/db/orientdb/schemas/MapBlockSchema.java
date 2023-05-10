@@ -17,9 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.schemas;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
-import com.anrisoftware.dwarfhustle.model.api.objects.MapTile;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 
@@ -30,50 +29,16 @@ import com.orientechnologies.orient.core.metadata.schema.OType;
  */
 public class MapBlockSchema implements GameObjectSchema {
 
-	public static final String OBJECTID_FIELD = "objectid";
+	public static final String MATERIAL_FIELD = "material";
 
-	public static final String BLOCK_ID_CLASS = "MapBlockId";
-
-	public static final String BLOCKS_FIELD = "blocks";
-
-	public static final String TILES_FIELD = "tiles";
-
-	public static final String MAPID_FIELD = "mapid";
-
-	public static final String START_X_FIELD = "sx";
-
-	public static final String START_Y_FIELD = "sy";
-
-	public static final String START_Z_FIELD = "sz";
-
-	public static final String END_X_FIELD = "ex";
-
-	public static final String END_Y_FIELD = "ey";
-
-	public static final String END_Z_FIELD = "ez";
-
-    public static final String ROOT_FIELD = "root";
+    public static final String PROPERTIES_FIELD = "p";
 
 	@Override
 	public void createSchema(Object db) {
 		var odb = (ODatabaseDocument) db;
-		var c = odb.createClass(MapBlock.OBJECT_TYPE, GameObject.OBJECT_TYPE);
-		var cid = odb.createClass(BLOCK_ID_CLASS);
-		cid.createProperty(OBJECTID_FIELD, OType.LONG);
-		c.createProperty(BLOCKS_FIELD, OType.EMBEDDEDMAP, cid);
-		var mapTile = odb.getClass(MapTile.OBJECT_TYPE);
-		c.createProperty(TILES_FIELD, OType.EMBEDDEDMAP, mapTile);
-		c.createProperty(MAPID_FIELD, OType.INTEGER);
-		c.createProperty(START_X_FIELD, OType.INTEGER);
-		c.createProperty(START_Y_FIELD, OType.INTEGER);
-		c.createProperty(START_Z_FIELD, OType.INTEGER);
-		c.createProperty(END_X_FIELD, OType.INTEGER);
-		c.createProperty(END_Y_FIELD, OType.INTEGER);
-		c.createProperty(END_Z_FIELD, OType.INTEGER);
-        c.createProperty(ROOT_FIELD, OType.BOOLEAN);
-		try (var q = odb.command(
-				"CREATE INDEX MapBlock_type_pos ON MapBlock (objecttype, mapid, sx, sy, sz, ex, ey, ez) UNIQUE METADATA {ignoreNullValues: false}")) {
-		}
+		var c = odb.createClass(MapBlock.OBJECT_TYPE, GameMapObject.OBJECT_TYPE);
+        c.createProperty(MATERIAL_FIELD, OType.LONG);
+        c.createProperty(PROPERTIES_FIELD, OType.INTEGER);
 	}
 
 }

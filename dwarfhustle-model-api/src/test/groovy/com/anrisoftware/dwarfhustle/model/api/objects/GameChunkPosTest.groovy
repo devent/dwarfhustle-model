@@ -25,23 +25,23 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 
 /**
- * @see GameBlockPos
+ * @see GameChunkPos
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-class GameBlockPosTest {
+class GameChunkPosTest {
 
-    static two_block_pos_equals() {
+    static two_chunk_pos_equals() {
         Stream.of(
-                of(new GameBlockPos(0, 0, 0, 0, 0, 0, 0), new GameBlockPos(0, 0, 0, 0, 0, 0, 0), true),
-                of(new GameBlockPos(0, 0, 0, 0, 4, 4, 4), new GameBlockPos(0, 0, 0, 0, 4, 4, 4), true),
-                of(new GameBlockPos(1, 0, 0, 0, 4, 4, 4), new GameBlockPos(0, 0, 0, 0, 4, 4, 4), false),
+                of(new GameChunkPos(0, 0, 0, 0, 0, 0, 0), new GameChunkPos(0, 0, 0, 0, 0, 0, 0), true),
+                of(new GameChunkPos(0, 0, 0, 0, 4, 4, 4), new GameChunkPos(0, 0, 0, 0, 4, 4, 4), true),
+                of(new GameChunkPos(1, 0, 0, 0, 4, 4, 4), new GameChunkPos(0, 0, 0, 0, 4, 4, 4), false),
                 )
     }
 
     @ParameterizedTest
     @MethodSource
-    void two_block_pos_equals(def a, def b, def expected) {
+    void two_chunk_pos_equals(def a, def b, def expected) {
         if (expected) {
             assert a == b
         } else {
@@ -49,23 +49,23 @@ class GameBlockPosTest {
         }
     }
 
-    static block_pos_toSaveString() {
+    static chunk_pos_toSaveString() {
         Stream.of(
-                of(new GameBlockPos(0, 0, 0, 0, 0, 0, 0), "0/0/0/0/0/0/0"),
-                of(new GameBlockPos(0, 0, 0, 0, 4, 4, 4), "0/0/0/0/4/4/4"),
-                of(new GameBlockPos(1, 0, 0, 0, 4, 4, 4), "1/0/0/0/4/4/4"),
+                of(new GameChunkPos(0, 0, 0, 0, 0, 0, 0), "0/0/0/0/0/0/0"),
+                of(new GameChunkPos(0, 0, 0, 0, 4, 4, 4), "0/0/0/0/4/4/4"),
+                of(new GameChunkPos(1, 0, 0, 0, 4, 4, 4), "1/0/0/0/4/4/4"),
                 )
     }
 
     @ParameterizedTest
     @MethodSource
-    void block_pos_toSaveString(GameBlockPos a, def expected) {
+    void chunk_pos_toSaveString(GameChunkPos a, def expected) {
         assert a.toSaveString() == expected
     }
 
     @ParameterizedTest
-    @MethodSource("block_pos_toSaveString")
-    void block_pos_parse(GameBlockPos expected, def s) {
-        assert GameBlockPos.parse(s) == expected
+    @MethodSource("chunk_pos_toSaveString")
+    void chunk_pos_parse(GameChunkPos expected, def s) {
+        assert GameChunkPos.parse(s) == expected
     }
 }

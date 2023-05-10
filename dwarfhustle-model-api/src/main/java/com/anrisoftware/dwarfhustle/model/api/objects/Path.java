@@ -49,7 +49,7 @@ import java.io.Serializable;
 import lombok.Data;
 
 /**
- * Connects two {@link MapTile} map tiles.
+ * Connects two {@link MapBlock} map tiles.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */

@@ -17,8 +17,6 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import java.io.Serializable;
-
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.AllArgsConstructor;
@@ -28,65 +26,50 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
- * X, Y and Z position of a {@link GameObject} on the game map.
+ * Start position and end position and a {@link MapChunk}.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
-@EqualsAndHashCode
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
 @Getter
-public class GameMapPos implements Serializable {
+public class GameChunkPos extends GameBlockPos {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	/**
-	 * The game map id.
-	 */
-	private int mapid = -1;
+	private GameBlockPos ep = new GameBlockPos();
 
-	/**
-	 * X position on the game map
-	 */
-	private int x = -1;
-
-	/**
-	 * Y position on the game map
-	 */
-	private int y = -1;
-
-	/**
-	 * Z position on the game map
-	 */
-	private int z = -1;
-
-	public int getDiffX(GameMapPos pos) {
-		return x - pos.x;
+	public GameChunkPos(int mapid, int x, int y, int z, int ex, int ey, int ez) {
+		this(new GameBlockPos(mapid, x, y, z), new GameBlockPos(mapid, ex, ey, ez));
 	}
 
-	public int getDiffY(GameMapPos pos) {
-		return y - pos.y;
-	}
-
-	public int getDiffZ(GameMapPos pos) {
-		return z - pos.z;
+	public GameChunkPos(GameBlockPos pos, GameBlockPos endPos) {
+		super(pos.getMapid(), pos.getX(), pos.getY(), pos.getZ());
+		this.ep = endPos;
 	}
 
 	/**
-	 * Returns string that can be used to store the block position.
+	 * Returns string that can be used to store the block position. For example:
+	 * <ul>
+	 * <li>{@code 0/0/0/0/0/0/0}
+	 * <li>{@code 1/0/0/0/64/64/64}
+	 * </ul>
 	 */
+	@Override
 	public String toSaveString() {
-		return getMapid() + "/" + getX() + "/" + getY() + "/" + getZ();
+		return super.toSaveString() + "/" + ep.getX() + "/" + ep.getY() + "/" + ep.getZ();
 	}
 
 	/**
-	 * Returns the {@link GameMapPos} parsed from the string.
+	 * Returns the {@link GameChunkPos} parsed from the string.
 	 */
-	public static GameMapPos parse(String s) {
+	public static GameChunkPos parse(String s) {
 		var split = StringUtils.split(s, "/");
-		var pos = new GameMapPos(toInt(split[0]), toInt(split[1]), toInt(split[2]), toInt(split[3]));
-		return pos;
+		var pos = new GameBlockPos(toInt(split[0]), toInt(split[1]), toInt(split[2]), toInt(split[3]));
+		var ep = new GameBlockPos(toInt(split[0]), toInt(split[4]), toInt(split[5]), toInt(split[6]));
+		return new GameChunkPos(pos, ep);
 	}
 
 	private static int toInt(String s) {

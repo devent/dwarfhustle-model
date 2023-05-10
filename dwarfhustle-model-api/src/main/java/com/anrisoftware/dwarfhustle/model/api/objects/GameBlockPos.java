@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.io.Serializable;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.AllArgsConstructor;
@@ -26,40 +28,56 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
- * Start position and end position and a {@link MapBlock}.
+ * X, Y and Z position of a {@link GameObject} on the game map.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
+@ToString
+@EqualsAndHashCode
 @Getter
-public class GameBlockPos extends GameMapPos {
+public class GameBlockPos implements Serializable {
 
-	private static final long serialVersionUID = -6712721104948565260L;
+	private static final long serialVersionUID = 1L;
 
-	private GameMapPos endPos = new GameMapPos();
+	/**
+	 * The game map id.
+	 */
+	private int mapid = -1;
 
-	public GameBlockPos(int mapid, int x, int y, int z, int ex, int ey, int ez) {
-		this(new GameMapPos(mapid, x, y, z), new GameMapPos(mapid, ex, ey, ez));
+	/**
+	 * X position on the game map
+	 */
+	private int x = -1;
+
+	/**
+	 * Y position on the game map
+	 */
+	private int y = -1;
+
+	/**
+	 * Z position on the game map
+	 */
+	private int z = -1;
+
+	public int getDiffX(GameBlockPos pos) {
+		return x - pos.x;
 	}
 
-	public GameBlockPos(GameMapPos pos, GameMapPos endPos) {
-		super(pos.getMapid(), pos.getX(), pos.getY(), pos.getZ());
-		this.endPos = endPos;
+	public int getDiffY(GameBlockPos pos) {
+		return y - pos.y;
+	}
+
+	public int getDiffZ(GameBlockPos pos) {
+		return z - pos.z;
 	}
 
 	/**
-	 * Returns string that can be used to store the block position. For example:
-	 * <ul>
-	 * <li>{@code 0/0/0/0/0/0/0}
-	 * <li>{@code 1/0/0/0/64/64/64}
-	 * </ul>
+	 * Returns string that can be used to store the block position.
 	 */
-	@Override
 	public String toSaveString() {
-		return super.toSaveString() + "/" + endPos.getX() + "/" + endPos.getY() + "/" + endPos.getZ();
+		return getMapid() + "/" + getX() + "/" + getY() + "/" + getZ();
 	}
 
 	/**
@@ -67,9 +85,8 @@ public class GameBlockPos extends GameMapPos {
 	 */
 	public static GameBlockPos parse(String s) {
 		var split = StringUtils.split(s, "/");
-		var pos = new GameMapPos(toInt(split[0]), toInt(split[1]), toInt(split[2]), toInt(split[3]));
-		var ep = new GameMapPos(toInt(split[0]), toInt(split[4]), toInt(split[5]), toInt(split[6]));
-		return new GameBlockPos(pos, ep);
+		var pos = new GameBlockPos(toInt(split[0]), toInt(split[1]), toInt(split[2]), toInt(split[3]));
+		return pos;
 	}
 
 	private static int toInt(String s) {

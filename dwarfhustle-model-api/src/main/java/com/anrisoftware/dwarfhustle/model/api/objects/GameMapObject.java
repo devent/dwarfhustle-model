@@ -39,7 +39,7 @@ public class GameMapObject extends StoredObject {
 
 	public static final String OBJECT_TYPE = GameMapObject.class.getSimpleName();
 
-	private GameMapPos pos = new GameMapPos();
+	private GameBlockPos pos = new GameBlockPos();
 
 	public GameMapObject(long id) {
 		super(id);
@@ -49,12 +49,12 @@ public class GameMapObject extends StoredObject {
 		super(idbuf);
 	}
 
-	public GameMapObject(long id, GameMapPos pos) {
+	public GameMapObject(long id, GameBlockPos pos) {
 		super(id);
 		this.pos = pos;
 	}
 
-	public GameMapObject(byte[] idbuf, GameMapPos pos) {
+	public GameMapObject(byte[] idbuf, GameBlockPos pos) {
 		super(idbuf);
 		this.pos = pos;
 	}
@@ -67,7 +67,7 @@ public class GameMapObject extends StoredObject {
 	/**
 	 * Sets the X, Y and Z position of a {@link GameMapObject} on the game map.
 	 */
-	public void setPos(GameMapPos pos) {
+	public void setPos(GameBlockPos pos) {
 		if (!this.pos.equals(pos)) {
 			setDirty(true);
 			this.pos = pos;

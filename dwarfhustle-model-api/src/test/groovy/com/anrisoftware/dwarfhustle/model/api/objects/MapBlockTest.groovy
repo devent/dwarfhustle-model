@@ -20,15 +20,15 @@ package com.anrisoftware.dwarfhustle.model.api.objects
 import org.junit.jupiter.api.Test
 
 /**
- * @see MapTile
+ * @see MapBlock
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-class MapTileTest {
+class MapBlockTest {
 
     @Test
     void map_tile_type() {
-        def go = new MapTile()
-        assert go.objectType == "MapTile"
+        def go = new MapBlock()
+        assert go.objectType == "MapBlock"
     }
 }

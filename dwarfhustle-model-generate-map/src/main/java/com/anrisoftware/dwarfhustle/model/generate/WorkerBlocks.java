@@ -36,13 +36,13 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Sedimentary;
 import com.anrisoftware.dwarfhustle.model.api.materials.Soil;
 import com.anrisoftware.dwarfhustle.model.api.materials.SpecialStoneLayer;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameChunkPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameMapPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
 import com.anrisoftware.dwarfhustle.model.api.objects.IdsObjectsProvider.IdsObjects;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
-import com.anrisoftware.dwarfhustle.model.api.objects.MapTile;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.WorldMapSchema;
 import com.google.inject.assistedinject.Assisted;
@@ -88,7 +88,7 @@ public class WorkerBlocks {
 
     private boolean generateDone;
 
-    private GameObjectStorage mapBlockStore;
+    private GameObjectStorage mapChunkStore;
 
     private GameObjectStorage gameMapStore;
 
@@ -123,7 +123,7 @@ public class WorkerBlocks {
     public void setStorages(Map<String, GameObjectStorage> storages) {
         this.worldMapStore = storages.get(WorldMap.OBJECT_TYPE);
         this.gameMapStore = storages.get(GameMap.OBJECT_TYPE);
-        this.mapBlockStore = storages.get(MapBlock.OBJECT_TYPE);
+        this.mapChunkStore = storages.get(MapChunk.OBJECT_TYPE);
     }
 
     public int getBlocksDone() {
@@ -157,7 +157,7 @@ public class WorkerBlocks {
         try (var db = orientdb.open(m.database, m.user, m.password)) {
             saveGameMap(m, db);
             db.declareIntent(new OIntentMassiveInsert());
-            generateMapBlock(m, db, createBlocksMap(), pos, endPos);
+            generateMapBlock(m, db, createChunksMap(), pos, endPos);
             db.declareIntent(null);
         }
         this.generateDone = true;
@@ -175,8 +175,9 @@ public class WorkerBlocks {
         e.save();
     }
 
-    private MapBlock generateMapBlock(GenerateMapMessage m, ODatabaseSession db,
-            MutableObjectLongMap<GameBlockPos> parent, GameMapPos pos, GameMapPos endPos) throws GeneratorException {
+    private MapChunk generateMapBlock(GenerateMapMessage m, ODatabaseSession db,
+            MutableObjectLongMap<GameChunkPos> parent, GameBlockPos pos, GameBlockPos endPos)
+            throws GeneratorException {
         var w1 = endPos.getDiffX(pos);
         var h1 = endPos.getDiffY(pos);
         var d1 = endPos.getDiffZ(pos);
@@ -184,19 +185,19 @@ public class WorkerBlocks {
         var h2 = endPos.getDiffY(pos) / 2;
         var d2 = endPos.getDiffZ(pos) / 2;
         if (w2 == m.blockSize / 2) {
-            var block = createBlock(m, db, pos, endPos);
-            createMapTiles(db, block);
-            saveBlock(db, block);
+            var block = createChunk(m, db, pos, endPos);
+            createMapBlocks(db, block);
+            saveChunk(db, block);
             blocksDone++;
             return block;
         }
-        var block = createBlock(m, db, pos, endPos);
+        var block = createChunk(m, db, pos, endPos);
         if (!rootset) {
             block.setRoot(true);
             rootset = true;
         }
         parent.put(block.getPos(), block.getId());
-        var map = createBlocksMap();
+        var map = createChunksMap();
         var x = pos.getX();
         var y = pos.getY();
         var z = pos.getZ();
@@ -224,24 +225,24 @@ public class WorkerBlocks {
         var b7 = generateMapBlock(m, db, map, pos(m, xw2, yh2, zd2), pos(m, xw1, yh1, zd1));
         map.put(b7.getPos(), b7.getId());
         //
-        block.setBlocks(map.asUnmodifiable());
+        block.setChunks(map.asUnmodifiable());
         blocksDone++;
-        saveBlock(db, block);
+        saveChunk(db, block);
         return block;
     }
 
-    private void saveBlock(ODatabaseSession db, MapBlock block) {
-        var v = db.newVertex(MapBlock.OBJECT_TYPE);
-        mapBlockStore.store(db, v, block);
+    private void saveChunk(ODatabaseSession db, MapChunk block) {
+        var v = db.newVertex(MapChunk.OBJECT_TYPE);
+        mapChunkStore.store(db, v, block);
         v.save();
     }
 
-    private void createMapTiles(ODatabaseSession db, MapBlock block) throws GeneratorException {
-        var w = block.getEndPos().getDiffX(block.getPos());
-        var h = block.getEndPos().getDiffY(block.getPos());
-        var d = block.getEndPos().getDiffZ(block.getPos());
-        var mapid = block.getPos().getMapid();
-        var tiles = createTilesMap(w * h * d);
+    private void createMapBlocks(ODatabaseSession db, MapChunk chunk) throws GeneratorException {
+        var w = chunk.getEp().getDiffX(chunk.getPos());
+        var h = chunk.getEp().getDiffY(chunk.getPos());
+        var d = chunk.getEp().getDiffZ(chunk.getPos());
+        var mapid = chunk.getPos().getMapid();
+        var tiles = createBlocksMap(w * h * d);
         var ids = generator.batch(w * h * d);
         for (var z = 0; z < d; z++) {
             if (cancelled) {
@@ -249,57 +250,57 @@ public class WorkerBlocks {
             }
             for (var y = 0; y < h; y++) {
                 for (var x = 0; x < w; x++) {
-                    var xx = x + block.getPos().getX();
-                    var yy = y + block.getPos().getY();
-                    var zz = z + block.getPos().getZ();
-                    var tile = new MapTile(ids.pop());
-                    setMaterial(zz, tile);
-                    tile.setPos(new GameMapPos(mapid, xx, yy, zz));
-                    tiles.put(tile.getPos(), tile);
+                    var xx = x + chunk.getPos().getX();
+                    var yy = y + chunk.getPos().getY();
+                    var zz = z + chunk.getPos().getZ();
+                    var block = new MapBlock(ids.pop());
+                    setMaterial(zz, block);
+                    block.setPos(new GameBlockPos(mapid, xx, yy, zz));
+                    tiles.put(block.getPos(), block);
                 }
             }
         }
-        block.setTiles(tiles.asUnmodifiable());
+        chunk.setBlocks(tiles.asUnmodifiable());
     }
 
-    private void setMaterial(int z, MapTile tile) {
+    private void setMaterial(int z, MapBlock block) {
         if (z <= ground_level) {
-            tile.setMined(true);
-            tile.setNaturalFloor(false);
-            tile.setNaturalRoof(false);
-            tile.setMaterial(materials.get(Gas.TYPE).get("OXYGEN").getId());
+            block.setMined(true);
+            block.setNaturalFloor(false);
+            block.setNaturalRoof(false);
+            block.setMaterial(materials.get(Gas.TYPE).get("OXYGEN").getId());
         } else {
-            tile.setMined(false);
-            tile.setNaturalFloor(true);
-            tile.setNaturalRoof(true);
+            block.setMined(false);
+            block.setNaturalFloor(true);
+            block.setNaturalRoof(true);
             if (z <= soil_level) {
-                tile.setMaterial(materials.get(Soil.TYPE).get("LOAM").getId());
+                block.setMaterial(materials.get(Soil.TYPE).get("LOAM").getId());
             } else if (z <= sedimentary_level) {
-                tile.setMaterial(materials.get(Sedimentary.TYPE).get("SANDSTONE").getId());
+                block.setMaterial(materials.get(Sedimentary.TYPE).get("SANDSTONE").getId());
             } else if (z <= igneous_level) {
-                tile.setMaterial(materials.get(IgneousIntrusive.TYPE).get("GRANITE").getId());
+                block.setMaterial(materials.get(IgneousIntrusive.TYPE).get("GRANITE").getId());
             } else if (z <= magma_level) {
-                tile.setMaterial(materials.get(SpecialStoneLayer.TYPE).get("MAGMA").getId());
+                block.setMaterial(materials.get(SpecialStoneLayer.TYPE).get("MAGMA").getId());
             }
         }
     }
 
-    private GameMapPos pos(GenerateMapMessage m, int x, int y, int z) {
-        return new GameMapPos(m.gameMap.getMapid(), x, y, z);
+    private GameBlockPos pos(GenerateMapMessage m, int x, int y, int z) {
+        return new GameBlockPos(m.gameMap.getMapid(), x, y, z);
     }
 
-    private MutableObjectLongMap<GameBlockPos> createBlocksMap() {
+    private MutableObjectLongMap<GameChunkPos> createChunksMap() {
         return ObjectLongMaps.mutable.ofInitialCapacity(8);
     }
 
-    private MapBlock createBlock(GenerateMapMessage m, ODatabaseSession db, GameMapPos pos, GameMapPos endPos)
+    private MapChunk createChunk(GenerateMapMessage m, ODatabaseSession db, GameBlockPos pos, GameBlockPos endPos)
             throws GeneratorException {
-        var block = new MapBlock(generator.generate());
-        block.setPos(new GameBlockPos(pos, endPos));
+        var block = new MapChunk(generator.generate());
+        block.setPos(new GameChunkPos(pos, endPos));
         return block;
     }
 
-    private MutableMap<GameMapPos, MapTile> createTilesMap(int n) {
+    private MutableMap<GameBlockPos, MapBlock> createBlocksMap(int n) {
         return Maps.mutable.ofInitialCapacity(n);
     }
 

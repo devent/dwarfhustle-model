@@ -23,9 +23,9 @@ import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapObje
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapObjectSchema.Z_FIELD;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameMapPos;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
-import com.anrisoftware.dwarfhustle.model.api.objects.MapTile;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.orientechnologies.orient.core.record.OElement;
 
 /**
@@ -51,7 +51,7 @@ public class AbstractGameMapObjectStorage extends AbstractGameObjectStorage {
 	public GameObject retrieve(Object db, Object o, GameObject go) {
 		var v = (OElement) o;
 		var gmo = (GameMapObject) go;
-		gmo.setPos(new GameMapPos(v.getProperty(MAPID_FIELD), v.getProperty(X_FIELD), v.getProperty(Y_FIELD),
+		gmo.setPos(new GameBlockPos(v.getProperty(MAPID_FIELD), v.getProperty(X_FIELD), v.getProperty(Y_FIELD),
 				v.getProperty(Z_FIELD)));
 		gmo.setRid(v.getIdentity());
 		return super.retrieve(db, o, go);
@@ -59,6 +59,6 @@ public class AbstractGameMapObjectStorage extends AbstractGameObjectStorage {
 
 	@Override
 	public GameObject create() {
-		return new MapTile();
+		return new MapBlock();
 	}
 }
