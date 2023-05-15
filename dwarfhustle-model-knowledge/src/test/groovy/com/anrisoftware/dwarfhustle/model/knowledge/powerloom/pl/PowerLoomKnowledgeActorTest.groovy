@@ -74,9 +74,9 @@ class PowerLoomKnowledgeActorTest {
         "all (Sedimentary ?x)",
         "all (Metal-Ore ?type)",
         "all (metal-ore-product ?x ?y Copper)",
-        "all ?x (and (melting-point-material ?x ?t) (> ?t 2000))",
-        "all ?t (melting-point-material Aluminium ?t)",
-        "all ?t (melting-point-material Something ?t)",
+        "all (and (melting-point-material ?x ?t) (> ?t 2000))",
+        "all (melting-point-material Aluminium ?t)",
+        "all (melting-point-material Something ?t)",
     ])
     @Timeout(10l)
     void "test retrieve"(String retrieve) {
@@ -104,7 +104,8 @@ class PowerLoomKnowledgeActorTest {
 
     @ParameterizedTest
     @ValueSource(strings = [
-        "?t (melting-point-material Aluminium ?t)",
+        "> (melting-point-material Aluminium) 2000",
+        "< (melting-point-material Aluminium) 2000",
     ])
     @Timeout(10l)
     void "test ask pop"(String retrieve) {
@@ -124,7 +125,7 @@ class PowerLoomKnowledgeActorTest {
                 testKit.scheduler())
         def lock = new CountDownLatch(1)
         result.whenComplete( {reply, failure ->
-            log.info "Command reply {} failure {}", reply, failure
+            log.info "Command reply ${reply} failure ${failure}"
             switch (reply) {
                 case KnowledgeCommandSuccessMessage:
                     break

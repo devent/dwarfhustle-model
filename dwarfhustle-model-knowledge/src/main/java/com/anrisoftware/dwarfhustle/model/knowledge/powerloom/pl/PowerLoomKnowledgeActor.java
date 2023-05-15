@@ -193,9 +193,10 @@ public class PowerLoomKnowledgeActor {
         log.debug("onKnowledgeReplyCommand {}", m);
         try {
             var res = m.command.get();
-            m.replyTo.tell(new KnowledgeCommandSuccessMessage(m, res));
+            m.replyTo.tell(new KnowledgeCommandSuccessMessage(res));
         } catch (Exception e) {
-            m.replyTo.tell(new KnowledgeCommandErrorMessage(m, e));
+            log.error("onKnowledgeCommand", e);
+            m.replyTo.tell(new KnowledgeCommandErrorMessage(e));
         }
         return Behaviors.same();
     }

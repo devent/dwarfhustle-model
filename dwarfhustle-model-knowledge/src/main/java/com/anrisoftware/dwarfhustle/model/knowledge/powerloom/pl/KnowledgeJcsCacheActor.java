@@ -31,6 +31,7 @@ import org.apache.commons.jcs3.access.exception.CacheException;
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheGetMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheGetMessage.CacheGetMissMessage;
@@ -43,7 +44,6 @@ import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.StashBuffer;
 import akka.actor.typed.receptionist.ServiceKey;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -69,12 +69,13 @@ public class KnowledgeJcsCacheActor extends AbstractJcsCacheActor {
     public interface KnowledgeJcsCacheActorFactory extends AbstractJcsCacheActorFactory {
 
         @Override
-        KnowledgeJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, Class<?> keyType);
+        KnowledgeJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, ObjectsGetter og,
+                Class<?> keyType);
     }
 
     public static Behavior<Message> create(Injector injector, AbstractJcsCacheActorFactory actorFactory,
-            CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
-        return AbstractJcsCacheActor.create(injector, actorFactory, String.class, initCacheAsync);
+            ObjectsGetter og, CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
+        return AbstractJcsCacheActor.create(injector, actorFactory, og, String.class, initCacheAsync);
     }
 
     /**
@@ -83,11 +84,11 @@ public class KnowledgeJcsCacheActor extends AbstractJcsCacheActor {
      * @param injector the {@link Injector} injector.
      * @param timeout  the {@link Duration} timeout.
      */
-    public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout) {
+    public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout, ObjectsGetter og) {
         var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
         var actorFactory = injector.getInstance(KnowledgeJcsCacheActorFactory.class);
         var initCache = createInitCacheAsync();
-        return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, actorFactory, initCache));
+        return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, actorFactory, og, initCache));
     }
 
     public static CompletableFuture<CacheAccess<Object, GameObject>> createInitCacheAsync() {
@@ -135,8 +136,7 @@ public class KnowledgeJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @Override
-    @SneakyThrows
-    protected GameObject getValueFromDb(Class<? extends GameObject> typeClass, String type, Object key) {
+    protected <T extends GameObject> T getValueFromDb(Class<T> typeClass, String type, Object key) {
         throw new UnsupportedOperationException();
     }
 

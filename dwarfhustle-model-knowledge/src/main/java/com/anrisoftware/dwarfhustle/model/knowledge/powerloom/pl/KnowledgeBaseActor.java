@@ -40,7 +40,6 @@ import com.anrisoftware.dwarfhustle.model.db.cache.CachePutMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CachePutsMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.IdsKnowledgeProvider.IdsKnowledge;
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandErrorMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.GameObjectKnowledge;
 import com.google.inject.Injector;
@@ -49,11 +48,8 @@ import com.google.inject.assistedinject.Assisted;
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.ActorContext;
-import akka.actor.typed.javadsl.AskPattern;
 import akka.actor.typed.javadsl.BehaviorBuilder;
 import akka.actor.typed.javadsl.Behaviors;
-import akka.actor.typed.javadsl.StashBuffer;
-import akka.actor.typed.javadsl.StashOverflowException;
 import akka.actor.typed.receptionist.ServiceKey;
 import edu.isi.powerloom.PLI;
 import edu.isi.powerloom.logic.LogicObject;
@@ -100,43 +96,25 @@ public class KnowledgeBaseActor {
      * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
      */
     public interface KnowledgeBaseActorFactory {
-        KnowledgeBaseActor create(ActorContext<Message> context, StashBuffer<Message> stash, ActorRef<Message> cache);
+        KnowledgeBaseActor create(ActorContext<Message> context);
     }
 
-    public static Behavior<Message> create(Injector injector, ActorRef<Message> knowledge, ActorRef<Message> cache) {
-        return Behaviors.withStash(100, stash -> Behaviors.setup(context -> {
-            loadKnowledgeBase(context, knowledge);
-            return injector.getInstance(KnowledgeBaseActorFactory.class).create(context, stash, cache).start(injector);
-        }));
-    }
-
-    private static void loadKnowledgeBase(ActorContext<Message> context, ActorRef<Message> knowledge) {
-        context.pipeToSelf(loadKnowledgeBase0(context, knowledge), (result, cause) -> {
-            if (cause == null) {
-                if (result instanceof KnowledgeCommandErrorMessage m) {
-                    return new SetupErrorMessage(m.error);
-                }
-                return new InitialStateMessage();
-            } else {
-                return new SetupErrorMessage(cause);
-            }
-        });
-    }
-
-    private static CompletionStage<KnowledgeCommandResponseMessage> loadKnowledgeBase0(ActorContext<Message> context,
-            ActorRef<Message> knowledge) {
-        var timeout = Duration.ofSeconds(30);
-        return AskPattern.ask(knowledge, replyTo -> new KnowledgeCommandMessage<>(replyTo, () -> null), timeout,
-                context.getSystem().scheduler());
+    /**
+     * Creates the knowledge actor.
+     *
+     * @param injector the {@link Injector}.
+     */
+    public static Behavior<Message> create(Injector injector) {
+        return Behaviors.setup(
+                context -> injector.getInstance(KnowledgeBaseActorFactory.class).create(context).start(injector));
     }
 
     /**
      * Creates the {@link KnowledgeBaseActor}.
      */
-    public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout,
-            ActorRef<Message> knowledge, ActorRef<Message> cache) {
+    public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout) {
         var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
-        return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, knowledge, cache));
+        return createNamedActor(system, timeout, ID, KEY, NAME, create(injector));
     }
 
     @Inject
@@ -144,18 +122,10 @@ public class KnowledgeBaseActor {
     private ActorContext<Message> context;
 
     @Inject
-    @Assisted
-    private StashBuffer<Message> buffer;
-
-    @Inject
     private Map<String, GameObjectKnowledge> storages;
 
     @SuppressWarnings("rawtypes")
     private ActorRef<CacheResponseMessage> cacheResponseAdapter;
-
-    @Inject
-    @Assisted
-    private ActorRef<Message> cache;
 
     @Inject
     private ActorRef<Message> actor;
@@ -174,29 +144,7 @@ public class KnowledgeBaseActor {
      */
     public Behavior<Message> start(Injector injector) {
         this.cacheResponseAdapter = context.messageAdapter(CacheResponseMessage.class, WrappedCacheResponse::new);
-        return Behaviors.receive(Message.class)//
-                .onMessage(InitialStateMessage.class, this::onInitialState)//
-                .onMessage(Message.class, this::stashOtherCommand)//
-                .build();
-    }
-
-    private Behavior<Message> stashOtherCommand(Message m) {
-        log.debug("stashOtherCommand: {}", m);
-        try {
-            buffer.stash(m);
-        } catch (StashOverflowException e) {
-            log.warn("Stash message overflow");
-        }
-        return Behaviors.same();
-    }
-
-    /**
-     * Returns a behavior for the messages from {@link #getInitialBehavior()}.
-     */
-    private Behavior<Message> onInitialState(InitialStateMessage m) {
-        log.debug("onInitialState");
-        return buffer.unstashAll(getInitialBehavior()//
-                .build());
+        return getInitialBehavior().build();
     }
 
     /**
@@ -206,7 +154,7 @@ public class KnowledgeBaseActor {
     @SneakyThrows
     private Behavior<Message> onKnowledgeGet(KnowledgeGetMessage<?> m) {
         log.debug("onKnowledgeGet {}", m);
-        cache.tell(new CacheGetMessage<>(cacheResponseAdapter, KnowledgeLoadedObject.class,
+        actor.tell(new CacheGetMessage<>(cacheResponseAdapter, KnowledgeLoadedObject.class,
                 KnowledgeLoadedObject.OBJECT_TYPE, m.type, go -> {
                     cacheHit(m, go);
                 }, () -> {
@@ -219,8 +167,27 @@ public class KnowledgeBaseActor {
     private void cacheMiss(@SuppressWarnings("rawtypes") KnowledgeGetMessage m) {
         var glo = retrieveKnowledgeLoadedObject(m);
         cacheObjects(glo);
-        cache.tell(new CachePutMessage<>(cacheResponseAdapter, glo.type, glo));
+        actor.tell(new CachePutMessage<>(cacheResponseAdapter, glo.type, glo));
         m.replyTo.tell(new KnowledgeResponseSuccessMessage(glo));
+    }
+
+    @SneakyThrows
+    private KnowledgeLoadedObject retrieveKnowledgeLoadedObject(KnowledgeGetMessage<?> m) {
+        var sb = new StringBuilder();
+        sb.append("all (");
+        sb.append(m.type);
+        sb.append(" ?x)");
+        var answer = PLI.sRetrieve(sb.toString(), WORKING_MODULE, null);
+        MutableList<GameObject> list = Lists.mutable.empty();
+        LogicObject next;
+        while ((next = (LogicObject) answer.pop()) != null) {
+            assertThat(storages, hasKey(m.type));
+            var s = storages.get(m.type);
+            var go = s.retrieve(next, s.create());
+            go.setId((long) go.getRid());
+            list.add(go);
+        }
+        return new KnowledgeLoadedObject(ids.generate(), m.type, list.asUnmodifiable());
     }
 
     @SuppressWarnings("unchecked")
@@ -241,25 +208,6 @@ public class KnowledgeBaseActor {
     private Behavior<Message> onWrappedCacheResponse(WrappedCacheResponse m) {
         log.debug("onWrappedCacheResponse {}", m);
         return Behaviors.same();
-    }
-
-    @SneakyThrows
-    private KnowledgeLoadedObject retrieveKnowledgeLoadedObject(KnowledgeGetMessage<?> m) {
-        var sb = new StringBuilder();
-        sb.append("all (");
-        sb.append(m.type);
-        sb.append(" ?x)");
-        var answer = PLI.sRetrieve(sb.toString(), WORKING_MODULE, null);
-        MutableList<GameObject> list = Lists.mutable.empty();
-        LogicObject next;
-        while ((next = (LogicObject) answer.pop()) != null) {
-            assertThat(storages, hasKey(m.type));
-            var s = storages.get(m.type);
-            var go = s.retrieve(next, s.create());
-            go.setId((long) go.getRid());
-            list.add(go);
-        }
-        return new KnowledgeLoadedObject(ids.generate(), m.type, list.asUnmodifiable());
     }
 
     /**
