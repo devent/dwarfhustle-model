@@ -50,8 +50,8 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbServerUtils
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbTestUtils
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbModule
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsDbActor
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsDbModule
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.objects.ObjectsDbActor
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.objects.ObjectsDbModule
 import com.anrisoftware.dwarfhustle.model.generate.GenerateMapMessage.GenerateProgressMessage
 import com.anrisoftware.dwarfhustle.model.generate.WorkerBlocks.WorkerBlocksFactory
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeBaseActor

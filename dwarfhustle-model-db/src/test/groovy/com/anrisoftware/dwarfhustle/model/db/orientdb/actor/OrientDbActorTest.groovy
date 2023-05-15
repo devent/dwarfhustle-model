@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.actor.ModelActorsModule
 import com.anrisoftware.dwarfhustle.model.api.objects.ApiModule
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbErrorMessage
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbErrorMessage
 import com.google.inject.Guice
 import com.google.inject.Injector
 import com.orientechnologies.orient.core.db.ODatabaseType

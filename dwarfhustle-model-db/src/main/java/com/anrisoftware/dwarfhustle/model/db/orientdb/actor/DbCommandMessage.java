@@ -19,6 +19,7 @@ package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
 import java.util.function.Function;
 
+import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 
 import akka.actor.typed.ActorRef;
@@ -31,7 +32,7 @@ import lombok.ToString;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @ToString(callSuper = true)
-public class DbCommandMessage<T extends DbMessage<?>> extends DbMessage<T> {
+public class DbCommandMessage<T extends Message> extends DbMessage<T> {
 
     /**
      * Database command success response with return value.
@@ -40,7 +41,7 @@ public class DbCommandMessage<T extends DbMessage<?>> extends DbMessage<T> {
      */
     @ToString
     @RequiredArgsConstructor
-    public static class DbCommandSuccessMessage<T extends DbMessage<?>> extends DbResponseMessage<T> {
+    public static class DbCommandSuccessMessage<T extends Message> extends DbResponseMessage<T> {
         public final Object value;
     }
 
@@ -51,7 +52,7 @@ public class DbCommandMessage<T extends DbMessage<?>> extends DbMessage<T> {
      */
     @ToString
     @RequiredArgsConstructor
-    public static class DbCommandErrorMessage<T extends DbMessage<?>> extends DbResponseMessage<T> {
+    public static class DbCommandErrorMessage<T extends Message> extends DbResponseMessage<T> {
         public final Throwable ex;
         public final Object onError;
     }

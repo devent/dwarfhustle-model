@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
+import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+
 import akka.actor.typed.ActorRef;
 import lombok.ToString;
 
@@ -26,7 +28,7 @@ import lombok.ToString;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @ToString
-public class StopEmbeddedServerMessage<T extends DbMessage<?>> extends DbMessage<T> {
+public class StopEmbeddedServerMessage<T extends Message> extends DbMessage<T> {
 
     public StopEmbeddedServerMessage(ActorRef<T> replyTo) {
         super(replyTo);

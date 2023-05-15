@@ -20,6 +20,7 @@ package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
@@ -35,11 +36,12 @@ import lombok.ToString;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @ToString
-public class LoadObjectMessage<T extends DbMessage<?>> extends DbMessage<T> {
+public class LoadObjectMessage<T extends Message> extends DbMessage<T> {
 
     @RequiredArgsConstructor
-    public static class LoadObjectSuccessMessage<T extends DbMessage<?>> extends DbSuccessMessage<T> {
+    public static class LoadObjectSuccessMessage<T extends Message> extends DbSuccessMessage<T> {
         public final GameObject go;
+        public final Consumer<GameObject> consumer;
     }
 
     private static final Consumer<GameObject> EMPTY_CONSUMER = go -> {

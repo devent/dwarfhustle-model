@@ -17,6 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
+import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 import akka.actor.typed.ActorRef;
@@ -29,7 +30,7 @@ import lombok.ToString;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @ToString(callSuper = true)
-public class SaveObjectMessage<T extends DbMessage<?>> extends DbMessage<T> {
+public class SaveObjectMessage<T extends Message> extends DbMessage<T> {
 
     public final GameObject go;
 

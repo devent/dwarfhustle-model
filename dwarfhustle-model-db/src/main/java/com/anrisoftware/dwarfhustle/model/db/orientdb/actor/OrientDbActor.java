@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Function;
 
 import javax.inject.Inject;
 
@@ -52,7 +51,6 @@ import com.orientechnologies.orient.core.db.OrientDB;
 import com.orientechnologies.orient.core.db.OrientDBConfig;
 import com.orientechnologies.orient.core.id.ORID;
 import com.orientechnologies.orient.core.record.OElement;
-import com.orientechnologies.orient.core.record.OVertex;
 import com.orientechnologies.orient.server.OServer;
 import com.orientechnologies.orient.server.OServerMain;
 
@@ -62,7 +60,6 @@ import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.BehaviorBuilder;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.receptionist.ServiceKey;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -366,7 +363,7 @@ public class OrientDbActor implements ObjectsGetter {
                     if (v.isPresent()) {
                         var gos = storages.get(m.objectType);
                         var wm = gos.retrieve(db, v.get(), gos.create());
-                        mm.replyTo.tell(new LoadObjectSuccessMessage<>(wm));
+                        mm.replyTo.tell(new LoadObjectSuccessMessage<>(wm, m.consumer));
                     } else {
                         mm.replyTo.tell(new DbErrorMessage<>(new ObjectNotFoundException(m.objectType)));
                     }
@@ -519,28 +516,18 @@ public class OrientDbActor implements ObjectsGetter {
         ;
     }
 
-    @RequiredArgsConstructor
-    public static class OrientDbObjectsGetterCreator {
-
-        public OrientDbObjectsGetterCreator(ODatabaseSession db, OVertex oVertex) {
-            // TODO Auto-generated constructor stub
-        }
-
-    }
-
+    @SuppressWarnings("unchecked")
     @Override
-    public <T extends GameObject> T get(Class<T> typeClass, String type, Object key, Function<Object, T> creator)
-            throws ObjectsGetterException {
+    public <T extends GameObject> T get(Class<T> typeClass, String type, Object key) throws ObjectsGetterException {
         try (var db = orientdb.get().open(database, user, password)) {
             var query = "SELECT * from ? where objecttype = ? and objectid = ? limit 1";
             var rs = db.query(query, type, type, key);
             while (rs.hasNext()) {
                 var v = rs.next().getVertex();
                 if (v.isPresent()) {
-                    return creator.apply(new OrientDbObjectsGetterCreator(db, v.get()));
-                    var gos = storages.get(m.objectType);
+                    var gos = storages.get(type);
                     var wm = gos.retrieve(db, v.get(), gos.create());
-                    return wm;
+                    return (T) wm;
                 }
             }
             throw new ObjectsGetterException("No item find in database");

@@ -30,14 +30,14 @@ import lombok.ToString;
  */
 @ToString
 @RequiredArgsConstructor
-public class DbMessage<T extends DbMessage<?>> extends Message {
+public class DbMessage<T extends Message> extends Message {
 
     /**
      * Base class of database responses.
      *
      * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
      */
-    public static class DbResponseMessage<T extends DbMessage<?>> extends Message {
+    public static class DbResponseMessage<T extends Message> extends Message {
     }
 
     /**
@@ -46,7 +46,7 @@ public class DbMessage<T extends DbMessage<?>> extends Message {
      * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
      */
     @RequiredArgsConstructor
-    public static class DbErrorMessage<T extends DbMessage<?>> extends DbResponseMessage<T> {
+    public static class DbErrorMessage<T extends Message> extends DbResponseMessage<T> {
         public final Exception error;
     }
 
@@ -55,7 +55,7 @@ public class DbMessage<T extends DbMessage<?>> extends Message {
      *
      * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
      */
-    public static class DbSuccessMessage<T extends DbMessage<?>> extends DbResponseMessage<T> {
+    public static class DbSuccessMessage<T extends Message> extends DbResponseMessage<T> {
     }
 
     /**

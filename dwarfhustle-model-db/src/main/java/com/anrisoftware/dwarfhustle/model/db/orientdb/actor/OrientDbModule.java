@@ -17,8 +17,32 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.inject.Singleton;
+
+import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
+import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor.OrientDbActorFactory;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapObjectSchema;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameObjectSchema;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameObjectSchemaSchema;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapBlockSchema;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.WorldMapSchema;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.storages.GameMapStorage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.storages.MapBlockStorage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.storages.MapChunkStorage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.storages.WorldMapStorage;
 import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 
 /**
@@ -30,6 +54,35 @@ public class OrientDbModule extends AbstractModule {
     protected void configure() {
         install(new FactoryModuleBuilder().implement(OrientDbActor.class, OrientDbActor.class)
                 .build(OrientDbActorFactory.class));
+    }
+
+    @Singleton
+    @Provides
+    public Map<String, GameObjectStorage> getStorages() {
+        var map = new HashMap<String, GameObjectStorage>();
+        var mapTileStorage = new MapBlockStorage();
+        map.put(MapBlock.OBJECT_TYPE, mapTileStorage);
+        var mapBlockStorage = new MapChunkStorage();
+        mapBlockStorage.setStorages(map);
+        map.put(MapChunk.OBJECT_TYPE, mapBlockStorage);
+        map.put(GameMap.OBJECT_TYPE, new GameMapStorage());
+        var worldMapStorage = new WorldMapStorage();
+        worldMapStorage.setStorages(map);
+        map.put(WorldMap.OBJECT_TYPE, worldMapStorage);
+        return map;
+    }
+
+    @Singleton
+    @Provides
+    public List<GameObjectSchema> getSchemas() {
+        var list = new ArrayList<GameObjectSchema>();
+        list.add(new GameObjectSchemaSchema());
+        list.add(new GameMapObjectSchema());
+        list.add(new WorldMapSchema());
+        list.add(new GameMapSchema());
+        list.add(new MapBlockSchema());
+        list.add(new MapChunkSchema());
+        return list;
     }
 
 }

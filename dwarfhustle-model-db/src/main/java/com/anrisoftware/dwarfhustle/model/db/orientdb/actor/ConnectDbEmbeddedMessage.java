@@ -17,6 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
+import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.orientechnologies.orient.server.OServer;
 
 import akka.actor.typed.ActorRef;
@@ -28,7 +29,7 @@ import lombok.ToString;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @ToString
-public class ConnectDbEmbeddedMessage<T extends DbMessage<T>> extends DbMessage<T> {
+public class ConnectDbEmbeddedMessage<T extends Message> extends DbMessage<T> {
 
 	public final OServer server;
 

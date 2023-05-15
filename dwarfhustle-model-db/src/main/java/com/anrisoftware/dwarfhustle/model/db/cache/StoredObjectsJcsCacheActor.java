@@ -33,28 +33,23 @@ import org.apache.commons.jcs3.access.exception.CacheException;
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage.DbCommandErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage.DbCommandSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectMessage.LoadObjectErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectMessage.LoadObjectSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbResponseMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.ObjectsResponseMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectMessage.LoadObjectSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.SaveObjectMessage;
 import com.google.inject.Injector;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.ActorContext;
-import akka.actor.typed.javadsl.AskPattern;
 import akka.actor.typed.javadsl.BehaviorBuilder;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.StashBuffer;
 import akka.actor.typed.receptionist.ServiceKey;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -75,8 +70,8 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
 
     @RequiredArgsConstructor
     @ToString(callSuper = true)
-    private static class WrappedObjectsResponse extends Message {
-        private final ObjectsResponseMessage<?> response;
+    private static class WrappedDbResponse extends Message {
+        private final DbResponseMessage<?> response;
     }
 
     /**
@@ -87,12 +82,13 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     public interface StoredObjectsJcsCacheActorFactory extends AbstractJcsCacheActorFactory {
 
         @Override
-        StoredObjectsJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, Class<?> keyType);
+        StoredObjectsJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, ObjectsGetter og,
+                Class<?> keyType);
     }
 
     public static Behavior<Message> create(Injector injector, AbstractJcsCacheActorFactory actorFactory,
-            CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
-        return AbstractJcsCacheActor.create(injector, actorFactory, Long.class, initCacheAsync);
+            ObjectsGetter og, CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
+        return AbstractJcsCacheActor.create(injector, actorFactory, og, Long.class, initCacheAsync);
     }
 
     /**
@@ -101,11 +97,11 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
      * @param injector the {@link Injector} injector.
      * @param timeout  the {@link Duration} timeout.
      */
-    public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout) {
+    public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout, ObjectsGetter og) {
         var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
         var actorFactory = injector.getInstance(StoredObjectsJcsCacheActorFactory.class);
         var initCache = createInitCacheAsync();
-        return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, actorFactory, initCache));
+        return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, actorFactory, og, initCache));
     }
 
     public static CompletableFuture<CacheAccess<Object, GameObject>> createInitCacheAsync() {
@@ -123,12 +119,12 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     private ActorSystemProvider actor;
 
     @SuppressWarnings("rawtypes")
-    private ActorRef<ObjectsResponseMessage> objectsResponseAdapter;
+    private ActorRef<DbResponseMessage> dbResponseAdapter;
 
     @Override
     protected Behavior<Message> initialStage(InitialStateMessage m) {
         log.debug("initialStage {}", m);
-        this.objectsResponseAdapter = context.messageAdapter(ObjectsResponseMessage.class, WrappedObjectsResponse::new);
+        this.dbResponseAdapter = context.messageAdapter(DbResponseMessage.class, WrappedDbResponse::new);
         return super.initialStage(m);
     }
 
@@ -137,15 +133,14 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
      * <li>
      * </ul>
      */
-    private Behavior<Message> onWrappedObjectsResponse(WrappedObjectsResponse m) {
-        log.debug("onWrappedObjectsResponse {}", m);
+    private Behavior<Message> onWrappedDbResponse(WrappedDbResponse m) {
+        log.debug("onWrappedDbResponse {}", m);
         var response = m.response;
-        if (response instanceof LoadObjectErrorMessage<?> rm) {
-            log.error("Objects error", rm);
+        if (response instanceof DbErrorMessage<?> rm) {
+            log.error("onWrappedDbResponse", rm.error);
             return Behaviors.stopped();
         } else if (response instanceof LoadObjectSuccessMessage<?> rm) {
-            var lm = rm.om;
-            lm.consumer.accept(rm.go);
+            rm.consumer.accept(rm.go);
         }
         return Behaviors.same();
     }
@@ -165,7 +160,7 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     @Override
     protected void storeValueDb(CachePutMessage<?> m) {
         if (m.value instanceof StoredObject) {
-            actor.tell(new SaveObjectMessage<>(objectsResponseAdapter, m.value));
+            actor.tell(new SaveObjectMessage<>(dbResponseAdapter, m.value));
         }
     }
 
@@ -173,7 +168,7 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     protected void storeValueDb(CachePutsMessage<?> m) {
         for (var go : m.value) {
             if (m.value instanceof StoredObject) {
-                actor.tell(new SaveObjectMessage<>(objectsResponseAdapter, go));
+                actor.tell(new SaveObjectMessage<>(dbResponseAdapter, go));
             }
         }
     }
@@ -186,33 +181,19 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     private void retrieveGameObject(String type, long id, Consumer<GameObject> consumer) {
-        actor.tell(new LoadObjectMessage<>(objectsResponseAdapter, type, consumer, db -> {
+        actor.tell(new LoadObjectMessage<>(dbResponseAdapter, type, consumer, db -> {
             var query = "SELECT * from ? where objecttype = ? and objectid = ? limit 1";
             return db.query(query, type, type, id);
         }));
     }
 
     @Override
-    @SneakyThrows
-    protected GameObject getValueFromDb(Class<? extends GameObject> typeClass, String type, Object key) {
-        CompletionStage<DbResponseMessage<?>> result = AskPattern.ask(actor.get(),
-                replyTo -> new DbCommandMessage<>(replyTo, err -> null, db -> {
-                    var query = "SELECT * from ? where objecttype = ? and objectid = ? limit 1";
-                    return db.query(query, type, type, key);
-                }), timeout, context.getSystem().scheduler());
-        var res = result.toCompletableFuture().get();
-        if (res instanceof DbCommandSuccessMessage<?> ret) {
-            return (GameObject) ret.value;
-        } else if (res instanceof DbCommandErrorMessage<?> ret) {
-            log.error("retrieveValueFromDb", ret.ex);
-            throw ret.ex;
-        } else {
-            throw new IllegalArgumentException();
-        }
+    protected <T extends GameObject> T getValueFromDb(Class<T> typeClass, String type, Object key) {
+        return og.get(typeClass, type, key);
     }
 
     @Override
-    public GameObject get(Class<? extends GameObject> typeClass, String type, Object key) {
+    public <T extends GameObject> T get(Class<T> typeClass, String type, Object key) throws ObjectsGetterException {
         if (key instanceof Long id && StoredObject.class.isAssignableFrom(typeClass)) {
             return super.get(typeClass, type, key);
         } else {
@@ -223,7 +204,7 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     @Override
     protected BehaviorBuilder<Message> getInitialBehavior() {
         return super.getInitialBehavior()//
-                .onMessage(WrappedObjectsResponse.class, this::onWrappedObjectsResponse)//
+                .onMessage(WrappedDbResponse.class, this::onWrappedDbResponse)//
         ;
     }
 }

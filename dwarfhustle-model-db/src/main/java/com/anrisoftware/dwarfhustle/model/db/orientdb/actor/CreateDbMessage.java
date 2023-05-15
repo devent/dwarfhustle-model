@@ -17,6 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
+import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.orientechnologies.orient.core.db.ODatabaseType;
 
 import akka.actor.typed.ActorRef;
@@ -28,7 +29,7 @@ import lombok.ToString;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @ToString
-public class CreateDbMessage<T extends DbMessage<?>> extends DbMessage<T> {
+public class CreateDbMessage<T extends Message> extends DbMessage<T> {
 
     public static class DbAlreadyExistMessage<T extends CreateDbMessage<?>> extends DbResponseMessage<T> {
 	}

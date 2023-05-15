@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
+import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+
 import akka.actor.typed.ActorRef;
 import lombok.ToString;
 
@@ -26,14 +28,14 @@ import lombok.ToString;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @ToString(callSuper = true)
-public class DeleteDbMessage<T extends DbMessage<?>> extends DbMessage<T> {
+public class DeleteDbMessage<T extends Message> extends DbMessage<T> {
 
 	/**
 	 * Response that the database to delete does not exist.
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
-    public static class DbNotExistMessage<T extends DbMessage<?>> extends DbResponseMessage<T> {
+    public static class DbNotExistMessage<T extends Message> extends DbResponseMessage<T> {
 	}
 
     public DeleteDbMessage(ActorRef<T> replyTo) {

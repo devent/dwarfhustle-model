@@ -41,8 +41,6 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbServerUtils
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbTestUtils
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbModule
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsDbActor
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsDbModule
 import com.anrisoftware.dwarfhustle.model.generate.WorkerBlocks.WorkerBlocksFactory
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeBaseActor
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor
@@ -105,7 +103,6 @@ class WorkerBlocksTest {
         cacheFile = new File(parentDir, "dwarfhustle_jcs_swap_${mapTilesParams.game_name}_mapBlocksCache_0_file")
         injector = Guice.createInjector(
                 new ModelActorsModule(),
-                new ObjectsDbModule(),
                 new PowerloomModule(),
                 new GenerateModule(),
                 new OrientDbModule(),
@@ -116,7 +113,6 @@ class WorkerBlocksTest {
         powerLoomKnowledgeActor = testKit.spawn(PowerLoomKnowledgeActor.create(injector), "PowerLoomKnowledgeActor");
         knowledgeBaseActor = testKit.spawn(KnowledgeBaseActor.create(injector, powerLoomKnowledgeActor), "KnowledgeBaseActor");
         orientDbActor = testKit.spawn(OrientDbActor.create(injector), "OrientDbActor");
-        objectsDbActor = testKit.spawn(ObjectsDbActor.create(injector, orientDbActor), "ObjectsDbActor");
         gen = injector.getInstance(IDGenerator)
         dbTestUtils = new DbTestUtils(orientDbActor, objectsDbActor, testKit, gen)
         dbTestUtils.type = ODatabaseType.MEMORY

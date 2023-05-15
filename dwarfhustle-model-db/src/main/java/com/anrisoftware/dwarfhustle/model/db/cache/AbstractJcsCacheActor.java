@@ -75,14 +75,15 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
      */
     public interface AbstractJcsCacheActorFactory {
 
-        AbstractJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, Class<?> keyType);
+        AbstractJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, ObjectsGetter og,
+                Class<?> keyType);
     }
 
     public static Behavior<Message> create(Injector injector, AbstractJcsCacheActorFactory actorFactory,
-            Class<?> keyType, CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
+            ObjectsGetter og, Class<?> keyType, CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
         return Behaviors.withStash(100, stash -> Behaviors.setup(context -> {
             initCache(context, initCacheAsync);
-            return actorFactory.create(context, stash, keyType).start();
+            return actorFactory.create(context, stash, og, keyType).start();
         }));
     }
 
@@ -111,6 +112,10 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
     @Inject
     @Assisted
     protected StashBuffer<Message> buffer;
+
+    @Inject
+    @Assisted
+    protected ObjectsGetter og;
 
     protected CacheAccess<Object, GameObject> cache;
 
@@ -342,15 +347,16 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
      * return ret.value;
      * </pre>
      */
-    protected abstract GameObject getValueFromDb(Class<? extends GameObject> typeClass, String type, Object key);
+    protected abstract <T extends GameObject> T getValueFromDb(Class<T> typeClass, String type, Object key);
 
     /**
      * Returns the value for the key directly from the cache without sending of
      * messages. Should be used for performance critical code.
      */
+    @SuppressWarnings("unchecked")
     @Override
-    public GameObject get(Class<? extends GameObject> typeClass, String type, Object key) {
-        return cache.get(key, () -> supplyValue(typeClass, type, key));
+    public <T extends GameObject> T get(Class<T> typeClass, String type, Object key) throws ObjectsGetterException {
+        return (T) cache.get(key, () -> supplyValue(typeClass, type, key));
     }
 
     private GameObject supplyValue(Class<? extends GameObject> typeClass, String type, Object key) {

@@ -1,7 +1,5 @@
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import java.util.function.Function;
-
 /**
  * Returns {@link GameObject} game objects.
  *
@@ -25,7 +23,6 @@ public interface ObjectsGetter {
     /**
      * Returns the {@link GameObject}.
      */
-    <T extends GameObject> T get(Class<T> typeClass, String type, Object key, Function<Object, T> creator)
-            throws ObjectsGetterException;
+    <T extends GameObject> T get(Class<T> typeClass, String type, Object key) throws ObjectsGetterException;
 
 }
