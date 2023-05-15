@@ -17,9 +17,6 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
-import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage.DbSuccessMessage;
-
 import akka.actor.typed.ActorRef;
 import lombok.ToString;
 
@@ -27,10 +24,9 @@ import lombok.ToString;
  * Message to close the OrientDb database.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
- * @see DbSuccessMessage
  */
 @ToString
-public class CloseDbMessage<T extends Message> extends DbMessage<T> {
+public class CloseDbMessage<T extends DbMessage<?>> extends DbMessage<T> {
 
     public CloseDbMessage(ActorRef<T> replyTo) {
         super(replyTo);

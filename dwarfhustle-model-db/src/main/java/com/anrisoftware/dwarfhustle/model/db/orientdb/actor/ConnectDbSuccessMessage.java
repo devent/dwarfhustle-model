@@ -17,8 +17,10 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbResponseMessage;
 import com.orientechnologies.orient.core.db.OrientDB;
 
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -27,13 +29,7 @@ import lombok.ToString;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @ToString
+@RequiredArgsConstructor
 public class ConnectDbSuccessMessage<T extends DbMessage<?>> extends DbResponseMessage<T> {
-
     public final OrientDB db;
-
-    public ConnectDbSuccessMessage(T om, OrientDB db) {
-        super(om);
-        this.db = db;
-    }
-
 }

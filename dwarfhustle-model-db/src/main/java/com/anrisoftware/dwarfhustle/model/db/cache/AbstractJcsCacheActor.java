@@ -32,6 +32,7 @@ import org.apache.commons.jcs3.engine.control.event.behavior.IElementEventHandle
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheGetMessage.CacheGetSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage.CacheErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage.CacheSuccessMessage;
@@ -53,7 +54,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
-public abstract class AbstractJcsCacheActor implements IElementEventHandler {
+public abstract class AbstractJcsCacheActor implements IElementEventHandler, ObjectsGetter {
 
     @RequiredArgsConstructor
     @ToString(callSuper = true)
@@ -347,6 +348,7 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler {
      * Returns the value for the key directly from the cache without sending of
      * messages. Should be used for performance critical code.
      */
+    @Override
     public GameObject get(Class<? extends GameObject> typeClass, String type, Object key) {
         return cache.get(key, () -> supplyValue(typeClass, type, key));
     }

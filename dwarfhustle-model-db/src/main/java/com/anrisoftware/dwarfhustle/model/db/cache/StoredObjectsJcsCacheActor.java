@@ -37,12 +37,12 @@ import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage.DbCommandErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage.DbCommandSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectMessage.LoadObjectErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectMessage.LoadObjectSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbResponseMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadObjectMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadObjectMessage.LoadObjectErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.LoadObjectMessage.LoadObjectSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsResponseMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.SaveObjectMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.ObjectsResponseMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.SaveObjectMessage;
 import com.google.inject.Injector;
 
 import akka.actor.typed.ActorRef;

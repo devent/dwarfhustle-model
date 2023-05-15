@@ -19,10 +19,10 @@ package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
 import java.net.URL;
 
-import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.orientechnologies.orient.server.OServer;
 
 import akka.actor.typed.ActorRef;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -31,28 +31,22 @@ import lombok.ToString;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @ToString
-public class StartEmbeddedServerMessage<T extends Message> extends DbMessage<T> {
+public class StartEmbeddedServerMessage<T extends DbMessage<?>> extends DbMessage<T> {
 
-	/**
-	 * Message that the embedded OrientDb server was started successfully.
-	 *
-	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
-	 */
+    /**
+     * Message that the embedded OrientDb server was started successfully.
+     *
+     * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+     */
     @ToString
+    @RequiredArgsConstructor
     public static class StartEmbeddedServerSuccessMessage<T extends DbMessage<?>> extends DbResponseMessage<T> {
-
         public final OServer server;
+    }
 
-        public StartEmbeddedServerSuccessMessage(T om, OServer server) {
-            super(om);
-            this.server = server;
-        }
+    public final String root;
 
-	}
-
-	public final String root;
-
-	public final URL config;
+    public final URL config;
 
     public StartEmbeddedServerMessage(ActorRef<T> replyTo, String root, URL config) {
         super(replyTo);

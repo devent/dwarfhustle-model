@@ -15,46 +15,31 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.db.orientdb.objects;
+package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsResponseMessage.ObjectsErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsResponseMessage.ObjectsSuccessMessage;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
 
 import akka.actor.typed.ActorRef;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
- * Message to load multiple {@link GameObject} from the database. Responds with
- * either {@link LoadObjectsSuccessMessage} or {@link LoadObjectsErrorMessage}.
+ * Message to load a {@link GameObject} from the database. Responds with either
+ * {@link LoadObjectSuccessMessage} or {@link DbErrorMessage}.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @ToString
-public class LoadObjectsMessage<T extends Message> extends ObjectsMessage<T> {
+public class LoadObjectMessage<T extends DbMessage<?>> extends DbMessage<T> {
 
-    @ToString(callSuper = true)
-    public static class LoadObjectsSuccessMessage<T extends Message>
-            extends ObjectsSuccessMessage<LoadObjectsMessage<T>> {
-
-        public LoadObjectsSuccessMessage(LoadObjectsMessage<T> om) {
-            super(om);
-        }
-
-    }
-
-    @ToString(callSuper = true)
-    public static class LoadObjectsErrorMessage<T extends Message> extends ObjectsErrorMessage<LoadObjectsMessage<T>> {
-        public LoadObjectsErrorMessage(LoadObjectsMessage<T> om, Throwable error) {
-            super(om, error);
-        }
-
+    @RequiredArgsConstructor
+    public static class LoadObjectSuccessMessage<T extends DbMessage<?>> extends DbSuccessMessage<T> {
+        public final GameObject go;
     }
 
     private static final Consumer<GameObject> EMPTY_CONSUMER = go -> {
@@ -66,11 +51,11 @@ public class LoadObjectsMessage<T extends Message> extends ObjectsMessage<T> {
 
     public final Function<ODatabaseDocument, OResultSet> query;
 
-    public LoadObjectsMessage(ActorRef<T> replyTo, String objectType, Function<ODatabaseDocument, OResultSet> query) {
+    public LoadObjectMessage(ActorRef<T> replyTo, String objectType, Function<ODatabaseDocument, OResultSet> query) {
         this(replyTo, objectType, EMPTY_CONSUMER, query);
     }
 
-    public LoadObjectsMessage(ActorRef<T> replyTo, String objectType, Consumer<GameObject> consumer,
+    public LoadObjectMessage(ActorRef<T> replyTo, String objectType, Consumer<GameObject> consumer,
             Function<ODatabaseDocument, OResultSet> query) {
         super(replyTo);
         this.objectType = objectType;

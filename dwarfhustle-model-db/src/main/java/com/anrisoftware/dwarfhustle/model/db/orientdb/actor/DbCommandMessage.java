@@ -19,10 +19,10 @@ package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
 import java.util.function.Function;
 
-import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 
 import akka.actor.typed.ActorRef;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -31,7 +31,7 @@ import lombok.ToString;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @ToString(callSuper = true)
-public class DbCommandMessage<T extends Message> extends DbMessage<T> {
+public class DbCommandMessage<T extends DbMessage<?>> extends DbMessage<T> {
 
     /**
      * Database command success response with return value.
@@ -39,15 +39,9 @@ public class DbCommandMessage<T extends Message> extends DbMessage<T> {
      * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
      */
     @ToString
+    @RequiredArgsConstructor
     public static class DbCommandSuccessMessage<T extends DbMessage<?>> extends DbResponseMessage<T> {
-
         public final Object value;
-
-        public DbCommandSuccessMessage(T om, Object value) {
-            super(om);
-            this.value = value;
-        }
-
     }
 
     /**
@@ -56,18 +50,10 @@ public class DbCommandMessage<T extends Message> extends DbMessage<T> {
      * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
      */
     @ToString
+    @RequiredArgsConstructor
     public static class DbCommandErrorMessage<T extends DbMessage<?>> extends DbResponseMessage<T> {
-
         public final Throwable ex;
-
         public final Object onError;
-
-        public DbCommandErrorMessage(T om, Throwable ex, Object onError) {
-            super(om);
-            this.ex = ex;
-            this.onError = onError;
-        }
-
     }
 
     public final Function<Throwable, Object> onError;

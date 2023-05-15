@@ -15,45 +15,21 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.db.orientdb.objects;
+package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
-import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsResponseMessage.ObjectsErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.objects.ObjectsResponseMessage.ObjectsSuccessMessage;
 
 import akka.actor.typed.ActorRef;
 import lombok.ToString;
 
 /**
  * Message to save a {@link GameObject} in the database. Responds with either
- * {@link SaveObjectSuccessMessage} or {@link SaveObjectErrorMessage}.
+ * {@link DbSuccessMessage} or {@link DbErrorMessage}.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @ToString(callSuper = true)
-public class SaveObjectMessage<T extends Message> extends ObjectsMessage<T> {
-
-    @ToString(callSuper = true)
-    public static class SaveObjectSuccessMessage<T extends Message>
-            extends ObjectsSuccessMessage<SaveObjectMessage<T>> {
-
-        public final GameObject go;
-
-        public SaveObjectSuccessMessage(SaveObjectMessage<T> om, GameObject go) {
-            super(om);
-            this.go = go;
-        }
-
-    }
-
-    @ToString(callSuper = true)
-    public static class SaveObjectErrorMessage<T extends Message> extends ObjectsErrorMessage<SaveObjectMessage<T>> {
-        public SaveObjectErrorMessage(SaveObjectMessage<T> om, Throwable error) {
-            super(om, error);
-        }
-
-    }
+public class SaveObjectMessage<T extends DbMessage<?>> extends DbMessage<T> {
 
     public final GameObject go;
 

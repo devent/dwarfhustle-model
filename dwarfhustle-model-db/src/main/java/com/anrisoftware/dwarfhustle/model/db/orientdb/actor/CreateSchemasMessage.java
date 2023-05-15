@@ -15,27 +15,21 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.db.orientdb.objects;
+package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import akka.actor.typed.ActorRef;
+import lombok.ToString;
 
 /**
- * Thrown on errors loading {@link GameObject} from the database that are not
- * related to the database, like if the object should be in the database but was
- * not found.
+ * Message to create the schemas and indexes for a new database.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-public class LoadObjectException extends Exception {
+@ToString
+public class CreateSchemasMessage<T extends DbMessage<?>> extends DbMessage<T> {
 
-	private static final long serialVersionUID = 1L;
-
-	public LoadObjectException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	public LoadObjectException(String message) {
-		super(message);
-	}
+    public CreateSchemasMessage(ActorRef<T> replyTo) {
+        super(replyTo);
+    }
 
 }
