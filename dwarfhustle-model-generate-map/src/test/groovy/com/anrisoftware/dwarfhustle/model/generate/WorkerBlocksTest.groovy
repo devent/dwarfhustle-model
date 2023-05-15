@@ -156,7 +156,7 @@ class WorkerBlocksTest {
         gm.width = mapTilesParams.width
         gm.height = mapTilesParams.height
         gm.depth = mapTilesParams.depth
-        gm.blockSize = mapTilesParams.block_size
+        gm.chunkSize = mapTilesParams.block_size
         wm.addMap(gm)
         def m = new GenerateMapMessage(null, gm, mapTilesParams.block_size, dbTestUtils.user, dbTestUtils.password, dbTestUtils.database)
         def worker = workerFactory.create(dbTestUtils.db)

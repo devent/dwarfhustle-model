@@ -86,6 +86,8 @@ public class GameMap extends StoredObject {
 
 	private String name;
 
+    private long rootid;
+
 	private int mapid;
 
 	private int width;
@@ -94,7 +96,7 @@ public class GameMap extends StoredObject {
 
 	private int depth;
 
-	private int blockSize;
+    private int chunkSize;
 
 	private WorldMap world;
 
@@ -130,6 +132,16 @@ public class GameMap extends StoredObject {
 		}
 	}
 
+    /**
+     * Sets the object ID of the {@link MapChunk} that is the root.
+     */
+    public void setRootid(long id) {
+        if (this.rootid != id) {
+            this.rootid = id;
+            setDirty(true);
+        }
+    }
+
 	public void setMapid(int mapid) {
 		if (this.mapid != mapid) {
 			setDirty(true);
@@ -162,10 +174,10 @@ public class GameMap extends StoredObject {
 		return depth * height * width;
 	}
 
-	public void setBlockSize(int blockSize) {
-		if (this.blockSize != blockSize) {
+	public void setChunkSize(int blockSize) {
+        if (this.chunkSize != blockSize) {
 			setDirty(true);
-			this.blockSize = blockSize;
+            this.chunkSize = blockSize;
 		}
 	}
 
@@ -174,7 +186,7 @@ public class GameMap extends StoredObject {
      * width, height, depth and block size.
      */
     public int getBlocksCount() {
-        return calculateBlocksCount(width, height, depth, blockSize);
+        return calculateBlocksCount(width, height, depth, chunkSize);
     }
 
 	public void setWorld(WorldMap world) {

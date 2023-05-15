@@ -132,11 +132,11 @@ public class MapChunk extends StoredObject {
         }
     }
 
-    public MapBlock findMapTile(int z, int y, int x, Function<Long, MapChunk> blockRetriever) {
-        return findMapTile(new GameBlockPos(pos.getMapid(), x, y, z), blockRetriever);
+    public MapChunk findMapChunk(int x, int y, int z, Function<Long, MapChunk> retriever) {
+        return findMapChunk(new GameBlockPos(pos.getMapid(), x, y, z), retriever);
     }
 
-    public MapBlock findMapTile(GameBlockPos pos, Function<Long, MapChunk> blockRetriever) {
+    public MapChunk findMapChunk(GameBlockPos pos, Function<Long, MapChunk> retriever) {
         int x = pos.getX();
         int y = pos.getY();
         int z = pos.getZ();
@@ -151,8 +151,35 @@ public class MapChunk extends StoredObject {
                 int ebz = ep.getZ();
                 if (x >= bx && y >= by && z >= bz && x < ebx && y < eby && z < ebz) {
                     long id = chunks.get(b);
-                    var mb = blockRetriever.apply(id);
-                    return mb.findMapTile(pos, blockRetriever);
+                    var mb = retriever.apply(id);
+                    return mb.findMapChunk(pos, retriever);
+                }
+            }
+        }
+        return this;
+    }
+
+    public MapBlock findMapBlock(int x, int y, int z, Function<Long, MapChunk> retriever) {
+        return findMapBlock(new GameBlockPos(pos.getMapid(), x, y, z), retriever);
+    }
+
+    public MapBlock findMapBlock(GameBlockPos pos, Function<Long, MapChunk> retriever) {
+        int x = pos.getX();
+        int y = pos.getY();
+        int z = pos.getZ();
+        if (blocks.isEmpty()) {
+            for (GameChunkPos b : chunks.keysView()) {
+                int bx = b.getX();
+                int by = b.getY();
+                int bz = b.getZ();
+                var ep = b.getEp();
+                int ebx = ep.getX();
+                int eby = ep.getY();
+                int ebz = ep.getZ();
+                if (x >= bx && y >= by && z >= bz && x < ebx && y < eby && z < ebz) {
+                    long id = chunks.get(b);
+                    var mb = retriever.apply(id);
+                    return mb.findMapBlock(pos, retriever);
                 }
             }
         }

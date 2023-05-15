@@ -24,5 +24,15 @@ package com.anrisoftware.dwarfhustle.model.api.objects;
  */
 public interface GameObjects {
 
-    public GameObject get(long key);
+    default <T> T get(long key) {
+        T go = getObject(key);
+        if (go == null) {
+            go = retrieveObject(key);
+        }
+        return go;
+    }
+
+    <T> T retrieveObject(long key);
+
+    <T> T getObject(long key);
 }

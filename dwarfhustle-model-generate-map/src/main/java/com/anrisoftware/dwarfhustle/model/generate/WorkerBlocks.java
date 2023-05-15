@@ -108,6 +108,8 @@ public class WorkerBlocks {
 
     private boolean cancelled = false;
 
+    private long rootid;
+
     @Inject
     public void setMaterials(@Assisted Map<String, ListIterable<GameObject>> materials) {
         var mm = this.materials;
@@ -155,9 +157,9 @@ public class WorkerBlocks {
         var pos = pos(m, 0, 0, 0);
         var endPos = pos(m, w1, h1, d1);
         try (var db = orientdb.open(m.database, m.user, m.password)) {
-            saveGameMap(m, db);
             db.declareIntent(new OIntentMassiveInsert());
             generateMapBlock(m, db, createChunksMap(), pos, endPos);
+            saveGameMap(m, db);
             db.declareIntent(null);
         }
         this.generateDone = true;
@@ -166,6 +168,7 @@ public class WorkerBlocks {
 
     private void saveGameMap(GenerateMapMessage m, ODatabaseSession db) throws GeneratorException {
         var gmv = db.newVertex(GameMap.OBJECT_TYPE);
+        m.gameMap.setRootid(rootid);
         gameMapStore.store(db, gmv, m.gameMap);
         gmv.save();
         var wmv = db.newVertex(WorldMap.OBJECT_TYPE);
@@ -191,12 +194,13 @@ public class WorkerBlocks {
             blocksDone++;
             return block;
         }
-        var block = createChunk(m, db, pos, endPos);
+        var chunk = createChunk(m, db, pos, endPos);
         if (!rootset) {
-            block.setRoot(true);
+            chunk.setRoot(true);
+            rootid = chunk.getId();
             rootset = true;
         }
-        parent.put(block.getPos(), block.getId());
+        parent.put(chunk.getPos(), chunk.getId());
         var map = createChunksMap();
         var x = pos.getX();
         var y = pos.getY();
@@ -225,10 +229,10 @@ public class WorkerBlocks {
         var b7 = generateMapBlock(m, db, map, pos(m, xw2, yh2, zd2), pos(m, xw1, yh1, zd1));
         map.put(b7.getPos(), b7.getId());
         //
-        block.setChunks(map.asUnmodifiable());
+        chunk.setChunks(map.asUnmodifiable());
         blocksDone++;
-        saveChunk(db, block);
-        return block;
+        saveChunk(db, chunk);
+        return chunk;
     }
 
     private void saveChunk(ODatabaseSession db, MapChunk block) {

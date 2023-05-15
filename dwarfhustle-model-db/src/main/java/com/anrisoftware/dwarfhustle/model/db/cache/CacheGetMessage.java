@@ -82,6 +82,11 @@ public class CacheGetMessage<T extends Message> extends CacheMessage<T> {
     }
 
     public CacheGetMessage(ActorRef<T> replyTo, Class<? extends GameObject> typeClass, String type, Object key,
+            Consumer<GameObject> consumer) {
+        this(replyTo, typeClass, type, key, consumer, EMPTY_ON_MISS);
+    }
+
+    public CacheGetMessage(ActorRef<T> replyTo, Class<? extends GameObject> typeClass, String type, Object key,
             Consumer<GameObject> consumer, Runnable onMiss) {
         super(replyTo);
         this.typeClass = typeClass;

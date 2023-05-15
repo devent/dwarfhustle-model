@@ -21,7 +21,6 @@ import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSche
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.AREA_NW_LON_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.AREA_SE_LAT_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.AREA_SE_LON_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.BLOCK_SIZE_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CAMERA_POS_X_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CAMERA_POS_Y_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CAMERA_POS_Z_FIELD;
@@ -29,6 +28,7 @@ import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSche
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CAMERA_ROT_X_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CAMERA_ROT_Y_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CAMERA_ROT_Z_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CHUNK_SIZE_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CURSOR_X_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CURSOR_Y_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CURSOR_Z_FIELD;
@@ -36,6 +36,7 @@ import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSche
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.HEIGHT_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.MAPID_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.NAME_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.ROOTID_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.TIME_ZONE_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.WIDTH_FIELD;
 
@@ -61,11 +62,12 @@ public class GameMapStorage extends AbstractGameObjectStorage {
         var v = (OElement) o;
         var mb = (GameMap) go;
         v.setProperty(NAME_FIELD, mb.getName());
+        v.setProperty(ROOTID_FIELD, mb.getRootid());
         v.setProperty(MAPID_FIELD, mb.getMapid());
         v.setProperty(WIDTH_FIELD, mb.getWidth());
         v.setProperty(HEIGHT_FIELD, mb.getHeight());
         v.setProperty(DEPTH_FIELD, mb.getDepth());
-        v.setProperty(BLOCK_SIZE_FIELD, mb.getBlockSize());
+        v.setProperty(CHUNK_SIZE_FIELD, mb.getChunkSize());
         v.setProperty(TIME_ZONE_FIELD, mb.getTimeZone().getTotalSeconds());
         v.setProperty(AREA_NW_LAT_FIELD, mb.getArea().nw.lat);
         v.setProperty(AREA_NW_LON_FIELD, mb.getArea().nw.lon);
@@ -89,11 +91,12 @@ public class GameMapStorage extends AbstractGameObjectStorage {
         var v = (OElement) o;
         var mb = (GameMap) go;
         mb.setName(v.getProperty(NAME_FIELD));
+        mb.setRootid(v.getProperty(ROOTID_FIELD));
         mb.setMapid(v.getProperty(MAPID_FIELD));
         mb.setWidth(v.getProperty(WIDTH_FIELD));
         mb.setHeight(v.getProperty(HEIGHT_FIELD));
         mb.setDepth(v.getProperty(DEPTH_FIELD));
-        mb.setBlockSize(v.getProperty(BLOCK_SIZE_FIELD));
+        mb.setChunkSize(v.getProperty(CHUNK_SIZE_FIELD));
         mb.setTimeZone(ZoneOffset.ofTotalSeconds(v.getProperty(TIME_ZONE_FIELD)));
         mb.setArea(new MapArea(new MapCoordinate(v.getProperty(AREA_NW_LAT_FIELD), v.getProperty(AREA_NW_LON_FIELD)),
                 new MapCoordinate(v.getProperty(AREA_SE_LAT_FIELD), v.getProperty(AREA_SE_LON_FIELD))));

@@ -190,7 +190,7 @@ class GenerateMap {
         gm.width = mapParams.width
         gm.height = mapParams.height
         gm.depth = mapParams.depth
-        gm.blockSize = mapParams.block_size
+        gm.chunkSize = mapParams.block_size
         gm.timeZone = ZoneOffset.ofHours(1)
         gm.area = MapArea.create(toDecimalDegrees(54, 47, 24), toDecimalDegrees(17, 30, 12), toDecimalDegrees(54, 42, 02), toDecimalDegrees(17, 35, 22))
         gm.setCameraPos(0.0f, 0.0f, 10.0f)

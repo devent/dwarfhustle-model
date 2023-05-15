@@ -31,6 +31,8 @@ public class GameMapSchema implements GameObjectSchema {
 
 	public static final String NAME_FIELD = "name";
 
+    public static final String ROOTID_FIELD = "rootid";
+
 	public static final String MAPID_FIELD = "mapid";
 
 	public static final String WIDTH_FIELD = "width";
@@ -39,7 +41,7 @@ public class GameMapSchema implements GameObjectSchema {
 
 	public static final String DEPTH_FIELD = "depth";
 
-	public static final String BLOCK_SIZE_FIELD = "blockSize";
+    public static final String CHUNK_SIZE_FIELD = "chunkSize";
 
 	public static final String TIME_ZONE_FIELD = "timeZone";
 
@@ -76,11 +78,12 @@ public class GameMapSchema implements GameObjectSchema {
 		var odb = (ODatabaseDocument) db;
 		var c = odb.createClass(GameMap.OBJECT_TYPE, GameObject.OBJECT_TYPE);
 		c.createProperty(NAME_FIELD, OType.STRING);
+        c.createProperty(ROOTID_FIELD, OType.LONG);
 		c.createProperty(MAPID_FIELD, OType.INTEGER);
 		c.createProperty(WIDTH_FIELD, OType.INTEGER);
 		c.createProperty(HEIGHT_FIELD, OType.INTEGER);
 		c.createProperty(DEPTH_FIELD, OType.INTEGER);
-		c.createProperty(BLOCK_SIZE_FIELD, OType.INTEGER);
+		c.createProperty(CHUNK_SIZE_FIELD, OType.INTEGER);
 		c.createProperty(TIME_ZONE_FIELD, OType.INTEGER);
 		c.createProperty(AREA_NW_LAT_FIELD, OType.FLOAT);
 		c.createProperty(AREA_NW_LON_FIELD, OType.FLOAT);
