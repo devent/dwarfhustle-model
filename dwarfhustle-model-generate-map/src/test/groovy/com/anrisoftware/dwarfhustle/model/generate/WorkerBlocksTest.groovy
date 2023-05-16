@@ -111,7 +111,7 @@ class WorkerBlocksTest {
                 new PropertiesThreadsModule())
         workerFactory = injector.getInstance(WorkerBlocksFactory)
         powerLoomKnowledgeActor = testKit.spawn(PowerLoomKnowledgeActor.create(injector), "PowerLoomKnowledgeActor");
-        knowledgeBaseActor = testKit.spawn(KnowledgeBaseActor.create(injector, powerLoomKnowledgeActor), "KnowledgeBaseActor");
+        knowledgeBaseActor = testKit.spawn(KnowledgeBaseActor.create(injector), "KnowledgeBaseActor");
         orientDbActor = testKit.spawn(OrientDbActor.create(injector), "OrientDbActor");
         gen = injector.getInstance(IDGenerator)
         dbTestUtils = new DbTestUtils(orientDbActor, objectsDbActor, testKit, gen)

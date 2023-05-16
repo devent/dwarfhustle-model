@@ -83,6 +83,7 @@ public class KnowledgeJcsCacheActor extends AbstractJcsCacheActor {
      *
      * @param injector the {@link Injector} injector.
      * @param timeout  the {@link Duration} timeout.
+     * @param og       the {@link ObjectsGetter} for {@link KnowledgeLoadedObject}
      */
     public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout, ObjectsGetter og) {
         var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();

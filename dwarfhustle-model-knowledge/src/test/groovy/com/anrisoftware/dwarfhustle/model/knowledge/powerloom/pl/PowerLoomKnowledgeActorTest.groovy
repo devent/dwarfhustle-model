@@ -24,15 +24,19 @@ import java.util.concurrent.CountDownLatch
 
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.actor.ModelActorsModule
+import com.anrisoftware.dwarfhustle.model.api.materials.Sedimentary
 import com.anrisoftware.dwarfhustle.model.api.objects.ApiModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandErrorMessage
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandSuccessMessage
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor.KnowledgeJcsCacheActorFactory
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseSuccessMessage
 import com.google.inject.Guice
 import com.google.inject.Injector
 
@@ -53,12 +57,15 @@ class PowerLoomKnowledgeActorTest {
 
     static Injector injector
 
-    static ActorRef<Message> powerLoomKnowledgeActor
+    static cacheActor
+
+    static ActorRef<Message> knowledgeActor
 
     @BeforeAll
     static void setupActor() {
         injector = Guice.createInjector(new ModelActorsModule(), new PowerloomModule(), new ApiModule())
-        powerLoomKnowledgeActor = testKit.spawn(PowerLoomKnowledgeActor.create(injector), "PowerLoomKnowledgeActor");
+        knowledgeActor = testKit.spawn(PowerLoomKnowledgeActor.create(injector), "PowerLoomKnowledgeActor");
+        cacheActor = testKit.spawn(KnowledgeJcsCacheActor.create(injector, injector.getInstance(KnowledgeJcsCacheActorFactory), cacheActor, KnowledgeJcsCacheActor.createInitCacheAsync()), "KnowledgeJcsCacheActor");
     }
 
     @AfterAll
@@ -118,7 +125,7 @@ class PowerLoomKnowledgeActorTest {
     void askKnowledgeCommandMessage(def command) {
         def result =
                 AskPattern.ask(
-                powerLoomKnowledgeActor, {replyTo ->
+                knowledgeActor, {replyTo ->
                     new KnowledgeCommandMessage(replyTo, command)
                 },
                 Duration.ofSeconds(300),
@@ -135,5 +142,36 @@ class PowerLoomKnowledgeActorTest {
             lock.countDown()
         })
         lock.await()
+    }
+
+
+    @RepeatedTest(10)
+    @Timeout(15l)
+    void "test retrieve"() {
+        def result =
+                AskPattern.ask(
+                knowledgeActor, {replyTo ->
+                    new KnowledgeGetMessage(replyTo, Sedimentary.class, "Sedimentary")
+                },
+                Duration.ofSeconds(15),
+                testKit.scheduler())
+        def lock = new CountDownLatch(1)
+        KnowledgeLoadedObject go
+        result.whenComplete( {reply, failure ->
+            log.info "Command reply ${reply} failure ${failure}"
+            if (failure == null) {
+                switch (reply) {
+                    case KnowledgeResponseSuccessMessage:
+                        go = reply.go
+                        break
+                    case KnowledgeCommandErrorMessage:
+                        break
+                }
+            }
+            lock.countDown()
+        })
+        lock.await()
+        assert go.type == "Sedimentary"
+        assert go.objects.size() == 11
     }
 }

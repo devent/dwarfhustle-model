@@ -55,17 +55,14 @@ class DbTestUtils {
 
     Duration timeout = Duration.ofSeconds(600)
 
-    ActorRef<Message> orientDbActor
-
-    ActorRef<Message> objectsActor
+    ActorRef<Message> dbActor
 
     def scheduler
 
     def generator
 
-    DbTestUtils(ActorRef<Message> orientDbActor, ActorRef<Message> objectsActor, def scheduler, def generator) {
-        this.orientDbActor = orientDbActor
-        this.objectsActor = objectsActor
+    DbTestUtils(ActorRef<Message> dbActor, def scheduler, def generator) {
+        this.dbActor = dbActor
         this.scheduler = scheduler
         this.generator = generator
     }
@@ -73,7 +70,7 @@ class DbTestUtils {
     void connectCreateDatabaseRemote(def initDatabaseLock) {
         def result =
                 AskPattern.ask(
-                orientDbActor,
+                dbActor,
                 {replyTo -> new ConnectDbRemoteMessage(replyTo, url, "test", "root", "admin")},
                 timeout,
                 scheduler)
@@ -94,7 +91,7 @@ class DbTestUtils {
     void connectCreateDatabaseEmbedded(def server, def initDatabaseLock) {
         def result =
                 AskPattern.ask(
-                orientDbActor,
+                dbActor,
                 {replyTo -> new ConnectDbEmbeddedMessage(replyTo, server, "test", "root", "admin")},
                 timeout,
                 scheduler)
@@ -115,7 +112,7 @@ class DbTestUtils {
     void createDatabase(def initDatabaseLock) {
         def result =
                 AskPattern.ask(
-                orientDbActor,
+                dbActor,
                 {replyTo -> new CreateDbMessage(replyTo, type)},
                 timeout,
                 scheduler)
@@ -128,7 +125,7 @@ class DbTestUtils {
     void createSchemas(def initDatabaseLock) {
         def result =
                 AskPattern.ask(
-                objectsActor,
+                dbActor,
                 {replyTo -> new CreateSchemasMessage(replyTo)},
                 timeout,
                 scheduler)
@@ -145,7 +142,7 @@ class DbTestUtils {
     void fillDatabase(def initDatabaseLock) {
         def result =
                 AskPattern.ask(
-                orientDbActor, {replyTo ->
+                dbActor, {replyTo ->
                     new DbCommandMessage(replyTo, { db ->
                         def go = new MapBlock(generator.generate())
                         go.pos = new GameBlockPos(0, 10, 20, 2)
@@ -168,7 +165,7 @@ class DbTestUtils {
     void deleteDatabase(def deleteDatabaseLock) {
         def result =
                 AskPattern.ask(
-                orientDbActor,
+                dbActor,
                 {replyTo -> new DeleteDbMessage(replyTo)},
                 timeout,
                 scheduler)
@@ -181,7 +178,7 @@ class DbTestUtils {
     void closeDatabase(def closeDatabaseLock) {
         def result =
                 AskPattern.ask(
-                orientDbActor,
+                dbActor,
                 {replyTo -> new CloseDbMessage(replyTo)},
                 timeout,
                 scheduler)

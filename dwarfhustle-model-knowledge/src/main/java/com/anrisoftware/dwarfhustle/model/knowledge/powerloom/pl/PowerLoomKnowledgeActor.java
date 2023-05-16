@@ -20,22 +20,38 @@ package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl;
 import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
 import static edu.isi.stella.InputStringStream.newInputStringStream;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasKey;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
+import org.lable.oss.uniqueid.GeneratorException;
+import org.lable.oss.uniqueid.IDGenerator;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
+import com.anrisoftware.dwarfhustle.model.db.cache.CacheGetMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.CachePutMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.CachePutsMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.IdsKnowledgeProvider.IdsKnowledge;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandErrorMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.GameObjectKnowledge;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
 
@@ -48,7 +64,9 @@ import akka.actor.typed.javadsl.StashBuffer;
 import akka.actor.typed.javadsl.StashOverflowException;
 import akka.actor.typed.receptionist.ServiceKey;
 import edu.isi.powerloom.PLI;
+import edu.isi.powerloom.logic.LogicObject;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -57,7 +75,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
-public class PowerLoomKnowledgeActor {
+public class PowerLoomKnowledgeActor implements ObjectsGetter {
 
     public static final ServiceKey<Message> KEY = ServiceKey.create(Message.class,
             PowerLoomKnowledgeActor.class.getSimpleName());
@@ -77,6 +95,12 @@ public class PowerLoomKnowledgeActor {
     @ToString(callSuper = true)
     private static class SetupErrorMessage extends Message {
         public final Throwable cause;
+    }
+
+    @RequiredArgsConstructor
+    @ToString(callSuper = true)
+    private static class WrappedCacheResponse extends Message {
+        private final CacheResponseMessage<?> response;
     }
 
     /**
@@ -153,6 +177,19 @@ public class PowerLoomKnowledgeActor {
     @Assisted
     private StashBuffer<Message> buffer;
 
+    @Inject
+    private Map<String, GameObjectKnowledge> storages;
+
+    @SuppressWarnings("rawtypes")
+    private ActorRef<CacheResponseMessage> cacheResponseAdapter;
+
+    @Inject
+    private ActorRef<Message> actor;
+
+    @IdsKnowledge
+    @Inject
+    private IDGenerator ids;
+
     /**
      * Stash behavior. Returns a behavior for the messages:
      *
@@ -162,6 +199,7 @@ public class PowerLoomKnowledgeActor {
      * </ul>
      */
     public Behavior<Message> start() {
+        this.cacheResponseAdapter = context.messageAdapter(CacheResponseMessage.class, WrappedCacheResponse::new);
         return Behaviors.receive(Message.class)//
                 .onMessage(InitialStateMessage.class, this::onInitialState)//
                 .onMessage(KnowledgeCommandMessage.class, this::stashOtherCommand)//
@@ -202,6 +240,51 @@ public class PowerLoomKnowledgeActor {
     }
 
     /**
+     * Reacts to {@link KnowledgeGetMessage}. Returns a behavior for the messages
+     * from {@link #getInitialBehavior()}.
+     */
+    @SneakyThrows
+    private Behavior<Message> onKnowledgeGet(KnowledgeGetMessage<?> m) {
+        log.debug("onKnowledgeGet {}", m);
+        actor.tell(new CacheGetMessage<>(cacheResponseAdapter, KnowledgeLoadedObject.class,
+                KnowledgeLoadedObject.OBJECT_TYPE, m.type, go -> {
+                    cacheHit(m, go);
+                }, () -> {
+                    cacheMiss(m);
+                }));
+        return Behaviors.same();
+    }
+
+    @SuppressWarnings("unchecked")
+    @SneakyThrows
+    private void cacheMiss(@SuppressWarnings("rawtypes") KnowledgeGetMessage m) {
+        var glo = retrieveKnowledgeLoadedObject(m.type);
+        cacheObjects(glo);
+        actor.tell(new CachePutMessage<>(cacheResponseAdapter, glo.type, glo));
+        m.replyTo.tell(new KnowledgeResponseSuccessMessage(glo));
+    }
+
+    @SuppressWarnings("unchecked")
+    private void cacheHit(@SuppressWarnings("rawtypes") KnowledgeGetMessage m, GameObject go) {
+        var ko = (KnowledgeLoadedObject) go;
+        cacheObjects(ko);
+        m.replyTo.tell(new KnowledgeResponseSuccessMessage(ko));
+    }
+
+    private void cacheObjects(KnowledgeLoadedObject ko) {
+        actor.tell(new CachePutsMessage<>(cacheResponseAdapter, Long.class, GameObject::getId, ko.objects));
+    }
+
+    /**
+     * <ul>
+     * </ul>
+     */
+    private Behavior<Message> onWrappedCacheResponse(WrappedCacheResponse m) {
+        log.debug("onWrappedCacheResponse {}", m);
+        return Behaviors.same();
+    }
+
+    /**
      * Returns a behavior for the messages:
      *
      * <ul>
@@ -211,7 +294,34 @@ public class PowerLoomKnowledgeActor {
     private BehaviorBuilder<Message> getInitialBehavior() {
         return Behaviors.receive(Message.class)//
                 .onMessage(KnowledgeCommandMessage.class, this::onKnowledgeCommand)//
+                .onMessage(KnowledgeGetMessage.class, this::onKnowledgeGet)//
+                .onMessage(WrappedCacheResponse.class, this::onWrappedCacheResponse)//
         ;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    @SneakyThrows
+    public <T extends GameObject> T get(Class<T> typeClass, String type, Object key) throws ObjectsGetterException {
+        return (T) retrieveKnowledgeLoadedObject(type);
+    }
+
+    private KnowledgeLoadedObject retrieveKnowledgeLoadedObject(String type) throws GeneratorException {
+        var sb = new StringBuilder();
+        sb.append("all (");
+        sb.append(type);
+        sb.append(" ?x)");
+        var answer = PLI.sRetrieve(sb.toString(), WORKING_MODULE, null);
+        MutableList<GameObject> list = Lists.mutable.empty();
+        LogicObject next;
+        while ((next = (LogicObject) answer.pop()) != null) {
+            assertThat(storages, hasKey(type));
+            var s = storages.get(type);
+            var go = s.retrieve(next, s.create());
+            go.setId((long) go.getRid());
+            list.add(go);
+        }
+        return new KnowledgeLoadedObject(ids.generate(), type, list.asUnmodifiable());
     }
 
 }

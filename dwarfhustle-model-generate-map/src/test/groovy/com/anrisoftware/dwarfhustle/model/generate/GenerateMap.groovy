@@ -50,8 +50,6 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbServerUtils
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbTestUtils
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbModule
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.objects.ObjectsDbActor
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.objects.ObjectsDbModule
 import com.anrisoftware.dwarfhustle.model.generate.GenerateMapMessage.GenerateProgressMessage
 import com.anrisoftware.dwarfhustle.model.generate.WorkerBlocks.WorkerBlocksFactory
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeBaseActor
@@ -121,7 +119,6 @@ class GenerateMap {
         cacheFile = new File(parentDir, "dwarfhustle_jcs_swap_${mapParams.game_name}_mapBlocksCache_0_file")
         injector = Guice.createInjector(
                 new ModelActorsModule(),
-                new ObjectsDbModule(),
                 new PowerloomModule(),
                 new GenerateModule(),
                 new OrientDbModule(),
@@ -147,13 +144,8 @@ class GenerateMap {
         })
         actor.getMainActor().waitActor(OrientDbActor.ID)
         def dbActor = actor.getMainActor().getActor(OrientDbActor.ID)
-        ObjectsDbActor.create(injector, ofSeconds(1), dbActor).whenComplete({ret, ex ->
-            log_reply_failure "OrientDbActor.create", ret, ex
-        })
-        actor.getMainActor().waitActor(ObjectsDbActor.ID)
-        def objectsActor = actor.getMainActor().getActor(ObjectsDbActor.ID)
         gen = injector.getInstance(IdsObjectsProvider.class).get()
-        dbTestUtils = new DbTestUtils(dbActor, objectsActor, actor.scheduler, gen)
+        dbTestUtils = new DbTestUtils(dbActor, dbActor, actor.scheduler, gen)
         dbTestUtils.type = ODatabaseType.PLOCAL
         dbTestUtils.fillDatabase = false
         def initDatabaseLock = new CountDownLatch(1)

@@ -29,7 +29,7 @@
     </parent>
 
     <artifactId>dwarfhustle-model</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Dwarf Hustle Model</name>
     <description>Manages the compile dependencies for the model.</description>

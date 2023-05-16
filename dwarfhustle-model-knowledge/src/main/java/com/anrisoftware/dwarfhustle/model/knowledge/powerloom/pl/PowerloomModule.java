@@ -32,7 +32,6 @@ import org.lable.oss.uniqueid.IDGenerator;
 
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.IdsKnowledgeProvider.IdsKnowledge;
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeBaseActor.KnowledgeBaseActorFactory;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor.KnowledgeJcsCacheActorFactory;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor.PowerLoomKnowledgeActorFactory;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.GameObjectKnowledge;
@@ -49,8 +48,6 @@ public class PowerloomModule extends AbstractModule {
     protected void configure() {
         install(new FactoryModuleBuilder().implement(PowerLoomKnowledgeActor.class, PowerLoomKnowledgeActor.class)
                 .build(PowerLoomKnowledgeActorFactory.class));
-        install(new FactoryModuleBuilder().implement(KnowledgeBaseActor.class, KnowledgeBaseActor.class)
-                .build(KnowledgeBaseActorFactory.class));
         install(new FactoryModuleBuilder().implement(AbstractJcsCacheActor.class, KnowledgeJcsCacheActor.class)
                 .build(KnowledgeJcsCacheActorFactory.class));
         bind(IDGenerator.class).annotatedWith(IdsKnowledge.class).toProvider(IdsKnowledgeProvider.class)
