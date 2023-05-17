@@ -22,7 +22,6 @@ import java.util.function.Supplier;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 
 import akka.actor.typed.ActorRef;
-import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -30,12 +29,14 @@ import lombok.ToString;
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@RequiredArgsConstructor
 @ToString(callSuper = true)
-public class KnowledgeCommandMessage<T extends Message> extends Message {
+public class KnowledgeCommandMessage<T extends Message> extends KnowledgeMessage<T> {
 
-    public final ActorRef<T> replyTo;
+    public final Supplier<Object> command;
 
-	public final Supplier<Object> command;
+    public KnowledgeCommandMessage(ActorRef<T> replyTo, Supplier<Object> command) {
+        super(replyTo);
+        this.command = command;
+    }
 
 }

@@ -29,18 +29,17 @@ import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 
+import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.actor.ModelActorsModule
 import com.anrisoftware.dwarfhustle.model.api.materials.Sedimentary
 import com.anrisoftware.dwarfhustle.model.api.objects.ApiModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandErrorMessage
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandSuccessMessage
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor.KnowledgeJcsCacheActorFactory
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseSuccessMessage
 import com.google.inject.Guice
 import com.google.inject.Injector
 
-import akka.actor.testkit.typed.javadsl.ActorTestKit
 import akka.actor.typed.ActorRef
 import akka.actor.typed.javadsl.AskPattern
 import edu.isi.powerloom.PLI
@@ -53,24 +52,29 @@ import groovy.util.logging.Slf4j
 @Slf4j
 class PowerLoomKnowledgeActorTest {
 
-    static final ActorTestKit testKit = ActorTestKit.create()
-
     static Injector injector
 
     static cacheActor
 
     static ActorRef<Message> knowledgeActor
 
+    static ActorSystemProvider actor
+
     @BeforeAll
     static void setupActor() {
         injector = Guice.createInjector(new ModelActorsModule(), new PowerloomModule(), new ApiModule())
-        knowledgeActor = testKit.spawn(PowerLoomKnowledgeActor.create(injector), "PowerLoomKnowledgeActor");
-        cacheActor = testKit.spawn(KnowledgeJcsCacheActor.create(injector, injector.getInstance(KnowledgeJcsCacheActorFactory), cacheActor, KnowledgeJcsCacheActor.createInitCacheAsync()), "KnowledgeJcsCacheActor");
+        actor = injector.getInstance(ActorSystemProvider.class)
+        PowerLoomKnowledgeActor.create(injector, Duration.ofSeconds(1)).whenComplete({ it, ex ->
+            knowledgeActor = it
+        } ).get()
+        KnowledgeJcsCacheActor.create(injector, Duration.ofSeconds(1), actor.getObjectsGetter(PowerLoomKnowledgeActor.ID)).whenComplete({ it, ex ->
+            cacheActor = it
+        } ).get()
     }
 
     @AfterAll
     static void closeDb() {
-        testKit.shutdown(testKit.system(), Duration.ofMinutes(1))
+        actor.shutdownWait()
     }
 
     @ParameterizedTest
@@ -129,7 +133,7 @@ class PowerLoomKnowledgeActorTest {
                     new KnowledgeCommandMessage(replyTo, command)
                 },
                 Duration.ofSeconds(300),
-                testKit.scheduler())
+                actor.scheduler)
         def lock = new CountDownLatch(1)
         result.whenComplete( {reply, failure ->
             log.info "Command reply ${reply} failure ${failure}"
@@ -154,7 +158,7 @@ class PowerLoomKnowledgeActorTest {
                     new KnowledgeGetMessage(replyTo, Sedimentary.class, "Sedimentary")
                 },
                 Duration.ofSeconds(15),
-                testKit.scheduler())
+                actor.scheduler)
         def lock = new CountDownLatch(1)
         KnowledgeLoadedObject go
         result.whenComplete( {reply, failure ->

@@ -184,7 +184,7 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
     private ActorRef<CacheResponseMessage> cacheResponseAdapter;
 
     @Inject
-    private ActorRef<Message> actor;
+    private ActorSystemProvider actor;
 
     @IdsKnowledge
     @Inject
@@ -195,14 +195,15 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
      *
      * <ul>
      * <li>{@link InitialStateMessage}
-     * <li>{@link KnowledgeCommandMessage}
+     * <li>{@link KnowledgeMessage}
      * </ul>
      */
     public Behavior<Message> start() {
         this.cacheResponseAdapter = context.messageAdapter(CacheResponseMessage.class, WrappedCacheResponse::new);
+        actor.registerObjectsGetter(ID, this);
         return Behaviors.receive(Message.class)//
                 .onMessage(InitialStateMessage.class, this::onInitialState)//
-                .onMessage(KnowledgeCommandMessage.class, this::stashOtherCommand)//
+                .onMessage(KnowledgeMessage.class, this::stashOtherCommand)//
                 .build();
     }
 

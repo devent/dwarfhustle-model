@@ -17,17 +17,26 @@
  */
 package com.anrisoftware.dwarfhustle.model.actor;
 
+import java.util.concurrent.TimeoutException;
+
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import org.eclipse.collections.api.map.primitive.IntObjectMap;
+import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
+import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
+
 import com.anrisoftware.dwarfhustle.model.actor.MainActor.MainActorFactory;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.ActorSystem;
 import akka.actor.typed.Scheduler;
 import akka.actor.typed.javadsl.Behaviors;
+import scala.concurrent.Await;
+import scala.concurrent.duration.Duration;
 
 /**
  * Provides the Akka actors system. It will create an actor system with the
@@ -39,6 +48,8 @@ import akka.actor.typed.javadsl.Behaviors;
 public class ActorSystemProvider implements Provider<ActorRef<Message>> {
 
     private final ActorSystem<Message> actors;
+
+    private final IntObjectMap<ObjectsGetter> ogs = IntObjectMaps.mutable.empty();
 
     private MainActor mainActor;
 
@@ -80,4 +91,21 @@ public class ActorSystemProvider implements Provider<ActorRef<Message>> {
         return actors.scheduler();
     }
 
+    public void shutdown() {
+        actors.terminate();
+    }
+
+    public void shutdownWait() throws TimeoutException, InterruptedException {
+        actors.terminate();
+        Await.ready(actors.whenTerminated(), Duration.Inf());
+    }
+
+    public synchronized void registerObjectsGetter(int id, ObjectsGetter og) {
+        MutableIntObjectMap<ObjectsGetter> mogs = (MutableIntObjectMap<ObjectsGetter>) ogs;
+        mogs.put(id, og);
+    }
+
+    public ObjectsGetter getObjectsGetter(int id) {
+        return ogs.get(id);
+    }
 }

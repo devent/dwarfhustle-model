@@ -105,12 +105,6 @@ public class KnowledgeJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @Override
-    protected Behavior<Message> initialStage(InitialStateMessage m) {
-        log.debug("initialStage {}", m);
-        return super.initialStage(m);
-    }
-
-    @Override
     protected int getId() {
         return ID;
     }
