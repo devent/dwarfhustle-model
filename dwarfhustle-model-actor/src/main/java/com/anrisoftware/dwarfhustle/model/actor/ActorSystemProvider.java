@@ -33,6 +33,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.ActorSystem;
+import akka.actor.typed.Behavior;
 import akka.actor.typed.Scheduler;
 import akka.actor.typed.javadsl.Behaviors;
 import scala.concurrent.Await;
@@ -89,6 +90,10 @@ public class ActorSystemProvider implements Provider<ActorRef<Message>> {
 
     public Scheduler getScheduler() {
         return actors.scheduler();
+    }
+
+    public ActorSystem<Message> spawn(Behavior<Message> b, String name) {
+        return ActorSystem.create(b, name);
     }
 
     public void shutdown() {

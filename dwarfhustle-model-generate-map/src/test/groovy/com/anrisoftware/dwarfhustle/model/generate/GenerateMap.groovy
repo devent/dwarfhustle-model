@@ -52,7 +52,6 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbModule
 import com.anrisoftware.dwarfhustle.model.generate.GenerateMapMessage.GenerateProgressMessage
 import com.anrisoftware.dwarfhustle.model.generate.WorkerBlocks.WorkerBlocksFactory
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeBaseActor
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerloomModule
@@ -89,6 +88,8 @@ class GenerateMap {
     static ActorRef<Message> powerLoomKnowledgeActor
 
     static ActorRef<Message> knowledgeBaseActor
+
+    static dbActor
 
     static WorkerBlocksFactory workerFactory
 
@@ -127,25 +128,18 @@ class GenerateMap {
                 new PropertiesThreadsModule())
         actor = injector.getInstance(ActorSystemProvider)
         workerFactory = injector.getInstance(WorkerBlocksFactory)
-        KnowledgeJcsCacheActor.create(injector, ofSeconds(1)).whenComplete({ret, ex ->
-            log_reply_failure "KnowledgeJcsCacheActor.create", ret, ex
-        })
         PowerLoomKnowledgeActor.create(injector, ofSeconds(1)).whenComplete({ret, ex ->
             log_reply_failure "PowerLoomKnowledgeActor.create", ret, ex
-        })
-        actor.waitMainActor()
-        actor.getMainActor().waitActor(PowerLoomKnowledgeActor.ID)
-        actor.getMainActor().waitActor(KnowledgeJcsCacheActor.ID)
-        KnowledgeBaseActor.create(injector, ofSeconds(1), actor.getMainActor().getActor(PowerLoomKnowledgeActor.ID), actor.getMainActor().getActor(KnowledgeJcsCacheActor.ID)).whenComplete({ret, ex ->
-            log_reply_failure "KnowledgeBaseActor.create", ret, ex
-        })
+        }).get()
+        KnowledgeJcsCacheActor.create(injector, ofSeconds(1), actor.getObjectsGetter(PowerLoomKnowledgeActor.ID)).whenComplete({ret, ex ->
+            log_reply_failure "KnowledgeJcsCacheActor.create", ret, ex
+        }).get()
         OrientDbActor.create(injector, ofSeconds(1)).whenComplete({ret, ex ->
             log_reply_failure "OrientDbActor.create", ret, ex
-        })
-        actor.getMainActor().waitActor(OrientDbActor.ID)
-        def dbActor = actor.getMainActor().getActor(OrientDbActor.ID)
+            dbActor = ret
+        }).get()
         gen = injector.getInstance(IdsObjectsProvider.class).get()
-        dbTestUtils = new DbTestUtils(dbActor, dbActor, actor.scheduler, gen)
+        dbTestUtils = new DbTestUtils(dbActor, actor.scheduler, gen)
         dbTestUtils.type = ODatabaseType.PLOCAL
         dbTestUtils.fillDatabase = false
         def initDatabaseLock = new CountDownLatch(1)

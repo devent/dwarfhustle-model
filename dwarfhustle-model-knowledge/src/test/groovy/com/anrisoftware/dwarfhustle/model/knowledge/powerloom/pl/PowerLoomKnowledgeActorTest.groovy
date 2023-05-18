@@ -148,7 +148,6 @@ class PowerLoomKnowledgeActorTest {
         lock.await()
     }
 
-
     @RepeatedTest(10)
     @Timeout(15l)
     void "test retrieve"() {
