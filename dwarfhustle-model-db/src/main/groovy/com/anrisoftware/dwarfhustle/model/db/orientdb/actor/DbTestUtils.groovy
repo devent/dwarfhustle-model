@@ -53,7 +53,7 @@ class DbTestUtils {
 
     OrientDB db
 
-    Duration timeout = Duration.ofSeconds(600)
+    Duration timeout = Duration.ofSeconds(30)
 
     ActorRef<Message> dbActor
 

@@ -341,6 +341,7 @@ public class OrientDbActor implements ObjectsGetter {
                 log.trace("createSchema {}", schema);
                 schema.createSchema(db);
             }
+            m.replyTo.tell(new DbSuccessMessage<>());
         } catch (Exception e) {
             log.error("onCreateSchemas", e);
             m.replyTo.tell(new DbErrorMessage<>(e));

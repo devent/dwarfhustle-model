@@ -26,6 +26,7 @@ import java.time.LocalDateTime
 import java.time.Month
 import java.time.ZoneOffset
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -116,7 +117,7 @@ class GenerateMap {
         p.sedimentary_level_percent = 0.1f
         p.igneous_level_percent = 0.1f
         p.magma_level_percent = 0.1f
-        mapParams = [parent_dir: parentDir, game_name: "Endless World", mapid: 1, width: s, height: s, depth: s, block_size: blockSize, p: p]
+        mapParams = [parent_dir: parentDir, game_name: "Endless World", mapid: 1, width: s, height: s, depth: s, chunk_size: blockSize, p: p]
         cacheFile = new File(parentDir, "dwarfhustle_jcs_swap_${mapParams.game_name}_mapBlocksCache_0_file")
         injector = Guice.createInjector(
                 new ModelActorsModule(),
@@ -148,7 +149,7 @@ class GenerateMap {
         } else {
             dbTestUtils.connectCreateDatabaseRemote(initDatabaseLock)
         }
-        initDatabaseLock.await()
+        initDatabaseLock.await(15, TimeUnit.SECONDS)
     }
 
     @AfterAll
@@ -176,7 +177,7 @@ class GenerateMap {
         gm.width = mapParams.width
         gm.height = mapParams.height
         gm.depth = mapParams.depth
-        gm.chunkSize = mapParams.block_size
+        gm.chunkSize = mapParams.chunk_size
         gm.timeZone = ZoneOffset.ofHours(1)
         gm.area = MapArea.create(toDecimalDegrees(54, 47, 24), toDecimalDegrees(17, 30, 12), toDecimalDegrees(54, 42, 02), toDecimalDegrees(17, 35, 22))
         gm.setCameraPos(0.0f, 0.0f, 10.0f)
@@ -184,7 +185,7 @@ class GenerateMap {
         wm.currentMapid = gm.mapid
         wm.addMap(gm)
         mapParams.gameMap = gm
-        GenerateMapActor.create(injector, ofSeconds(1), dbTestUtils.db, actor.getMainActor().getActor(KnowledgeBaseActor.ID)).whenComplete({ret, ex ->
+        GenerateMapActor.create(injector, ofSeconds(1), dbTestUtils.db, actor.getMainActor().getActor(PowerLoomKnowledgeActor.ID)).whenComplete({ret, ex ->
             log_reply_failure "GenerateMapActor.create", ret, ex
         })
         actor.getMainActor().waitActor(GenerateMapActor.ID)
@@ -202,7 +203,7 @@ class GenerateMap {
         def result =
                 AskPattern.ask(
                 actor.getMainActor().getActor(GenerateMapActor.ID),
-                { replyTo -> new GenerateMapMessage(replyTo, progressActor, gm, mapParams.p, mapParams.block_size, dbTestUtils.user, dbTestUtils.password, dbTestUtils.database) },
+                { replyTo -> new GenerateMapMessage(replyTo, progressActor, gm, mapParams.p, mapParams.chunk_size, dbTestUtils.user, dbTestUtils.password, dbTestUtils.database) },
                 Duration.ofMinutes(30),
                 actor.scheduler)
         result.whenComplete({ ret, ex ->
