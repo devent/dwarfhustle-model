@@ -87,7 +87,7 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     public static Behavior<Message> create(Injector injector, AbstractJcsCacheActorFactory actorFactory,
-            ObjectsGetter og, CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
+            CompletionStage<ObjectsGetter> og, CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
         return AbstractJcsCacheActor.create(injector, actorFactory, og, Long.class, initCacheAsync);
     }
 
@@ -97,7 +97,8 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
      * @param injector the {@link Injector} injector.
      * @param timeout  the {@link Duration} timeout.
      */
-    public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout, ObjectsGetter og) {
+    public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout,
+            CompletionStage<ObjectsGetter> og) {
         var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
         var actorFactory = injector.getInstance(StoredObjectsJcsCacheActorFactory.class);
         var initCache = createInitCacheAsync();

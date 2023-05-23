@@ -1,5 +1,5 @@
 /*
- * dwarfhustle-model-api - Manages the compile dependencies for the model.
+ * dwarfhustle-model-db - Manages the compile dependencies for the model.
  * Copyright © 2023 Erwin Müller (erwin.mueller@anrisoftware.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,21 +15,21 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api.objects;
+package com.anrisoftware.dwarfhustle.model.db.cache;
 
-import org.lable.oss.uniqueid.IDGenerator;
-
-import com.anrisoftware.dwarfhustle.model.api.objects.IdsObjectsProvider.IdsObjects;
+import com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor.StoredObjectsJcsCacheActorFactory;
 import com.google.inject.AbstractModule;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 
 /**
  * @author Erwin Müller
  */
-public class ApiModule extends AbstractModule {
+public class DwarfhustleModelDbcacheModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(IDGenerator.class).annotatedWith(IdsObjects.class).toProvider(IdsObjectsProvider.class).asEagerSingleton();
+        install(new FactoryModuleBuilder().implement(StoredObjectsJcsCacheActor.class, StoredObjectsJcsCacheActor.class)
+                .build(StoredObjectsJcsCacheActorFactory.class));
     }
 
 }

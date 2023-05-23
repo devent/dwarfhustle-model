@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.actor;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeoutException;
 
 import javax.inject.Inject;
@@ -36,6 +38,8 @@ import akka.actor.typed.ActorSystem;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.Scheduler;
 import akka.actor.typed.javadsl.Behaviors;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import scala.concurrent.Await;
 import scala.concurrent.duration.Duration;
 
@@ -46,6 +50,7 @@ import scala.concurrent.duration.Duration;
  * @author Erwin Müller
  */
 @Singleton
+@Slf4j
 public class ActorSystemProvider implements Provider<ActorRef<Message>> {
 
     private final ActorSystem<Message> actors;
@@ -106,11 +111,23 @@ public class ActorSystemProvider implements Provider<ActorRef<Message>> {
     }
 
     public synchronized void registerObjectsGetter(int id, ObjectsGetter og) {
+        log.trace("registerObjectsGetter {} {}", id, og);
         MutableIntObjectMap<ObjectsGetter> mogs = (MutableIntObjectMap<ObjectsGetter>) ogs;
         mogs.put(id, og);
     }
 
-    public ObjectsGetter getObjectsGetter(int id) {
-        return ogs.get(id);
+    public CompletionStage<ObjectsGetter> getObjectsGetter(int id) {
+        return CompletableFuture.supplyAsync(() -> supplyObjectGetter(id));
+    }
+
+    @SneakyThrows
+    private ObjectsGetter supplyObjectGetter(int id) {
+        System.out.println("ActorSystemProvider.supplyObjectGetter() " + id); // TODO
+        ObjectsGetter og;
+        while ((og = ogs.get(id)) == null) {
+            Thread.sleep(10);
+        }
+        System.out.println("ActorSystemProvider.supplyObjectGetter() onde " + id); // TODO
+        return og;
     }
 }

@@ -17,10 +17,15 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.cache;
 
+import java.time.Duration;
+import java.util.concurrent.CompletionStage;
+
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 import akka.actor.typed.ActorRef;
+import akka.actor.typed.ActorSystem;
+import akka.actor.typed.javadsl.AskPattern;
 import lombok.ToString;
 
 /**
@@ -30,6 +35,11 @@ import lombok.ToString;
  */
 @ToString(callSuper = true)
 public class CachePutMessage<T extends Message> extends CacheMessage<T> {
+
+    public static CompletionStage<CacheResponseMessage<?>> askCachePut(ActorSystem<Message> a, Object key,
+            GameObject value, Duration timeout) {
+        return AskPattern.ask(a, replyTo -> new CachePutMessage<>(replyTo, key, value), timeout, a.scheduler());
+    }
 
     public final Object key;
 

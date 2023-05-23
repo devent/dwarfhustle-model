@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Timeout
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
-import com.anrisoftware.dwarfhustle.model.actor.ModelActorsModule
+import com.anrisoftware.dwarfhustle.model.actor.DwarfhustleModelActorsModule
 import com.anrisoftware.dwarfhustle.model.api.map.FloorType
 import com.anrisoftware.dwarfhustle.model.api.map.LightType
 import com.anrisoftware.dwarfhustle.model.api.map.RoofType
@@ -43,7 +43,7 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Soil
 import com.anrisoftware.dwarfhustle.model.api.materials.SpecialStoneLayer
 import com.anrisoftware.dwarfhustle.model.api.materials.StoneLayer
 import com.anrisoftware.dwarfhustle.model.api.materials.Topsoil
-import com.anrisoftware.dwarfhustle.model.api.objects.ApiModule
+import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseErrorMessage
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseSuccessMessage
 import com.google.inject.Guice
@@ -70,7 +70,7 @@ class ListKnowledges {
 
     @BeforeAll
     static void setupActor() {
-        injector = Guice.createInjector(new ModelActorsModule(), new PowerloomModule(), new ApiModule())
+        injector = Guice.createInjector(new DwarfhustleModelActorsModule(), new DwarfhustlePowerloomModule(), new DwarfhustleModelApiObjectsModule())
         actor = injector.getInstance(ActorSystemProvider.class)
         PowerLoomKnowledgeActor.create(injector, Duration.ofSeconds(1)).whenComplete({ it, ex ->
             knowledgeActor = it

@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.cache;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import java.time.Duration;
 import java.util.EventObject;
 import java.util.concurrent.CompletionStage;
@@ -80,10 +82,11 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
     }
 
     public static Behavior<Message> create(Injector injector, AbstractJcsCacheActorFactory actorFactory,
-            ObjectsGetter og, Class<?> keyType, CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
+            CompletionStage<ObjectsGetter> og, Class<?> keyType,
+            CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
         return Behaviors.withStash(100, stash -> Behaviors.setup(context -> {
             initCache(context, initCacheAsync);
-            return actorFactory.create(context, stash, og, keyType).start();
+            return actorFactory.create(context, stash, og.toCompletableFuture().get(15, SECONDS), keyType).start();
         }));
     }
 

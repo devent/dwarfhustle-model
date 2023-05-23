@@ -42,7 +42,7 @@ import com.google.inject.assistedinject.FactoryModuleBuilder;
 /**
  * @author Erwin Müller
  */
-public class PowerloomModule extends AbstractModule {
+public class DwarfhustlePowerloomModule extends AbstractModule {
 
     @Override
     protected void configure() {

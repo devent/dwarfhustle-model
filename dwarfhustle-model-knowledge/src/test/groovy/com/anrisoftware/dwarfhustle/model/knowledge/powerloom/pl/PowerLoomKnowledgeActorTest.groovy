@@ -31,9 +31,9 @@ import org.junit.jupiter.params.provider.ValueSource
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
-import com.anrisoftware.dwarfhustle.model.actor.ModelActorsModule
+import com.anrisoftware.dwarfhustle.model.actor.DwarfhustleModelActorsModule
 import com.anrisoftware.dwarfhustle.model.api.materials.Sedimentary
-import com.anrisoftware.dwarfhustle.model.api.objects.ApiModule
+import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandErrorMessage
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandSuccessMessage
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseSuccessMessage
@@ -62,7 +62,7 @@ class PowerLoomKnowledgeActorTest {
 
     @BeforeAll
     static void setupActor() {
-        injector = Guice.createInjector(new ModelActorsModule(), new PowerloomModule(), new ApiModule())
+        injector = Guice.createInjector(new DwarfhustleModelActorsModule(), new DwarfhustlePowerloomModule(), new DwarfhustleModelApiObjectsModule())
         actor = injector.getInstance(ActorSystemProvider.class)
         PowerLoomKnowledgeActor.create(injector, Duration.ofSeconds(1)).whenComplete({ it, ex ->
             knowledgeActor = it

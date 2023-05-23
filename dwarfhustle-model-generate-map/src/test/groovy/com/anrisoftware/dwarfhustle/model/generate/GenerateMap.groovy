@@ -39,23 +39,23 @@ import org.lable.oss.uniqueid.IDGenerator
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
 import com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
-import com.anrisoftware.dwarfhustle.model.actor.ModelActorsModule
+import com.anrisoftware.dwarfhustle.model.actor.DwarfhustleModelActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.ShutdownMessage
-import com.anrisoftware.dwarfhustle.model.api.objects.ApiModule
+import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
 import com.anrisoftware.dwarfhustle.model.api.objects.IdsObjectsProvider
 import com.anrisoftware.dwarfhustle.model.api.objects.MapArea
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap
-import com.anrisoftware.dwarfhustle.model.db.cache.JcsCacheModule
+import com.anrisoftware.dwarfhustle.model.db.cache.DwarfhustleModelDbcacheModule
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbServerUtils
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbTestUtils
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbModule
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DwarfhustleModelDbOrientdbModule
 import com.anrisoftware.dwarfhustle.model.generate.GenerateMapMessage.GenerateProgressMessage
 import com.anrisoftware.dwarfhustle.model.generate.WorkerBlocks.WorkerBlocksFactory
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerloomModule
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustlePowerloomModule
 import com.anrisoftware.globalpom.threads.properties.internal.PropertiesThreadsModule
 import com.google.inject.Guice
 import com.google.inject.Injector
@@ -120,12 +120,12 @@ class GenerateMap {
         mapParams = [parent_dir: parentDir, game_name: "Endless World", mapid: 1, width: s, height: s, depth: s, chunk_size: blockSize, p: p]
         cacheFile = new File(parentDir, "dwarfhustle_jcs_swap_${mapParams.game_name}_mapBlocksCache_0_file")
         injector = Guice.createInjector(
-                new ModelActorsModule(),
-                new PowerloomModule(),
+                new DwarfhustleModelActorsModule(),
+                new DwarfhustlePowerloomModule(),
                 new GenerateModule(),
-                new OrientDbModule(),
-                new ApiModule(),
-                new JcsCacheModule(),
+                new DwarfhustleModelDbOrientdbModule(),
+                new DwarfhustleModelApiObjectsModule(),
+                new DwarfhustleModelDbcacheModule(),
                 new PropertiesThreadsModule())
         actor = injector.getInstance(ActorSystemProvider)
         workerFactory = injector.getInstance(WorkerBlocksFactory)

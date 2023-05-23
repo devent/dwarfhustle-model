@@ -48,7 +48,7 @@ import com.google.inject.assistedinject.FactoryModuleBuilder;
 /**
  * @author Erwin Müller
  */
-public class OrientDbModule extends AbstractModule {
+public class DwarfhustleModelDbOrientdbModule extends AbstractModule {
 
     @Override
     protected void configure() {

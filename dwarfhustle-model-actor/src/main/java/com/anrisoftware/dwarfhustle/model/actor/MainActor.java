@@ -167,10 +167,9 @@ public class MainActor extends MessageActor<Message> {
         return this;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private Behavior<Message> forwardMessage(Message m) {
-        for (@SuppressWarnings("rawtypes")
-        ActorRef actor : actors) {
+        for (ActorRef actor : actors) {
             actor.tell(m);
         }
         return this;

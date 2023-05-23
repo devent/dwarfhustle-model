@@ -7,6 +7,11 @@ package com.anrisoftware.dwarfhustle.model.api.objects;
  */
 public interface ObjectsGetter {
 
+    /**
+     * Exception if there was an error getting the {@link GameObject}.
+     *
+     * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+     */
     public static class ObjectsGetterException extends RuntimeException {
 
         private static final long serialVersionUID = 1L;
