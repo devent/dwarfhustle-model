@@ -21,10 +21,9 @@ import java.io.Serializable;
 
 import org.apache.commons.lang3.StringUtils;
 
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -32,8 +31,7 @@ import lombok.ToString;
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@NoArgsConstructor
-@AllArgsConstructor
+@RequiredArgsConstructor
 @ToString
 @EqualsAndHashCode
 @Getter
@@ -44,22 +42,22 @@ public class GameBlockPos implements Serializable {
 	/**
 	 * The game map id.
 	 */
-	private int mapid = -1;
+    public final int mapid;
 
 	/**
 	 * X position on the game map
 	 */
-	private int x = -1;
+    public final int x;
 
 	/**
 	 * Y position on the game map
 	 */
-	private int y = -1;
+    public final int y;
 
 	/**
 	 * Z position on the game map
 	 */
-	private int z = -1;
+    public final int z;
 
 	public int getDiffX(GameBlockPos pos) {
 		return x - pos.x;

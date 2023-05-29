@@ -19,10 +19,8 @@ package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import org.apache.commons.lang3.StringUtils;
 
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -30,8 +28,6 @@ import lombok.ToString;
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@NoArgsConstructor
-@AllArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Getter
@@ -39,7 +35,7 @@ public class GameChunkPos extends GameBlockPos {
 
     private static final long serialVersionUID = 1L;
 
-	private GameBlockPos ep = new GameBlockPos();
+    public final GameBlockPos ep;
 
 	public GameChunkPos(int mapid, int x, int y, int z, int ex, int ey, int ez) {
 		this(new GameBlockPos(mapid, x, y, z), new GameBlockPos(mapid, ex, ey, ez));
@@ -75,4 +71,16 @@ public class GameChunkPos extends GameBlockPos {
 	private static int toInt(String s) {
 		return Integer.parseInt(s);
 	}
+
+    public int getSizeX() {
+        return ep.x - x;
+    }
+
+    public int getSizeY() {
+        return ep.y - y;
+    }
+
+    public int getSizeZ() {
+        return ep.z - z;
+    }
 }

@@ -122,12 +122,10 @@ public class ActorSystemProvider implements Provider<ActorRef<Message>> {
 
     @SneakyThrows
     private ObjectsGetter supplyObjectGetter(int id) {
-        System.out.println("ActorSystemProvider.supplyObjectGetter() " + id); // TODO
         ObjectsGetter og;
         while ((og = ogs.get(id)) == null) {
             Thread.sleep(10);
         }
-        System.out.println("ActorSystemProvider.supplyObjectGetter() onde " + id); // TODO
         return og;
     }
 }

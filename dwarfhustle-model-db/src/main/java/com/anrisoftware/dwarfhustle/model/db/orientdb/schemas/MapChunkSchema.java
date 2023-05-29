@@ -54,6 +54,20 @@ public class MapChunkSchema implements GameObjectSchema {
 
     public static final String ROOT_FIELD = "root";
 
+    public static final String NEIGHBOR_T_FIELD = "nt";
+
+    public static final String NEIGHBOR_B_FIELD = "nb";
+
+    public static final String NEIGHBOR_S_FIELD = "ns";
+
+    public static final String NEIGHBOR_E_FIELD = "ne";
+
+    public static final String NEIGHBOR_N_FIELD = "nn";
+
+    public static final String NEIGHBOR_W_FIELD = "nw";
+
+    public static final String PARENT_FIELD = "parent";
+
 	@Override
 	public void createSchema(Object db) {
 		var odb = (ODatabaseDocument) db;
@@ -71,6 +85,13 @@ public class MapChunkSchema implements GameObjectSchema {
 		c.createProperty(END_Y_FIELD, OType.INTEGER);
 		c.createProperty(END_Z_FIELD, OType.INTEGER);
         c.createProperty(ROOT_FIELD, OType.BOOLEAN);
+        c.createProperty(NEIGHBOR_T_FIELD, OType.LONG);
+        c.createProperty(NEIGHBOR_B_FIELD, OType.LONG);
+        c.createProperty(NEIGHBOR_S_FIELD, OType.LONG);
+        c.createProperty(NEIGHBOR_E_FIELD, OType.LONG);
+        c.createProperty(NEIGHBOR_N_FIELD, OType.LONG);
+        c.createProperty(NEIGHBOR_W_FIELD, OType.LONG);
+        c.createProperty(PARENT_FIELD, OType.LONG);
 		try (var q = odb.command(
                 "CREATE INDEX MapChunk_type_pos ON MapChunk (objecttype, mapid, sx, sy, sz, ex, ey, ez) UNIQUE METADATA {ignoreNullValues: false}")) {
 		}

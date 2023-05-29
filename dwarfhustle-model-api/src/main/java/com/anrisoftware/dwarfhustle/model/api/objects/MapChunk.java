@@ -17,11 +17,15 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.util.Objects;
 import java.util.function.Function;
 
 import org.eclipse.collections.api.map.MapIterable;
+import org.eclipse.collections.api.map.primitive.IntLongMap;
+import org.eclipse.collections.api.map.primitive.MutableIntLongMap;
 import org.eclipse.collections.api.map.primitive.ObjectLongMap;
 import org.eclipse.collections.impl.factory.Maps;
+import org.eclipse.collections.impl.factory.primitive.IntLongMaps;
 import org.eclipse.collections.impl.factory.primitive.ObjectLongMaps;
 
 import lombok.EqualsAndHashCode;
@@ -48,9 +52,20 @@ public class MapChunk extends StoredObject {
 
     private MapIterable<GameBlockPos, MapBlock> blocks = Maps.immutable.empty();
 
-    private GameChunkPos pos = new GameChunkPos();
+    private GameChunkPos pos;
 
     private boolean root = false;
+
+    /**
+     * Contains the IDs of the chunks in each direction that are neighboring this
+     * chunk.
+     */
+    private IntLongMap chunkDir = IntLongMaps.mutable.empty();
+
+    /**
+     * ID of the parent chunk.
+     */
+    private long parent;
 
     public MapChunk(long id) {
         super(id);
@@ -90,10 +105,14 @@ public class MapChunk extends StoredObject {
      * the game map.
      */
     public void setPos(GameChunkPos pos) {
-        if (!this.pos.equals(pos)) {
+        if (!Objects.equals(this.pos, pos)) {
             setDirty(true);
             this.pos = pos;
         }
+    }
+
+    public int getMapId() {
+        return pos.mapid;
     }
 
     /**
@@ -130,6 +149,71 @@ public class MapChunk extends StoredObject {
             setDirty(true);
             this.root = root;
         }
+    }
+
+    public void setParent(long parent) {
+        if (this.parent != parent) {
+            this.parent = parent;
+            setDirty(true);
+        }
+    }
+
+    public void setNeighbor(MapChunkDir dir, long id) {
+        var m = (MutableIntLongMap) chunkDir;
+        m.put(dir.ordinal(), id);
+        setDirty(true);
+    }
+
+    public long getNeighbor(MapChunkDir dir) {
+        return chunkDir.get(dir.ordinal());
+    }
+
+    public long getNeighborTop() {
+        return chunkDir.get(MapChunkDir.T.ordinal());
+    }
+
+    public void setNeighborTop(long id) {
+        setNeighbor(MapChunkDir.T, id);
+    }
+
+    public long getNeighborBottom() {
+        return chunkDir.get(MapChunkDir.B.ordinal());
+    }
+
+    public void setNeighborBottom(long id) {
+        setNeighbor(MapChunkDir.B, id);
+    }
+
+    public long getNeighborSouth() {
+        return chunkDir.get(MapChunkDir.S.ordinal());
+    }
+
+    public void setNeighborSouth(long id) {
+        setNeighbor(MapChunkDir.S, id);
+    }
+
+    public long getNeighborEast() {
+        return chunkDir.get(MapChunkDir.E.ordinal());
+    }
+
+    public void setNeighborEast(long id) {
+        setNeighbor(MapChunkDir.E, id);
+    }
+
+    public long getNeighborNorth() {
+        return chunkDir.get(MapChunkDir.N.ordinal());
+    }
+
+    public void setNeighborNorth(long id) {
+        setNeighbor(MapChunkDir.N, id);
+    }
+
+    public long getNeighborWest() {
+        return chunkDir.get(MapChunkDir.W.ordinal());
+    }
+
+    public void setNeighborWest(long id) {
+        setNeighbor(MapChunkDir.W, id);
     }
 
     public MapChunk findMapChunk(int x, int y, int z, Function<Long, MapChunk> retriever) {
@@ -185,4 +269,37 @@ public class MapChunk extends StoredObject {
         }
         return blocks.get(pos);
     }
+
+    /**
+     * Finds the child chunk with the start and end coordinates.
+     *
+     * @return the ID of the chunk or 0.
+     */
+    public long findChild(int x, int y, int z, int ex, int ey, int ez, Function<Long, MapChunk> retriever) {
+        if (x < 0 || y < 0 || z < 0) {
+            return 0;
+        }
+        if (blocks.isEmpty()) {
+            long id = chunks.get(new GameChunkPos(getMapId(), x, y, z, ex, ey, ez));
+            if (id != 0) {
+                return id;
+            }
+            for (GameChunkPos b : chunks.keysView()) {
+                int bx = b.getX();
+                int by = b.getY();
+                int bz = b.getZ();
+                var ep = b.getEp();
+                int ebx = ep.getX();
+                int eby = ep.getY();
+                int ebz = ep.getZ();
+                if (x >= bx && y >= by && z >= bz && x < ebx && y < eby && z < ebz) {
+                    id = chunks.get(b);
+                    var mb = retriever.apply(id);
+                    return mb.findChild(x, y, z, ex, ey, ez, retriever);
+                }
+            }
+        }
+        return 0;
+    }
+
 }

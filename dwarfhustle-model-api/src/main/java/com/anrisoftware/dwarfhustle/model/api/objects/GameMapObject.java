@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import com.google.common.base.Objects;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -39,7 +41,7 @@ public class GameMapObject extends StoredObject {
 
 	public static final String OBJECT_TYPE = GameMapObject.class.getSimpleName();
 
-	private GameBlockPos pos = new GameBlockPos();
+    private GameBlockPos pos;
 
 	public GameMapObject(long id) {
 		super(id);
@@ -68,7 +70,7 @@ public class GameMapObject extends StoredObject {
 	 * Sets the X, Y and Z position of a {@link GameMapObject} on the game map.
 	 */
 	public void setPos(GameBlockPos pos) {
-		if (!this.pos.equals(pos)) {
+        if (!Objects.equal(this.pos, pos)) {
 			setDirty(true);
 			this.pos = pos;
 		}

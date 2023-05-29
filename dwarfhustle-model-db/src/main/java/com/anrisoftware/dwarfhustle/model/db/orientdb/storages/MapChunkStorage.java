@@ -23,7 +23,14 @@ import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSch
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.END_Y_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.END_Z_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.MAPID_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.NEIGHBOR_B_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.NEIGHBOR_E_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.NEIGHBOR_N_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.NEIGHBOR_S_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.NEIGHBOR_T_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.NEIGHBOR_W_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.OBJECTID_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.PARENT_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.ROOT_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.START_X_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.START_Y_FIELD;
@@ -91,6 +98,13 @@ public class MapChunkStorage extends AbstractGameObjectStorage {
         v.setProperty(END_Y_FIELD, mb.getPos().getEp().getY());
         v.setProperty(END_Z_FIELD, mb.getPos().getEp().getZ());
         v.setProperty(ROOT_FIELD, mb.isRoot());
+        v.setProperty(NEIGHBOR_T_FIELD, mb.getNeighborTop());
+        v.setProperty(NEIGHBOR_B_FIELD, mb.getNeighborBottom());
+        v.setProperty(NEIGHBOR_S_FIELD, mb.getNeighborSouth());
+        v.setProperty(NEIGHBOR_E_FIELD, mb.getNeighborEast());
+        v.setProperty(NEIGHBOR_N_FIELD, mb.getNeighborNorth());
+        v.setProperty(NEIGHBOR_W_FIELD, mb.getNeighborWest());
+        v.setProperty(PARENT_FIELD, mb.getParent());
         super.store(db, o, go);
     }
 
@@ -118,6 +132,13 @@ public class MapChunkStorage extends AbstractGameObjectStorage {
                 v.getProperty(START_Y_FIELD), v.getProperty(START_Z_FIELD), v.getProperty(END_X_FIELD),
                 v.getProperty(END_Y_FIELD), v.getProperty(END_Z_FIELD)));
         mb.setRoot(v.getProperty(ROOT_FIELD));
+        mb.setNeighborTop(v.getProperty(NEIGHBOR_T_FIELD));
+        mb.setNeighborBottom(v.getProperty(NEIGHBOR_B_FIELD));
+        mb.setNeighborSouth(v.getProperty(NEIGHBOR_S_FIELD));
+        mb.setNeighborEast(v.getProperty(NEIGHBOR_E_FIELD));
+        mb.setNeighborNorth(v.getProperty(NEIGHBOR_N_FIELD));
+        mb.setNeighborWest(v.getProperty(NEIGHBOR_W_FIELD));
+        mb.setParent(v.getProperty(PARENT_FIELD));
         return super.retrieve(db, o, go);
     }
 
