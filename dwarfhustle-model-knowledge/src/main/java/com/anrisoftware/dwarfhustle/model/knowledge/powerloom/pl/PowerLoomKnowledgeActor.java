@@ -290,6 +290,7 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
      *
      * <ul>
      * <li>{@link KnowledgeCommandMessage}
+     * <li>{@link KnowledgeGetMessage}
      * </ul>
      */
     private BehaviorBuilder<Message> getInitialBehavior() {
