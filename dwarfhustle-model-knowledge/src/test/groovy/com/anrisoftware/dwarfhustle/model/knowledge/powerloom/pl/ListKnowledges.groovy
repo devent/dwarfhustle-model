@@ -25,10 +25,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
-import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.actor.DwarfhustleModelActorsModule
+import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.api.map.FloorType
 import com.anrisoftware.dwarfhustle.model.api.map.LightType
+import com.anrisoftware.dwarfhustle.model.api.map.ObjectType
 import com.anrisoftware.dwarfhustle.model.api.map.RoofType
 import com.anrisoftware.dwarfhustle.model.api.map.TileType
 import com.anrisoftware.dwarfhustle.model.api.materials.Clay
@@ -144,7 +145,7 @@ class ListKnowledges {
                     .onMessage(WrappedKnowledgeResponse.class, {
                         switch (it.response) {
                             case KnowledgeResponseSuccessMessage:
-                                println it.response.go.type
+                                println "## ${it.response.go.type}"
                                 it.response.go.objects.each {
                                     println "${it.name},${it.rid}"
                                     ko << it
@@ -178,7 +179,8 @@ class ListKnowledges {
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, LightType.class, LightType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, RoofType.class, RoofType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, TileType.class, TileType.TYPE))
-        while (ko.size() != 65) {
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ObjectType.class, ObjectType.TYPE))
+        while (ko.size() != 70) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
         }

@@ -31,6 +31,8 @@ public class MapBlockSchema implements GameObjectSchema {
 
 	public static final String MATERIAL_FIELD = "material";
 
+    public static final String OBJECT_FIELD = "object";
+
     public static final String PROPERTIES_FIELD = "p";
 
 	@Override
@@ -38,6 +40,7 @@ public class MapBlockSchema implements GameObjectSchema {
 		var odb = (ODatabaseDocument) db;
 		var c = odb.createClass(MapBlock.OBJECT_TYPE, GameMapObject.OBJECT_TYPE);
         c.createProperty(MATERIAL_FIELD, OType.LONG);
+        c.createProperty(OBJECT_FIELD, OType.LONG);
         c.createProperty(PROPERTIES_FIELD, OType.INTEGER);
 	}
 

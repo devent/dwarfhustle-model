@@ -53,6 +53,11 @@ public class MapBlock extends GameMapObject {
     private long material = -1;
 
     /**
+     * ID of the object.
+     */
+    private long object = -1;
+
+    /**
      * Bit field that defines the properties of the map tile.
      * <ul>
      * <li>{@code 0000 0000 0000 0000 0000 0000 0000 0001} - mined
@@ -83,6 +88,16 @@ public class MapBlock extends GameMapObject {
         if (this.material != material) {
             setDirty(true);
             this.material = material;
+        }
+    }
+
+    /**
+     * Sets the ID of the object.
+     */
+    public void setObject(long object) {
+        if (this.object != object) {
+            setDirty(true);
+            this.object = object;
         }
     }
 

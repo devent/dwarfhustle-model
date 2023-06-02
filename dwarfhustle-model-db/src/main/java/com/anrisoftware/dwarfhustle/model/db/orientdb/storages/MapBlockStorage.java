@@ -35,6 +35,7 @@ public class MapBlockStorage extends AbstractGameMapObjectStorage {
 		var v = (OElement) o;
 		var mt = (MapBlock) go;
 		v.setProperty(MapBlockSchema.MATERIAL_FIELD, mt.getMaterial());
+        v.setProperty(MapBlockSchema.OBJECT_FIELD, mt.getObject());
         v.setProperty(MapBlockSchema.PROPERTIES_FIELD, mt.getP().bits);
 		super.store(db, o, go);
 	}
@@ -43,7 +44,8 @@ public class MapBlockStorage extends AbstractGameMapObjectStorage {
 	public GameObject retrieve(Object db, Object o, GameObject go) {
 		var v = (OElement) o;
 		var mt = (MapBlock) go;
-		mt.setMaterial(v.getProperty("material"));
+        mt.setMaterial(v.getProperty(MapBlockSchema.MATERIAL_FIELD));
+        mt.setObject(v.getProperty(MapBlockSchema.OBJECT_FIELD));
         mt.setP(new PropertiesSet(v.getProperty(MapBlockSchema.PROPERTIES_FIELD)));
 		return super.retrieve(db, o, go);
 	}

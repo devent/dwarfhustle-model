@@ -1,0 +1,27 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Author: Erwin Mueller
+;;; Version: game-map.plm,v 1.0
+
+;;; Using Modules
+
+(defmodule "DWARFHUSTLE-GAME-MAP-OBJECTS"
+  :documentation "Defines objects of the game map."
+  :includes ("PL-USER")
+  :uses ("LOGIC" "STELLA" "DWARFHUSTLE-MATERIALS")
+  )
+
+(in-module "DWARFHUSTLE-GAME-MAP-OBJECTS")
+
+;; clear any info from previous runs:
+(clear-module "DWARFHUSTLE-GAME-MAP-OBJECTS")
+(reset-features)
+
+(defconcept ObjectType (?type)
+  :documentation "Object type.")
+
+(assert (ObjectType tile-block)) :documentation "Not mined out tile block."
+(assert (ObjectType tile-ramp-south)) :documentation "Not mined out ramp to the south."
+(assert (ObjectType tile-ramp-east)) :documentation "Not mined out ramp to the east."
+(assert (ObjectType tile-ramp-north)) :documentation "Not mined out ramp to the north."
+(assert (ObjectType tile-ramp-west)) :documentation "Not mined out ramp to the west."
