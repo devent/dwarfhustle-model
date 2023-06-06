@@ -74,44 +74,44 @@ public class MapChunkStorage extends AbstractGameObjectStorage {
     @Override
     public void store(Object db, Object o, GameObject go) {
         var v = (OElement) o;
-        var mb = (MapChunk) go;
+        var mc = (MapChunk) go;
         var odb = (ODatabaseDocument) db;
-        Map<String, OElement> blocks = Maps.mutable.ofInitialCapacity(mb.getBlocks().size());
-        mb.getChunks().forEachKeyValue((pos, id) -> {
+        Map<String, OElement> blocks = Maps.mutable.ofInitialCapacity(mc.getBlocks().size());
+        mc.getChunks().forEachKeyValue((pos, id) -> {
             var blockid = odb.newElement(CHUNK_ID_CLASS);
             blockid.setProperty(OBJECTID_FIELD, id);
             blocks.put(pos.toSaveString(), blockid);
         });
         v.setProperty(BLOCKS_FIELD, blocks, OType.EMBEDDEDMAP);
-        Map<String, OElement> tiles = Maps.mutable.ofInitialCapacity(mb.getBlocks().size());
-        mb.getBlocks().forEachKeyValue((pos, tile) -> {
+        Map<String, OElement> tiles = Maps.mutable.ofInitialCapacity(mc.getBlocks().size());
+        mc.getBlocks().forEachKeyValue((pos, tile) -> {
             var vtile = odb.newVertex(MapBlock.OBJECT_TYPE);
             mapTileStorage.store(db, vtile, tile);
             tiles.put(tile.getPos().toSaveString(), vtile);
         });
         v.setProperty(TILES_FIELD, tiles, OType.EMBEDDEDMAP);
-        v.setProperty(MAPID_FIELD, mb.getPos().getMapid());
-        v.setProperty(START_X_FIELD, mb.getPos().getX());
-        v.setProperty(START_Y_FIELD, mb.getPos().getY());
-        v.setProperty(START_Z_FIELD, mb.getPos().getZ());
-        v.setProperty(END_X_FIELD, mb.getPos().getEp().getX());
-        v.setProperty(END_Y_FIELD, mb.getPos().getEp().getY());
-        v.setProperty(END_Z_FIELD, mb.getPos().getEp().getZ());
-        v.setProperty(ROOT_FIELD, mb.isRoot());
-        v.setProperty(NEIGHBOR_T_FIELD, mb.getNeighborTop());
-        v.setProperty(NEIGHBOR_B_FIELD, mb.getNeighborBottom());
-        v.setProperty(NEIGHBOR_S_FIELD, mb.getNeighborSouth());
-        v.setProperty(NEIGHBOR_E_FIELD, mb.getNeighborEast());
-        v.setProperty(NEIGHBOR_N_FIELD, mb.getNeighborNorth());
-        v.setProperty(NEIGHBOR_W_FIELD, mb.getNeighborWest());
-        v.setProperty(PARENT_FIELD, mb.getParent());
+        v.setProperty(MAPID_FIELD, mc.getPos().getMapid());
+        v.setProperty(START_X_FIELD, mc.getPos().getX());
+        v.setProperty(START_Y_FIELD, mc.getPos().getY());
+        v.setProperty(START_Z_FIELD, mc.getPos().getZ());
+        v.setProperty(END_X_FIELD, mc.getPos().getEp().getX());
+        v.setProperty(END_Y_FIELD, mc.getPos().getEp().getY());
+        v.setProperty(END_Z_FIELD, mc.getPos().getEp().getZ());
+        v.setProperty(ROOT_FIELD, mc.isRoot());
+        v.setProperty(NEIGHBOR_T_FIELD, mc.getNeighborTop());
+        v.setProperty(NEIGHBOR_B_FIELD, mc.getNeighborBottom());
+        v.setProperty(NEIGHBOR_S_FIELD, mc.getNeighborSouth());
+        v.setProperty(NEIGHBOR_E_FIELD, mc.getNeighborEast());
+        v.setProperty(NEIGHBOR_N_FIELD, mc.getNeighborNorth());
+        v.setProperty(NEIGHBOR_W_FIELD, mc.getNeighborWest());
+        v.setProperty(PARENT_FIELD, mc.getParent());
         super.store(db, o, go);
     }
 
     @Override
     public GameObject retrieve(Object db, Object o, GameObject go) {
         var v = (OElement) o;
-        var mb = (MapChunk) go;
+        var mc = (MapChunk) go;
         Map<String, OElement> oblocks = v.getProperty(BLOCKS_FIELD);
         MutableObjectLongMap<GameChunkPos> blocks = ObjectLongMaps.mutable.ofInitialCapacity(oblocks.size());
         for (Map.Entry<String, OElement> oblock : oblocks.entrySet()) {
@@ -126,19 +126,19 @@ public class MapChunkStorage extends AbstractGameObjectStorage {
             var tile = (MapBlock) mapTileStorage.retrieve(db, otile.getValue(), mapTileStorage.create());
             tiles.put(pos, tile);
         }
-        mb.setChunks(blocks.asUnmodifiable());
-        mb.setBlocks(tiles.asUnmodifiable());
-        mb.setPos(new GameChunkPos(v.getProperty(MAPID_FIELD), v.getProperty(START_X_FIELD),
+        mc.setChunks(blocks.asUnmodifiable());
+        mc.setBlocks(tiles.asUnmodifiable());
+        mc.setPos(new GameChunkPos(v.getProperty(MAPID_FIELD), v.getProperty(START_X_FIELD),
                 v.getProperty(START_Y_FIELD), v.getProperty(START_Z_FIELD), v.getProperty(END_X_FIELD),
                 v.getProperty(END_Y_FIELD), v.getProperty(END_Z_FIELD)));
-        mb.setRoot(v.getProperty(ROOT_FIELD));
-        mb.setNeighborTop(v.getProperty(NEIGHBOR_T_FIELD));
-        mb.setNeighborBottom(v.getProperty(NEIGHBOR_B_FIELD));
-        mb.setNeighborSouth(v.getProperty(NEIGHBOR_S_FIELD));
-        mb.setNeighborEast(v.getProperty(NEIGHBOR_E_FIELD));
-        mb.setNeighborNorth(v.getProperty(NEIGHBOR_N_FIELD));
-        mb.setNeighborWest(v.getProperty(NEIGHBOR_W_FIELD));
-        mb.setParent(v.getProperty(PARENT_FIELD));
+        mc.setRoot(v.getProperty(ROOT_FIELD));
+        mc.setNeighborTop(v.getProperty(NEIGHBOR_T_FIELD));
+        mc.setNeighborBottom(v.getProperty(NEIGHBOR_B_FIELD));
+        mc.setNeighborSouth(v.getProperty(NEIGHBOR_S_FIELD));
+        mc.setNeighborEast(v.getProperty(NEIGHBOR_E_FIELD));
+        mc.setNeighborNorth(v.getProperty(NEIGHBOR_N_FIELD));
+        mc.setNeighborWest(v.getProperty(NEIGHBOR_W_FIELD));
+        mc.setParent(v.getProperty(PARENT_FIELD));
         return super.retrieve(db, o, go);
     }
 

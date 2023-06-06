@@ -18,11 +18,11 @@
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
 /**
- * {@link Path} direction to connect two {@link MapBlock} map tiles together.
+ * Neighboring direction.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-public enum PathDirection {
+public enum NeighboringDir {
 
 	/**
 	 * Up.

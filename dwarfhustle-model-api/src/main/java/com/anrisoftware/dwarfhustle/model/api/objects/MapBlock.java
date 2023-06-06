@@ -17,6 +17,10 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import org.eclipse.collections.api.map.primitive.IntLongMap;
+import org.eclipse.collections.api.map.primitive.MutableIntLongMap;
+import org.eclipse.collections.impl.factory.primitive.IntLongMaps;
+
 import com.google.common.base.Objects;
 
 import lombok.EqualsAndHashCode;
@@ -68,6 +72,14 @@ public class MapBlock extends GameMapObject {
      */
     private PropertiesSet p = new PropertiesSet();
 
+    /**
+     * Contains the IDs of the blocks in each direction that are neighboring this
+     * chunk.
+     *
+     * @see NeighboringDir
+     */
+    private IntLongMap blockDir = IntLongMaps.mutable.empty();
+
     public MapBlock(long id) {
         super(id);
     }
@@ -117,6 +129,10 @@ public class MapBlock extends GameMapObject {
         return p.get(MINED_POS);
     }
 
+    public boolean isSolid() {
+        return !p.get(MINED_POS);
+    }
+
     public void setNaturalRoof(boolean roof) {
         p.set(roof, NATURAL_ROOF_POS);
         setDirty(true);
@@ -143,4 +159,63 @@ public class MapBlock extends GameMapObject {
     public boolean isRamp() {
         return p.get(RAMP_POS);
     }
+
+    public void setNeighbor(NeighboringDir dir, long id) {
+        var m = (MutableIntLongMap) blockDir;
+        m.put(dir.ordinal(), id);
+        setDirty(true);
+    }
+
+    public long getNeighbor(NeighboringDir dir) {
+        return blockDir.get(dir.ordinal());
+    }
+
+    public long getNeighborTop() {
+        return blockDir.get(NeighboringDir.U.ordinal());
+    }
+
+    public void setNeighborTop(long id) {
+        setNeighbor(NeighboringDir.U, id);
+    }
+
+    public long getNeighborBottom() {
+        return blockDir.get(NeighboringDir.D.ordinal());
+    }
+
+    public void setNeighborBottom(long id) {
+        setNeighbor(NeighboringDir.D, id);
+    }
+
+    public long getNeighborSouth() {
+        return blockDir.get(NeighboringDir.S.ordinal());
+    }
+
+    public void setNeighborSouth(long id) {
+        setNeighbor(NeighboringDir.S, id);
+    }
+
+    public long getNeighborEast() {
+        return blockDir.get(NeighboringDir.E.ordinal());
+    }
+
+    public void setNeighborEast(long id) {
+        setNeighbor(NeighboringDir.E, id);
+    }
+
+    public long getNeighborNorth() {
+        return blockDir.get(NeighboringDir.N.ordinal());
+    }
+
+    public void setNeighborNorth(long id) {
+        setNeighbor(NeighboringDir.N, id);
+    }
+
+    public long getNeighborWest() {
+        return blockDir.get(NeighboringDir.W.ordinal());
+    }
+
+    public void setNeighborWest(long id) {
+        setNeighbor(NeighboringDir.W, id);
+    }
+
 }

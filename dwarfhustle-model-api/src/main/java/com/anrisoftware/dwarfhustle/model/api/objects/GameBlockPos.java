@@ -37,57 +37,69 @@ import lombok.ToString;
 @Getter
 public class GameBlockPos implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	/**
-	 * The game map id.
-	 */
+    /**
+     * The game map id.
+     */
     public final int mapid;
 
-	/**
-	 * X position on the game map
-	 */
+    /**
+     * X position on the game map
+     */
     public final int x;
 
-	/**
-	 * Y position on the game map
-	 */
+    /**
+     * Y position on the game map
+     */
     public final int y;
 
-	/**
-	 * Z position on the game map
-	 */
+    /**
+     * Z position on the game map
+     */
     public final int z;
 
-	public int getDiffX(GameBlockPos pos) {
-		return x - pos.x;
-	}
+    public int getDiffX(GameBlockPos pos) {
+        return x - pos.x;
+    }
 
-	public int getDiffY(GameBlockPos pos) {
-		return y - pos.y;
-	}
+    public int getDiffY(GameBlockPos pos) {
+        return y - pos.y;
+    }
 
-	public int getDiffZ(GameBlockPos pos) {
-		return z - pos.z;
-	}
+    public int getDiffZ(GameBlockPos pos) {
+        return z - pos.z;
+    }
 
-	/**
-	 * Returns string that can be used to store the block position.
-	 */
-	public String toSaveString() {
-		return getMapid() + "/" + getX() + "/" + getY() + "/" + getZ();
-	}
+    /**
+     * Returns string that can be used to store the block position.
+     */
+    public String toSaveString() {
+        return getMapid() + "/" + getX() + "/" + getY() + "/" + getZ();
+    }
 
-	/**
-	 * Returns the {@link GameBlockPos} parsed from the string.
-	 */
-	public static GameBlockPos parse(String s) {
-		var split = StringUtils.split(s, "/");
-		var pos = new GameBlockPos(toInt(split[0]), toInt(split[1]), toInt(split[2]), toInt(split[3]));
-		return pos;
-	}
+    /**
+     * Returns the {@link GameBlockPos} parsed from the string.
+     */
+    public static GameBlockPos parse(String s) {
+        var split = StringUtils.split(s, "/");
+        var pos = new GameBlockPos(toInt(split[0]), toInt(split[1]), toInt(split[2]), toInt(split[3]));
+        return pos;
+    }
 
-	private static int toInt(String s) {
-		return Integer.parseInt(s);
-	}
+    private static int toInt(String s) {
+        return Integer.parseInt(s);
+    }
+
+    public GameBlockPos addX(int n) {
+        return new GameBlockPos(mapid, x + n, y, z);
+    }
+
+    public GameBlockPos addY(int n) {
+        return new GameBlockPos(mapid, x, y + n, z);
+    }
+
+    public GameBlockPos addZ(int n) {
+        return new GameBlockPos(mapid, x, y, z + n);
+    }
 }

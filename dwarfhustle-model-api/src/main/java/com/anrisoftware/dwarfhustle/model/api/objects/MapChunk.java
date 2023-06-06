@@ -18,6 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 
 import org.eclipse.collections.api.map.MapIterable;
@@ -59,6 +60,8 @@ public class MapChunk extends StoredObject {
     /**
      * Contains the IDs of the chunks in each direction that are neighboring this
      * chunk.
+     *
+     * @see NeighboringDir
      */
     private IntLongMap chunkDir = IntLongMaps.mutable.empty();
 
@@ -98,6 +101,10 @@ public class MapChunk extends StoredObject {
     public void setBlocks(MapIterable<GameBlockPos, MapBlock> blocks) {
         this.blocks = blocks;
         setDirty(true);
+    }
+
+    public Optional<MapBlock> getBlock(GameBlockPos pos) {
+        return Optional.ofNullable(blocks.get(pos));
     }
 
     /**
@@ -158,62 +165,62 @@ public class MapChunk extends StoredObject {
         }
     }
 
-    public void setNeighbor(MapChunkDir dir, long id) {
+    public void setNeighbor(NeighboringDir dir, long id) {
         var m = (MutableIntLongMap) chunkDir;
         m.put(dir.ordinal(), id);
         setDirty(true);
     }
 
-    public long getNeighbor(MapChunkDir dir) {
+    public long getNeighbor(NeighboringDir dir) {
         return chunkDir.get(dir.ordinal());
     }
 
     public long getNeighborTop() {
-        return chunkDir.get(MapChunkDir.T.ordinal());
+        return chunkDir.get(NeighboringDir.U.ordinal());
     }
 
     public void setNeighborTop(long id) {
-        setNeighbor(MapChunkDir.T, id);
+        setNeighbor(NeighboringDir.U, id);
     }
 
     public long getNeighborBottom() {
-        return chunkDir.get(MapChunkDir.B.ordinal());
+        return chunkDir.get(NeighboringDir.D.ordinal());
     }
 
     public void setNeighborBottom(long id) {
-        setNeighbor(MapChunkDir.B, id);
+        setNeighbor(NeighboringDir.D, id);
     }
 
     public long getNeighborSouth() {
-        return chunkDir.get(MapChunkDir.S.ordinal());
+        return chunkDir.get(NeighboringDir.S.ordinal());
     }
 
     public void setNeighborSouth(long id) {
-        setNeighbor(MapChunkDir.S, id);
+        setNeighbor(NeighboringDir.S, id);
     }
 
     public long getNeighborEast() {
-        return chunkDir.get(MapChunkDir.E.ordinal());
+        return chunkDir.get(NeighboringDir.E.ordinal());
     }
 
     public void setNeighborEast(long id) {
-        setNeighbor(MapChunkDir.E, id);
+        setNeighbor(NeighboringDir.E, id);
     }
 
     public long getNeighborNorth() {
-        return chunkDir.get(MapChunkDir.N.ordinal());
+        return chunkDir.get(NeighboringDir.N.ordinal());
     }
 
     public void setNeighborNorth(long id) {
-        setNeighbor(MapChunkDir.N, id);
+        setNeighbor(NeighboringDir.N, id);
     }
 
     public long getNeighborWest() {
-        return chunkDir.get(MapChunkDir.W.ordinal());
+        return chunkDir.get(NeighboringDir.W.ordinal());
     }
 
     public void setNeighborWest(long id) {
-        setNeighbor(MapChunkDir.W, id);
+        setNeighbor(NeighboringDir.W, id);
     }
 
     public MapChunk findMapChunk(int x, int y, int z, Function<Long, MapChunk> retriever) {

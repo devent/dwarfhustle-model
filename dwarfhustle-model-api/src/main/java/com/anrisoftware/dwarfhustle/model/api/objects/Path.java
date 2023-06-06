@@ -17,32 +17,32 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.D;
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.DE;
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.DN;
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.DNE;
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.DNW;
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.DS;
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.DSE;
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.DSW;
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.DW;
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.E;
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.N;
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.NE;
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.NW;
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.S;
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.SE;
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.SW;
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.U;
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.UE;
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.UN;
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.UNE;
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.UNW;
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.US;
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.USE;
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.USW;
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.UW;
-import static com.anrisoftware.dwarfhustle.model.api.objects.PathDirection.W;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.D;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.DE;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.DN;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.DNE;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.DNW;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.DS;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.DSE;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.DSW;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.DW;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.E;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.N;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.NE;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.NW;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.S;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.SE;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.SW;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.U;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.UE;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.UN;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.UNE;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.UNW;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.US;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.USE;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.USW;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.UW;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.W;
 
 import java.io.Serializable;
 
@@ -57,7 +57,7 @@ import lombok.Data;
 public abstract class Path implements Serializable {
 
 	/**
-	 * {@link PathDirection#N}
+	 * {@link NeighboringDir#N}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -73,13 +73,13 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return N;
 		}
 	}
 
 	/**
-	 * {@link PathDirection#NE}
+	 * {@link NeighboringDir#NE}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -95,13 +95,13 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return NE;
 		}
 	}
 
 	/**
-	 * {@link PathDirection#E}
+	 * {@link NeighboringDir#E}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -117,13 +117,13 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return E;
 		}
 	}
 
 	/**
-	 * {@link PathDirection#SE}
+	 * {@link NeighboringDir#SE}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -139,13 +139,13 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return SE;
 		}
 	}
 
 	/**
-	 * {@link PathDirection#S}
+	 * {@link NeighboringDir#S}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -161,13 +161,13 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return S;
 		}
 	}
 
 	/**
-	 * {@link PathDirection#SW}
+	 * {@link NeighboringDir#SW}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -183,13 +183,13 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return SW;
 		}
 	}
 
 	/**
-	 * {@link PathDirection#W}
+	 * {@link NeighboringDir#W}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -205,13 +205,13 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return W;
 		}
 	}
 
 	/**
-	 * {@link PathDirection#NW}
+	 * {@link NeighboringDir#NW}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -227,13 +227,13 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return NW;
 		}
 	}
 
 	/**
-	 * {@link PathDirection#UN}
+	 * {@link NeighboringDir#UN}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -249,13 +249,13 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return UN;
 		}
 	}
 
 	/**
-	 * {@link PathDirection#UNE}
+	 * {@link NeighboringDir#UNE}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -271,13 +271,13 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return UNE;
 		}
 	}
 
 	/**
-	 * {@link PathDirection#UE}
+	 * {@link NeighboringDir#UE}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -293,13 +293,13 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return UE;
 		}
 	}
 
 	/**
-	 * {@link PathDirection#USE}
+	 * {@link NeighboringDir#USE}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -315,13 +315,13 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return USE;
 		}
 	}
 
 	/**
-	 * {@link PathDirection#US}
+	 * {@link NeighboringDir#US}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -337,13 +337,13 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return US;
 		}
 	}
 
 	/**
-	 * {@link PathDirection#USW}
+	 * {@link NeighboringDir#USW}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -359,13 +359,13 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return USW;
 		}
 	}
 
 	/**
-	 * {@link PathDirection#UW}
+	 * {@link NeighboringDir#UW}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -381,13 +381,13 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return UW;
 		}
 	}
 
 	/**
-	 * {@link PathDirection#UNW}
+	 * {@link NeighboringDir#UNW}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -403,13 +403,13 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return UNW;
 		}
 	}
 
 	/**
-	 * {@link PathDirection#DN}
+	 * {@link NeighboringDir#DN}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -425,13 +425,13 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return DN;
 		}
 	}
 
 	/**
-	 * {@link PathDirection#DNE}
+	 * {@link NeighboringDir#DNE}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -447,13 +447,13 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return DNE;
 		}
 	}
 
 	/**
-	 * {@link PathDirection#DE}
+	 * {@link NeighboringDir#DE}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -469,13 +469,13 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return DE;
 		}
 	}
 
 	/**
-	 * {@link PathDirection#DSE}
+	 * {@link NeighboringDir#DSE}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -491,13 +491,13 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return DSE;
 		}
 	}
 
 	/**
-	 * {@link PathDirection#DS}
+	 * {@link NeighboringDir#DS}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -513,13 +513,13 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return DS;
 		}
 	}
 
 	/**
-	 * {@link PathDirection#DSW}
+	 * {@link NeighboringDir#DSW}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -535,13 +535,13 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return DSW;
 		}
 	}
 
 	/**
-	 * {@link PathDirection#DW}
+	 * {@link NeighboringDir#DW}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -557,13 +557,13 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return DW;
 		}
 	}
 
 	/**
-	 * {@link PathDirection#DNW}
+	 * {@link NeighboringDir#DNW}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -579,13 +579,13 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return DNW;
 		}
 	}
 
 	/**
-	 * {@link PathDirection#U}
+	 * {@link NeighboringDir#U}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -601,13 +601,13 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return U;
 		}
 	}
 
 	/**
-	 * {@link PathDirection#D}
+	 * {@link NeighboringDir#D}
 	 *
 	 * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
 	 */
@@ -623,7 +623,7 @@ public abstract class Path implements Serializable {
 		}
 
 		@Override
-		public PathDirection getDirection() {
+		public NeighboringDir getDirection() {
 			return D;
 		}
 	}
@@ -636,6 +636,6 @@ public abstract class Path implements Serializable {
 
 	public abstract String getType();
 
-	public abstract PathDirection getDirection();
+	public abstract NeighboringDir getDirection();
 
 }
