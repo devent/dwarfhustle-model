@@ -104,6 +104,13 @@ public class MapBlock extends GameMapObject {
     }
 
     /**
+     * Returns the material RID.
+     */
+    public long getMaterialRid() {
+        return KnowledgeObject.id2Rid(material);
+    }
+
+    /**
      * Sets the ID of the object.
      */
     public void setObject(long object) {

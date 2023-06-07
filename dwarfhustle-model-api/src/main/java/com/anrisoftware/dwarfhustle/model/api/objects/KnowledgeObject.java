@@ -48,6 +48,13 @@ public abstract class KnowledgeObject extends GameObject {
         return (rid << 32) | ID_FLAG;
     }
 
+    /**
+     * Returns the knowledge RID from the game object ID.
+     */
+    public static long id2Rid(long id) {
+        return (id >> 32);
+    }
+
     public KnowledgeObject(long id) {
         super(rid2Id(id));
     }

@@ -45,4 +45,10 @@ class KnowledgeObjectTest {
     void test_rid2Id(long rid, def expected) {
         assert KnowledgeObject.rid2Id(rid) == expected
     }
+
+    @ParameterizedTest
+    @MethodSource("test_rid2Id")
+    void test_id2Rid(long expected, def id) {
+        assert KnowledgeObject.id2Rid(id) == expected
+    }
 }
