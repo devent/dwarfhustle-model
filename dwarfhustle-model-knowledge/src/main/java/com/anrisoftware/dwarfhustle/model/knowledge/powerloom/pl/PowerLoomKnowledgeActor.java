@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -110,13 +111,18 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
      */
     public interface PowerLoomKnowledgeActorFactory {
 
-        PowerLoomKnowledgeActor create(ActorContext<Message> context, StashBuffer<Message> stash);
+        PowerLoomKnowledgeActor create(ActorContext<Message> context, StashBuffer<Message> stash,
+                @Assisted("knowledgeCache") ActorRef<Message> knowledgeCache,
+                @Assisted("objectsCache") ActorRef<Message> objectsCache);
     }
 
-    public static Behavior<Message> create(Injector injector) {
+    public static Behavior<Message> create(Injector injector, CompletionStage<ActorRef<Message>> objectsCache) {
         return Behaviors.withStash(100, stash -> Behaviors.setup(context -> {
             loadKnowledgeBase(injector, context);
-            return injector.getInstance(PowerLoomKnowledgeActorFactory.class).create(context, stash).start();
+            var actor = injector.getInstance(ActorSystemProvider.class);
+            var kc = actor.getActorAsync(KnowledgeJcsCacheActor.ID).toCompletableFuture().get(15, TimeUnit.SECONDS);
+            var oc = objectsCache.toCompletableFuture().get(15, TimeUnit.SECONDS);
+            return injector.getInstance(PowerLoomKnowledgeActorFactory.class).create(context, stash, kc, oc).start();
         }));
     }
 
@@ -165,9 +171,10 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
     /**
      * Creates the {@link PowerLoomKnowledgeActor}.
      */
-    public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout) {
+    public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout,
+            CompletionStage<ActorRef<Message>> objectsCache) {
         var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
-        return createNamedActor(system, timeout, ID, KEY, NAME, create(injector));
+        return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, objectsCache));
     }
 
     @Inject
@@ -177,6 +184,14 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
     @Inject
     @Assisted
     private StashBuffer<Message> buffer;
+
+    @Inject
+    @Assisted("knowledgeCache")
+    private ActorRef<Message> knowledgeCache;
+
+    @Inject
+    @Assisted("objectsCache")
+    private ActorRef<Message> objectsCache;
 
     @Inject
     private Map<String, GameObjectKnowledge> storages;
@@ -248,7 +263,7 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
     @SneakyThrows
     private Behavior<Message> onKnowledgeGet(KnowledgeGetMessage<?> m) {
         log.debug("onKnowledgeGet {}", m);
-        actor.tell(new CacheGetMessage<>(cacheResponseAdapter, KnowledgeLoadedObject.class,
+        knowledgeCache.tell(new CacheGetMessage<>(cacheResponseAdapter, KnowledgeLoadedObject.class,
                 KnowledgeLoadedObject.OBJECT_TYPE, m.type, go -> {
                     cacheHit(m, go);
                 }, () -> {
@@ -262,7 +277,7 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
     private void cacheMiss(@SuppressWarnings("rawtypes") KnowledgeGetMessage m) {
         var glo = retrieveKnowledgeLoadedObject(m.type);
         cacheObjects(glo);
-        actor.tell(new CachePutMessage<>(cacheResponseAdapter, glo.type, glo));
+        knowledgeCache.tell(new CachePutMessage<>(cacheResponseAdapter, glo.type, glo));
         m.replyTo.tell(new KnowledgeResponseSuccessMessage(glo));
     }
 
@@ -274,7 +289,7 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
     }
 
     private void cacheObjects(KnowledgeLoadedObject ko) {
-        actor.tell(new CachePutsMessage<>(cacheResponseAdapter, Long.class, GameObject::getId, ko.objects));
+        objectsCache.tell(new CachePutsMessage<>(cacheResponseAdapter, Long.class, GameObject::getId, ko.objects));
     }
 
     /**

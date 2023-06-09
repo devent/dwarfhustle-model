@@ -20,6 +20,7 @@ package com.anrisoftware.dwarfhustle.model.actor;
 import static java.time.Duration.ofSeconds;
 
 import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
@@ -111,6 +112,17 @@ public class MainActor extends MessageActor<Message> {
 
     public <T extends Message> ActorRef<T> getActor(int id) {
         return castActor(actors.get(id));
+    }
+
+    public <T extends Message> CompletionStage<ActorRef<T>> getActorAsync(int id) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                waitActor(id);
+            } catch (InterruptedException e) {
+                log.error("getActorAsync", e);
+            }
+            return getActor(id);
+        });
     }
 
     public synchronized void waitActor(int id) throws InterruptedException {

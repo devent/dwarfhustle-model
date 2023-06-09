@@ -69,13 +69,12 @@ public class KnowledgeJcsCacheActor extends AbstractJcsCacheActor {
     public interface KnowledgeJcsCacheActorFactory extends AbstractJcsCacheActorFactory {
 
         @Override
-        KnowledgeJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, ObjectsGetter og,
-                Class<?> keyType);
+        KnowledgeJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, ObjectsGetter og);
     }
 
     public static Behavior<Message> create(Injector injector, AbstractJcsCacheActorFactory actorFactory,
             CompletionStage<ObjectsGetter> og, CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
-        return AbstractJcsCacheActor.create(injector, actorFactory, og, String.class, initCacheAsync);
+        return AbstractJcsCacheActor.create(injector, actorFactory, og, initCacheAsync);
     }
 
     /**

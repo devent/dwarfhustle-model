@@ -104,6 +104,13 @@ public class MapBlock extends GameMapObject {
     }
 
     /**
+     * Sets the RID of the material.
+     */
+    public void setMaterialRid(long material) {
+        setMaterial(KnowledgeObject.rid2Id(material));
+    }
+
+    /**
      * Returns the material RID.
      */
     public long getMaterialRid() {
@@ -118,6 +125,20 @@ public class MapBlock extends GameMapObject {
             setDirty(true);
             this.object = object;
         }
+    }
+
+    /**
+     * Sets the RID of the material.
+     */
+    public void setObjectRid(long object) {
+        setObject(KnowledgeObject.rid2Id(object));
+    }
+
+    /**
+     * Returns the object RID.
+     */
+    public long getObjectRid() {
+        return KnowledgeObject.id2Rid(object);
     }
 
     public void setP(PropertiesSet p) {

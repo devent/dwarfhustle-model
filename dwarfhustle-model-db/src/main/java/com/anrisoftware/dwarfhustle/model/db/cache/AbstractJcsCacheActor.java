@@ -32,6 +32,7 @@ import org.apache.commons.jcs3.engine.CacheElement;
 import org.apache.commons.jcs3.engine.control.event.behavior.IElementEvent;
 import org.apache.commons.jcs3.engine.control.event.behavior.IElementEventHandler;
 
+import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
@@ -77,16 +78,14 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
      */
     public interface AbstractJcsCacheActorFactory {
 
-        AbstractJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, ObjectsGetter og,
-                Class<?> keyType);
+        AbstractJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, ObjectsGetter og);
     }
 
     public static Behavior<Message> create(Injector injector, AbstractJcsCacheActorFactory actorFactory,
-            CompletionStage<ObjectsGetter> og, Class<?> keyType,
-            CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
+            CompletionStage<ObjectsGetter> og, CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
         return Behaviors.withStash(100, stash -> Behaviors.setup(context -> {
             initCache(context, initCacheAsync);
-            return actorFactory.create(context, stash, og.toCompletableFuture().get(15, SECONDS), keyType).start();
+            return actorFactory.create(context, stash, og.toCompletableFuture().get(15, SECONDS)).start();
         }));
     }
 
@@ -105,8 +104,7 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
     protected final Duration timeout = Duration.ofSeconds(300);
 
     @Inject
-    @Assisted
-    protected Class<?> keyType;
+    protected ActorSystemProvider actor;
 
     @Inject
     @Assisted
@@ -132,6 +130,7 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
      * </ul>
      */
     public Behavior<Message> start() {
+        actor.registerObjectsGetter(getId(), this);
         return Behaviors.receive(Message.class)//
                 .onMessage(InitialStateMessage.class, this::onInitialState)//
                 .onMessage(SetupErrorMessage.class, this::onSetupError)//
@@ -177,14 +176,12 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
     @SuppressWarnings("unchecked")
     private Behavior<Message> onCachePut(@SuppressWarnings("rawtypes") CachePutMessage m) {
         log.debug("onCachePut {}", m);
-        if (keyType.isInstance(m.key)) {
-            try {
-                cache.put(m.key, m.value);
-                storeValueDb(m);
-                m.replyTo.tell(new CacheSuccessMessage<>(m));
-            } catch (CacheException e) {
-                m.replyTo.tell(new CacheErrorMessage<>(m, e));
-            }
+        try {
+            cache.put(m.key, m.value);
+            storeValueDb(m);
+            m.replyTo.tell(new CacheSuccessMessage<>(m));
+        } catch (CacheException e) {
+            m.replyTo.tell(new CacheErrorMessage<>(m, e));
         }
         return Behaviors.same();
     }
@@ -195,17 +192,15 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
     @SuppressWarnings("unchecked")
     private Behavior<Message> onCachePuts(@SuppressWarnings("rawtypes") CachePutsMessage m) {
         log.debug("onCachePuts {}", m);
-        if (keyType.isAssignableFrom(m.keyType)) {
-            try {
-                for (var o : m.value) {
-                    var go = (GameObject) o;
-                    cache.put(m.key.apply(o), go);
-                    storeValueDb(m);
-                }
-                m.replyTo.tell(new CacheSuccessMessage<>(m));
-            } catch (CacheException e) {
-                m.replyTo.tell(new CacheErrorMessage<>(m, e));
+        try {
+            for (var o : m.value) {
+                var go = (GameObject) o;
+                cache.put(m.key.apply(o), go);
+                storeValueDb(m);
             }
+            m.replyTo.tell(new CacheSuccessMessage<>(m));
+        } catch (CacheException e) {
+            m.replyTo.tell(new CacheErrorMessage<>(m, e));
         }
         return Behaviors.same();
     }
@@ -216,19 +211,17 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
     @SuppressWarnings("unchecked")
     private Behavior<Message> onCacheGet(@SuppressWarnings("rawtypes") CacheGetMessage m) {
         log.debug("onCacheGet {}", m);
-        if (keyType.isInstance(m.key)) {
-            try {
-                var v = cache.get(m.key);
-                if (v == null) {
-                    m.onMiss.run();
-                    handleCacheMiss(m);
-                } else {
-                    m.consumer.accept(v);
-                    m.replyTo.tell(new CacheGetSuccessMessage<>(m, v));
-                }
-            } catch (CacheException e) {
-                m.replyTo.tell(new CacheErrorMessage<>(m, e));
+        try {
+            var v = cache.get(m.key);
+            if (v == null) {
+                m.onMiss.run();
+                handleCacheMiss(m);
+            } else {
+                m.consumer.accept(v);
+                m.replyTo.tell(new CacheGetSuccessMessage<>(m, v));
             }
+        } catch (CacheException e) {
+            m.replyTo.tell(new CacheErrorMessage<>(m, e));
         }
         return Behaviors.same();
     }

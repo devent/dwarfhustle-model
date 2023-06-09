@@ -82,13 +82,12 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     public interface StoredObjectsJcsCacheActorFactory extends AbstractJcsCacheActorFactory {
 
         @Override
-        StoredObjectsJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, ObjectsGetter og,
-                Class<?> keyType);
+        StoredObjectsJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, ObjectsGetter og);
     }
 
     public static Behavior<Message> create(Injector injector, AbstractJcsCacheActorFactory actorFactory,
             CompletionStage<ObjectsGetter> og, CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
-        return AbstractJcsCacheActor.create(injector, actorFactory, og, Long.class, initCacheAsync);
+        return AbstractJcsCacheActor.create(injector, actorFactory, og, initCacheAsync);
     }
 
     /**
@@ -168,17 +167,13 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     @Override
     protected void storeValueDb(CachePutsMessage<?> m) {
         for (var go : m.value) {
-            if (m.value instanceof StoredObject) {
-                actor.tell(new SaveObjectMessage<>(dbResponseAdapter, go));
-            }
+            actor.tell(new SaveObjectMessage<>(dbResponseAdapter, go));
         }
     }
 
     @Override
     protected void retrieveValueFromDb(CacheGetMessage<?> m, Consumer<GameObject> consumer) {
-        if (m.key instanceof Long id && StoredObject.class.isAssignableFrom(m.typeClass)) {
-            retrieveGameObject(m.type, id, consumer);
-        }
+        retrieveGameObject(m.type, (long) m.key, consumer);
     }
 
     private void retrieveGameObject(String type, long id, Consumer<GameObject> consumer) {
@@ -195,11 +190,7 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
 
     @Override
     public <T extends GameObject> T get(Class<T> typeClass, String type, Object key) throws ObjectsGetterException {
-        if (key instanceof Long id && StoredObject.class.isAssignableFrom(typeClass)) {
-            return super.get(typeClass, type, key);
-        } else {
-            throw new UnsupportedOperationException();
-        }
+        return super.get(typeClass, type, key);
     }
 
     @Override

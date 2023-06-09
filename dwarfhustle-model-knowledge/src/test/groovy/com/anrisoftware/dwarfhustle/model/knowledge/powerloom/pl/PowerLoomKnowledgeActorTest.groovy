@@ -67,7 +67,7 @@ class PowerLoomKnowledgeActorTest {
         PowerLoomKnowledgeActor.create(injector, Duration.ofSeconds(1)).whenComplete({ it, ex ->
             knowledgeActor = it
         } ).get()
-        KnowledgeJcsCacheActor.create(injector, Duration.ofSeconds(1), actor.getObjectsGetter(PowerLoomKnowledgeActor.ID)).whenComplete({ it, ex ->
+        KnowledgeJcsCacheActor.create(injector, Duration.ofSeconds(1), actor.getObjectsAsync(PowerLoomKnowledgeActor.ID)).whenComplete({ it, ex ->
             cacheActor = it
         } ).get()
     }

@@ -39,6 +39,7 @@ import akka.actor.typed.Behavior;
 import akka.actor.typed.Scheduler;
 import akka.actor.typed.javadsl.Behaviors;
 import lombok.SneakyThrows;
+import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import scala.concurrent.Await;
 import scala.concurrent.duration.Duration;
@@ -57,6 +58,7 @@ public class ActorSystemProvider implements Provider<ActorRef<Message>> {
 
     private final IntObjectMap<ObjectsGetter> ogs = IntObjectMaps.mutable.empty();
 
+    @Delegate
     private MainActor mainActor;
 
     @Inject
@@ -116,7 +118,7 @@ public class ActorSystemProvider implements Provider<ActorRef<Message>> {
         mogs.put(id, og);
     }
 
-    public CompletionStage<ObjectsGetter> getObjectsGetter(int id) {
+    public CompletionStage<ObjectsGetter> getObjectsAsync(int id) {
         return CompletableFuture.supplyAsync(() -> supplyObjectGetter(id));
     }
 
