@@ -91,6 +91,10 @@ public class GameBlockPos implements Serializable {
         return Integer.parseInt(s);
     }
 
+    public GameBlockPos add(GameBlockPos p) {
+        return new GameBlockPos(mapid, x + p.x, y + p.y, z + p.z);
+    }
+
     public GameBlockPos addX(int n) {
         return new GameBlockPos(mapid, x + n, y, z);
     }

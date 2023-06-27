@@ -23,6 +23,7 @@ import java.time.Duration;
 import java.util.EventObject;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.inject.Inject;
 
@@ -178,7 +179,7 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
         log.debug("onCachePut {}", m);
         try {
             cache.put(m.key, m.value);
-            storeValueDb(m);
+            storeValueDb(m.key, m.value);
             m.replyTo.tell(new CacheSuccessMessage<>(m));
         } catch (CacheException e) {
             m.replyTo.tell(new CacheErrorMessage<>(m, e));
@@ -196,7 +197,7 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
             for (var o : m.value) {
                 var go = (GameObject) o;
                 cache.put(m.key.apply(o), go);
-                storeValueDb(m);
+                storeValueDb(m.keyType, m.key, go);
             }
             m.replyTo.tell(new CacheSuccessMessage<>(m));
         } catch (CacheException e) {
@@ -308,12 +309,12 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
     /**
      * Stores the put value in the database.
      */
-    protected abstract void storeValueDb(CachePutMessage<?> m);
+    protected abstract void storeValueDb(Object key, GameObject go);
 
     /**
      * Stores the put value in the database.
      */
-    protected abstract void storeValueDb(CachePutsMessage<?> m);
+    protected abstract void storeValueDb(Class<?> keyType, Function<GameObject, Object> key, GameObject go);
 
     /**
      * Retrieves the value from the database. Example send a database command:

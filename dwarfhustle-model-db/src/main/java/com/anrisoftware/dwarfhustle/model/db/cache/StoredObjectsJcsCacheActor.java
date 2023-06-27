@@ -23,6 +23,7 @@ import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.inject.Inject;
 
@@ -158,17 +159,13 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @Override
-    protected void storeValueDb(CachePutMessage<?> m) {
-        if (m.value instanceof StoredObject) {
-            actor.tell(new SaveObjectMessage<>(dbResponseAdapter, m.value));
-        }
+    protected void storeValueDb(Object key, GameObject go) {
+        actor.tell(new SaveObjectMessage<>(dbResponseAdapter, go));
     }
 
     @Override
-    protected void storeValueDb(CachePutsMessage<?> m) {
-        for (var go : m.value) {
-            actor.tell(new SaveObjectMessage<>(dbResponseAdapter, go));
-        }
+    protected void storeValueDb(Class<?> keyType, Function<GameObject, Object> key, GameObject go) {
+        actor.tell(new SaveObjectMessage<>(dbResponseAdapter, go));
     }
 
     @Override

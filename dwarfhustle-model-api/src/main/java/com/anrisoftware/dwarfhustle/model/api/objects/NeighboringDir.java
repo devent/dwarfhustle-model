@@ -17,140 +17,145 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import lombok.RequiredArgsConstructor;
+
 /**
  * Neighboring direction.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
+@RequiredArgsConstructor
 public enum NeighboringDir {
 
 	/**
 	 * Up.
 	 */
-	U,
+    U(new GameBlockPos(0, 0, 0, -1)),
 
 	/**
 	 * Down.
 	 */
-	D,
+    D(new GameBlockPos(0, 0, 0, 1)),
 
 	/**
 	 * North.
 	 */
-	N,
+    N(new GameBlockPos(0, 0, -1, 0)),
 
 	/**
 	 * North east.
 	 */
-	NE,
+    NE(new GameBlockPos(0, 1, -1, 0)),
 
 	/**
 	 * East.
 	 */
-	E,
+    E(new GameBlockPos(0, 1, 0, 0)),
 
 	/**
 	 * South east.
 	 */
-	SE,
+    SE(new GameBlockPos(0, 1, 1, 0)),
 
 	/**
 	 * South.
 	 */
-	S,
+    S(new GameBlockPos(0, 0, 1, 0)),
 
 	/**
 	 * South west.
 	 */
-	SW,
+    SW(new GameBlockPos(0, -1, 1, 0)),
 
 	/**
 	 * West.
 	 */
-	W,
+    W(new GameBlockPos(0, -1, 0, 0)),
 
 	/**
 	 * North west.
 	 */
-	NW,
+    NW(new GameBlockPos(0, -1, -1, 0)),
 
 	/**
 	 * Up north.
 	 */
-	UN,
+    UN(new GameBlockPos(0, 0, -1, -1)),
 
 	/**
 	 * Up north east.
 	 */
-	UNE,
+    UNE(new GameBlockPos(0, 1, -1, -1)),
 
 	/**
 	 * Up east.
 	 */
-	UE,
+    UE(new GameBlockPos(0, 1, 0, -1)),
 
 	/**
 	 * Up south east.
 	 */
-	USE,
+    USE(new GameBlockPos(0, 1, 1, -1)),
 
 	/**
 	 * Up south.
 	 */
-	US,
+    US(new GameBlockPos(0, 0, 1, -1)),
 
 	/**
 	 * Up south west.
 	 */
-	USW,
+    USW(new GameBlockPos(0, -1, 1, -1)),
 
 	/**
 	 * Up west.
 	 */
-	UW,
+    UW(new GameBlockPos(0, -1, 0, -1)),
 
 	/**
 	 * Up north west.
 	 */
-	UNW,
+    UNW(new GameBlockPos(0, -1, -1, -1)),
 
 	/**
 	 * Down north.
 	 */
-	DN,
+    DN(new GameBlockPos(0, 0, -1, 1)),
 
 	/**
 	 * Down north east.
 	 */
-	DNE,
+    DNE(new GameBlockPos(0, 1, -1, 1)),
 
 	/**
 	 * Down east.
 	 */
-	DE,
+    DE(new GameBlockPos(0, 1, 0, 1)),
 
 	/**
 	 * Down south east.
 	 */
-	DSE,
+    DSE(new GameBlockPos(0, 1, 1, 1)),
 
 	/**
 	 * Down south.
 	 */
-	DS,
+    DS(new GameBlockPos(0, 0, 1, 1)),
 
 	/**
 	 * Down south west.
 	 */
-	DSW,
+    DSW(new GameBlockPos(0, -1, 1, 1)),
 
 	/**
 	 * Down west.
 	 */
-	DW,
+    DW(new GameBlockPos(0, -1, 0, 1)),
 
 	/**
 	 * Down north west.
 	 */
-	DNW,
+    DNW(new GameBlockPos(0, -1, -1, 1));
+
+    public final GameBlockPos pos;
 }
