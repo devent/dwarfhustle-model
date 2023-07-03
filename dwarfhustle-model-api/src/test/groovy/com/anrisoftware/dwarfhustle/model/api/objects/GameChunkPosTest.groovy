@@ -68,4 +68,24 @@ class GameChunkPosTest {
     void chunk_pos_parse(GameChunkPos expected, def s) {
         assert GameChunkPos.parse(s) == expected
     }
+
+    static chunk_extent_center() {
+        Stream.of(
+                of(new GameChunkPos(0, 0, 0, 0, 0, 0, 0), 0, 0, 0, 0, 0, 0),
+                of(new GameChunkPos(0, 0, 0, 0, 64, 64, 64), 32, 32, 32, 32, 32, 32),
+                of(new GameChunkPos(0, 0, 0, 0, 32, 32, 32), 16, 16, 16, 16, 16, 16),
+                of(new GameChunkPos(0, 32, 0, 0, 64, 32, 32), 16, 16, 16, 48, 16, 16),
+                )
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    void chunk_extent_center(GameChunkPos p, float exextentx, float exextenty, float exextentz, float excenterx, float excentery, float excenterz) {
+        assert p.extentx == exextentx
+        assert p.extenty == exextenty
+        assert p.extentz == exextentz
+        assert p.centerx == excenterx
+        assert p.centery == excentery
+        assert p.centerz == excenterz
+    }
 }

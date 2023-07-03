@@ -21,10 +21,8 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Objects;
 
-import org.apache.commons.lang3.StringUtils;
-
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
@@ -36,7 +34,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-@Getter
+@Data
 public class GameMap extends StoredObject {
 
     /**
@@ -80,106 +78,117 @@ public class GameMap extends StoredObject {
         return blocks;
     }
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public static final String OBJECT_TYPE = GameMap.class.getSimpleName();
+    public static final String OBJECT_TYPE = GameMap.class.getSimpleName();
 
-	private String name;
+    public String name;
 
-    private long rootid;
+    public long rootid;
 
-	private int mapid;
+    public int mapid;
 
-	private int width;
+    public int width;
 
-	private int height;
+    public int height;
 
-	private int depth;
+    public int depth;
 
-    private int chunkSize;
+    public int chunkSize;
 
-	private WorldMap world;
+    public float blockWidth;
 
-	private ZoneOffset timeZone = ZoneOffset.of("Z");
+    public float blockHeight;
 
-	private OffsetDateTime time;
+    public float blockDepth;
 
-	private MapArea area;
+    public float centerOffsetX;
 
-	private float[] cameraPos = new float[3];
+    public float centerOffsetY;
 
-	private float[] cameraRot = new float[4];
+    public float centerOffsetZ;
 
-    private MapCursor cursor = new MapCursor(0, 0, 0);
+    public float blockSizeX;
 
-	public GameMap(long id) {
-		super(id);
-	}
+    public float blockSizeY;
 
-	public GameMap(byte[] idbuf) {
-		super(idbuf);
-	}
+    public float blockSizeZ;
 
-	@Override
-	public String getObjectType() {
-		return OBJECT_TYPE;
-	}
+    public long world;
 
-	public void setName(String name) {
-		if (!StringUtils.equals(this.name, name)) {
-			setDirty(true);
-			this.name = name;
-		}
-	}
+    public ZoneOffset timeZone = ZoneOffset.of("Z");
 
-    /**
-     * Sets the object ID of the {@link MapChunk} that is the root.
-     */
-    public void setRootid(long id) {
-        if (this.rootid != id) {
-            this.rootid = id;
-            setDirty(true);
-        }
+    public OffsetDateTime time;
+
+    public MapArea area;
+
+    public float[] cameraPos = new float[3];
+
+    public float[] cameraRot = new float[4];
+
+    public MapCursor cursor = new MapCursor(0, 0, 0);
+
+    public GameMap(long id) {
+        super(id);
     }
 
-	public void setMapid(int mapid) {
-		if (this.mapid != mapid) {
-			setDirty(true);
-			this.mapid = mapid;
-		}
-	}
+    public GameMap(byte[] idbuf) {
+        super(idbuf);
+    }
 
-	public void setWidth(int width) {
-		if (this.width != width) {
-			setDirty(true);
-			this.width = width;
-		}
-	}
+    @Override
+    public String getObjectType() {
+        return OBJECT_TYPE;
+    }
 
-	public void setHeight(int height) {
-		if (this.height != height) {
-			setDirty(true);
-			this.height = height;
-		}
-	}
+    @Override
+    public boolean isDirty() {
+        GameMap old = getOld();
+        return old.name != name //
+                || old.rootid != rootid //
+                || old.mapid != mapid //
+                || old.width != width || old.height != height || old.depth != depth //
+                || old.chunkSize != chunkSize //
+                || old.blockWidth != blockWidth || old.blockHeight != blockHeight || old.blockDepth != blockDepth//
+                || old.centerOffsetX != centerOffsetX || old.centerOffsetY != centerOffsetY
+                || old.centerOffsetZ != centerOffsetZ //
+                || old.world != world //
+                || Objects.equals(old.timeZone, timeZone) //
+                || Objects.equals(old.time, time) //
+                || Objects.equals(old.area, area) //
+                || Objects.equals(old.cameraPos, cameraPos) //
+                || Objects.equals(old.cameraRot, cameraRot) //
+                || Objects.equals(old.cursor, cursor) //
+        ;
+    }
 
-	public void setDepth(int depth) {
-		if (this.depth != depth) {
-			setDirty(true);
-			this.depth = depth;
-		}
-	}
+    public void setWidth(int width) {
+        this.width = width;
+    }
 
-	public int getSize() {
-		return depth * height * width;
-	}
+    public void setHeight(int height) {
+        this.height = height;
+    }
 
-	public void setChunkSize(int blockSize) {
-        if (this.chunkSize != blockSize) {
-			setDirty(true);
-            this.chunkSize = blockSize;
-		}
-	}
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
+
+    public int getSize() {
+        return depth * height * width;
+    }
+
+    public void setCenterOffset(float offset) {
+        this.centerOffsetX = offset;
+        this.centerOffsetY = offset;
+        this.centerOffsetZ = offset;
+    }
+
+    public void setBlockSize(float size) {
+        this.blockSizeX = size;
+        this.blockSizeY = size;
+        this.blockSizeZ = size;
+    }
 
     /**
      * Calculates the total count of {@link MapChunk} blocks for the specified
@@ -189,83 +198,21 @@ public class GameMap extends StoredObject {
         return calculateBlocksCount(width, height, depth, chunkSize);
     }
 
-	public void setWorld(WorldMap world) {
-		if (!Objects.equals(this.world, world)) {
-			this.world = world;
-			if (timeZone != null) {
-				this.time = OffsetDateTime.of(world.getTime(), timeZone);
-			}
-			setDirty(true);
-		}
-	}
-
-	public void setTimeZone(ZoneOffset timeZone) {
-		if (!Objects.equals(this.timeZone, timeZone)) {
-			this.timeZone = timeZone;
-			if (world != null) {
-				this.time = OffsetDateTime.of(world.getTime(), timeZone);
-			}
-			setDirty(true);
-		}
-	}
-
-	public void setArea(MapArea area) {
-		if (!Objects.equals(this.area, area)) {
-			this.area = area;
-			setDirty(true);
-		}
-	}
-
-	public void setCameraPos(float[] pos) {
-		if (!Objects.equals(this.cameraPos, pos)) {
-			this.cameraPos[0] = pos[0];
-			this.cameraPos[1] = pos[1];
-			this.cameraPos[2] = pos[2];
-			setDirty(true);
-		}
-	}
-
-	public void setCameraPos(float x, float y, float z) {
-		if (this.cameraPos[0] != x || this.cameraPos[1] != y || this.cameraPos[2] != z) {
-			this.cameraPos[0] = x;
-			this.cameraPos[1] = y;
-			this.cameraPos[2] = z;
-			setDirty(true);
-		}
-	}
-
-	public void setCameraRot(float[] rot) {
-		if (!Objects.equals(this.cameraRot, rot)) {
-			this.cameraRot[0] = rot[0];
-			this.cameraRot[1] = rot[1];
-			this.cameraRot[2] = rot[2];
-			this.cameraRot[3] = rot[3];
-			setDirty(true);
-		}
-	}
-
-	public void setCameraRot(float x, float y, float z, float w) {
-		if (this.cameraRot[0] != x || this.cameraRot[1] != y || this.cameraRot[2] != z || this.cameraRot[3] != w) {
-			this.cameraRot[0] = x;
-			this.cameraRot[1] = y;
-			this.cameraRot[2] = z;
-			this.cameraRot[3] = w;
-			setDirty(true);
-		}
-	}
-
-    public void setCursor(int z, int y, int x) {
-        if (this.cursor.z != z || this.cursor.y != y || this.cursor.x != x) {
-            this.cursor = new MapCursor(z, y, x);
-            setDirty(true);
-        }
+    public void setCameraPos(float x, float y, float z) {
+        this.cameraPos[0] = x;
+        this.cameraPos[1] = y;
+        this.cameraPos[2] = z;
     }
 
-    public void setCursor(MapCursor cursor) {
-        if (!Objects.equals(this.cursor, cursor)) {
-            this.cursor = cursor;
-            setDirty(true);
-        }
+    public void setCameraRot(float x, float y, float z, float w) {
+        this.cameraRot[0] = x;
+        this.cameraRot[1] = y;
+        this.cameraRot[2] = z;
+        this.cameraRot[3] = w;
+    }
+
+    public void setCursor(int z, int y, int x) {
+        this.cursor = new MapCursor(z, y, x);
     }
 
     public void addCursorZ(int dd) {
@@ -283,4 +230,5 @@ public class GameMap extends StoredObject {
     public void setCursorZ(int z) {
         setCursor(new MapCursor(z, cursor.y, cursor.x));
     }
+
 }

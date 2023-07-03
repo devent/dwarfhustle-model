@@ -18,7 +18,6 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
 import com.anrisoftware.dwarfhustle.model.api.map.FloorType;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.google.auto.service.AutoService;
 
@@ -38,10 +37,10 @@ public class FloorTypeStorage implements GameObjectKnowledge {
     }
 
     @Override
-    public KnowledgeObject retrieve(Object o, GameObject go) {
+    public KnowledgeObject retrieve(Object o, KnowledgeObject go) {
         var next = (LogicObject) o;
         var ko = (FloorType) go;
-        ko.setRid((long) next.surrogateValueInverse.symbolId);
+        ko.setKid(next.surrogateValueInverse.symbolId);
         ko.setName(next.surrogateValueInverse.symbolName);
         return ko;
     }

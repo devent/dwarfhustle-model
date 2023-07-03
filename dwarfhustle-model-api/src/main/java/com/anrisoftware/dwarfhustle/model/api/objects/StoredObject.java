@@ -17,10 +17,11 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.io.Serializable;
+
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
 /**
@@ -31,8 +32,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-@Getter
-@Setter
+@Data
 public abstract class StoredObject extends GameObject {
 
     private static final long serialVersionUID = 1L;
@@ -41,12 +41,26 @@ public abstract class StoredObject extends GameObject {
 
     public static final String OBJECT_TYPE = StoredObject.class.getSimpleName();
 
+    /**
+     * Stores the original properties and is set after the object is saved in the
+     * backend.
+     */
+    @ToString.Exclude
+    public StoredObject old;
+
+    /**
+     * Record ID set after the object was once stored in the backend.
+     */
+    public Serializable rid = null;
+
     public StoredObject(byte[] idbuf) {
         super(idbuf);
+        this.old = this;
     }
 
     public StoredObject(long id) {
         super(id);
+        this.old = this;
     }
 
     @Override
@@ -54,4 +68,10 @@ public abstract class StoredObject extends GameObject {
         return StoredObject.OBJECT_TYPE;
     }
 
+    @SuppressWarnings("unchecked")
+    public <T extends StoredObject> T getOld() {
+        return (T) old;
+    }
+
+    public abstract boolean isDirty();
 }

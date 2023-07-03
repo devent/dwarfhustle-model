@@ -30,8 +30,8 @@ class KnowledgeObjectTest {
 
     @Test
     void "object_rid2Id"() {
-        assert KnowledgeObject.rid2Id(0) == 1
-        assert KnowledgeObject.rid2Id(500) == 2147483648001
-        assert KnowledgeObject.rid2Id(501) == 2151778615297
+        assert KnowledgeObject.kid2Id(0) == 1
+        assert KnowledgeObject.kid2Id(500) == 2147483648001
+        assert KnowledgeObject.kid2Id(501) == 2151778615297
     }
 }

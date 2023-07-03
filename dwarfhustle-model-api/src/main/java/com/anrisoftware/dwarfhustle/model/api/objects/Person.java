@@ -17,10 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
 /**
@@ -31,19 +30,18 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-@Getter
-@Setter
+@Data
 public class Person extends GameMovingObject {
 
-    private static final long serialVersionUID = -6027695018525898404L;
+    private static final long serialVersionUID = 1L;
 
     public static final String OBJECT_TYPE = Person.class.getSimpleName();
 
-    private String firstName;
+    public String firstName;
 
-    private String secondName;
+    public String secondName;
 
-    private String lastName;
+    public String lastName;
 
     public Person(long id) {
         super(id);
@@ -58,25 +56,13 @@ public class Person extends GameMovingObject {
         return OBJECT_TYPE;
     }
 
-    public void setFirstName(String firstName) {
-        if (this.firstName != firstName) {
-            setDirty(true);
-            this.firstName = firstName;
-        }
-    }
-
-    public void setSecondName(String secondName) {
-        if (this.secondName != secondName) {
-            setDirty(true);
-            this.secondName = secondName;
-        }
-    }
-
-    public void setLastName(String lastName) {
-        if (this.lastName != lastName) {
-            setDirty(true);
-            this.lastName = lastName;
-        }
+    @Override
+    public boolean isDirty() {
+        Person old = getOld();
+        return old.firstName != firstName //
+                || old.secondName != secondName //
+                || old.lastName != lastName //
+        ;
     }
 
 }

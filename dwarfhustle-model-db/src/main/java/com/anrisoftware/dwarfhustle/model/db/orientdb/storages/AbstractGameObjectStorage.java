@@ -20,32 +20,31 @@ package com.anrisoftware.dwarfhustle.model.db.orientdb.storages;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameObjectSchemaSchema.OBJECTID_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameObjectSchemaSchema.OBJECTTYPE_FIELD;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
+import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.orientechnologies.orient.core.record.OElement;
 
 /**
- * Stores and retrieves the properties of a {@link GameObject} to/from the
+ * Stores and retrieves the properties of a {@link StoredObject} to/from the
  * database. Does not commit the changes into the database.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 public abstract class AbstractGameObjectStorage implements GameObjectStorage {
 
-	@Override
-	public void store(Object db, Object o, GameObject go) {
-		var v = (OElement) o;
-		v.setProperty(OBJECTID_FIELD, go.getId());
-		v.setProperty(OBJECTTYPE_FIELD, go.getObjectType());
-		go.setDirty(false);
-	}
+    @Override
+    public void store(Object db, Object o, StoredObject go) {
+        var v = (OElement) o;
+        v.setProperty(OBJECTID_FIELD, go.id);
+        v.setProperty(OBJECTTYPE_FIELD, go.getObjectType());
+    }
 
-	@Override
-	public GameObject retrieve(Object db, Object o, GameObject go) {
-		var v = (OElement) o;
-		go.setRid(v.getIdentity());
-        go.setId((Long) v.getProperty(OBJECTID_FIELD));
-		go.setDirty(false);
-		return go;
-	}
+    @Override
+    public StoredObject retrieve(Object db, Object o, StoredObject go) {
+        var v = (OElement) o;
+        go.rid = v.getIdentity();
+        go.id = (Long) v.getProperty(OBJECTID_FIELD);
+        go.old = go;
+        return go;
+    }
 }

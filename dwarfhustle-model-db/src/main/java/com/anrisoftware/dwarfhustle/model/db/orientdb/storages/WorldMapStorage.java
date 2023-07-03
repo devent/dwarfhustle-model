@@ -30,8 +30,8 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
+import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 import com.orientechnologies.orient.core.record.OElement;
@@ -52,7 +52,7 @@ public class WorldMapStorage extends AbstractGameObjectStorage {
 	}
 
 	@Override
-	public void store(Object db, Object o, GameObject go) {
+    public void store(Object db, Object o, StoredObject go) {
 		var v = (OElement) o;
 		var wm = (WorldMap) go;
 		v.setProperty(NAME_FIELD, wm.getName());
@@ -68,7 +68,7 @@ public class WorldMapStorage extends AbstractGameObjectStorage {
 	}
 
 	@Override
-	public GameObject retrieve(Object db, Object o, GameObject go) {
+    public StoredObject retrieve(Object db, Object o, StoredObject go) {
 		var v = (OElement) o;
 		var wm = (WorldMap) go;
 		var odb = (ODatabaseDocument) db;
@@ -101,7 +101,7 @@ public class WorldMapStorage extends AbstractGameObjectStorage {
 	}
 
 	@Override
-	public GameObject create() {
+    public StoredObject create() {
 		return new WorldMap();
 	}
 }

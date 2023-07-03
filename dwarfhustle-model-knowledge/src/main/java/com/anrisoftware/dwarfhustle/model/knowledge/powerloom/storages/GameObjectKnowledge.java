@@ -19,7 +19,6 @@ package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
 import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor.WORKING_MODULE;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 
 import edu.isi.powerloom.PLI;
@@ -53,7 +52,7 @@ public interface GameObjectKnowledge {
     /**
      * Retrieves the {@link KnowledgeObject}.
      */
-    KnowledgeObject retrieve(Object o, GameObject go);
+    KnowledgeObject retrieve(Object o, KnowledgeObject go);
 
     /**
      * Returns a new {@link KnowledgeObject}.

@@ -17,10 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
 /**
@@ -31,8 +30,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-@Getter
-@Setter
+@Data
 public abstract class KnowledgeObject extends GameObject {
 
     private static final long serialVersionUID = 1L;
@@ -42,26 +40,37 @@ public abstract class KnowledgeObject extends GameObject {
     public static final String OBJECT_TYPE = KnowledgeObject.class.getSimpleName();
 
     /**
-     * Returns the game object ID from the knowledge RID.
+     * Knowledge ID.
      */
-    public static long rid2Id(long rid) {
-        return (rid << 32) | ID_FLAG;
+    private long kid;
+
+    /**
+     * Returns the game object ID from the knowledge ID.
+     */
+    public static long kid2Id(long tid) {
+        return (tid << 32) | ID_FLAG;
     }
 
     /**
-     * Returns the knowledge RID from the game object ID.
+     * Returns the knowledge ID from the game object ID.
      */
-    public static long id2Rid(long id) {
+    public static long id2Kid(long id) {
         return (id >> 32);
     }
 
     public KnowledgeObject(long id) {
-        super(rid2Id(id));
+        super(kid2Id(id));
+        this.kid = id;
+    }
+
+    public void setKid(long kid) {
+        this.kid = kid;
+        setId(kid);
     }
 
     @Override
     public void setId(long id) {
-        super.setId(rid2Id(id));
+        super.setId(kid2Id(id));
     }
 
     @Override
@@ -74,13 +83,4 @@ public abstract class KnowledgeObject extends GameObject {
      */
     public abstract String getKnowledgeType();
 
-    @Override
-    public void setDirty(boolean dirty) {
-        // knowledge object is immutable
-    }
-
-    @Override
-    public boolean isDirty() {
-        return false;
-    }
 }

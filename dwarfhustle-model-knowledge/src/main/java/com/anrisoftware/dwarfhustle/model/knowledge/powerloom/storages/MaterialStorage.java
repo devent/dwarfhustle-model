@@ -20,7 +20,6 @@ package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.GameObjectKnowledge.retrieveFloat;
 
 import com.anrisoftware.dwarfhustle.model.api.materials.Material;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.google.auto.service.AutoService;
 
@@ -41,10 +40,10 @@ public class MaterialStorage implements GameObjectKnowledge {
     }
 
     @Override
-    public KnowledgeObject retrieve(Object o, GameObject go) {
+    public KnowledgeObject retrieve(Object o, KnowledgeObject go) {
         var next = (LogicObject) o;
         var m = (Material) go;
-        m.setRid((long) next.surrogateValueInverse.symbolId);
+        m.setKid(next.surrogateValueInverse.symbolId);
         m.setName(next.surrogateValueInverse.symbolName);
         m.setMeltingPoint(retrieveFloat("melting-point-material", m.getName()));
         m.setDensity(retrieveFloat("density-of-material", m.getName()));

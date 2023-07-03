@@ -37,40 +37,58 @@ public class GameChunkPos extends GameBlockPos {
 
     public final GameBlockPos ep;
 
-	public GameChunkPos(int mapid, int x, int y, int z, int ex, int ey, int ez) {
-		this(new GameBlockPos(mapid, x, y, z), new GameBlockPos(mapid, ex, ey, ez));
-	}
+    public final float centerx;
 
-	public GameChunkPos(GameBlockPos pos, GameBlockPos endPos) {
-		super(pos.getMapid(), pos.getX(), pos.getY(), pos.getZ());
-		this.ep = endPos;
-	}
+    public final float centery;
 
-	/**
-	 * Returns string that can be used to store the block position. For example:
-	 * <ul>
-	 * <li>{@code 0/0/0/0/0/0/0}
-	 * <li>{@code 1/0/0/0/64/64/64}
-	 * </ul>
-	 */
-	@Override
-	public String toSaveString() {
-		return super.toSaveString() + "/" + ep.getX() + "/" + ep.getY() + "/" + ep.getZ();
-	}
+    public final float centerz;
 
-	/**
-	 * Returns the {@link GameChunkPos} parsed from the string.
-	 */
-	public static GameChunkPos parse(String s) {
-		var split = StringUtils.split(s, "/");
-		var pos = new GameBlockPos(toInt(split[0]), toInt(split[1]), toInt(split[2]), toInt(split[3]));
-		var ep = new GameBlockPos(toInt(split[0]), toInt(split[4]), toInt(split[5]), toInt(split[6]));
-		return new GameChunkPos(pos, ep);
-	}
+    public final float extentx;
 
-	private static int toInt(String s) {
-		return Integer.parseInt(s);
-	}
+    public final float extenty;
+
+    public final float extentz;
+
+    public GameChunkPos(int mapid, int x, int y, int z, int ex, int ey, int ez) {
+        this(new GameBlockPos(mapid, x, y, z), new GameBlockPos(mapid, ex, ey, ez));
+    }
+
+    public GameChunkPos(GameBlockPos pos, GameBlockPos endPos) {
+        super(pos.getMapid(), pos.getX(), pos.getY(), pos.getZ());
+        this.ep = endPos;
+        this.extentx = (endPos.x - pos.x) / 2f;
+        this.extenty = (endPos.y - pos.y) / 2f;
+        this.extentz = (endPos.z - pos.z) / 2f;
+        this.centerx = pos.x + extentx;
+        this.centery = pos.y + extenty;
+        this.centerz = pos.z + extentz;
+    }
+
+    /**
+     * Returns string that can be used to store the block position. For example:
+     * <ul>
+     * <li>{@code 0/0/0/0/0/0/0}
+     * <li>{@code 1/0/0/0/64/64/64}
+     * </ul>
+     */
+    @Override
+    public String toSaveString() {
+        return super.toSaveString() + "/" + ep.getX() + "/" + ep.getY() + "/" + ep.getZ();
+    }
+
+    /**
+     * Returns the {@link GameChunkPos} parsed from the string.
+     */
+    public static GameChunkPos parse(String s) {
+        var split = StringUtils.split(s, "/");
+        var pos = new GameBlockPos(toInt(split[0]), toInt(split[1]), toInt(split[2]), toInt(split[3]));
+        var ep = new GameBlockPos(toInt(split[0]), toInt(split[4]), toInt(split[5]), toInt(split[6]));
+        return new GameChunkPos(pos, ep);
+    }
+
+    private static int toInt(String s) {
+        return Integer.parseInt(s);
+    }
 
     public int getSizeX() {
         return ep.x - x;

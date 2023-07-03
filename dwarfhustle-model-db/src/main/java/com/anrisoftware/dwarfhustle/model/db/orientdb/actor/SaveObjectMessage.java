@@ -18,13 +18,13 @@
 package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 
 import akka.actor.typed.ActorRef;
 import lombok.ToString;
 
 /**
- * Message to save a {@link GameObject} in the database. Responds with either
+ * Message to save a {@link StoredObject} in the database. Responds with either
  * {@link DbSuccessMessage} or {@link DbErrorMessage}.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
@@ -32,9 +32,9 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class SaveObjectMessage<T extends Message> extends DbMessage<T> {
 
-    public final GameObject go;
+    public final StoredObject go;
 
-    public SaveObjectMessage(ActorRef<T> replyTo, GameObject go) {
+    public SaveObjectMessage(ActorRef<T> replyTo, StoredObject go) {
         super(replyTo);
         this.go = go;
     }

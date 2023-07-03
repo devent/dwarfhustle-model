@@ -48,10 +48,10 @@ import org.eclipse.collections.impl.factory.primitive.ObjectLongMaps;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameChunkPos;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
+import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.OElement;
@@ -72,7 +72,7 @@ public class MapChunkStorage extends AbstractGameObjectStorage {
     }
 
     @Override
-    public void store(Object db, Object o, GameObject go) {
+    public void store(Object db, Object o, StoredObject go) {
         var v = (OElement) o;
         var mc = (MapChunk) go;
         var odb = (ODatabaseDocument) db;
@@ -109,7 +109,7 @@ public class MapChunkStorage extends AbstractGameObjectStorage {
     }
 
     @Override
-    public GameObject retrieve(Object db, Object o, GameObject go) {
+    public StoredObject retrieve(Object db, Object o, StoredObject go) {
         var v = (OElement) o;
         var mc = (MapChunk) go;
         Map<String, OElement> oblocks = v.getProperty(BLOCKS_FIELD);
@@ -143,7 +143,7 @@ public class MapChunkStorage extends AbstractGameObjectStorage {
     }
 
     @Override
-    public GameObject create() {
+    public StoredObject create() {
         return new MapChunk();
     }
 }

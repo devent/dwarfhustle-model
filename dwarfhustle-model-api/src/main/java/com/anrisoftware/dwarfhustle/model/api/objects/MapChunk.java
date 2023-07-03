@@ -29,8 +29,8 @@ import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.factory.primitive.IntLongMaps;
 import org.eclipse.collections.impl.factory.primitive.ObjectLongMaps;
 
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
@@ -42,20 +42,20 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-@Getter
+@Data
 public class MapChunk extends StoredObject {
 
     private static final long serialVersionUID = 1L;
 
     public static final String OBJECT_TYPE = MapChunk.class.getSimpleName();
 
-    private ObjectLongMap<GameChunkPos> chunks = ObjectLongMaps.immutable.empty();
+    public ObjectLongMap<GameChunkPos> chunks = ObjectLongMaps.immutable.empty();
 
-    private MapIterable<GameBlockPos, MapBlock> blocks = Maps.immutable.empty();
+    public MapIterable<GameBlockPos, MapBlock> blocks = Maps.immutable.empty();
 
-    private GameChunkPos pos;
+    public GameChunkPos pos;
 
-    private boolean root = false;
+    public boolean root = false;
 
     /**
      * Contains the IDs of the chunks in each direction that are neighboring this
@@ -63,12 +63,12 @@ public class MapChunk extends StoredObject {
      *
      * @see NeighboringDir
      */
-    private IntLongMap chunkDir = IntLongMaps.mutable.empty();
+    public IntLongMap chunkDir = IntLongMaps.mutable.empty();
 
     /**
      * ID of the parent chunk.
      */
-    private long parent;
+    public long parent;
 
     public MapChunk(long id) {
         super(id);
@@ -93,82 +93,24 @@ public class MapChunk extends StoredObject {
         return OBJECT_TYPE;
     }
 
-    public void setChunks(ObjectLongMap<GameChunkPos> chunks) {
-        this.chunks = chunks;
-        setDirty(true);
-    }
-
-    public void setBlocks(MapIterable<GameBlockPos, MapBlock> blocks) {
-        this.blocks = blocks;
-        setDirty(true);
+    @Override
+    public boolean isDirty() {
+        MapChunk old = getOld();
+        return old.parent != parent //
+                || Objects.equals(old.pos, pos) //
+                || Objects.equals(old.chunks.keySet(), chunks.keySet()) //
+                || Objects.equals(old.blocks, blocks) //
+                || Objects.equals(old.chunkDir, chunkDir) //
+        ;
     }
 
     public Optional<MapBlock> getBlock(GameBlockPos pos) {
         return Optional.ofNullable(blocks.get(pos));
     }
 
-    /**
-     * Sets the X, Y and Z start position and end position of a {@link MapChunk} on
-     * the game map.
-     */
-    public void setPos(GameChunkPos pos) {
-        if (!Objects.equals(this.pos, pos)) {
-            setDirty(true);
-            this.pos = pos;
-        }
-    }
-
-    public int getMapId() {
-        return pos.mapid;
-    }
-
-    /**
-     * Returns the start {@link GameBlockPos} position of the chunk.
-     */
-    public GameBlockPos getSp() {
-        return pos;
-    }
-
-    /**
-     * Returns the end {@link GameBlockPos} position of the chunk.
-     */
-    public GameBlockPos getEp() {
-        return pos.getEp();
-    }
-
-    public float getWidth() {
-        return getEp().getDiffX(getSp());
-    }
-
-    public float getHeight() {
-        return getEp().getDiffY(getSp());
-    }
-
-    public float getDepth() {
-        return getEp().getDiffZ(getSp());
-    }
-
-    /**
-     * Sets that this block is the top most block.
-     */
-    public void setRoot(boolean root) {
-        if (this.root != root) {
-            setDirty(true);
-            this.root = root;
-        }
-    }
-
-    public void setParent(long parent) {
-        if (this.parent != parent) {
-            this.parent = parent;
-            setDirty(true);
-        }
-    }
-
     public void setNeighbor(NeighboringDir dir, long id) {
         var m = (MutableIntLongMap) chunkDir;
         m.put(dir.ordinal(), id);
-        setDirty(true);
     }
 
     public long getNeighbor(NeighboringDir dir) {
@@ -287,7 +229,7 @@ public class MapChunk extends StoredObject {
             return 0;
         }
         if (blocks.isEmpty()) {
-            long id = chunks.get(new GameChunkPos(getMapId(), x, y, z, ex, ey, ez));
+            long id = chunks.get(new GameChunkPos(pos.mapid, x, y, z, ex, ey, ez));
             if (id != 0) {
                 return id;
             }

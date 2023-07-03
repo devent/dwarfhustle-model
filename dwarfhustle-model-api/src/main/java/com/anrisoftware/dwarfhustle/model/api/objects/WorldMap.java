@@ -18,13 +18,13 @@
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.map.primitive.MutableIntLongMap;
 import org.eclipse.collections.impl.factory.primitive.IntLongMaps;
 
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
@@ -36,114 +36,98 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-@Getter
+@Data
 public class WorldMap extends StoredObject {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public static final String OBJECT_TYPE = WorldMap.class.getSimpleName();
+    public static final String OBJECT_TYPE = WorldMap.class.getSimpleName();
 
-	/**
-	 * The name of the world.
-	 */
-	private String name;
+    /**
+     * The name of the world.
+     */
+    public String name;
 
-	/**
-	 * The distance of 1° latitude in km.
-	 */
-	private float distanceLat;
+    /**
+     * The distance of 1° latitude in km.
+     */
+    public float distanceLat;
 
-	/**
-	 * The distance of 1° longitude in km.
-	 */
-	private float distanceLon;
+    /**
+     * The distance of 1° longitude in km.
+     */
+    public float distanceLon;
 
-	/**
-	 * The world time at 0° 0′ 0″ N, 0° 0′ 0″ E. Each game map must convert the time
-	 * to the specific time zone.
-	 */
-	private LocalDateTime time = LocalDateTime.now();
+    /**
+     * The world time at 0° 0′ 0″ N, 0° 0′ 0″ E. Each game map must convert the time
+     * to the specific time zone.
+     */
+    public LocalDateTime time = LocalDateTime.now();
 
-	/**
-	 * Mapid:=id map of {@link GameMap} game maps of the world.
-	 */
-	private MutableIntLongMap maps = IntLongMaps.mutable.empty();
+    /**
+     * Mapid:=id map of {@link GameMap} game maps of the world.
+     */
+    public MutableIntLongMap maps = IntLongMaps.mutable.empty();
 
-	/**
-	 * The current {@link GameMap} mapid.
-	 */
-	private int currentMapid = 0;
+    /**
+     * The current {@link GameMap} mapid.
+     */
+    public int currentMapid = 0;
 
-	public WorldMap(long id) {
-		super(id);
-	}
+    public WorldMap(long id) {
+        super(id);
+    }
 
-	public WorldMap(byte[] idbuf) {
-		super(idbuf);
-	}
+    public WorldMap(byte[] idbuf) {
+        super(idbuf);
+    }
 
-	@Override
-	public String getObjectType() {
-		return OBJECT_TYPE;
-	}
+    @Override
+    public String getObjectType() {
+        return OBJECT_TYPE;
+    }
 
-	/**
-	 * Sets the world's name.
-	 */
-	public void setName(String name) {
-		if (!StringUtils.equals(this.name, name)) {
-			setDirty(true);
-			this.name = name;
-		}
-	}
+    @Override
+    public boolean isDirty() {
+        WorldMap old = getOld();
+        return old.name != name //
+                || old.currentMapid != currentMapid //
+                || old.distanceLat != distanceLat //
+                || old.distanceLon != distanceLon //
+                || Objects.equals(old.time, time) //
+                || Objects.equals(old.maps.keySet(), maps.keySet()) //
+        ;
+    }
 
-	/**
-	 * Sets the distance of 1° latitude and longitude in km.
-	 */
-	public void setDistance(float lat, float lon) {
-		if (this.distanceLat != lat) {
-			setDirty(true);
-			this.distanceLat = lat;
-		}
-		if (this.distanceLon != lon) {
-			setDirty(true);
-			this.distanceLon = lon;
-		}
-	}
+    /**
+     * Sets the distance of 1° latitude and longitude in km.
+     */
+    public void setDistance(float lat, float lon) {
+        if (this.distanceLat != lat) {
+            this.distanceLat = lat;
+        }
+        if (this.distanceLon != lon) {
+            this.distanceLon = lon;
+        }
+    }
 
-	/**
-	 * Returns the vertical size in km.
-	 */
-	public float getSizeVertical() {
-		return 360f * distanceLat;
-	}
+    /**
+     * Returns the vertical size in km.
+     */
+    public float getSizeVertical() {
+        return 360f * distanceLat;
+    }
 
-	/**
-	 * Returns the horizontal size in km.
-	 */
-	public float getSizeHorizontal() {
-		return 360f * distanceLon;
-	}
+    /**
+     * Returns the horizontal size in km.
+     */
+    public float getSizeHorizontal() {
+        return 360f * distanceLon;
+    }
 
-	/**
-	 * Sets the world's time.
-	 */
-	public void setTime(LocalDateTime time) {
-		if (!this.time.equals(time)) {
-			this.time = time;
-			setDirty(true);
-		}
-	}
+    public void addMap(GameMap map) {
+        this.maps.put(map.getMapid(), map.getId());
+        map.setWorld(id);
+    }
 
-	public void addMap(GameMap map) {
-		this.maps.put(map.getMapid(), map.getId());
-		map.setWorld(this);
-	}
-
-	public void setCurrentMapid(int currentMapid) {
-		if (this.currentMapid != currentMapid) {
-			this.currentMapid = currentMapid;
-			setDirty(true);
-		}
-	}
 }

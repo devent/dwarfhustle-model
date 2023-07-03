@@ -17,14 +17,14 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.util.Objects;
+
 import org.eclipse.collections.api.map.primitive.IntLongMap;
 import org.eclipse.collections.api.map.primitive.MutableIntLongMap;
 import org.eclipse.collections.impl.factory.primitive.IntLongMaps;
 
-import com.google.common.base.Objects;
-
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
@@ -36,7 +36,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-@Getter
+@Data
 public class MapBlock extends GameMapObject {
 
     private static final int MINED_POS = 0;
@@ -54,12 +54,12 @@ public class MapBlock extends GameMapObject {
     /**
      * ID of the material.
      */
-    private long material = -1;
+    public long material = -1;
 
     /**
      * ID of the object.
      */
-    private long object = -1;
+    public long object = -1;
 
     /**
      * Bit field that defines the properties of the map tile.
@@ -70,7 +70,7 @@ public class MapBlock extends GameMapObject {
      * <li>{@code 0000 0000 0000 0000 0000 0000 0000 1000} - ramp
      * </ul>
      */
-    private PropertiesSet p = new PropertiesSet();
+    public PropertiesSet p = new PropertiesSet();
 
     /**
      * Contains the IDs of the blocks in each direction that are neighboring this
@@ -78,7 +78,7 @@ public class MapBlock extends GameMapObject {
      *
      * @see NeighboringDir
      */
-    private IntLongMap blockDir = IntLongMaps.mutable.empty();
+    public IntLongMap blockDir = IntLongMaps.mutable.empty();
 
     public MapBlock(long id) {
         super(id);
@@ -93,64 +93,46 @@ public class MapBlock extends GameMapObject {
         return OBJECT_TYPE;
     }
 
-    /**
-     * Sets the ID of the material.
-     */
-    public void setMaterial(long material) {
-        if (this.material != material) {
-            setDirty(true);
-            this.material = material;
-        }
+    @Override
+    public boolean isDirty() {
+        MapBlock old = getOld();
+        return old.material != material //
+                || old.object != object //
+                || Objects.equals(old.p, p) //
+                || Objects.equals(old.blockDir, blockDir) //
+        ;
     }
 
     /**
      * Sets the RID of the material.
      */
     public void setMaterialRid(long material) {
-        setMaterial(KnowledgeObject.rid2Id(material));
+        setMaterial(KnowledgeObject.kid2Id(material));
     }
 
     /**
      * Returns the material RID.
      */
     public long getMaterialRid() {
-        return KnowledgeObject.id2Rid(material);
-    }
-
-    /**
-     * Sets the ID of the object.
-     */
-    public void setObject(long object) {
-        if (this.object != object) {
-            setDirty(true);
-            this.object = object;
-        }
+        return KnowledgeObject.id2Kid(material);
     }
 
     /**
      * Sets the RID of the material.
      */
     public void setObjectRid(long object) {
-        setObject(KnowledgeObject.rid2Id(object));
+        setObject(KnowledgeObject.kid2Id(object));
     }
 
     /**
      * Returns the object RID.
      */
     public long getObjectRid() {
-        return KnowledgeObject.id2Rid(object);
-    }
-
-    public void setP(PropertiesSet p) {
-        if (!Objects.equal(this.p, p)) {
-            setDirty(true);
-            this.p = p;
-        }
+        return KnowledgeObject.id2Kid(object);
     }
 
     public void setMined(boolean mined) {
         p.set(MINED_POS);
-        setDirty(true);
     }
 
     public boolean isMined() {
@@ -163,7 +145,6 @@ public class MapBlock extends GameMapObject {
 
     public void setNaturalRoof(boolean roof) {
         p.set(roof, NATURAL_ROOF_POS);
-        setDirty(true);
     }
 
     public boolean isNaturalRoof() {
@@ -172,7 +153,6 @@ public class MapBlock extends GameMapObject {
 
     public void setNaturalFloor(boolean floor) {
         p.set(floor, NATURAL_FLOOR_POS);
-        setDirty(true);
     }
 
     public boolean isNaturalFloor() {
@@ -181,7 +161,6 @@ public class MapBlock extends GameMapObject {
 
     public void setRamp(boolean ramp) {
         p.set(ramp, RAMP_POS);
-        setDirty(true);
     }
 
     public boolean isRamp() {
@@ -191,7 +170,6 @@ public class MapBlock extends GameMapObject {
     public void setNeighbor(NeighboringDir dir, long id) {
         var m = (MutableIntLongMap) blockDir;
         m.put(dir.ordinal(), id);
-        setDirty(true);
     }
 
     public long getNeighbor(NeighboringDir dir) {

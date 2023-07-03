@@ -336,7 +336,6 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
             assertThat(storages, hasKey(type));
             var s = storages.get(type);
             var go = s.retrieve(next, s.create());
-            go.setId((long) go.getRid());
             list.add(go);
         }
         return new KnowledgeLoadedObject(ids.generate(), type, list.asUnmodifiable());

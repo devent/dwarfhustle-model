@@ -17,12 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import com.google.common.base.Objects;
-
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
 /**
@@ -33,15 +30,17 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-@Getter
-@Setter
-public class GameMapObject extends StoredObject {
+@Data
+public abstract class GameMapObject extends StoredObject {
 
 	private static final long serialVersionUID = 1L;
 
 	public static final String OBJECT_TYPE = GameMapObject.class.getSimpleName();
 
-    private GameBlockPos pos;
+    /**
+     * Sets the X, Y and Z position of a {@link GameMapObject} on the game map.
+     */
+    public GameBlockPos pos;
 
 	public GameMapObject(long id) {
 		super(id);
@@ -66,13 +65,4 @@ public class GameMapObject extends StoredObject {
 		return OBJECT_TYPE;
 	}
 
-	/**
-	 * Sets the X, Y and Z position of a {@link GameMapObject} on the game map.
-	 */
-	public void setPos(GameBlockPos pos) {
-        if (!Objects.equal(this.pos, pos)) {
-			setDirty(true);
-			this.pos = pos;
-		}
-	}
 }

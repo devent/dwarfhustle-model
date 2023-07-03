@@ -22,10 +22,10 @@ import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapObje
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapObjectSchema.Y_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapObjectSchema.Z_FIELD;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
+import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.orientechnologies.orient.core.record.OElement;
 
 /**
@@ -36,29 +36,28 @@ import com.orientechnologies.orient.core.record.OElement;
  */
 public class AbstractGameMapObjectStorage extends AbstractGameObjectStorage {
 
-	@Override
-	public void store(Object db, Object o, GameObject go) {
-		var v = (OElement) o;
-		var gmo = (GameMapObject) go;
-		v.setProperty(MAPID_FIELD, gmo.getPos().getMapid());
-		v.setProperty(X_FIELD, gmo.getPos().getX());
-		v.setProperty(Y_FIELD, gmo.getPos().getY());
-		v.setProperty(Z_FIELD, gmo.getPos().getZ());
-		super.store(db, o, go);
-	}
+    @Override
+    public void store(Object db, Object o, StoredObject go) {
+        var v = (OElement) o;
+        var gmo = (GameMapObject) go;
+        v.setProperty(MAPID_FIELD, gmo.pos.mapid);
+        v.setProperty(X_FIELD, gmo.pos.x);
+        v.setProperty(Y_FIELD, gmo.pos.y);
+        v.setProperty(Z_FIELD, gmo.pos.z);
+        super.store(db, o, go);
+    }
 
-	@Override
-	public GameObject retrieve(Object db, Object o, GameObject go) {
-		var v = (OElement) o;
-		var gmo = (GameMapObject) go;
-		gmo.setPos(new GameBlockPos(v.getProperty(MAPID_FIELD), v.getProperty(X_FIELD), v.getProperty(Y_FIELD),
-				v.getProperty(Z_FIELD)));
-		gmo.setRid(v.getIdentity());
-		return super.retrieve(db, o, go);
-	}
+    @Override
+    public StoredObject retrieve(Object db, Object o, StoredObject go) {
+        var v = (OElement) o;
+        var gmo = (GameMapObject) go;
+        gmo.pos = new GameBlockPos(v.getProperty(MAPID_FIELD), v.getProperty(X_FIELD), v.getProperty(Y_FIELD),
+                v.getProperty(Z_FIELD));
+        return super.retrieve(db, o, go);
+    }
 
-	@Override
-	public GameObject create() {
-		return new MapBlock();
-	}
+    @Override
+    public StoredObject create() {
+        return new MapBlock();
+    }
 }

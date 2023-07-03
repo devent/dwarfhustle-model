@@ -19,8 +19,8 @@ package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import java.io.Serializable;
 
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
@@ -32,7 +32,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Getter
+@Data
 public class GameObject implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -57,18 +57,7 @@ public class GameObject implements Serializable {
 	 * Unique ID of the object.
 	 */
 	@EqualsAndHashCode.Include
-	private long id;
-
-	/**
-	 * Record ID set after the object was once stored in the database.
-	 */
-	private Serializable rid = null;
-
-	/**
-	 * Set to true if the object had changed state and should be stored in the
-	 * database.
-	 */
-	private boolean dirty = false;
+    public long id;
 
 	public GameObject(long id) {
 		this.id = id;
@@ -82,10 +71,6 @@ public class GameObject implements Serializable {
         return GameObject.OBJECT_TYPE;
 	}
 
-	public void setDirty(boolean dirty) {
-		this.dirty = dirty;
-	}
-
 	public void setId(long id) {
 		this.id = id;
 	}
@@ -93,9 +78,5 @@ public class GameObject implements Serializable {
     public void setId(byte[] id) {
         setId(toId(id));
     }
-
-	public void setRid(Serializable rid) {
-		this.rid = rid;
-	}
 
 }

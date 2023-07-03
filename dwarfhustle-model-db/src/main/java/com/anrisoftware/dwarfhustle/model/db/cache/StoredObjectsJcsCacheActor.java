@@ -160,12 +160,12 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
 
     @Override
     protected void storeValueDb(Object key, GameObject go) {
-        actor.tell(new SaveObjectMessage<>(dbResponseAdapter, go));
+        actor.tell(new SaveObjectMessage<>(dbResponseAdapter, (StoredObject) go));
     }
 
     @Override
     protected void storeValueDb(Class<?> keyType, Function<GameObject, Object> key, GameObject go) {
-        actor.tell(new SaveObjectMessage<>(dbResponseAdapter, go));
+        actor.tell(new SaveObjectMessage<>(dbResponseAdapter, (StoredObject) go));
     }
 
     @Override

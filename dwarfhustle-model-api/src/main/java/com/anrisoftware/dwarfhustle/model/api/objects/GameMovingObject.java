@@ -17,8 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
@@ -30,32 +30,32 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-@Getter
-public class GameMovingObject extends GameMapObject {
+@Data
+public abstract class GameMovingObject extends GameMapObject {
 
-	private static final long serialVersionUID = -2588184910010763410L;
+    private static final long serialVersionUID = 1L;
 
 	public static final String OBJECT_TYPE = GameMovingObject.class.getSimpleName();
 
-	private float xx;
+    public float xx;
 
-	private float xy;
+    public float xy;
 
-	private float xz;
+    public float xz;
 
-	private float vx;
+    public float vx;
 
-	private float vy;
+    public float vy;
 
-	private float vz;
+    public float vz;
 
-	private float rx;
+    public float rx;
 
-	private float ry;
+    public float ry;
 
-	private float rz;
+    public float rz;
 
-	private float rw;
+    public float rw;
 
 	public GameMovingObject(long id) {
 		super(id);
@@ -69,75 +69,4 @@ public class GameMovingObject extends GameMapObject {
 	public String getObjectType() {
 		return OBJECT_TYPE;
 	}
-
-	public void setXx(float xx) {
-		if (this.xx != xx) {
-			this.xx = xx;
-			setDirty(true);
-		}
-	}
-
-	public void setXy(float xy) {
-		if (this.xy != xy) {
-			this.xy = xy;
-			setDirty(true);
-		}
-	}
-
-	public void setXz(float xz) {
-		if (this.xz != xz) {
-			this.xz = xz;
-			setDirty(true);
-		}
-	}
-
-	public void setVx(float vx) {
-		if (this.vx != vx) {
-			this.vx = vx;
-			setDirty(true);
-		}
-	}
-
-	public void setVy(float vy) {
-		if (this.vy != vy) {
-			this.vy = vy;
-			setDirty(true);
-		}
-	}
-
-	public void setVz(float vz) {
-		if (this.vz != vz) {
-			this.vz = vz;
-			setDirty(true);
-		}
-	}
-
-	public void setRx(float rx) {
-		if (this.rx != rx) {
-			this.rx = rx;
-			setDirty(true);
-		}
-	}
-
-	public void setRy(float ry) {
-		if (this.ry != ry) {
-			this.ry = ry;
-			setDirty(true);
-		}
-	}
-
-	public void setRz(float rz) {
-		if (this.rz != rz) {
-			this.rz = rz;
-			setDirty(true);
-		}
-	}
-
-	public void setRw(float rw) {
-		if (this.rw != rw) {
-			this.rw = rw;
-			setDirty(true);
-		}
-	}
-
 }
