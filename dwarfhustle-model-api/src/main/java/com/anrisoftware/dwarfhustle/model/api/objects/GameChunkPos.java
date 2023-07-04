@@ -37,18 +37,6 @@ public class GameChunkPos extends GameBlockPos {
 
     public final GameBlockPos ep;
 
-    public final float centerx;
-
-    public final float centery;
-
-    public final float centerz;
-
-    public final float extentx;
-
-    public final float extenty;
-
-    public final float extentz;
-
     public GameChunkPos(int mapid, int x, int y, int z, int ex, int ey, int ez) {
         this(new GameBlockPos(mapid, x, y, z), new GameBlockPos(mapid, ex, ey, ez));
     }
@@ -56,12 +44,6 @@ public class GameChunkPos extends GameBlockPos {
     public GameChunkPos(GameBlockPos pos, GameBlockPos endPos) {
         super(pos.getMapid(), pos.getX(), pos.getY(), pos.getZ());
         this.ep = endPos;
-        this.extentx = (endPos.x - pos.x) / 2f;
-        this.extenty = (endPos.y - pos.y) / 2f;
-        this.extentz = (endPos.z - pos.z) / 2f;
-        this.centerx = pos.x + extentx;
-        this.centery = pos.y + extenty;
-        this.centerz = pos.z + extentz;
     }
 
     /**

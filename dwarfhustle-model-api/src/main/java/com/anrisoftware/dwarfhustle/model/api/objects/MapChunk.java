@@ -70,6 +70,18 @@ public class MapChunk extends StoredObject {
      */
     public long parent;
 
+    public float centerx;
+
+    public float centery;
+
+    public float centerz;
+
+    public float extentx;
+
+    public float extenty;
+
+    public float extentz;
+
     public MapChunk(long id) {
         super(id);
     }
@@ -80,12 +92,12 @@ public class MapChunk extends StoredObject {
 
     public MapChunk(long id, GameChunkPos pos) {
         super(id);
-        this.pos = pos;
+        setPos(pos);
     }
 
     public MapChunk(byte[] idbuf, GameChunkPos pos) {
         super(idbuf);
-        this.pos = pos;
+        setPos(pos);
     }
 
     @Override
@@ -95,13 +107,37 @@ public class MapChunk extends StoredObject {
 
     @Override
     public boolean isDirty() {
-        MapChunk old = getOld();
-        return old.parent != parent //
-                || Objects.equals(old.pos, pos) //
-                || Objects.equals(old.chunks.keySet(), chunks.keySet()) //
-                || Objects.equals(old.blocks, blocks) //
-                || Objects.equals(old.chunkDir, chunkDir) //
+        MapChunk o = getOld();
+        return o.parent != parent //
+                || o.extentx != extentx || o.extenty != extenty || o.extentz != extentz || o.centerx != centerx
+                || o.centery != centery || o.centerz != centerz || Objects.equals(o.pos, pos) //
+                || Objects.equals(o.chunks.keySet(), chunks.keySet()) //
+                || Objects.equals(o.blocks, blocks) //
+                || Objects.equals(o.chunkDir, chunkDir) //
         ;
+    }
+
+    /**
+     * Updates the world coordinates center and extend of this cunk.
+     *
+     * @param centerOffsetX see {@link GameMap#centerOffsetX}
+     * @param centerOffsetY see {@link GameMap#centerOffsetY}
+     * @param centerOffsetZ see {@link GameMap#centerOffsetZ}
+     * @param blockSizeX    see {@link GameMap#blockSizeX}
+     * @param blockSizeY    see {@link GameMap#blockSizeY}
+     * @param blockSizeZ    see {@link GameMap#blockSizeZ}
+     */
+    public void updateCenterExtent(float centerOffsetX, float centerOffsetY, float centerOffsetZ, float blockSizeX,
+            float blockSizeY, float blockSizeZ) {
+        float ex = (pos.ep.x - pos.x) / 2f;
+        float ey = (pos.ep.y - pos.y) / 2f;
+        float ez = (pos.ep.z - pos.z) / 2f;
+        this.extentx = ex * blockSizeX;
+        this.extenty = ey * blockSizeY;
+        this.extentz = ez * blockSizeZ;
+        this.centerx = (pos.x + ex - centerOffsetX) * blockSizeX;
+        this.centery = (pos.y + ey - centerOffsetY) * blockSizeY;
+        this.centerz = (pos.z + ez - centerOffsetZ);
     }
 
     public Optional<MapBlock> getBlock(GameBlockPos pos) {
