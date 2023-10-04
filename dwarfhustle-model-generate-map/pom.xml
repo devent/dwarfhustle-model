@@ -43,6 +43,16 @@
             <artifactId>akka-actor-testkit-typed_${scala.binary.version}</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <!-- Compile dependencies -->
         <dependency>
@@ -62,6 +72,11 @@
             <groupId>edu.isi</groupId>
             <artifactId>stella</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.anrisoftware.globalpom</groupId>
+            <artifactId>globalpomutils-threads</artifactId>
+        </dependency>
+
         <!-- Own modules dependencies -->
         <dependency>
             <groupId>com.anrisoftware.dwarfhustle</groupId>
@@ -77,10 +92,6 @@
             <groupId>com.anrisoftware.dwarfhustle</groupId>
             <artifactId>dwarfhustle-model-db</artifactId>
             <version>0.0.2-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.anrisoftware.globalpom</groupId>
-            <artifactId>globalpomutils-threads</artifactId>
         </dependency>
 	</dependencies>
 </project>

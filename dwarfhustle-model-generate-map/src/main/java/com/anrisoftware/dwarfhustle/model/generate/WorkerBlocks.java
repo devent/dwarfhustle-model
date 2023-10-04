@@ -172,7 +172,7 @@ public class WorkerBlocks {
         gameMapStore.store(db, gmv, m.gameMap);
         gmv.save();
         var wmv = db.newVertex(WorldMap.OBJECT_TYPE);
-        worldMapStore.store(db, wmv, m.gameMap.getWorld());
+        worldMapStore.store(db, wmv, m.worldMap);
         wmv.save();
         var e = wmv.addEdge(gmv, WorldMapSchema.WORLD_CLASS);
         e.save();

@@ -25,6 +25,7 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.Month
 import java.time.ZoneOffset
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -34,12 +35,15 @@ import org.junit.jupiter.api.MethodOrderer.OrderAnnotation
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
+import org.junit.jupiter.api.extension.ExtendWith
 import org.lable.oss.uniqueid.IDGenerator
+import org.mockito.Mockito
+import org.mockito.junit.jupiter.MockitoExtension
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
 import com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage
-import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.actor.DwarfhustleModelActorsModule
+import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.actor.ShutdownMessage
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
@@ -49,13 +53,13 @@ import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap
 import com.anrisoftware.dwarfhustle.model.db.cache.DwarfhustleModelDbcacheModule
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbServerUtils
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbTestUtils
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DwarfhustleModelDbOrientdbModule
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor
 import com.anrisoftware.dwarfhustle.model.generate.GenerateMapMessage.GenerateProgressMessage
 import com.anrisoftware.dwarfhustle.model.generate.WorkerBlocks.WorkerBlocksFactory
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustlePowerloomModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustlePowerloomModule
 import com.anrisoftware.globalpom.threads.properties.internal.PropertiesThreadsModule
 import com.google.inject.Guice
 import com.google.inject.Injector
@@ -74,6 +78,7 @@ import groovy.util.logging.Slf4j
  */
 @Slf4j
 @TestMethodOrder(OrderAnnotation.class)
+@ExtendWith(MockitoExtension.class)
 class GenerateMap {
 
     static final EMBEDDED_SERVER_PROPERTY = System.getProperty("com.anrisoftware.dwarfhustle.model.db.orientdb.objects.embedded-server", "yes")
@@ -85,6 +90,8 @@ class GenerateMap {
     static DbServerUtils dbServerUtils
 
     static DbTestUtils dbTestUtils
+
+    static ActorRef<Message> objectsActor
 
     static ActorRef<Message> powerLoomKnowledgeActor
 
@@ -104,6 +111,8 @@ class GenerateMap {
 
     @BeforeAll
     static void setupActor() {
+        this.objectsActor = Mockito.mock(ActorRef)
+        println objectsActor
         def s = 8
         def blockSize = 4
         def parentDir = File.createTempDir("size_${s}_${blockSize}_")
@@ -129,16 +138,16 @@ class GenerateMap {
                 new PropertiesThreadsModule())
         actor = injector.getInstance(ActorSystemProvider)
         workerFactory = injector.getInstance(WorkerBlocksFactory)
-        PowerLoomKnowledgeActor.create(injector, ofSeconds(1)).whenComplete({ret, ex ->
+        PowerLoomKnowledgeActor.create(injector, ofSeconds(1), CompletableFuture.supplyAsync({ objectsActor })).whenComplete({ret, ex ->
             log_reply_failure "PowerLoomKnowledgeActor.create", ret, ex
-        }).get()
+        }).get(5, TimeUnit.SECONDS)
         KnowledgeJcsCacheActor.create(injector, ofSeconds(1), actor.getObjectsAsync(PowerLoomKnowledgeActor.ID)).whenComplete({ret, ex ->
             log_reply_failure "KnowledgeJcsCacheActor.create", ret, ex
-        }).get()
+        }).get(5, TimeUnit.SECONDS)
         OrientDbActor.create(injector, ofSeconds(1)).whenComplete({ret, ex ->
             log_reply_failure "OrientDbActor.create", ret, ex
             dbActor = ret
-        }).get()
+        }).get(5, TimeUnit.SECONDS)
         gen = injector.getInstance(IdsObjectsProvider.class).get()
         dbTestUtils = new DbTestUtils(dbActor, actor.scheduler, gen)
         dbTestUtils.type = ODatabaseType.PLOCAL
@@ -173,6 +182,7 @@ class GenerateMap {
         wm.time = LocalDateTime.of(500, Month.APRIL, 1, 8, 0)
         def gm = new GameMap(gen.generate())
         gm.mapid = mapParams.mapid
+        gm.world = wm.id
         gm.name = "Stone Fortress"
         gm.width = mapParams.width
         gm.height = mapParams.height
@@ -203,7 +213,7 @@ class GenerateMap {
         def result =
                 AskPattern.ask(
                 actor.getMainActor().getActor(GenerateMapActor.ID),
-                { replyTo -> new GenerateMapMessage(replyTo, progressActor, gm, mapParams.p, mapParams.chunk_size, dbTestUtils.user, dbTestUtils.password, dbTestUtils.database) },
+                { replyTo -> new GenerateMapMessage(replyTo, progressActor, wm, gm, mapParams.p, mapParams.chunk_size, dbTestUtils.user, dbTestUtils.password, dbTestUtils.database) },
                 Duration.ofMinutes(30),
                 actor.scheduler)
         result.whenComplete({ ret, ex ->

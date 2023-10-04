@@ -179,7 +179,7 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
         log.debug("onCachePut {}", m);
         try {
             cache.put(m.key, m.value);
-            storeValueDb(m.key, m.value);
+            storeValueBackend(m.key, m.value);
             m.replyTo.tell(new CacheSuccessMessage<>(m));
         } catch (CacheException e) {
             m.replyTo.tell(new CacheErrorMessage<>(m, e));
@@ -197,7 +197,7 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
             for (var o : m.value) {
                 var go = (GameObject) o;
                 cache.put(m.key.apply(o), go);
-                storeValueDb(m.keyType, m.key, go);
+                storeValueBackend(m.keyType, m.key, go);
             }
             m.replyTo.tell(new CacheSuccessMessage<>(m));
         } catch (CacheException e) {
@@ -263,7 +263,7 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
      */
     protected Behavior<Message> onCacheRetrieveFromBackend(CacheRetrieveFromBackendMessage m) {
         log.debug("onCacheRetrieveFromBackend {}", m);
-        retrieveValueFromDb(m.m, m.consumer);
+        retrieveValueFromBackend(m.m, m.consumer);
         return Behaviors.same();
     }
 
@@ -309,12 +309,12 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
     /**
      * Stores the put value in the database.
      */
-    protected abstract void storeValueDb(Object key, GameObject go);
+    protected abstract void storeValueBackend(Object key, GameObject go);
 
     /**
      * Stores the put value in the database.
      */
-    protected abstract void storeValueDb(Class<?> keyType, Function<GameObject, Object> key, GameObject go);
+    protected abstract void storeValueBackend(Class<?> keyType, Function<GameObject, Object> key, GameObject go);
 
     /**
      * Retrieves the value from the database. Example send a database command:
@@ -326,7 +326,7 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
      * }));
      * </pre>
      */
-    protected abstract void retrieveValueFromDb(CacheGetMessage<?> m, Consumer<GameObject> consumer);
+    protected abstract void retrieveValueFromBackend(CacheGetMessage<?> m, Consumer<GameObject> consumer);
 
     /**
      * Returns the value from the database.
@@ -344,7 +344,7 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
      * return ret.value;
      * </pre>
      */
-    protected abstract <T extends GameObject> T getValueFromDb(Class<T> typeClass, String type, Object key);
+    protected abstract <T extends GameObject> T getValueFromBackend(Class<T> typeClass, String type, Object key);
 
     /**
      * Returns the value for the key directly from the cache without sending of
@@ -357,7 +357,7 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
     }
 
     private GameObject supplyValue(Class<? extends GameObject> typeClass, String type, Object key) {
-        return getValueFromDb(typeClass, type, key);
+        return getValueFromBackend(typeClass, type, key);
     }
 
 }

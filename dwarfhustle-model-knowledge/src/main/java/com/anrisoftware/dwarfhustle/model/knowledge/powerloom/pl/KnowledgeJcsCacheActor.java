@@ -115,22 +115,22 @@ public class KnowledgeJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @Override
-    protected void retrieveValueFromDb(CacheGetMessage<?> m, Consumer<GameObject> consumer) {
+    protected void retrieveValueFromBackend(CacheGetMessage<?> m, Consumer<GameObject> consumer) {
         // nop
     }
 
     @Override
-    protected void storeValueDb(Object key, GameObject go) {
+    protected void storeValueBackend(Object key, GameObject go) {
         // nop
     }
 
     @Override
-    protected void storeValueDb(Class<?> keyType, Function<GameObject, Object> key, GameObject go) {
+    protected void storeValueBackend(Class<?> keyType, Function<GameObject, Object> key, GameObject go) {
         // nop
     }
 
     @Override
-    protected <T extends GameObject> T getValueFromDb(Class<T> typeClass, String type, Object key) {
+    protected <T extends GameObject> T getValueFromBackend(Class<T> typeClass, String type, Object key) {
         throw new UnsupportedOperationException();
     }
 

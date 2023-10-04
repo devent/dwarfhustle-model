@@ -21,6 +21,7 @@ import java.util.Map;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
+import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
 
 import akka.actor.typed.ActorRef;
 import lombok.RequiredArgsConstructor;
@@ -74,6 +75,8 @@ public class GenerateMapMessage extends Message {
     public final ActorRef<GenerateResponseMessage> replyTo;
 
     public final ActorRef<GenerateProgressMessage> progressTo;
+
+    public final WorldMap worldMap;
 
     public final GameMap gameMap;
 

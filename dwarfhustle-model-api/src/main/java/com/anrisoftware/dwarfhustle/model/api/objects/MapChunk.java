@@ -118,7 +118,7 @@ public class MapChunk extends StoredObject {
     }
 
     /**
-     * Updates the world coordinates center and extend of this cunk.
+     * Updates the world coordinates center and extend of this chunk.
      *
      * @param centerOffsetX see {@link GameMap#centerOffsetX}
      * @param centerOffsetY see {@link GameMap#centerOffsetY}
@@ -137,7 +137,7 @@ public class MapChunk extends StoredObject {
         this.extentz = ez * blockSizeZ;
         this.centerx = (pos.x + ex - centerOffsetX) * blockSizeX;
         this.centery = (pos.y + ey - centerOffsetY) * blockSizeY;
-        this.centerz = (pos.z + ez - centerOffsetZ);
+        this.centerz = (pos.z + ez - centerOffsetZ) * blockSizeZ;
     }
 
     public Optional<MapBlock> getBlock(GameBlockPos pos) {

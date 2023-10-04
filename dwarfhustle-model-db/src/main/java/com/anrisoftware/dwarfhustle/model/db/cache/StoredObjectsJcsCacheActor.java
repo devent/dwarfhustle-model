@@ -159,17 +159,17 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @Override
-    protected void storeValueDb(Object key, GameObject go) {
+    protected void storeValueBackend(Object key, GameObject go) {
         actor.tell(new SaveObjectMessage<>(dbResponseAdapter, (StoredObject) go));
     }
 
     @Override
-    protected void storeValueDb(Class<?> keyType, Function<GameObject, Object> key, GameObject go) {
+    protected void storeValueBackend(Class<?> keyType, Function<GameObject, Object> key, GameObject go) {
         actor.tell(new SaveObjectMessage<>(dbResponseAdapter, (StoredObject) go));
     }
 
     @Override
-    protected void retrieveValueFromDb(CacheGetMessage<?> m, Consumer<GameObject> consumer) {
+    protected void retrieveValueFromBackend(CacheGetMessage<?> m, Consumer<GameObject> consumer) {
         retrieveGameObject(m.type, (long) m.key, consumer);
     }
 
@@ -181,7 +181,7 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @Override
-    protected <T extends GameObject> T getValueFromDb(Class<T> typeClass, String type, Object key) {
+    protected <T extends GameObject> T getValueFromBackend(Class<T> typeClass, String type, Object key) {
         return og.get(typeClass, type, key);
     }
 
