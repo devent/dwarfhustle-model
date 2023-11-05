@@ -18,6 +18,8 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl
 
 import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomUtils.*
+import static java.util.concurrent.CompletableFuture.supplyAsync
+import static org.mockito.Mockito.mock
 
 import java.time.Duration
 import java.util.concurrent.CountDownLatch
@@ -30,8 +32,8 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
-import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.actor.DwarfhustleModelActorsModule
+import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.api.materials.Sedimentary
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandErrorMessage
@@ -64,7 +66,8 @@ class PowerLoomKnowledgeActorTest {
     static void setupActor() {
         injector = Guice.createInjector(new DwarfhustleModelActorsModule(), new DwarfhustlePowerloomModule(), new DwarfhustleModelApiObjectsModule())
         actor = injector.getInstance(ActorSystemProvider.class)
-        PowerLoomKnowledgeActor.create(injector, Duration.ofSeconds(1)).whenComplete({ it, ex ->
+        def objectsCache = mock(ActorRef)
+        PowerLoomKnowledgeActor.create(injector, Duration.ofSeconds(1), supplyAsync({objectsCache})).whenComplete({ it, ex ->
             knowledgeActor = it
         } ).get()
         KnowledgeJcsCacheActor.create(injector, Duration.ofSeconds(1), actor.getObjectsAsync(PowerLoomKnowledgeActor.ID)).whenComplete({ it, ex ->

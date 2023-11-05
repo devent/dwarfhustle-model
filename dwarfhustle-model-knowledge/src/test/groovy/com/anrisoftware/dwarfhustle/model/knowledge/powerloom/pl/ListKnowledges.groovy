@@ -94,7 +94,7 @@ class ListKnowledges {
     }
 
     @Test
-    @Timeout(20)
+    @Timeout(20l)
     void "list knowledge top level"() {
         def ko = []
         def knowledgeResponseAdapter
@@ -135,7 +135,7 @@ class ListKnowledges {
     }
 
     @Test
-    @Timeout(20)
+    @Timeout(20l)
     void "list knowledge low level"() {
         def ko = []
         def knowledgeResponseAdapter
