@@ -33,7 +33,7 @@ import org.junit.jupiter.params.provider.MethodSource
  */
 class MapCoordinateTest {
 
-    static toDecimalDegrees() {
+    static Stream toDecimalDegrees() {
         Stream.of(
                 of(0, 0, 0, 0),
                 of(30, 0, 0, 30),
@@ -56,7 +56,7 @@ class MapCoordinateTest {
         assertThat res[2], equalTo(exs)
     }
 
-    static check_toString() {
+    static Stream check_toString() {
         Stream.of(
                 of(0, 0, """0°0'0"N,0°0'0"E"""),
                 of(30.263888889f, 30.263888889f, """30°15'50"N,30°15'50"E"""),

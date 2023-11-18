@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.impl.factory.Maps;
@@ -40,6 +40,7 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Sedimentary;
 import com.anrisoftware.dwarfhustle.model.api.materials.Soil;
 import com.anrisoftware.dwarfhustle.model.api.materials.SpecialStoneLayer;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.anrisoftware.dwarfhustle.model.generate.GenerateMapMessage.GenerateErrorMessage;
 import com.anrisoftware.dwarfhustle.model.generate.GenerateMapMessage.GenerateProgressMessage;
 import com.anrisoftware.dwarfhustle.model.generate.GenerateMapMessage.GenerateSuccessMessage;
@@ -160,7 +161,7 @@ public class GenerateMapActor {
 
     private Optional<GenerateMapMessage> generateMap;
 
-    private Map<String, ListIterable<GameObject>> materials;
+    private Map<String, ListIterable<KnowledgeObject>> materials;
 
     private Optional<WorkerBlocks> workerBlocks;
 

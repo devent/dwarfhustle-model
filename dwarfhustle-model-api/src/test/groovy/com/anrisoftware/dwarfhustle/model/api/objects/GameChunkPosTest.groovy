@@ -31,7 +31,7 @@ import org.junit.jupiter.params.provider.MethodSource
  */
 class GameChunkPosTest {
 
-    static two_chunk_pos_equals() {
+    static Stream two_chunk_pos_equals() {
         Stream.of(
                 of(new GameChunkPos(0, 0, 0, 0, 0, 0, 0), new GameChunkPos(0, 0, 0, 0, 0, 0, 0), true),
                 of(new GameChunkPos(0, 0, 0, 0, 4, 4, 4), new GameChunkPos(0, 0, 0, 0, 4, 4, 4), true),
@@ -49,7 +49,7 @@ class GameChunkPosTest {
         }
     }
 
-    static chunk_pos_toSaveString() {
+    static Stream chunk_pos_toSaveString() {
         Stream.of(
                 of(new GameChunkPos(0, 0, 0, 0, 0, 0, 0), "0/0/0/0/0/0/0"),
                 of(new GameChunkPos(0, 0, 0, 0, 4, 4, 4), "0/0/0/0/4/4/4"),
@@ -69,7 +69,7 @@ class GameChunkPosTest {
         assert GameChunkPos.parse(s) == expected
     }
 
-    static chunk_size() {
+    static Stream chunk_size() {
         Stream.of(
                 of(new GameChunkPos(0, 0, 0, 0, 0, 0, 0), 0, 0, 0),
                 of(new GameChunkPos(0, 0, 0, 0, 64, 64, 64), 64, 64, 64),

@@ -34,7 +34,7 @@ import groovy.util.logging.Slf4j
 @Slf4j
 class PropertiesSetTest {
 
-    static set_pos_compare() {
+    static Stream set_pos_compare() {
         Stream.of(
                 of(0, (int)0x00000001), //
                 of(1, (int)0x00000002), //
@@ -50,7 +50,7 @@ class PropertiesSetTest {
         assert s == expected
     }
 
-    static sets_compare() {
+    static Stream sets_compare() {
         Stream.of(
                 of(0x00000001, 0x00000001), //
                 of(0x00000002, 0x00000002), //
@@ -68,7 +68,7 @@ class PropertiesSetTest {
         assert s == expected
     }
 
-    static override_sets_compare() {
+    static Stream override_sets_compare() {
         Stream.of(
                 of(0x00000001, 0x00000001, 0x00000001), //
                 of(0x00000001, 0x00000002, 0x00000003), //
@@ -83,7 +83,7 @@ class PropertiesSetTest {
         assert s == expected
     }
 
-    static initial_clear_pos_compare() {
+    static Stream initial_clear_pos_compare() {
         Stream.of(
                 of(0x0000F00F, 0, 0x0000F00E), //
                 )
@@ -97,7 +97,7 @@ class PropertiesSetTest {
         assert s == expected
     }
 
-    static contains_compare() {
+    static Stream contains_compare() {
         Stream.of(
                 of(0x00000001, 0x00000001, true), //
                 of(0x0000000F, 0x00000002, true), //
@@ -113,7 +113,7 @@ class PropertiesSetTest {
         assert s == expected
     }
 
-    static get_pos_compare() {
+    static Stream get_pos_compare() {
         Stream.of(
                 of(0x00000001, 0, true), //
                 of(0x0000000F, 1, true), //
@@ -129,7 +129,7 @@ class PropertiesSetTest {
         assert s == expected
     }
 
-    static equals_hashcode_set() {
+    static Stream equals_hashcode_set() {
         Stream.of(
                 of(new PropertiesSet().sets((int)0x808F0001), new PropertiesSet().sets((int)0x808F0001), true), //
                 )

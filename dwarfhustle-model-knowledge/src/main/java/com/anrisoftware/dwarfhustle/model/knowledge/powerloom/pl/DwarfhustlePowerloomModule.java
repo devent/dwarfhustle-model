@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.stream.StreamSupport;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 import org.lable.oss.uniqueid.IDGenerator;
 

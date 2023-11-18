@@ -19,7 +19,7 @@ package com.anrisoftware.dwarfhustle.model.generate;
 
 import java.util.Map;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
@@ -41,6 +41,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
 import com.anrisoftware.dwarfhustle.model.api.objects.IdsObjectsProvider.IdsObjects;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
@@ -67,7 +68,8 @@ public class WorkerBlocks {
      */
     public interface WorkerBlocksFactory {
 
-        WorkerBlocks create(OrientDB orientdb, Map<String, ListIterable<GameObject>> materials, Map<String, Object> p);
+        WorkerBlocks create(OrientDB orientdb, Map<String, ListIterable<KnowledgeObject>> materials,
+                Map<String, Object> p);
     }
 
     @Inject

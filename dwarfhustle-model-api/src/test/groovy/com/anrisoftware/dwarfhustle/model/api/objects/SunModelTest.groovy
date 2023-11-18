@@ -34,7 +34,7 @@ import org.junit.jupiter.params.provider.MethodSource
  */
 class SunModelTest {
 
-    static update_check_pos_color() {
+    static Stream update_check_pos_color() {
         Stream.of(
                 of(ZonedDateTime.of(2023, 3, 1, 12, 0, 0, 0, ZoneId.of("Europe/Paris")), 48.14764645f, 11.59602640f, { m ->
                     assert m.x == 11.226597f
@@ -71,7 +71,7 @@ class SunModelTest {
         expected(model)
     }
 
-    static InterpTemp_getColor() {
+    static Stream InterpTemp_getColor() {
         Stream.of(
                 of(0f, [
                     0.78431374,

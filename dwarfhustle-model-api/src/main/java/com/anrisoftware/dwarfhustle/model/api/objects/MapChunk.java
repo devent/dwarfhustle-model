@@ -119,25 +119,16 @@ public class MapChunk extends StoredObject {
 
     /**
      * Updates the world coordinates center and extend of this chunk.
-     *
-     * @param centerOffsetX see {@link GameMap#centerOffsetX}
-     * @param centerOffsetY see {@link GameMap#centerOffsetY}
-     * @param centerOffsetZ see {@link GameMap#centerOffsetZ}
-     * @param blockSizeX    see {@link GameMap#blockSizeX}
-     * @param blockSizeY    see {@link GameMap#blockSizeY}
-     * @param blockSizeZ    see {@link GameMap#blockSizeZ}
      */
-    public void updateCenterExtent(float centerOffsetX, float centerOffsetY, float centerOffsetZ, float blockSizeX,
-            float blockSizeY, float blockSizeZ) {
-        float ex = (pos.ep.x - pos.x) / 2f;
-        float ey = (pos.ep.y - pos.y) / 2f;
-        float ez = (pos.ep.z - pos.z) / 2f;
-        this.extentx = ex * blockSizeX;
-        this.extenty = ey * blockSizeY;
-        this.extentz = ez * blockSizeZ;
-        this.centerx = (pos.x + ex - centerOffsetX) * blockSizeX;
-        this.centery = (pos.y + ey - centerOffsetY) * blockSizeY;
-        this.centerz = (pos.z + ez - centerOffsetZ) * blockSizeZ;
+    public void updateCenterExtent(float w, float h, float d) {
+        float tx = -w + 2f * pos.x + 1f;
+        float ty = h - 2f * pos.y - 1;
+        this.extentx = 2f;
+        this.extenty = 2f;
+        this.extentz = 2f;
+        this.centerx = tx;
+        this.centery = ty;
+        this.centerz = 0f;
     }
 
     public Optional<MapBlock> getBlock(GameBlockPos pos) {

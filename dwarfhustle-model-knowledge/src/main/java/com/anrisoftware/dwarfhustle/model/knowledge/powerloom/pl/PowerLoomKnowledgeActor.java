@@ -32,7 +32,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.collections.api.list.MutableList;
@@ -43,6 +43,7 @@ import org.lable.oss.uniqueid.IDGenerator;
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheGetMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CachePutMessage;
@@ -330,7 +331,7 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
         sb.append(type);
         sb.append(" ?x)");
         var answer = PLI.sRetrieve(sb.toString(), WORKING_MODULE, null);
-        MutableList<GameObject> list = Lists.mutable.empty();
+        MutableList<KnowledgeObject> list = Lists.mutable.empty();
         LogicObject next;
         while ((next = (LogicObject) answer.pop()) != null) {
             assertThat(storages, hasKey(type));

@@ -17,14 +17,13 @@
  */
 package com.anrisoftware.dwarfhustle.model.actor;
 
-import javax.inject.Inject;
-
 import com.google.inject.assistedinject.Assisted;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.javadsl.AbstractBehavior;
 import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.AskPattern;
+import jakarta.inject.Inject;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 

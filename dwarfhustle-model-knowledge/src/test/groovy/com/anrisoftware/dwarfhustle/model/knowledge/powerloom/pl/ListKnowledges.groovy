@@ -17,6 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl
 
+import static java.util.concurrent.CompletableFuture.supplyAsync
+import static org.mockito.Mockito.mock
+
 import java.time.Duration
 
 import org.junit.jupiter.api.AfterAll
@@ -73,7 +76,8 @@ class ListKnowledges {
     static void setupActor() {
         injector = Guice.createInjector(new DwarfhustleModelActorsModule(), new DwarfhustlePowerloomModule(), new DwarfhustleModelApiObjectsModule())
         actor = injector.getInstance(ActorSystemProvider.class)
-        PowerLoomKnowledgeActor.create(injector, Duration.ofSeconds(1)).whenComplete({ it, ex ->
+        def objectsCache = mock(ActorRef)
+        PowerLoomKnowledgeActor.create(injector, Duration.ofSeconds(1), supplyAsync({objectsCache})).whenComplete({ it, ex ->
             knowledgeActor = it
         } ).get()
         KnowledgeJcsCacheActor.create(injector, Duration.ofSeconds(1), actor.getObjectsAsync(PowerLoomKnowledgeActor.ID)).whenComplete({ it, ex ->
@@ -106,7 +110,7 @@ class ListKnowledges {
                             case KnowledgeResponseSuccessMessage:
                                 println it.response.go.type
                                 it.response.go.objects.each {
-                                    println "${it.name},${it.rid}"
+                                    println "${it.name},${it.kid}"
                                     ko << it
                                 }
                                 break
@@ -147,7 +151,7 @@ class ListKnowledges {
                             case KnowledgeResponseSuccessMessage:
                                 println "## ${it.response.go.type}"
                                 it.response.go.objects.each {
-                                    println "${it.name},${it.rid}"
+                                    println "${it.name},${it.kid}"
                                     ko << it
                                 }
                                 break

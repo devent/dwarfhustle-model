@@ -102,18 +102,6 @@ public class GameMap extends StoredObject {
 
     public float blockDepth;
 
-    public float centerOffsetX;
-
-    public float centerOffsetY;
-
-    public float centerOffsetZ;
-
-    public float blockSizeX;
-
-    public float blockSizeY;
-
-    public float blockSizeZ;
-
     public long world;
 
     public ZoneOffset timeZone = ZoneOffset.of("Z");
@@ -150,8 +138,6 @@ public class GameMap extends StoredObject {
                 || old.width != width || old.height != height || old.depth != depth //
                 || old.chunkSize != chunkSize //
                 || old.blockWidth != blockWidth || old.blockHeight != blockHeight || old.blockDepth != blockDepth//
-                || old.centerOffsetX != centerOffsetX || old.centerOffsetY != centerOffsetY
-                || old.centerOffsetZ != centerOffsetZ //
                 || old.world != world //
                 || Objects.equals(old.timeZone, timeZone) //
                 || Objects.equals(old.time, time) //
@@ -176,18 +162,6 @@ public class GameMap extends StoredObject {
 
     public int getSize() {
         return depth * height * width;
-    }
-
-    public void setCenterOffset(float offset) {
-        this.centerOffsetX = offset;
-        this.centerOffsetY = offset;
-        this.centerOffsetZ = offset;
-    }
-
-    public void setBlockSize(float size) {
-        this.blockSizeX = size;
-        this.blockSizeY = size;
-        this.blockSizeZ = size;
     }
 
     /**

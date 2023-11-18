@@ -46,10 +46,10 @@ public class CachePutsMessage<T extends Message> extends CacheMessage<T> {
 
     public final Function<GameObject, Object> key;
 
-    public final Iterable<GameObject> value;
+    public final Iterable<? extends GameObject> value;
 
     public CachePutsMessage(ActorRef<T> replyTo, Class<?> keyType, Function<GameObject, Object> key,
-            Iterable<GameObject> value) {
+            Iterable<? extends GameObject> value) {
         super(replyTo);
         this.keyType = keyType;
         this.key = key;

@@ -20,6 +20,7 @@ package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl;
 import org.eclipse.collections.api.list.ListIterable;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -41,7 +42,7 @@ public class KnowledgeLoadedObject extends GameObject {
 
     public String type;
 
-    public ListIterable<GameObject> objects;
+    public ListIterable<KnowledgeObject> objects;
 
     public KnowledgeLoadedObject(byte[] idbuf) {
         super(idbuf);
@@ -51,7 +52,7 @@ public class KnowledgeLoadedObject extends GameObject {
         super(id);
     }
 
-    public KnowledgeLoadedObject(byte[] idbuf, String type, ListIterable<GameObject> objects) {
+    public KnowledgeLoadedObject(byte[] idbuf, String type, ListIterable<KnowledgeObject> objects) {
         this(idbuf);
         this.type = type;
         this.objects = objects;

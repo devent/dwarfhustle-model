@@ -31,7 +31,7 @@ import org.junit.jupiter.params.provider.MethodSource
  */
 class KnowledgeObjectTest {
 
-    static test_rid2Id() {
+    static Stream test_rid2Id() {
         Stream.of(
                 of(0x00, 0x01),
                 of(0x10, 0x1000000001),

@@ -21,8 +21,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 
 import com.anrisoftware.globalpom.threads.external.core.Threads;
 import com.anrisoftware.globalpom.threads.external.core.ThreadsException;

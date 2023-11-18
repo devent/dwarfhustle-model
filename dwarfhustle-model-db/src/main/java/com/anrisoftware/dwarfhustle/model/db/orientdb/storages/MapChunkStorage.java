@@ -39,7 +39,7 @@ import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSch
 
 import java.util.Map;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.map.primitive.MutableObjectLongMap;

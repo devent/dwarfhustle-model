@@ -25,12 +25,14 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import javax.inject.Provider;
-import javax.inject.Qualifier;
-
 import org.lable.oss.uniqueid.IDGenerator;
 import org.lable.oss.uniqueid.LocalUniqueIDGeneratorFactory;
 import org.lable.oss.uniqueid.bytes.Mode;
+
+import com.google.inject.BindingAnnotation;
+
+import jakarta.inject.Provider;
+import jakarta.inject.Qualifier;
 
 /**
  * Provides a Id generator for {@link KnowledgeLoadedObject} knowledge loaded
@@ -43,6 +45,7 @@ public class IdsKnowledgeProvider implements Provider<IDGenerator> {
     @Qualifier
     @Target({ FIELD, PARAMETER, METHOD })
     @Retention(RUNTIME)
+    @BindingAnnotation
     public @interface IdsKnowledge {
     }
 
