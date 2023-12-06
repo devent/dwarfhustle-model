@@ -50,7 +50,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
 import com.anrisoftware.dwarfhustle.model.api.objects.IdsObjectsProvider
 import com.anrisoftware.dwarfhustle.model.api.objects.MapArea
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap
-import com.anrisoftware.dwarfhustle.model.db.cache.DwarfhustleModelDbcacheModule
+import com.anrisoftware.dwarfhustle.model.db.cache.DwarfhustleModelDbCacheModule
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbServerUtils
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbTestUtils
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DwarfhustleModelDbOrientdbModule
@@ -134,7 +134,7 @@ class GenerateMap {
                 new GenerateModule(),
                 new DwarfhustleModelDbOrientdbModule(),
                 new DwarfhustleModelApiObjectsModule(),
-                new DwarfhustleModelDbcacheModule(),
+                new DwarfhustleModelDbCacheModule(),
                 new PropertiesThreadsModule())
         actor = injector.getInstance(ActorSystemProvider)
         workerFactory = injector.getInstance(WorkerBlocksFactory)

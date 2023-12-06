@@ -121,11 +121,11 @@ public class MapChunk extends StoredObject {
      * Updates the world coordinates center and extend of this chunk.
      */
     public void updateCenterExtent(float w, float h, float d) {
-        float tx = -w + 2f * pos.x + 1f;
-        float ty = h - 2f * pos.y - 1;
-        this.extentx = 2f;
-        this.extenty = 2f;
-        this.extentz = 2f;
+        float tx = -w + 2f * pos.x + pos.getSizeX();
+        float ty = h - 2f * pos.y - pos.getSizeY();
+        this.extentx = pos.getSizeX();
+        this.extenty = pos.getSizeY();
+        this.extentz = pos.getSizeZ();
         this.centerx = tx;
         this.centery = ty;
         this.centerz = 0f;
@@ -176,6 +176,14 @@ public class MapChunk extends StoredObject {
         setNeighbor(NeighboringDir.E, id);
     }
 
+    public long getNeighborSouthEast() {
+        return chunkDir.get(NeighboringDir.SE.ordinal());
+    }
+
+    public void setNeighborSouthEast(long id) {
+        setNeighbor(NeighboringDir.SE, id);
+    }
+
     public long getNeighborNorth() {
         return chunkDir.get(NeighboringDir.N.ordinal());
     }
@@ -190,6 +198,14 @@ public class MapChunk extends StoredObject {
 
     public void setNeighborWest(long id) {
         setNeighbor(NeighboringDir.W, id);
+    }
+
+    public long getNeighborSouthWest() {
+        return chunkDir.get(NeighboringDir.SW.ordinal());
+    }
+
+    public void setNeighborSouthWest(long id) {
+        setNeighbor(NeighboringDir.SW, id);
     }
 
     public MapChunk findMapChunk(int x, int y, int z, Function<Long, MapChunk> retriever) {
