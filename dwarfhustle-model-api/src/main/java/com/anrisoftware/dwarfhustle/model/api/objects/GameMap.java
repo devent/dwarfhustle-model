@@ -17,7 +17,6 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Objects;
 
@@ -106,8 +105,6 @@ public class GameMap extends StoredObject {
 
     public ZoneOffset timeZone = ZoneOffset.of("Z");
 
-    public OffsetDateTime time;
-
     public MapArea area;
 
     public float[] cameraPos = new float[3];
@@ -140,7 +137,6 @@ public class GameMap extends StoredObject {
                 || old.blockWidth != blockWidth || old.blockHeight != blockHeight || old.blockDepth != blockDepth//
                 || old.world != world //
                 || Objects.equals(old.timeZone, timeZone) //
-                || Objects.equals(old.time, time) //
                 || Objects.equals(old.area, area) //
                 || Objects.equals(old.cameraPos, cameraPos) //
                 || Objects.equals(old.cameraRot, cameraRot) //

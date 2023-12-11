@@ -137,14 +137,14 @@ public class SunModel {
         this.anglesColors = new ArrayList<>();
         var day = new float[3];
         BlackBodyColor.temp_to_rgb(7000, day);
-        rnight = Range.between(-90f, -5f);
+        rnight = Range.of(-90f, -5f);
         var cnight = new InterpNop(new Color(38, 38, 128));
-        rdawn = Range.between(-5f, 0f);
+        rdawn = Range.of(-5f, 0f);
         var cdawn = new InterpStartEndColors(rdawn.getMinimum(), rdawn.getMaximum(), new Color(0, 0, 255),
                 new Color(200, 200, 255));
-        rdaylight = Range.between(0f, 90f);
-        var cdaylight = new InterpStartEndColors(rdaylight.getMinimum(), 15f,
-                new Color(200, 200, 255), new Color(255, 255, 255));
+        rdaylight = Range.of(0f, 90f);
+        var cdaylight = new InterpStartEndColors(rdaylight.getMinimum(), 15f, new Color(200, 200, 255),
+                new Color(255, 255, 255));
         anglesColors.add(Tuples.pair(rnight, cnight));
         anglesColors.add(Tuples.pair(rdawn, cdawn));
         anglesColors.add(Tuples.pair(rdaylight, cdaylight));
