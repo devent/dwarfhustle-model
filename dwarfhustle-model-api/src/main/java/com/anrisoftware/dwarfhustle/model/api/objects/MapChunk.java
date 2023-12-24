@@ -49,13 +49,11 @@ public class MapChunk extends StoredObject {
 
     public static final String OBJECT_TYPE = MapChunk.class.getSimpleName();
 
+    @ToString.Exclude
     public ObjectLongMap<GameChunkPos> chunks = ObjectLongMaps.immutable.empty();
 
+    @ToString.Exclude
     public MapIterable<GameBlockPos, MapBlock> blocks = Maps.immutable.empty();
-
-    public GameChunkPos pos;
-
-    public boolean root = false;
 
     /**
      * Contains the IDs of the chunks in each direction that are neighboring this
@@ -63,24 +61,20 @@ public class MapChunk extends StoredObject {
      *
      * @see NeighboringDir
      */
+    @ToString.Exclude
     public IntLongMap chunkDir = IntLongMaps.mutable.empty();
+
+    public boolean root = false;
 
     /**
      * ID of the parent chunk.
      */
     public long parent;
 
-    public float centerx;
+    public GameChunkPos pos;
 
-    public float centery;
-
-    public float centerz;
-
-    public float extentx;
-
-    public float extenty;
-
-    public float extentz;
+    @ToString.Exclude
+    public CenterExtent centerExtent;
 
     public MapChunk(long id) {
         super(id);
@@ -109,11 +103,11 @@ public class MapChunk extends StoredObject {
     public boolean isDirty() {
         MapChunk o = getOld();
         return o.parent != parent //
-                || o.extentx != extentx || o.extenty != extenty || o.extentz != extentz || o.centerx != centerx
-                || o.centery != centery || o.centerz != centerz || Objects.equals(o.pos, pos) //
-                || Objects.equals(o.chunks.keySet(), chunks.keySet()) //
-                || Objects.equals(o.blocks, blocks) //
-                || Objects.equals(o.chunkDir, chunkDir) //
+                || !Objects.equals(o.centerExtent, centerExtent) //
+                || !Objects.equals(o.pos, pos) //
+                || !Objects.equals(o.chunks.keySet(), chunks.keySet()) //
+                || !Objects.equals(o.blocks, blocks) //
+                || !Objects.equals(o.chunkDir, chunkDir) //
         ;
     }
 
@@ -123,12 +117,7 @@ public class MapChunk extends StoredObject {
     public void updateCenterExtent(float w, float h, float d) {
         float tx = -w + 2f * pos.x + pos.getSizeX();
         float ty = h - 2f * pos.y - pos.getSizeY();
-        this.extentx = pos.getSizeX();
-        this.extenty = pos.getSizeY();
-        this.extentz = pos.getSizeZ();
-        this.centerx = tx;
-        this.centery = ty;
-        this.centerz = 0f;
+        this.centerExtent = new CenterExtent(tx, ty, 0, pos.getSizeX(), pos.getSizeY(), pos.getSizeZ());
     }
 
     public Optional<MapBlock> getBlock(GameBlockPos pos) {

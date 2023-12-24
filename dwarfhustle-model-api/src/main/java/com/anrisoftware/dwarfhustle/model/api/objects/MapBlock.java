@@ -78,7 +78,11 @@ public class MapBlock extends GameMapObject {
      *
      * @see NeighboringDir
      */
+    @ToString.Exclude
     public IntLongMap blockDir = IntLongMaps.mutable.empty();
+
+    @ToString.Exclude
+    public CenterExtent centerExtent;
 
     public MapBlock(long id) {
         super(id);
@@ -95,12 +99,22 @@ public class MapBlock extends GameMapObject {
 
     @Override
     public boolean isDirty() {
-        MapBlock old = getOld();
-        return old.material != material //
-                || old.object != object //
-                || Objects.equals(old.p, p) //
-                || Objects.equals(old.blockDir, blockDir) //
+        MapBlock o = getOld();
+        return o.material != material //
+                || o.object != object //
+                || !Objects.equals(o.centerExtent, centerExtent) //
+                || !Objects.equals(o.p, p) //
+                || !Objects.equals(o.blockDir, blockDir) //
         ;
+    }
+
+    /**
+     * Updates the world coordinates center and extend of this chunk.
+     */
+    public void updateCenterExtent(float w, float h, float d) {
+        float tx = -w + 2f * pos.x + 1f;
+        float ty = h - 2f * pos.y - 1f;
+        this.centerExtent = new CenterExtent(tx, ty, 0, 1f, 1f, 1f);
     }
 
     /**

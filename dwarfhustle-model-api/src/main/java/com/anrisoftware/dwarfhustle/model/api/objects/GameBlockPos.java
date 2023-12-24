@@ -106,4 +106,8 @@ public class GameBlockPos implements Serializable {
     public GameBlockPos addZ(int n) {
         return new GameBlockPos(mapid, x, y, z + n);
     }
+
+    public boolean isEqual(int x2, int y2, int z2) {
+        return x == x2 && y == y2 && z == z2;
+    }
 }

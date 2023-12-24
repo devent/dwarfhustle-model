@@ -80,9 +80,9 @@ public class GameMapStorage extends AbstractGameObjectStorage {
         v.setProperty(CAMERA_ROT_Y_FIELD, mb.cameraRot[1]);
         v.setProperty(CAMERA_ROT_Z_FIELD, mb.cameraRot[2]);
         v.setProperty(CAMERA_ROT_W_FIELD, mb.cameraRot[3]);
-        v.setProperty(CURSOR_Z_FIELD, mb.cursor.z);
-        v.setProperty(CURSOR_Y_FIELD, mb.cursor.y);
         v.setProperty(CURSOR_X_FIELD, mb.cursor.x);
+        v.setProperty(CURSOR_Y_FIELD, mb.cursor.y);
+        v.setProperty(CURSOR_Z_FIELD, mb.cursor.z);
         super.store(db, o, go);
     }
 
@@ -104,8 +104,8 @@ public class GameMapStorage extends AbstractGameObjectStorage {
                 v.getProperty(CAMERA_POS_Z_FIELD));
         mb.setCameraRot(v.getProperty(CAMERA_ROT_X_FIELD), v.getProperty(CAMERA_ROT_Y_FIELD),
                 v.getProperty(CAMERA_ROT_Z_FIELD), v.getProperty(CAMERA_ROT_W_FIELD));
-        mb.setCursor(new MapCursor(v.getProperty(CURSOR_Z_FIELD), v.getProperty(CURSOR_Y_FIELD),
-                v.getProperty(CURSOR_X_FIELD)));
+        mb.setCursor(new MapCursor(v.getProperty(CURSOR_X_FIELD), v.getProperty(CURSOR_Y_FIELD),
+                v.getProperty(CURSOR_Z_FIELD)));
         return super.retrieve(db, o, go);
     }
 

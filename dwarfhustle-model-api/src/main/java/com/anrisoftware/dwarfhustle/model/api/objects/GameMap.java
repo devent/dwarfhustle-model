@@ -181,15 +181,15 @@ public class GameMap extends StoredObject {
         this.cameraRot[3] = w;
     }
 
-    public void setCursor(int z, int y, int x) {
-        this.cursor = new MapCursor(z, y, x);
+    public void setCursor(int x, int y, int z) {
+        this.cursor = new MapCursor(x, y, z);
     }
 
     public void addCursorZ(int dd) {
-        setCursor(new MapCursor(cursor.z + dd, cursor.y, cursor.x));
+        setCursor(new MapCursor(cursor.x, cursor.y, cursor.z + dd));
     }
 
-    public boolean isCursor(int z, int y, int x) {
+    public boolean isCursor(int x, int y, int z) {
         return cursor.equals(z, y, x);
     }
 
@@ -198,7 +198,7 @@ public class GameMap extends StoredObject {
     }
 
     public void setCursorZ(int z) {
-        setCursor(new MapCursor(z, cursor.y, cursor.x));
+        setCursor(new MapCursor(cursor.x, cursor.y, z));
     }
 
 }

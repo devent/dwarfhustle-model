@@ -17,27 +17,50 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import lombok.Data;
 
 /**
- * Position of the map cursor.
+ * Center extent of a map tile or chunk.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@RequiredArgsConstructor
-@ToString
-@EqualsAndHashCode
-public class MapCursor {
+@Data
+public class CenterExtent {
 
-    public final int x;
+    public final float centerx;
 
-    public final int y;
+    public final float centery;
 
-    public final int z;
+    public final float centerz;
 
-    public boolean equals(int z, int y, int x) {
-        return this.z == z && this.y == y && this.x == x;
+    public final float extentx;
+
+    public final float extenty;
+
+    public final float extentz;
+
+    public float getBottomX() {
+        return centerx - extentx;
     }
+
+    public float getBottomY() {
+        return centery - extenty;
+    }
+
+    public float getBottomZ() {
+        return centerz - extentz;
+    }
+
+    public float getTopX() {
+        return centerx + extentx;
+    }
+
+    public float getTopY() {
+        return centery + extenty;
+    }
+
+    public float getTopZ() {
+        return centerz + extentz;
+    }
+
 }
