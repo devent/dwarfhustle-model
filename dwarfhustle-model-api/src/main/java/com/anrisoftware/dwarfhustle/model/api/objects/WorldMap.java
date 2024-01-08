@@ -20,8 +20,8 @@ package com.anrisoftware.dwarfhustle.model.api.objects;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-import org.eclipse.collections.api.map.primitive.MutableIntLongMap;
-import org.eclipse.collections.impl.factory.primitive.IntLongMaps;
+import org.eclipse.collections.api.factory.primitive.LongSets;
+import org.eclipse.collections.api.set.primitive.MutableLongSet;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -65,14 +65,14 @@ public class WorldMap extends StoredObject {
     public LocalDateTime time = LocalDateTime.now();
 
     /**
-     * Mapid:=id map of {@link GameMap} game maps of the world.
+     * Ids of the {@link GameMap} game maps of the world.
      */
-    public MutableIntLongMap maps = IntLongMaps.mutable.empty();
+    public MutableLongSet maps = LongSets.mutable.empty();
 
     /**
-     * The current {@link GameMap} mapid.
+     * The current {@link GameMap} id.
      */
-    public int currentMapid = 0;
+    public long currentMap = 0;
 
     public WorldMap(long id) {
         super(id);
@@ -91,11 +91,11 @@ public class WorldMap extends StoredObject {
     public boolean isDirty() {
         WorldMap old = getOld();
         return old.name != name //
-                || old.currentMapid != currentMapid //
+                || old.currentMap != currentMap //
                 || old.distanceLat != distanceLat //
                 || old.distanceLon != distanceLon //
                 || Objects.equals(old.time, time) //
-                || Objects.equals(old.maps.keySet(), maps.keySet()) //
+                || Objects.equals(old.maps, maps) //
         ;
     }
 
@@ -126,7 +126,7 @@ public class WorldMap extends StoredObject {
     }
 
     public void addMap(GameMap map) {
-        this.maps.put(map.getMapid(), map.getId());
+        this.maps.add(map.id);
         map.setWorld(id);
     }
 

@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.cache;
 
+import java.time.Duration;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
@@ -24,6 +26,8 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage.CacheSuccessMessage;
 
 import akka.actor.typed.ActorRef;
+import akka.actor.typed.ActorSystem;
+import akka.actor.typed.javadsl.AskPattern;
 import lombok.ToString;
 
 /**
@@ -59,6 +63,12 @@ public class CacheGetMessage<T extends Message> extends CacheMessage<T> {
         public CacheGetMissMessage(T m) {
             super(m);
         }
+    }
+
+    public static CompletionStage<CacheResponseMessage<?>> askCacheGet(ActorSystem<Message> a,
+            Class<? extends GameObject> typeClass, String type, Object key, Duration timeout) {
+        return AskPattern.ask(a, replyTo -> new CacheGetMessage<>(replyTo, typeClass, type, key), timeout,
+                a.scheduler());
     }
 
     private final static Consumer<GameObject> EMPTY_CONSUMER = go -> {

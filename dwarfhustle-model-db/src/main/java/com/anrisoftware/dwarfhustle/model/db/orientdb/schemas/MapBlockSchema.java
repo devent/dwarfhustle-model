@@ -35,18 +35,6 @@ public class MapBlockSchema implements GameObjectSchema {
 
     public static final String PROPERTIES_FIELD = "p";
 
-    public static final String NEIGHBOR_T_FIELD = "nt";
-
-    public static final String NEIGHBOR_B_FIELD = "nb";
-
-    public static final String NEIGHBOR_S_FIELD = "ns";
-
-    public static final String NEIGHBOR_E_FIELD = "ne";
-
-    public static final String NEIGHBOR_N_FIELD = "nn";
-
-    public static final String NEIGHBOR_W_FIELD = "nw";
-
 	@Override
 	public void createSchema(Object db) {
 		var odb = (ODatabaseDocument) db;
@@ -54,12 +42,8 @@ public class MapBlockSchema implements GameObjectSchema {
         c.createProperty(MATERIAL_FIELD, OType.LONG);
         c.createProperty(OBJECT_FIELD, OType.LONG);
         c.createProperty(PROPERTIES_FIELD, OType.INTEGER);
-        c.createProperty(NEIGHBOR_T_FIELD, OType.LONG);
-        c.createProperty(NEIGHBOR_B_FIELD, OType.LONG);
-        c.createProperty(NEIGHBOR_S_FIELD, OType.LONG);
-        c.createProperty(NEIGHBOR_E_FIELD, OType.LONG);
-        c.createProperty(NEIGHBOR_N_FIELD, OType.LONG);
-        c.createProperty(NEIGHBOR_W_FIELD, OType.LONG);
+        new NeighboringSchema().createSchema(db, c);
+        new CenterExtentSchema().createSchema(db, c);
 	}
 
 }

@@ -19,8 +19,6 @@ package com.anrisoftware.dwarfhustle.model.generate;
 
 import java.util.Map;
 
-import jakarta.inject.Inject;
-
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.map.primitive.MutableObjectLongMap;
@@ -51,6 +49,7 @@ import com.orientechnologies.orient.core.db.ODatabaseSession;
 import com.orientechnologies.orient.core.db.OrientDB;
 import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
 
+import jakarta.inject.Inject;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -170,7 +169,7 @@ public class WorkerBlocks {
 
     private void saveGameMap(GenerateMapMessage m, ODatabaseSession db) throws GeneratorException {
         var gmv = db.newVertex(GameMap.OBJECT_TYPE);
-        m.gameMap.setRootid(rootid);
+        m.gameMap.root = rootid;
         gameMapStore.store(db, gmv, m.gameMap);
         gmv.save();
         var wmv = db.newVertex(WorldMap.OBJECT_TYPE);
@@ -247,7 +246,7 @@ public class WorkerBlocks {
         var w = chunk.pos.ep.getDiffX(chunk.getPos());
         var h = chunk.pos.ep.getDiffY(chunk.getPos());
         var d = chunk.pos.ep.getDiffZ(chunk.getPos());
-        var mapid = chunk.getPos().getMapid();
+        var mapid = chunk.pos.map;
         var tiles = createBlocksMap(w * h * d);
         var ids = generator.batch(w * h * d);
         for (var z = 0; z < d; z++) {
@@ -292,7 +291,7 @@ public class WorkerBlocks {
     }
 
     private GameBlockPos pos(GenerateMapMessage m, int x, int y, int z) {
-        return new GameBlockPos(m.gameMap.getMapid(), x, y, z);
+        return new GameBlockPos(m.gameMap.id, x, y, z);
     }
 
     private MutableObjectLongMap<GameChunkPos> createChunksMap() {

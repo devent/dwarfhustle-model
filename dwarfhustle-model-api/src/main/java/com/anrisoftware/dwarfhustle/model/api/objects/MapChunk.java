@@ -198,7 +198,7 @@ public class MapChunk extends StoredObject {
     }
 
     public MapChunk findMapChunk(int x, int y, int z, Function<Long, MapChunk> retriever) {
-        return findMapChunk(new GameBlockPos(pos.getMapid(), x, y, z), retriever);
+        return findMapChunk(new GameBlockPos(pos.map, x, y, z), retriever);
     }
 
     public MapChunk findMapChunk(GameBlockPos pos, Function<Long, MapChunk> retriever) {
@@ -225,7 +225,7 @@ public class MapChunk extends StoredObject {
     }
 
     public MapBlock findMapBlock(int x, int y, int z, Function<Long, MapChunk> retriever) {
-        return findMapBlock(new GameBlockPos(pos.getMapid(), x, y, z), retriever);
+        return findMapBlock(new GameBlockPos(pos.map, x, y, z), retriever);
     }
 
     public MapBlock findMapBlock(GameBlockPos pos, Function<Long, MapChunk> retriever) {
@@ -261,7 +261,7 @@ public class MapChunk extends StoredObject {
             return 0;
         }
         if (blocks.isEmpty()) {
-            long id = chunks.get(new GameChunkPos(pos.mapid, x, y, z, ex, ey, ez));
+            long id = chunks.get(new GameChunkPos(pos.map, x, y, z, ex, ey, ez));
             if (id != 0) {
                 return id;
             }

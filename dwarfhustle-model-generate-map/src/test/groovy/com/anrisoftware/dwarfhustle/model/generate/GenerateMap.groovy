@@ -131,7 +131,7 @@ class GenerateMap {
         injector = Guice.createInjector(
                 new DwarfhustleModelActorsModule(),
                 new DwarfhustlePowerloomModule(),
-                new GenerateModule(),
+                new DwarfhustleModelGenerateModule(),
                 new DwarfhustleModelDbOrientdbModule(),
                 new DwarfhustleModelApiObjectsModule(),
                 new DwarfhustleModelDbCacheModule(),

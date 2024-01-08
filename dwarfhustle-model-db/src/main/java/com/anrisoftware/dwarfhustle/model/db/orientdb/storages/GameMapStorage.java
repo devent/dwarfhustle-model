@@ -34,17 +34,16 @@ import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSche
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CURSOR_Z_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.DEPTH_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.HEIGHT_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.MAPID_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.NAME_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.ROOTID_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.ROOT_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.TIME_ZONE_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.WIDTH_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.WORLD_FIELD;
 
 import java.time.ZoneOffset;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapArea;
-import com.anrisoftware.dwarfhustle.model.api.objects.MapCoordinate;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapCursor;
 import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.orientechnologies.orient.core.record.OElement;
@@ -62,12 +61,12 @@ public class GameMapStorage extends AbstractGameObjectStorage {
         var v = (OElement) o;
         var mb = (GameMap) go;
         v.setProperty(NAME_FIELD, mb.name);
-        v.setProperty(ROOTID_FIELD, mb.rootid);
-        v.setProperty(MAPID_FIELD, mb.mapid);
+        v.setProperty(ROOT_FIELD, mb.root);
         v.setProperty(WIDTH_FIELD, mb.width);
         v.setProperty(HEIGHT_FIELD, mb.height);
         v.setProperty(DEPTH_FIELD, mb.depth);
         v.setProperty(CHUNK_SIZE_FIELD, mb.chunkSize);
+        v.setProperty(WORLD_FIELD, mb.world);
         v.setProperty(TIME_ZONE_FIELD, mb.timeZone.getTotalSeconds());
         v.setProperty(AREA_NW_LAT_FIELD, mb.area.nw.lat);
         v.setProperty(AREA_NW_LON_FIELD, mb.area.nw.lon);
@@ -91,15 +90,15 @@ public class GameMapStorage extends AbstractGameObjectStorage {
         var v = (OElement) o;
         var mb = (GameMap) go;
         mb.name = v.getProperty(NAME_FIELD);
-        mb.rootid = v.getProperty(ROOTID_FIELD);
-        mb.mapid = v.getProperty(MAPID_FIELD);
+        mb.root = v.getProperty(ROOT_FIELD);
         mb.width = v.getProperty(WIDTH_FIELD);
         mb.height = v.getProperty(HEIGHT_FIELD);
         mb.depth = v.getProperty(DEPTH_FIELD);
         mb.chunkSize = v.getProperty(CHUNK_SIZE_FIELD);
+        mb.world = v.getProperty(WORLD_FIELD);
         mb.timeZone = ZoneOffset.ofTotalSeconds(v.getProperty(TIME_ZONE_FIELD));
-        mb.area = new MapArea(new MapCoordinate(v.getProperty(AREA_NW_LAT_FIELD), v.getProperty(AREA_NW_LON_FIELD)),
-                new MapCoordinate(v.getProperty(AREA_SE_LAT_FIELD), v.getProperty(AREA_SE_LON_FIELD)));
+        mb.area = MapArea.create(v.getProperty(AREA_NW_LAT_FIELD), v.getProperty(AREA_NW_LON_FIELD),
+                v.getProperty(AREA_SE_LAT_FIELD), v.getProperty(AREA_SE_LON_FIELD));
         mb.setCameraPos(v.getProperty(CAMERA_POS_X_FIELD), v.getProperty(CAMERA_POS_Y_FIELD),
                 v.getProperty(CAMERA_POS_Z_FIELD));
         mb.setCameraRot(v.getProperty(CAMERA_ROT_X_FIELD), v.getProperty(CAMERA_ROT_Y_FIELD),

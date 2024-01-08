@@ -83,9 +83,10 @@ public class GameMap extends StoredObject {
 
     public String name;
 
-    public long rootid;
-
-    public int mapid;
+    /**
+     * The root {@link MapChunk} ID.
+     */
+    public long root;
 
     public int width;
 
@@ -95,12 +96,9 @@ public class GameMap extends StoredObject {
 
     public int chunkSize;
 
-    public float blockWidth;
-
-    public float blockHeight;
-
-    public float blockDepth;
-
+    /**
+     * The {@link WorldMap} ID of the map.
+     */
     public long world;
 
     public ZoneOffset timeZone = ZoneOffset.of("Z");
@@ -130,11 +128,9 @@ public class GameMap extends StoredObject {
     public boolean isDirty() {
         GameMap old = getOld();
         return old.name != name //
-                || old.rootid != rootid //
-                || old.mapid != mapid //
+                || old.root != root //
                 || old.width != width || old.height != height || old.depth != depth //
                 || old.chunkSize != chunkSize //
-                || old.blockWidth != blockWidth || old.blockHeight != blockHeight || old.blockDepth != blockDepth//
                 || old.world != world //
                 || Objects.equals(old.timeZone, timeZone) //
                 || Objects.equals(old.area, area) //

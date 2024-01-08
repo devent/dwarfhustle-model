@@ -29,25 +29,25 @@ import com.orientechnologies.orient.core.metadata.schema.OType;
  */
 public class GameMapObjectSchema implements GameObjectSchema {
 
-	public static final String Z_FIELD = "z";
+    public static final String POS_Z_FIELD = "z";
 
-	public static final String Y_FIELD = "y";
+    public static final String POS_Y_FIELD = "y";
 
-	public static final String X_FIELD = "x";
+    public static final String POS_X_FIELD = "x";
 
-	public static final String MAPID_FIELD = "mapid";
+    public static final String MAP_FIELD = "map";
 
-	@Override
-	public void createSchema(Object db) {
-		var odb = (ODatabaseDocument) db;
-		var c = odb.createClass(GameMapObject.OBJECT_TYPE, GameObject.OBJECT_TYPE);
-		c.createProperty(MAPID_FIELD, OType.INTEGER);
-		c.createProperty(X_FIELD, OType.INTEGER);
-		c.createProperty(Y_FIELD, OType.INTEGER);
-		c.createProperty(Z_FIELD, OType.INTEGER);
-		try (var q = odb.command(
-				"CREATE INDEX GameMapObject_type_pos ON GameMapObject (objecttype, mapid, x, y, z) NOTUNIQUE METADATA {ignoreNullValues: false}")) {
-		}
-	}
+    @Override
+    public void createSchema(Object db) {
+        var odb = (ODatabaseDocument) db;
+        var c = odb.createClass(GameMapObject.OBJECT_TYPE, GameObject.OBJECT_TYPE);
+        c.createProperty(MAP_FIELD, OType.INTEGER);
+        c.createProperty(POS_X_FIELD, OType.INTEGER);
+        c.createProperty(POS_Y_FIELD, OType.INTEGER);
+        c.createProperty(POS_Z_FIELD, OType.INTEGER);
+        try (var q = odb.command(
+                "CREATE INDEX GameMapObject_type_pos ON GameMapObject (objecttype, map, x, y, z) NOTUNIQUE METADATA {ignoreNullValues: false}")) {
+        }
+    }
 
 }

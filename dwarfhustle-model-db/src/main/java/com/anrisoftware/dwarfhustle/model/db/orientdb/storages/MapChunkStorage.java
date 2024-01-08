@@ -18,28 +18,20 @@
 package com.anrisoftware.dwarfhustle.model.db.orientdb.storages;
 
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.BLOCKS_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.CHUNKS_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.CHUNK_ID_CLASS;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.END_X_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.END_Y_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.END_Z_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.MAPID_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.NEIGHBOR_B_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.NEIGHBOR_E_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.NEIGHBOR_N_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.NEIGHBOR_S_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.NEIGHBOR_T_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.NEIGHBOR_W_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.MAP_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.OBJECTID_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.PARENT_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.POS_END_X_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.POS_END_Y_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.POS_END_Z_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.POS_START_X_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.POS_START_Y_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.POS_START_Z_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.ROOT_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.START_X_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.START_Y_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.START_Z_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.TILES_FIELD;
 
 import java.util.Map;
-
-import jakarta.inject.Inject;
 
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.map.primitive.MutableObjectLongMap;
@@ -51,10 +43,14 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameChunkPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
+import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
 import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.NeighboringSchema;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.OElement;
+
+import jakarta.inject.Inject;
 
 /**
  * Stores and retrieves the properties of a {@link MapChunk} to/from the
@@ -82,28 +78,25 @@ public class MapChunkStorage extends AbstractGameObjectStorage {
             blockid.setProperty(OBJECTID_FIELD, id);
             blocks.put(pos.toSaveString(), blockid);
         });
-        v.setProperty(BLOCKS_FIELD, blocks, OType.EMBEDDEDMAP);
+        v.setProperty(CHUNKS_FIELD, blocks, OType.EMBEDDEDMAP);
         Map<String, OElement> tiles = Maps.mutable.ofInitialCapacity(mc.getBlocks().size());
         mc.getBlocks().forEachKeyValue((pos, tile) -> {
             var vtile = odb.newVertex(MapBlock.OBJECT_TYPE);
             mapTileStorage.store(db, vtile, tile);
             tiles.put(tile.getPos().toSaveString(), vtile);
         });
-        v.setProperty(TILES_FIELD, tiles, OType.EMBEDDEDMAP);
-        v.setProperty(MAPID_FIELD, mc.getPos().getMapid());
-        v.setProperty(START_X_FIELD, mc.getPos().getX());
-        v.setProperty(START_Y_FIELD, mc.getPos().getY());
-        v.setProperty(START_Z_FIELD, mc.getPos().getZ());
-        v.setProperty(END_X_FIELD, mc.getPos().getEp().getX());
-        v.setProperty(END_Y_FIELD, mc.getPos().getEp().getY());
-        v.setProperty(END_Z_FIELD, mc.getPos().getEp().getZ());
+        v.setProperty(BLOCKS_FIELD, tiles, OType.EMBEDDEDMAP);
+        v.setProperty(MAP_FIELD, mc.pos.map);
+        v.setProperty(POS_START_X_FIELD, mc.pos.x);
+        v.setProperty(POS_START_Y_FIELD, mc.pos.y);
+        v.setProperty(POS_START_Z_FIELD, mc.pos.z);
+        v.setProperty(POS_END_X_FIELD, mc.pos.ep.getX());
+        v.setProperty(POS_END_Y_FIELD, mc.pos.ep.getY());
+        v.setProperty(POS_END_Z_FIELD, mc.pos.ep.getZ());
         v.setProperty(ROOT_FIELD, mc.isRoot());
-        v.setProperty(NEIGHBOR_T_FIELD, mc.getNeighborTop());
-        v.setProperty(NEIGHBOR_B_FIELD, mc.getNeighborBottom());
-        v.setProperty(NEIGHBOR_S_FIELD, mc.getNeighborSouth());
-        v.setProperty(NEIGHBOR_E_FIELD, mc.getNeighborEast());
-        v.setProperty(NEIGHBOR_N_FIELD, mc.getNeighborNorth());
-        v.setProperty(NEIGHBOR_W_FIELD, mc.getNeighborWest());
+        for (var n : NeighboringDir.values()) {
+            v.setProperty(NeighboringSchema.getName(n), mc.chunkDir.get(n.ordinal()));
+        }
         v.setProperty(PARENT_FIELD, mc.getParent());
         super.store(db, o, go);
     }
@@ -112,14 +105,14 @@ public class MapChunkStorage extends AbstractGameObjectStorage {
     public StoredObject retrieve(Object db, Object o, StoredObject go) {
         var v = (OElement) o;
         var mc = (MapChunk) go;
-        Map<String, OElement> oblocks = v.getProperty(BLOCKS_FIELD);
+        Map<String, OElement> oblocks = v.getProperty(CHUNKS_FIELD);
         MutableObjectLongMap<GameChunkPos> blocks = ObjectLongMaps.mutable.ofInitialCapacity(oblocks.size());
         for (Map.Entry<String, OElement> oblock : oblocks.entrySet()) {
             var pos = GameChunkPos.parse(oblock.getKey());
             long id = oblock.getValue().getProperty(OBJECTID_FIELD);
             blocks.put(pos, id);
         }
-        Map<String, OElement> otiles = v.getProperty(TILES_FIELD);
+        Map<String, OElement> otiles = v.getProperty(BLOCKS_FIELD);
         MutableMap<GameBlockPos, MapBlock> tiles = Maps.mutable.ofInitialCapacity(otiles.size());
         for (Map.Entry<String, OElement> otile : otiles.entrySet()) {
             var pos = GameBlockPos.parse(otile.getKey());
@@ -128,16 +121,13 @@ public class MapChunkStorage extends AbstractGameObjectStorage {
         }
         mc.setChunks(blocks.asUnmodifiable());
         mc.setBlocks(tiles.asUnmodifiable());
-        mc.setPos(new GameChunkPos(v.getProperty(MAPID_FIELD), v.getProperty(START_X_FIELD),
-                v.getProperty(START_Y_FIELD), v.getProperty(START_Z_FIELD), v.getProperty(END_X_FIELD),
-                v.getProperty(END_Y_FIELD), v.getProperty(END_Z_FIELD)));
+        mc.setPos(new GameChunkPos(v.getProperty(MAP_FIELD), v.getProperty(POS_START_X_FIELD),
+                v.getProperty(POS_START_Y_FIELD), v.getProperty(POS_START_Z_FIELD), v.getProperty(POS_END_X_FIELD),
+                v.getProperty(POS_END_Y_FIELD), v.getProperty(POS_END_Z_FIELD)));
         mc.setRoot(v.getProperty(ROOT_FIELD));
-        mc.setNeighborTop(v.getProperty(NEIGHBOR_T_FIELD));
-        mc.setNeighborBottom(v.getProperty(NEIGHBOR_B_FIELD));
-        mc.setNeighborSouth(v.getProperty(NEIGHBOR_S_FIELD));
-        mc.setNeighborEast(v.getProperty(NEIGHBOR_E_FIELD));
-        mc.setNeighborNorth(v.getProperty(NEIGHBOR_N_FIELD));
-        mc.setNeighborWest(v.getProperty(NEIGHBOR_W_FIELD));
+        for (var n : NeighboringDir.values()) {
+            mc.setNeighbor(n, v.getProperty(NeighboringSchema.getName(n)));
+        }
         mc.setParent(v.getProperty(PARENT_FIELD));
         return super.retrieve(db, o, go);
     }

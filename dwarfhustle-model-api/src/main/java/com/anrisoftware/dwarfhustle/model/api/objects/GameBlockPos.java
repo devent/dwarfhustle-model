@@ -40,9 +40,9 @@ public class GameBlockPos implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * The game map id.
+     * The {@link GameMap} ID.
      */
-    public final int mapid;
+    public final long map;
 
     /**
      * X position on the game map
@@ -75,7 +75,7 @@ public class GameBlockPos implements Serializable {
      * Returns string that can be used to store the block position.
      */
     public String toSaveString() {
-        return getMapid() + "/" + getX() + "/" + getY() + "/" + getZ();
+        return getMap() + "/" + getX() + "/" + getY() + "/" + getZ();
     }
 
     /**
@@ -92,19 +92,19 @@ public class GameBlockPos implements Serializable {
     }
 
     public GameBlockPos add(GameBlockPos p) {
-        return new GameBlockPos(mapid, x + p.x, y + p.y, z + p.z);
+        return new GameBlockPos(map, x + p.x, y + p.y, z + p.z);
     }
 
     public GameBlockPos addX(int n) {
-        return new GameBlockPos(mapid, x + n, y, z);
+        return new GameBlockPos(map, x + n, y, z);
     }
 
     public GameBlockPos addY(int n) {
-        return new GameBlockPos(mapid, x, y + n, z);
+        return new GameBlockPos(map, x, y + n, z);
     }
 
     public GameBlockPos addZ(int n) {
-        return new GameBlockPos(mapid, x, y, z + n);
+        return new GameBlockPos(map, x, y, z + n);
     }
 
     public boolean isEqual(int x2, int y2, int z2) {

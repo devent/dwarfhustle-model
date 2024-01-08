@@ -15,29 +15,21 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.generate;
+package com.anrisoftware.dwarfhustle.model.terrainimage;
 
-import static com.google.inject.name.Names.named;
-
-import com.anrisoftware.dwarfhustle.model.generate.GenerateMapActor.GenerateMapActorFactory;
-import com.anrisoftware.dwarfhustle.model.generate.WorkerBlocks.WorkerBlocksFactory;
-import com.anrisoftware.globalpom.threads.external.core.Threads;
+import com.anrisoftware.dwarfhustle.model.terrainimage.TerrainImageCreateMap.TerrainImageCreateMapFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 
 /**
  * @author Erwin Müller
  */
-public class GenerateModule extends AbstractModule {
+public class DwarfhustleModelTerrainimageModule extends AbstractModule {
 
-	@Override
-	protected void configure() {
-		install(new FactoryModuleBuilder().implement(GenerateMapActor.class, GenerateMapActor.class)
-				.build(GenerateMapActorFactory.class));
-		install(new FactoryModuleBuilder().implement(WorkerBlocks.class, WorkerBlocks.class)
-				.build(WorkerBlocksFactory.class));
-		bind(Threads.class).annotatedWith(named("generateMapThreads")).toProvider(ThreadsProvider.class)
-				.asEagerSingleton();
-	}
+    @Override
+    protected void configure() {
+        install(new FactoryModuleBuilder().implement(TerrainImageCreateMap.class, TerrainImageCreateMap.class)
+                .build(TerrainImageCreateMapFactory.class));
+    }
 
 }

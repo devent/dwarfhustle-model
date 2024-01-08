@@ -29,31 +29,31 @@ import com.orientechnologies.orient.core.metadata.schema.OType;
  */
 public class WorldMapSchema implements GameObjectSchema {
 
-	public static final String NAME_FIELD = "name";
+    public static final String NAME_FIELD = "name";
 
-	public static final String DIST_LAT_FIELD = "distlat";
+    public static final String DIST_LAT_FIELD = "distlat";
 
-	public static final String DIST_LON_FIELD = "distlon";
+    public static final String DIST_LON_FIELD = "distlon";
 
-	public static final String TIME_FIELD = "time";
+    public static final String TIME_FIELD = "time";
 
-	public static final String WORLD_CLASS = "world";
+    public static final String WORLD_CLASS = "world";
 
-	public static final String CURRENT_MAPID_FIELD = "currentMapid";
+    public static final String CURRENT_MAP_FIELD = "currentMap";
 
-	@Override
-	public void createSchema(Object db) {
-		var odb = (ODatabaseDocument) db;
-		var c = odb.createClass(WorldMap.OBJECT_TYPE, GameObject.OBJECT_TYPE);
-		c.createProperty(NAME_FIELD, OType.STRING);
-		c.createProperty(DIST_LAT_FIELD, OType.FLOAT);
-		c.createProperty(DIST_LON_FIELD, OType.FLOAT);
-		c.createProperty(TIME_FIELD, OType.STRING);
-		c.createProperty(CURRENT_MAPID_FIELD, OType.INTEGER);
-		odb.createEdgeClass(WORLD_CLASS);
-		try (var q = odb.command(
-				"CREATE INDEX WorldMap_name ON WorldMap (objecttype, name) NOTUNIQUE METADATA {ignoreNullValues: false}")) {
-		}
-	}
+    @Override
+    public void createSchema(Object db) {
+        var odb = (ODatabaseDocument) db;
+        var c = odb.createClass(WorldMap.OBJECT_TYPE, GameObject.OBJECT_TYPE);
+        c.createProperty(NAME_FIELD, OType.STRING);
+        c.createProperty(DIST_LAT_FIELD, OType.FLOAT);
+        c.createProperty(DIST_LON_FIELD, OType.FLOAT);
+        c.createProperty(TIME_FIELD, OType.STRING);
+        c.createProperty(CURRENT_MAP_FIELD, OType.INTEGER);
+        odb.createEdgeClass(WORLD_CLASS);
+        try (var q = odb.command(
+                "CREATE INDEX WorldMap_name ON WorldMap (objecttype, name) NOTUNIQUE METADATA {ignoreNullValues: false}")) {
+        }
+    }
 
 }

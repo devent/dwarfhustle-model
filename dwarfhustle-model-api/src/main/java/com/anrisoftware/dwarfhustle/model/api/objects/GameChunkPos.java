@@ -37,12 +37,12 @@ public class GameChunkPos extends GameBlockPos {
 
     public final GameBlockPos ep;
 
-    public GameChunkPos(int mapid, int x, int y, int z, int ex, int ey, int ez) {
-        this(new GameBlockPos(mapid, x, y, z), new GameBlockPos(mapid, ex, ey, ez));
+    public GameChunkPos(long map, int sx, int sy, int sz, int ex, int ey, int ez) {
+        this(new GameBlockPos(map, sx, sy, sz), new GameBlockPos(map, ex, ey, ez));
     }
 
     public GameChunkPos(GameBlockPos pos, GameBlockPos endPos) {
-        super(pos.getMapid(), pos.getX(), pos.getY(), pos.getZ());
+        super(pos.getMap(), pos.getX(), pos.getY(), pos.getZ());
         this.ep = endPos;
     }
 

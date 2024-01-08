@@ -17,10 +17,10 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.storages;
 
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapObjectSchema.MAPID_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapObjectSchema.X_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapObjectSchema.Y_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapObjectSchema.Z_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapObjectSchema.MAP_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapObjectSchema.POS_X_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapObjectSchema.POS_Y_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapObjectSchema.POS_Z_FIELD;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
@@ -40,10 +40,10 @@ public class AbstractGameMapObjectStorage extends AbstractGameObjectStorage {
     public void store(Object db, Object o, StoredObject go) {
         var v = (OElement) o;
         var gmo = (GameMapObject) go;
-        v.setProperty(MAPID_FIELD, gmo.pos.mapid);
-        v.setProperty(X_FIELD, gmo.pos.x);
-        v.setProperty(Y_FIELD, gmo.pos.y);
-        v.setProperty(Z_FIELD, gmo.pos.z);
+        v.setProperty(MAP_FIELD, gmo.pos.map);
+        v.setProperty(POS_X_FIELD, gmo.pos.x);
+        v.setProperty(POS_Y_FIELD, gmo.pos.y);
+        v.setProperty(POS_Z_FIELD, gmo.pos.z);
         super.store(db, o, go);
     }
 
@@ -51,8 +51,8 @@ public class AbstractGameMapObjectStorage extends AbstractGameObjectStorage {
     public StoredObject retrieve(Object db, Object o, StoredObject go) {
         var v = (OElement) o;
         var gmo = (GameMapObject) go;
-        gmo.pos = new GameBlockPos(v.getProperty(MAPID_FIELD), v.getProperty(X_FIELD), v.getProperty(Y_FIELD),
-                v.getProperty(Z_FIELD));
+        gmo.pos = new GameBlockPos(v.getProperty(MAP_FIELD), v.getProperty(POS_X_FIELD), v.getProperty(POS_Y_FIELD),
+                v.getProperty(POS_Z_FIELD));
         return super.retrieve(db, o, go);
     }
 

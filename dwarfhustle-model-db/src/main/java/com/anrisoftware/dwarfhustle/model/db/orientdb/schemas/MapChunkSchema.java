@@ -30,71 +30,55 @@ import com.orientechnologies.orient.core.metadata.schema.OType;
  */
 public class MapChunkSchema implements GameObjectSchema {
 
-	public static final String OBJECTID_FIELD = "objectid";
+    public static final String OBJECTID_FIELD = "objectid";
 
     public static final String CHUNK_ID_CLASS = "MapChunkId";
 
-	public static final String BLOCKS_FIELD = "blocks";
+    public static final String CHUNKS_FIELD = "chunks";
 
-	public static final String TILES_FIELD = "tiles";
+    public static final String BLOCKS_FIELD = "blocks";
 
-	public static final String MAPID_FIELD = "mapid";
-
-	public static final String START_X_FIELD = "sx";
-
-	public static final String START_Y_FIELD = "sy";
-
-	public static final String START_Z_FIELD = "sz";
-
-	public static final String END_X_FIELD = "ex";
-
-	public static final String END_Y_FIELD = "ey";
-
-	public static final String END_Z_FIELD = "ez";
+    public static final String MAP_FIELD = "map";
 
     public static final String ROOT_FIELD = "root";
 
-    public static final String NEIGHBOR_T_FIELD = "nt";
-
-    public static final String NEIGHBOR_B_FIELD = "nb";
-
-    public static final String NEIGHBOR_S_FIELD = "ns";
-
-    public static final String NEIGHBOR_E_FIELD = "ne";
-
-    public static final String NEIGHBOR_N_FIELD = "nn";
-
-    public static final String NEIGHBOR_W_FIELD = "nw";
-
     public static final String PARENT_FIELD = "parent";
 
-	@Override
-	public void createSchema(Object db) {
-		var odb = (ODatabaseDocument) db;
-		var c = odb.createClass(MapChunk.OBJECT_TYPE, GameObject.OBJECT_TYPE);
-		var cid = odb.createClass(CHUNK_ID_CLASS);
-		cid.createProperty(OBJECTID_FIELD, OType.LONG);
-		c.createProperty(BLOCKS_FIELD, OType.EMBEDDEDMAP, cid);
-		var mapTile = odb.getClass(MapBlock.OBJECT_TYPE);
-		c.createProperty(TILES_FIELD, OType.EMBEDDEDMAP, mapTile);
-		c.createProperty(MAPID_FIELD, OType.INTEGER);
-		c.createProperty(START_X_FIELD, OType.INTEGER);
-		c.createProperty(START_Y_FIELD, OType.INTEGER);
-		c.createProperty(START_Z_FIELD, OType.INTEGER);
-		c.createProperty(END_X_FIELD, OType.INTEGER);
-		c.createProperty(END_Y_FIELD, OType.INTEGER);
-		c.createProperty(END_Z_FIELD, OType.INTEGER);
+    public static final String POS_START_X_FIELD = "sx";
+
+    public static final String POS_START_Y_FIELD = "sy";
+
+    public static final String POS_START_Z_FIELD = "sz";
+
+    public static final String POS_END_X_FIELD = "ex";
+
+    public static final String POS_END_Y_FIELD = "ey";
+
+    public static final String POS_END_Z_FIELD = "ez";
+
+    @Override
+    public void createSchema(Object db) {
+        var odb = (ODatabaseDocument) db;
+        var c = odb.createClass(MapChunk.OBJECT_TYPE, GameObject.OBJECT_TYPE);
+        var cid = odb.createClass(CHUNK_ID_CLASS);
+        cid.createProperty(OBJECTID_FIELD, OType.LONG);
+        c.createProperty(CHUNKS_FIELD, OType.EMBEDDEDMAP, cid);
+        var mapBlock = odb.getClass(MapBlock.OBJECT_TYPE);
+        c.createProperty(BLOCKS_FIELD, OType.EMBEDDEDMAP, mapBlock);
+        c.createProperty(MAP_FIELD, OType.INTEGER);
+        new CenterExtentSchema().createSchema(db, c);
         c.createProperty(ROOT_FIELD, OType.BOOLEAN);
-        c.createProperty(NEIGHBOR_T_FIELD, OType.LONG);
-        c.createProperty(NEIGHBOR_B_FIELD, OType.LONG);
-        c.createProperty(NEIGHBOR_S_FIELD, OType.LONG);
-        c.createProperty(NEIGHBOR_E_FIELD, OType.LONG);
-        c.createProperty(NEIGHBOR_N_FIELD, OType.LONG);
-        c.createProperty(NEIGHBOR_W_FIELD, OType.LONG);
+        new NeighboringSchema().createSchema(db, c);
         c.createProperty(PARENT_FIELD, OType.LONG);
-		try (var q = odb.command(
-                "CREATE INDEX MapChunk_type_pos ON MapChunk (objecttype, mapid, sx, sy, sz, ex, ey, ez) UNIQUE METADATA {ignoreNullValues: false}")) {
-		}
-	}
+        c.createProperty(POS_START_X_FIELD, OType.INTEGER);
+        c.createProperty(POS_START_Y_FIELD, OType.INTEGER);
+        c.createProperty(POS_START_Z_FIELD, OType.INTEGER);
+        c.createProperty(POS_END_X_FIELD, OType.INTEGER);
+        c.createProperty(POS_END_Y_FIELD, OType.INTEGER);
+        c.createProperty(POS_END_Z_FIELD, OType.INTEGER);
+        try (var q = odb.command(
+                "CREATE INDEX MapChunk_type_pos ON MapChunk (objecttype, map, sx, sy, sz, ex, ey, ez) UNIQUE METADATA {ignoreNullValues: false}")) {
+        }
+    }
 
 }
