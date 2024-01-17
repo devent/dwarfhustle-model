@@ -17,9 +17,14 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
+import java.time.Duration;
+import java.util.concurrent.CompletionStage;
+
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 
 import akka.actor.typed.ActorRef;
+import akka.actor.typed.ActorSystem;
+import akka.actor.typed.javadsl.AskPattern;
 import lombok.ToString;
 
 /**
@@ -31,6 +36,19 @@ import lombok.ToString;
  */
 @ToString
 public class ConnectDbRemoteMessage<T extends Message> extends DbMessage<T> {
+
+    /**
+     * Asks the actor to connect to an remote OrientDb database.
+     *
+     * @param a       the {@link ActorSystem}.
+     * @param timeout the {@link Duration} timeout.
+     * @return {@link CompletionStage} with the {@link DbMessage}.
+     */
+    public static CompletionStage<DbMessage<?>> askConnectDbEmbedded(ActorSystem<Message> a, String url,
+            String database, String user, String password, Duration timeout) {
+        return AskPattern.ask(a, replyTo -> new ConnectDbRemoteMessage<>(replyTo, url, database, user, password),
+                timeout, a.scheduler());
+    }
 
     public final String url;
 

@@ -56,13 +56,4 @@ public class Person extends GameMovingObject {
         return OBJECT_TYPE;
     }
 
-    @Override
-    public boolean isDirty() {
-        Person old = getOld();
-        return old.firstName != firstName //
-                || old.secondName != secondName //
-                || old.lastName != lastName //
-        ;
-    }
-
 }

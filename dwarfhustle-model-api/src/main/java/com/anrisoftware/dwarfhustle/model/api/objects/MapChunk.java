@@ -17,7 +17,6 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -86,29 +85,17 @@ public class MapChunk extends StoredObject {
 
     public MapChunk(long id, GameChunkPos pos) {
         super(id);
-        setPos(pos);
+        this.pos = pos;
     }
 
     public MapChunk(byte[] idbuf, GameChunkPos pos) {
         super(idbuf);
-        setPos(pos);
+        this.pos = pos;
     }
 
     @Override
     public String getObjectType() {
         return OBJECT_TYPE;
-    }
-
-    @Override
-    public boolean isDirty() {
-        MapChunk o = getOld();
-        return o.parent != parent //
-                || !Objects.equals(o.centerExtent, centerExtent) //
-                || !Objects.equals(o.pos, pos) //
-                || !Objects.equals(o.chunks.keySet(), chunks.keySet()) //
-                || !Objects.equals(o.blocks, blocks) //
-                || !Objects.equals(o.chunkDir, chunkDir) //
-        ;
     }
 
     /**

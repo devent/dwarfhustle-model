@@ -31,7 +31,7 @@ import lombok.ToString;
  */
 @NoArgsConstructor
 @ToString
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 @Data
 public class GameObject implements Serializable {
 
@@ -56,7 +56,6 @@ public class GameObject implements Serializable {
 	/**
 	 * Unique ID of the object.
 	 */
-	@EqualsAndHashCode.Include
     public long id;
 
 	public GameObject(long id) {
@@ -67,16 +66,8 @@ public class GameObject implements Serializable {
 		this(toId(idbuf));
 	}
 
+    @EqualsAndHashCode.Include
 	public String getObjectType() {
         return GameObject.OBJECT_TYPE;
 	}
-
-	public void setId(long id) {
-		this.id = id;
-	}
-
-    public void setId(byte[] id) {
-        setId(toId(id));
-    }
-
 }

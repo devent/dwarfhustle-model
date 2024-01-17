@@ -2,11 +2,11 @@ package com.anrisoftware.dwarfhustle.model.terrainimage
 
 import static java.time.Duration.ofSeconds
 
-import java.util.concurrent.CountDownLatch
 import java.util.function.Consumer
 
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.io.TempDir
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
@@ -17,16 +17,17 @@ import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheGetMessage
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheGetMessage.CacheGetSuccessMessage
 import com.anrisoftware.dwarfhustle.model.db.cache.DwarfhustleModelDbCacheModule
+import com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DwarfhustleModelDbOrientdbModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustlePowerloomModule
 import com.google.inject.Guice
 import com.google.inject.Injector
 
 /**
- * @see ImportMapImage2Db
+ * @see ImporterMapImage2DbApp
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-class ImportMapImage2DbTest {
+class ImporterMapImage2DbAppTest {
 
     static Injector injector
 
@@ -43,16 +44,18 @@ class ImportMapImage2DbTest {
     }
 
     @Test
-    void test_import_embedded(@TempDir File tmp) {
-        def importer = injector.getInstance(ImporterMapImage2Db)
-        def latch = importer.initEmbedded(injector, new CountDownLatch(1), tmp)
-        long wmid = importer.createGameMap(TerrainImage.terrain_32_32_32.terrain)
-        latch.await()
+    @Timeout(60)
+    void test_create_game_map(@TempDir File tmp) {
+        def importer = injector.getInstance(ImporterMapImage2DbApp)
+        importer.initEmbedded(injector, tmp, "test", "root", "admin").get()
+        long gmid = importer.createGameMap(TerrainImage.terrain_32_32_32.terrain)
         def actor = injector.getInstance(ActorSystemProvider)
-        cacheGet actor, WorldMap, WorldMap.OBJECT_TYPE, wmid, { wm ->
-            assert wm.id == wmid
-            cacheGet actor, GameMap, GameMap.OBJECT_TYPE, wm.currentMap, {
-                assert it.id == wm.currentMap
+        actor.getActorAsync(StoredObjectsJcsCacheActor.ID).get()
+        cacheGet actor, GameMap, GameMap.OBJECT_TYPE, gmid, { gm ->
+            assert gm.id == gmid
+            cacheGet actor, WorldMap, WorldMap.OBJECT_TYPE, gm.world, { wm ->
+                assert wm.id == gm.world
+                assert gmid == wm.currentMap
             }
         }
     }
@@ -63,5 +66,18 @@ class ImportMapImage2DbTest {
             assert ret.class == CacheGetSuccessMessage
             consumer.accept(ret.go)
         }).get()
+    }
+
+    @Test
+    @Timeout(600)
+    void test_start_import(@TempDir File tmp) {
+        def importer = injector.getInstance(ImporterMapImage2DbApp)
+        importer.initEmbedded(injector, tmp, "test", "root", "admin").get()
+        def image = TerrainImage.terrain_8_8_8
+        long gmid = importer.createGameMap(image.terrain)
+        importer.startImport(ImporterMapImage2DbAppTest.class.getResource(image.name), image.terrain, gmid)
+        def actor = injector.getInstance(ActorSystemProvider)
+        importer.shutdownEmbedded().get()
+        println "done"
     }
 }

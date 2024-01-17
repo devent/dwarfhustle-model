@@ -29,6 +29,7 @@ import com.anrisoftware.dwarfhustle.model.actor.MainActor.MainActorFactory;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 
+import akka.Done;
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.ActorSystem;
 import akka.actor.typed.Behavior;
@@ -102,8 +103,9 @@ public class ActorSystemProvider implements Provider<ActorRef<Message>> {
         return ActorSystem.create(b, name);
     }
 
-    public void shutdown() {
+    public CompletionStage<Done> shutdown() {
         actors.terminate();
+        return actors.getWhenTerminated();
     }
 
     public void shutdownWait() throws TimeoutException, InterruptedException {

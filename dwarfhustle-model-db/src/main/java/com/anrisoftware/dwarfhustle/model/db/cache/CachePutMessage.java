@@ -36,6 +36,15 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class CachePutMessage<T extends Message> extends CacheMessage<T> {
 
+    /**
+     * Asks the actor to put the value with the key in the cache.
+     * 
+     * @param a       the {@link ActorSystem}.
+     * @param key     the {@link Object} key.
+     * @param value   the {@link GameObject} value.
+     * @param timeout the {@link Duration} timeout.
+     * @return {@link CompletionStage} with the {@link CacheResponseMessage}.
+     */
     public static CompletionStage<CacheResponseMessage<?>> askCachePut(ActorSystem<Message> a, Object key,
             GameObject value, Duration timeout) {
         return AskPattern.ask(a, replyTo -> new CachePutMessage<>(replyTo, key, value), timeout, a.scheduler());

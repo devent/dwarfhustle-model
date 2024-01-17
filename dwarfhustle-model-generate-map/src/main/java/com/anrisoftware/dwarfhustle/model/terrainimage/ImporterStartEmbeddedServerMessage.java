@@ -15,25 +15,28 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
+package com.anrisoftware.dwarfhustle.model.terrainimage;
 
 import java.net.URL;
+import java.time.Duration;
+import java.util.concurrent.CompletionStage;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.orientechnologies.orient.server.OServer;
 
 import akka.actor.typed.ActorRef;
+import akka.actor.typed.ActorSystem;
+import akka.actor.typed.javadsl.AskPattern;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
- * Message to start an embedded OrientDb server. Replies with either the
- * {@link StartEmbeddedServerSuccessMessage} or {@link DbErrorMessage} message.
+ * Message to start an embedded OrientDb server.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @ToString
-public class StartEmbeddedServerMessage<T extends Message> extends DbMessage<T> {
+@RequiredArgsConstructor
+public class ImporterStartEmbeddedServerMessage<T extends Message> extends Message {
 
     /**
      * Message that the embedded OrientDb server was started successfully.
@@ -42,22 +45,36 @@ public class StartEmbeddedServerMessage<T extends Message> extends DbMessage<T> 
      */
     @ToString
     @RequiredArgsConstructor
-    public static class StartEmbeddedServerSuccessMessage<T extends Message> extends DbResponseMessage<T> {
-        public final OServer server;
+    public static class ImporterStartEmbeddedServerSuccessMessage<T extends Message> extends Message {
     }
+
+    /**
+     * Asks the actor to put the value with the key in the cache.
+     *
+     * @param a       the {@link ActorSystem}.
+     * @param timeout the {@link Duration} timeout.
+     * @return {@link CompletionStage} with the {@link Message}.
+     */
+    public static CompletionStage<Message> askImporterStartEmbeddedServer(ActorSystem<Message> a, Duration timeout, String root,
+            URL config, String database, String user, String password) {
+        return AskPattern.ask(a,
+                replyTo -> new ImporterStartEmbeddedServerMessage<>(replyTo, root, config, database, user, password),
+                timeout, a.scheduler());
+    }
+
+    /**
+     * Reply to {@link ActorRef}.
+     */
+    public final ActorRef<T> replyTo;
 
     public final String root;
 
     public final URL config;
 
-    public StartEmbeddedServerMessage(ActorRef<T> replyTo, String root, URL config) {
-        super(replyTo);
-        this.root = root;
-        this.config = config;
-    }
+    public final String database;
 
-    public StartEmbeddedServerMessage(ActorRef<T> replyTo, String root) {
-        this(replyTo, root, null);
-    }
+    public final String user;
+
+    public final String password;
 
 }

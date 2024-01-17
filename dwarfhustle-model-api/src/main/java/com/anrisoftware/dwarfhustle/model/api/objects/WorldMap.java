@@ -18,7 +18,6 @@
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 import org.eclipse.collections.api.factory.primitive.LongSets;
 import org.eclipse.collections.api.set.primitive.MutableLongSet;
@@ -85,18 +84,6 @@ public class WorldMap extends StoredObject {
     @Override
     public String getObjectType() {
         return OBJECT_TYPE;
-    }
-
-    @Override
-    public boolean isDirty() {
-        WorldMap old = getOld();
-        return old.name != name //
-                || old.currentMap != currentMap //
-                || old.distanceLat != distanceLat //
-                || old.distanceLon != distanceLon //
-                || Objects.equals(old.time, time) //
-                || Objects.equals(old.maps, maps) //
-        ;
     }
 
     /**

@@ -17,6 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.terrainimage;
 
+import com.anrisoftware.dwarfhustle.model.terrainimage.ImporterMapImage2DbActor.ImporterMapImage2DbActorFactory;
 import com.anrisoftware.dwarfhustle.model.terrainimage.TerrainImageCreateMap.TerrainImageCreateMapFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
@@ -30,6 +31,8 @@ public class DwarfhustleModelTerrainimageModule extends AbstractModule {
     protected void configure() {
         install(new FactoryModuleBuilder().implement(TerrainImageCreateMap.class, TerrainImageCreateMap.class)
                 .build(TerrainImageCreateMapFactory.class));
+        install(new FactoryModuleBuilder().implement(ImporterMapImage2DbActor.class, ImporterMapImage2DbActor.class)
+                .build(ImporterMapImage2DbActorFactory.class));
     }
 
 }

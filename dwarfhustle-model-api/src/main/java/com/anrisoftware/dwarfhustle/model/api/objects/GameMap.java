@@ -18,7 +18,6 @@
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import java.time.ZoneOffset;
-import java.util.Objects;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -124,34 +123,6 @@ public class GameMap extends StoredObject {
         return OBJECT_TYPE;
     }
 
-    @Override
-    public boolean isDirty() {
-        GameMap old = getOld();
-        return old.name != name //
-                || old.root != root //
-                || old.width != width || old.height != height || old.depth != depth //
-                || old.chunkSize != chunkSize //
-                || old.world != world //
-                || Objects.equals(old.timeZone, timeZone) //
-                || Objects.equals(old.area, area) //
-                || Objects.equals(old.cameraPos, cameraPos) //
-                || Objects.equals(old.cameraRot, cameraRot) //
-                || Objects.equals(old.cursor, cursor) //
-        ;
-    }
-
-    public void setWidth(int width) {
-        this.width = width;
-    }
-
-    public void setHeight(int height) {
-        this.height = height;
-    }
-
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
-
     public int getSize() {
         return depth * height * width;
     }
@@ -168,6 +139,10 @@ public class GameMap extends StoredObject {
         this.cameraPos[0] = x;
         this.cameraPos[1] = y;
         this.cameraPos[2] = z;
+    }
+
+    public void setCameraRot(float[] rot) {
+        this.cameraRot = rot;
     }
 
     public void setCameraRot(float x, float y, float z, float w) {

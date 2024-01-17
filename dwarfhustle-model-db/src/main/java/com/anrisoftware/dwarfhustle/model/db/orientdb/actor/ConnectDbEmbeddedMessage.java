@@ -17,10 +17,15 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
+import java.time.Duration;
+import java.util.concurrent.CompletionStage;
+
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.orientechnologies.orient.server.OServer;
 
 import akka.actor.typed.ActorRef;
+import akka.actor.typed.ActorSystem;
+import akka.actor.typed.javadsl.AskPattern;
 import lombok.ToString;
 
 /**
@@ -31,13 +36,26 @@ import lombok.ToString;
 @ToString
 public class ConnectDbEmbeddedMessage<T extends Message> extends DbMessage<T> {
 
-	public final OServer server;
+    /**
+     * Asks the actor to connect to an embedded OrientDb database.
+     *
+     * @param a       the {@link ActorSystem}.
+     * @param timeout the {@link Duration} timeout.
+     * @return {@link CompletionStage} with the {@link DbMessage}.
+     */
+    public static CompletionStage<DbResponseMessage<?>> askConnectDbEmbedded(ActorSystem<Message> a, OServer server,
+            String database, String user, String password, Duration timeout) {
+        return AskPattern.ask(a, replyTo -> new ConnectDbEmbeddedMessage<>(replyTo, server, database, user, password),
+                timeout, a.scheduler());
+    }
 
-	public final String database;
+    public final OServer server;
 
-	public final String user;
+    public final String database;
 
-	public final String password;
+    public final String user;
+
+    public final String password;
 
     public ConnectDbEmbeddedMessage(ActorRef<T> replyTo, OServer server, String database, String user,
             String password) {

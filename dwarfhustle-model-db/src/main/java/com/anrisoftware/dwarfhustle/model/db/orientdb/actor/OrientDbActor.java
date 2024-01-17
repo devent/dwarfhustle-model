@@ -25,15 +25,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
-import jakarta.inject.Inject;
-
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.actor.ShutdownMessage;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CreateDbMessage.CreateDbSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CreateDbMessage.DbAlreadyExistMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CreateSchemasMessage.CreateSchemasSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage.DbCommandErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage.DbCommandSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbErrorMessage;
@@ -42,6 +42,7 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DeleteDbMessage.DbNo
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectMessage.LoadObjectSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectsMessage.LoadObjectsSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StartEmbeddedServerMessage.StartEmbeddedServerSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StopEmbeddedServerMessage.StopEmbeddedServerSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameObjectSchema;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
@@ -60,11 +61,16 @@ import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.BehaviorBuilder;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.receptionist.ServiceKey;
+import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Acts on the messages:
  * <ul>
+ * <li>{@link StartEmbeddedServerMessage}
+ * <li>{@link StopEmbeddedServerMessage}
+ * <li>{@link ConnectDbRemoteMessage}
+ * <li>{@link ConnectDbEmbeddedMessage}
  * <li>{@link ShutdownMessage}
  * <li>{@link StopEmbeddedServerMessage}
  * <li>{@link CloseDbMessage}
@@ -120,6 +126,9 @@ public class OrientDbActor implements ObjectsGetter {
     @Inject
     private Map<String, GameObjectStorage> storages;
 
+    @Inject
+    private ActorSystemProvider actor;
+
     private Optional<OrientDB> orientdb;
 
     private String user;
@@ -137,6 +146,7 @@ public class OrientDbActor implements ObjectsGetter {
     public Behavior<Message> start() {
         this.orientdb = Optional.empty();
         this.server = Optional.empty();
+        actor.registerObjectsGetter(ID, this);
         return getInitialBehavior().build();
     }
 
@@ -153,8 +163,11 @@ public class OrientDbActor implements ObjectsGetter {
         try {
             System.setProperty(Orient.ORIENTDB_HOME, m.root);
             var server = OServerMain.create();
-            var config = m.config.openStream();
-            server.startup(config);
+            if (m.config != null) {
+                server.startup(m.config.openStream());
+            } else {
+                server.startup();
+            }
             server.activate();
             this.server = Optional.of(server);
         } catch (Exception e) {
@@ -168,8 +181,8 @@ public class OrientDbActor implements ObjectsGetter {
 
     /**
      * Reacts to {@link StopEmbeddedServerMessage}. Replies with the
-     * {@link DbSuccessMessage} on success and with {@link DbErrorMessage} on
-     * failure. Returns a behavior for the messages from
+     * {@link StopEmbeddedServerSuccessMessage} on success and with
+     * {@link DbErrorMessage} on failure. Returns a behavior for the messages from
      * {@link #getInitialBehavior()}.
      * </ul>
      */
@@ -183,7 +196,7 @@ public class OrientDbActor implements ObjectsGetter {
             m.replyTo.tell(new DbErrorMessage(e));
             return Behaviors.same();
         }
-        m.replyTo.tell(new DbSuccessMessage());
+        m.replyTo.tell(new StopEmbeddedServerSuccessMessage());
         return getInitialBehavior().build();
     }
 
@@ -247,9 +260,9 @@ public class OrientDbActor implements ObjectsGetter {
     }
 
     /**
-     * Reacts to {@link CreateDbMessage}. Replies with {@link DbSuccessMessage} on
-     * success, with {@link DbAlreadyExistMessage} if the database already exist or
-     * with {@link DbErrorMessage} on failure.
+     * Reacts to {@link CreateDbMessage}. Replies with
+     * {@link CreateDbSuccessMessage} on success, with {@link DbAlreadyExistMessage}
+     * if the database already exist or with {@link DbErrorMessage} on failure.
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private Behavior<Message> onCreateDb(CreateDbMessage m) {
@@ -259,7 +272,7 @@ public class OrientDbActor implements ObjectsGetter {
                 m.replyTo.tell(new DbAlreadyExistMessage<>());
             } else {
                 orientdb.get().create(database, m.type);
-                m.replyTo.tell(new DbSuccessMessage<>());
+                m.replyTo.tell(new CreateDbSuccessMessage<>());
             }
         } catch (Exception e) {
             log.error("onCreateDb", e);
@@ -341,7 +354,7 @@ public class OrientDbActor implements ObjectsGetter {
                 log.trace("createSchema {}", schema);
                 schema.createSchema(db);
             }
-            m.replyTo.tell(new DbSuccessMessage<>());
+            m.replyTo.tell(new CreateSchemasSuccessMessage<>());
         } catch (Exception e) {
             log.error("onCreateSchemas", e);
             m.replyTo.tell(new DbErrorMessage<>(e));
@@ -415,13 +428,11 @@ public class OrientDbActor implements ObjectsGetter {
     private Behavior<Message> onSaveObject(SaveObjectMessage<?> m) {
         log.debug("onSaveObject {}", m);
         SaveObjectMessage mm = m;
-        if (m.go.isDirty()) {
-            try (var db = orientdb.get().open(database, user, password)) {
-                saveObject(m, db);
-            } catch (Exception e) {
-                log.error("onSaveObject", e);
-                mm.replyTo.tell(new DbErrorMessage<>(e));
-            }
+        try (var db = orientdb.get().open(database, user, password)) {
+            saveObject(m, db);
+        } catch (Exception e) {
+            log.error("onSaveObject", e);
+            mm.replyTo.tell(new DbErrorMessage<>(e));
         }
         return Behaviors.same();
     }

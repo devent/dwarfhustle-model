@@ -15,47 +15,51 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
+package com.anrisoftware.dwarfhustle.model.terrainimage;
+
+import java.time.Duration;
+import java.util.concurrent.CompletionStage;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.orientechnologies.orient.core.db.ODatabaseType;
 
 import akka.actor.typed.ActorRef;
+import akka.actor.typed.ActorSystem;
+import akka.actor.typed.javadsl.AskPattern;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
- * Message to create a new database. Replies with either the
- * {@link CreateDbSuccessMessage}, {@link DbAlreadyExistMessage} or
- * {@link DbErrorMessage} message.
+ * Message to stop an embedded OrientDb server.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @ToString
-public class CreateDbMessage<T extends Message> extends DbMessage<T> {
+@RequiredArgsConstructor
+public class ImporterStopEmbeddedServerMessage<T extends Message> extends Message {
 
     /**
-     * Message that a new database was created successfully.
+     * Message that the embedded OrientDb server was stopped successfully.
      *
      * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
      */
     @ToString
-    public static class CreateDbSuccessMessage<T extends Message> extends DbResponseMessage<T> {
+    @RequiredArgsConstructor
+    public static class ImporterStopEmbeddedServerSuccessMessage<T extends Message> extends Message {
     }
 
     /**
-     * Message that the database already exist.
+     * Asks the actor to stop an embedded OrientDb server.
      *
-     * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+     * @param a       the {@link ActorSystem}.
+     * @param timeout the {@link Duration} timeout.
+     * @return {@link CompletionStage} with the {@link Message}.
      */
-    @ToString
-    public static class DbAlreadyExistMessage<T extends Message> extends DbResponseMessage<T> {
-	}
-
-    public final ODatabaseType type;
-
-    public CreateDbMessage(ActorRef<T> replyTo, ODatabaseType type) {
-        super(replyTo);
-        this.type = type;
+    public static CompletionStage<Message> askImporterStopEmbeddedServer(ActorSystem<Message> a, Duration timeout) {
+        return AskPattern.ask(a, replyTo -> new ImporterStopEmbeddedServerMessage<>(replyTo), timeout, a.scheduler());
     }
 
+    /**
+     * Reply to {@link ActorRef}.
+     */
+    public final ActorRef<T> replyTo;
 }

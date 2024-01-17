@@ -17,18 +17,45 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
+import java.time.Duration;
+import java.util.concurrent.CompletionStage;
+
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 
 import akka.actor.typed.ActorRef;
+import akka.actor.typed.ActorSystem;
+import akka.actor.typed.javadsl.AskPattern;
 import lombok.ToString;
 
 /**
- * Message to create the schemas and indexes for a new database.
+ * Message to create the schemas and indexes for a new database. Replies with
+ * either the {@link CreateSchemasSuccessMessage} or {@link DbErrorMessage}
+ * message.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @ToString
 public class CreateSchemasMessage<T extends Message> extends DbMessage<T> {
+
+    /**
+     * Message that the embedded OrientDb server was started successfully.
+     *
+     * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+     */
+    @ToString
+    public static class CreateSchemasSuccessMessage<T extends Message> extends DbResponseMessage<T> {
+    }
+
+    /**
+     * Asks the actor to create the schemas and indexes for a new database.
+     *
+     * @param a       the {@link ActorSystem}.
+     * @param timeout the {@link Duration} timeout.
+     * @return {@link CompletionStage} with the {@link DbMessage}.
+     */
+    public static CompletionStage<DbMessage<?>> askCreateSchemas(ActorSystem<Message> a, Duration timeout) {
+        return AskPattern.ask(a, replyTo -> new CreateSchemasMessage<>(replyTo), timeout, a.scheduler());
+    }
 
     public CreateSchemasMessage(ActorRef<T> replyTo) {
         super(replyTo);

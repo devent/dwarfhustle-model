@@ -44,7 +44,6 @@ public abstract class AbstractGameObjectStorage implements GameObjectStorage {
         var v = (OElement) o;
         go.rid = v.getIdentity();
         go.id = (Long) v.getProperty(OBJECTID_FIELD);
-        go.old = go;
         return go;
     }
 }

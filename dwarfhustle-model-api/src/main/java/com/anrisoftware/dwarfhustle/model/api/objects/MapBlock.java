@@ -17,8 +17,6 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import java.util.Objects;
-
 import org.eclipse.collections.api.map.primitive.IntLongMap;
 import org.eclipse.collections.api.map.primitive.MutableIntLongMap;
 import org.eclipse.collections.impl.factory.primitive.IntLongMaps;
@@ -95,17 +93,6 @@ public class MapBlock extends GameMapObject {
     @Override
     public String getObjectType() {
         return OBJECT_TYPE;
-    }
-
-    @Override
-    public boolean isDirty() {
-        MapBlock o = getOld();
-        return o.material != material //
-                || o.object != object //
-                || !Objects.equals(o.centerExtent, centerExtent) //
-                || !Objects.equals(o.p, p) //
-                || !Objects.equals(o.blockDir, blockDir) //
-        ;
     }
 
     /**

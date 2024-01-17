@@ -15,8 +15,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
+package com.anrisoftware.dwarfhustle.model.terrainimage;
 
+import java.net.URL;
 import java.time.Duration;
 import java.util.concurrent.CompletionStage;
 
@@ -29,36 +30,46 @@ import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
- * Message to stop the embedded OrientDb server.
+ * Message to import the {@link TerrainLoadImage} in the database.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @ToString
-public class StopEmbeddedServerMessage<T extends Message> extends DbMessage<T> {
+@RequiredArgsConstructor
+public class ImportImageMessage<T extends Message> extends Message {
 
     /**
-     * Message that the embedded OrientDb server was stopped successfully.
+     * Message that the import finished successfully.
      *
      * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
      */
     @ToString
     @RequiredArgsConstructor
-    public static class StopEmbeddedServerSuccessMessage<T extends Message> extends DbResponseMessage<T> {
+    public static class ImportImageSuccessMessage<T extends Message> extends Message {
     }
 
     /**
-     * Asks the actor to stop the embedded OrientDb server.
+     * Asks the actor to import the {@link TerrainLoadImage} in the database.
      *
      * @param a       the {@link ActorSystem}.
      * @param timeout the {@link Duration} timeout.
-     * @return {@link CompletionStage} with the {@link DbMessage}.
+     * @return {@link CompletionStage} with the {@link Message}.
      */
-    public static CompletionStage<DbMessage<?>> askStopEmbeddedServer(ActorSystem<Message> a, Duration timeout) {
-        return AskPattern.ask(a, replyTo -> new StopEmbeddedServerMessage<>(replyTo), timeout, a.scheduler());
+    public static CompletionStage<Message> askImportImage(ActorSystem<Message> a, Duration timeout, URL url,
+            TerrainLoadImage image, long mapid) {
+        return AskPattern.ask(a, replyTo -> new ImportImageMessage<>(replyTo, url, image, mapid), timeout,
+                a.scheduler());
     }
 
-    public StopEmbeddedServerMessage(ActorRef<T> replyTo) {
-        super(replyTo);
-    }
+    /**
+     * Reply to {@link ActorRef}.
+     */
+    public final ActorRef<T> replyTo;
+
+    public final URL url;
+
+    public final TerrainLoadImage image;
+
+    public final long mapid;
 
 }
