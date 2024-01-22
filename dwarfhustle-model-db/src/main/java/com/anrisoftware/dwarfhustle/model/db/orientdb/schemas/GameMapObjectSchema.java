@@ -25,6 +25,7 @@ import com.orientechnologies.orient.core.metadata.schema.OType;
 /**
  * Creates the schema for the {@link GameMapObject}.
  *
+ * @see GameObjectSchemaSchema
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 public class GameMapObjectSchema implements GameObjectSchema {
@@ -41,7 +42,7 @@ public class GameMapObjectSchema implements GameObjectSchema {
     public void createSchema(Object db) {
         var odb = (ODatabaseDocument) db;
         var c = odb.createClass(GameMapObject.OBJECT_TYPE, GameObject.OBJECT_TYPE);
-        c.createProperty(MAP_FIELD, OType.INTEGER);
+        c.createProperty(MAP_FIELD, OType.LONG);
         c.createProperty(POS_X_FIELD, OType.INTEGER);
         c.createProperty(POS_Y_FIELD, OType.INTEGER);
         c.createProperty(POS_Z_FIELD, OType.INTEGER);

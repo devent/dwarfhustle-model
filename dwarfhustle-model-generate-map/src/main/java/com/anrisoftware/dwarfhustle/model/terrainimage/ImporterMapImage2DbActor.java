@@ -17,6 +17,8 @@ import com.anrisoftware.dwarfhustle.model.actor.ShutdownMessage;
 import com.anrisoftware.dwarfhustle.model.api.objects.IdsObjectsProvider.IdsObjects;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractJcsCacheActor;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CloseDbMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CloseDbMessage.CloseDbSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.ConnectDbEmbeddedMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.ConnectDbSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CreateDbMessage;
@@ -142,6 +144,7 @@ public class ImporterMapImage2DbActor {
     @SuppressWarnings("rawtypes")
     private ActorRef startServerReplyTo;
 
+    @SuppressWarnings("rawtypes")
     private ActorRef stopServerReplyTo;
 
     /**
@@ -166,8 +169,8 @@ public class ImporterMapImage2DbActor {
     @SuppressWarnings({ "rawtypes" })
     private Behavior<Message> onImporterStopEmbeddedServer(ImporterStopEmbeddedServerMessage m) {
         log.debug("onImporterStopEmbeddedServer {}", m);
-        dbActor.tell(new StopEmbeddedServerMessage<>(dbResponseAdapter));
         this.stopServerReplyTo = m.replyTo;
+        dbActor.tell(new CloseDbMessage<>(dbResponseAdapter));
         return getInitialBehavior().build();
     }
 
@@ -204,6 +207,8 @@ public class ImporterMapImage2DbActor {
             dbActor.tell(new CreateSchemasMessage<>(dbResponseAdapter));
         } else if (r instanceof CreateSchemasSuccessMessage rm) {
             startServerReplyTo.tell(new ImporterStartEmbeddedServerSuccessMessage<>());
+        } else if (r instanceof CloseDbSuccessMessage rm) {
+            dbActor.tell(new StopEmbeddedServerMessage<>(dbResponseAdapter));
         } else if (r instanceof StopEmbeddedServerSuccessMessage rm) {
             stopServerReplyTo.tell(new ImporterStopEmbeddedServerSuccessMessage<>());
         } else if (r instanceof DbSuccessMessage<?> rm) {

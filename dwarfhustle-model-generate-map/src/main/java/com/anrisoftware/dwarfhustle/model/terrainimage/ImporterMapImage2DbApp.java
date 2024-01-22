@@ -219,8 +219,8 @@ public class ImporterMapImage2DbApp {
                 logError("ImportImageMessage", ex);
             } else if (res instanceof ImportImageSuccessMessage<?> rm) {
                 log.info("ImportImageMessage Success");
-                lock.countDown();
             }
+            lock.countDown();
         });
         ret.toCompletableFuture().get();
         lock.await();

@@ -37,20 +37,21 @@ public class GameChunkPos extends GameBlockPos {
 
     public final GameBlockPos ep;
 
-    public GameChunkPos(long map, int sx, int sy, int sz, int ex, int ey, int ez) {
-        this(new GameBlockPos(map, sx, sy, sz), new GameBlockPos(map, ex, ey, ez));
+    public GameChunkPos(int sx, int sy, int sz, int ex, int ey, int ez) {
+        this(new GameBlockPos(sx, sy, sz), new GameBlockPos(ex, ey, ez));
     }
 
     public GameChunkPos(GameBlockPos pos, GameBlockPos endPos) {
-        super(pos.getMap(), pos.getX(), pos.getY(), pos.getZ());
+        super(pos.getX(), pos.getY(), pos.getZ());
         this.ep = endPos;
     }
 
     /**
-     * Returns string that can be used to store the block position. For example:
+     * Returns string that can be used to store the block position:
+     * {@code SX/SY/SZ/EX/EY/EZ} For example:
      * <ul>
-     * <li>{@code 0/0/0/0/0/0/0}
-     * <li>{@code 1/0/0/0/64/64/64}
+     * <li>{@code 0/0/0/0/0/0}
+     * <li>{@code 0/0/0/64/64/64}
      * </ul>
      */
     @Override
@@ -63,8 +64,8 @@ public class GameChunkPos extends GameBlockPos {
      */
     public static GameChunkPos parse(String s) {
         var split = StringUtils.split(s, "/");
-        var pos = new GameBlockPos(toInt(split[0]), toInt(split[1]), toInt(split[2]), toInt(split[3]));
-        var ep = new GameBlockPos(toInt(split[0]), toInt(split[4]), toInt(split[5]), toInt(split[6]));
+        var pos = new GameBlockPos(toInt(split[0]), toInt(split[1]), toInt(split[2]));
+        var ep = new GameBlockPos(toInt(split[3]), toInt(split[4]), toInt(split[5]));
         return new GameChunkPos(pos, ep);
     }
 

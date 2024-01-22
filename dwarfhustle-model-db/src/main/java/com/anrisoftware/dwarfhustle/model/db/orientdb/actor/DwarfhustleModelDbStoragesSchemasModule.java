@@ -22,8 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.inject.Singleton;
-
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
@@ -43,6 +41,8 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.storages.WorldMapStorage;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 
+import jakarta.inject.Singleton;
+
 /**
  * @author Erwin Müller
  */
@@ -59,7 +59,6 @@ public class DwarfhustleModelDbStoragesSchemasModule extends AbstractModule {
         var mapTileStorage = new MapBlockStorage();
         map.put(MapBlock.OBJECT_TYPE, mapTileStorage);
         var mapBlockStorage = new MapChunkStorage();
-        mapBlockStorage.setStorages(map);
         map.put(MapChunk.OBJECT_TYPE, mapBlockStorage);
         map.put(GameMap.OBJECT_TYPE, new GameMapStorage());
         var worldMapStorage = new WorldMapStorage();

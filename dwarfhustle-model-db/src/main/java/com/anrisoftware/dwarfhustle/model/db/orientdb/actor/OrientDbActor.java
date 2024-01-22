@@ -31,6 +31,7 @@ import com.anrisoftware.dwarfhustle.model.actor.ShutdownMessage;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CloseDbMessage.CloseDbSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CreateDbMessage.CreateDbSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CreateDbMessage.DbAlreadyExistMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CreateSchemasMessage.CreateSchemasSuccessMessage;
@@ -255,7 +256,7 @@ public class OrientDbActor implements ObjectsGetter {
     private Behavior<Message> onCloseDb(CloseDbMessage m) {
         log.debug("onCloseDb {}", m);
         closeDb();
-        m.replyTo.tell(new DbSuccessMessage<>());
+        m.replyTo.tell(new CloseDbSuccessMessage<>());
         return getInitialBehavior().build();
     }
 

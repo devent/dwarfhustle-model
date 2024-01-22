@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.io.Serializable;
+
 import org.eclipse.collections.api.map.primitive.IntLongMap;
 import org.eclipse.collections.api.map.primitive.MutableIntLongMap;
 import org.eclipse.collections.impl.factory.primitive.IntLongMaps;
@@ -35,7 +37,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class MapBlock extends GameMapObject {
+public class MapBlock extends GameMapObject implements StoredObject {
 
     private static final int MINED_POS = 0;
 
@@ -48,6 +50,15 @@ public class MapBlock extends GameMapObject {
     private static final long serialVersionUID = 1L;
 
     public static final String OBJECT_TYPE = MapBlock.class.getSimpleName();
+
+    public static MapBlock getMapBlock(ObjectsGetter og, long id) {
+        return og.get(MapBlock.class, OBJECT_TYPE, id);
+    }
+
+    /**
+     * Record ID set after the object was once stored in the backend.
+     */
+    public Serializable rid;
 
     /**
      * ID of the material.

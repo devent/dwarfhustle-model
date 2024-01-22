@@ -17,16 +17,15 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import java.util.Optional;
+import java.io.Serializable;
 import java.util.function.Function;
 
-import org.eclipse.collections.api.map.MapIterable;
 import org.eclipse.collections.api.map.primitive.IntLongMap;
 import org.eclipse.collections.api.map.primitive.MutableIntLongMap;
 import org.eclipse.collections.api.map.primitive.ObjectLongMap;
-import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.factory.primitive.IntLongMaps;
 import org.eclipse.collections.impl.factory.primitive.ObjectLongMaps;
+import org.eclipse.collections.impl.map.mutable.primitive.ObjectLongHashMap;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -42,17 +41,26 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class MapChunk extends StoredObject {
+public class MapChunk extends GameMapObject implements StoredObject {
 
     private static final long serialVersionUID = 1L;
 
     public static final String OBJECT_TYPE = MapChunk.class.getSimpleName();
 
+    public static final MapChunk getMapChunk(ObjectsGetter og, Object key) {
+        return og.get(MapChunk.class, OBJECT_TYPE, key);
+    }
+
+    /**
+     * Record ID set after the object was once stored in the backend.
+     */
+    public Serializable rid;
+
     @ToString.Exclude
     public ObjectLongMap<GameChunkPos> chunks = ObjectLongMaps.immutable.empty();
 
     @ToString.Exclude
-    public MapIterable<GameBlockPos, MapBlock> blocks = Maps.immutable.empty();
+    public ObjectLongMap<GameBlockPos> blocks = ObjectLongMaps.immutable.empty();
 
     /**
      * Contains the IDs of the chunks in each direction that are neighboring this
@@ -107,8 +115,16 @@ public class MapChunk extends StoredObject {
         this.centerExtent = new CenterExtent(tx, ty, 0, pos.getSizeX(), pos.getSizeY(), pos.getSizeZ());
     }
 
-    public Optional<MapBlock> getBlock(GameBlockPos pos) {
-        return Optional.ofNullable(blocks.get(pos));
+    public long getBlock(GameBlockPos pos) {
+        return blocks.get(pos);
+    }
+
+    public boolean haveBlock(GameBlockPos pos) {
+        return blocks.containsKey(pos);
+    }
+
+    public long getBlocksEmptyValue() {
+        return ObjectLongHashMap.EMPTY_VALUE;
     }
 
     public void setNeighbor(NeighboringDir dir, long id) {
@@ -185,7 +201,7 @@ public class MapChunk extends StoredObject {
     }
 
     public MapChunk findMapChunk(int x, int y, int z, Function<Long, MapChunk> retriever) {
-        return findMapChunk(new GameBlockPos(pos.map, x, y, z), retriever);
+        return findMapChunk(new GameBlockPos(x, y, z), retriever);
     }
 
     public MapChunk findMapChunk(GameBlockPos pos, Function<Long, MapChunk> retriever) {
@@ -211,11 +227,11 @@ public class MapChunk extends StoredObject {
         return this;
     }
 
-    public MapBlock findMapBlock(int x, int y, int z, Function<Long, MapChunk> retriever) {
-        return findMapBlock(new GameBlockPos(pos.map, x, y, z), retriever);
+    public long findMapBlock(int x, int y, int z, Function<Long, MapChunk> retriever) {
+        return findMapBlock(new GameBlockPos(x, y, z), retriever);
     }
 
-    public MapBlock findMapBlock(GameBlockPos pos, Function<Long, MapChunk> retriever) {
+    public long findMapBlock(GameBlockPos pos, Function<Long, MapChunk> retriever) {
         int x = pos.getX();
         int y = pos.getY();
         int z = pos.getZ();
@@ -248,7 +264,7 @@ public class MapChunk extends StoredObject {
             return 0;
         }
         if (blocks.isEmpty()) {
-            long id = chunks.get(new GameChunkPos(pos.map, x, y, z, ex, ey, ez));
+            long id = chunks.get(new GameChunkPos(x, y, z, ex, ey, ez));
             if (id != 0) {
                 return id;
             }

@@ -31,11 +31,16 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Data
-public abstract class GameMapObject extends StoredObject {
+public abstract class GameMapObject extends GameObject {
 
 	private static final long serialVersionUID = 1L;
 
 	public static final String OBJECT_TYPE = GameMapObject.class.getSimpleName();
+
+    /**
+     * ID of the {@link GameMap}.
+     */
+    public long map = 0;
 
     /**
      * Sets the X, Y and Z position of a {@link GameMapObject} on the game map.

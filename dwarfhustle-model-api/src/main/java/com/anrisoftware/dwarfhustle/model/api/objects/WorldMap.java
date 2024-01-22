@@ -17,6 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import org.eclipse.collections.api.factory.primitive.LongSets;
@@ -36,11 +37,16 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class WorldMap extends StoredObject {
+public class WorldMap extends GameObject implements StoredObject {
 
     private static final long serialVersionUID = 1L;
 
     public static final String OBJECT_TYPE = WorldMap.class.getSimpleName();
+
+    /**
+     * Record ID set after the object was once stored in the backend.
+     */
+    public Serializable rid;
 
     /**
      * The name of the world.

@@ -17,18 +17,44 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
+import java.time.Duration;
+import java.util.concurrent.CompletionStage;
+
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 
 import akka.actor.typed.ActorRef;
+import akka.actor.typed.ActorSystem;
+import akka.actor.typed.javadsl.AskPattern;
 import lombok.ToString;
 
 /**
- * Message to close the OrientDb database.
+ * Message to close the OrientDb database. Replies with either the
+ * {@link CloseDbSuccessMessage} or {@link DbErrorMessage} message.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @ToString
 public class CloseDbMessage<T extends Message> extends DbMessage<T> {
+
+    /**
+     * Message that a new database was closed successfully.
+     *
+     * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+     */
+    @ToString
+    public static class CloseDbSuccessMessage<T extends Message> extends DbResponseMessage<T> {
+    }
+
+    /**
+     * Asks the actor to close the OrientDb database.
+     *
+     * @param a       the {@link ActorSystem}.
+     * @param timeout the {@link Duration} timeout.
+     * @return {@link CompletionStage} with the {@link DbResponseMessage}.
+     */
+    public static CompletionStage<DbResponseMessage<?>> askCloseDb(ActorSystem<Message> a, Duration timeout) {
+        return AskPattern.ask(a, replyTo -> new CloseDbMessage<>(replyTo), timeout, a.scheduler());
+    }
 
     public CloseDbMessage(ActorRef<T> replyTo) {
         super(replyTo);

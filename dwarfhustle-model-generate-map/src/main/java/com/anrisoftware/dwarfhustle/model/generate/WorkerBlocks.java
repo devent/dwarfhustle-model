@@ -19,11 +19,11 @@ package com.anrisoftware.dwarfhustle.model.generate;
 
 import java.util.Map;
 
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.factory.primitive.ObjectLongMaps;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.map.primitive.MutableObjectLongMap;
-import org.eclipse.collections.impl.factory.Maps;
-import org.eclipse.collections.impl.factory.primitive.ObjectLongMaps;
 import org.lable.oss.uniqueid.GeneratorException;
 import org.lable.oss.uniqueid.IDGenerator;
 
@@ -246,8 +246,8 @@ public class WorkerBlocks {
         var w = chunk.pos.ep.getDiffX(chunk.getPos());
         var h = chunk.pos.ep.getDiffY(chunk.getPos());
         var d = chunk.pos.ep.getDiffZ(chunk.getPos());
-        var mapid = chunk.pos.map;
-        var tiles = createBlocksMap(w * h * d);
+        var blocks = createBlocksMap(w * h * d);
+        var blocksids = createBlocksIdsMap(w * h * d);
         var ids = generator.batch(w * h * d);
         for (var z = 0; z < d; z++) {
             if (cancelled) {
@@ -260,12 +260,13 @@ public class WorkerBlocks {
                     var zz = z + chunk.getPos().getZ();
                     var block = new MapBlock(ids.pop());
                     setMaterial(zz, block);
-                    block.setPos(new GameBlockPos(mapid, xx, yy, zz));
-                    tiles.put(block.getPos(), block);
+                    block.setPos(new GameBlockPos(xx, yy, zz));
+                    blocks.put(block.getPos(), block);
+                    blocksids.put(block.getPos(), block.id);
                 }
             }
         }
-        chunk.setBlocks(tiles.asUnmodifiable());
+        chunk.setBlocks(blocksids.asUnmodifiable());
     }
 
     private void setMaterial(int z, MapBlock block) {
@@ -291,7 +292,7 @@ public class WorkerBlocks {
     }
 
     private GameBlockPos pos(GenerateMapMessage m, int x, int y, int z) {
-        return new GameBlockPos(m.gameMap.id, x, y, z);
+        return new GameBlockPos(x, y, z);
     }
 
     private MutableObjectLongMap<GameChunkPos> createChunksMap() {
@@ -307,6 +308,10 @@ public class WorkerBlocks {
 
     private MutableMap<GameBlockPos, MapBlock> createBlocksMap(int n) {
         return Maps.mutable.ofInitialCapacity(n);
+    }
+
+    private MutableObjectLongMap<GameBlockPos> createBlocksIdsMap(int n) {
+        return ObjectLongMaps.mutable.ofInitialCapacity(n);
     }
 
 }

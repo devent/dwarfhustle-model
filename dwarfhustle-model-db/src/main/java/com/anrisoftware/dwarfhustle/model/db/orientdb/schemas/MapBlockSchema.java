@@ -25,25 +25,26 @@ import com.orientechnologies.orient.core.metadata.schema.OType;
 /**
  * Creates the schema for the {@link MapBlock}.
  *
+ * @see GameMapObjectSchema
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 public class MapBlockSchema implements GameObjectSchema {
 
-	public static final String MATERIAL_FIELD = "material";
+    public static final String MATERIAL_FIELD = "material";
 
     public static final String OBJECT_FIELD = "object";
 
     public static final String PROPERTIES_FIELD = "p";
 
-	@Override
-	public void createSchema(Object db) {
-		var odb = (ODatabaseDocument) db;
-		var c = odb.createClass(MapBlock.OBJECT_TYPE, GameMapObject.OBJECT_TYPE);
+    @Override
+    public void createSchema(Object db) {
+        var odb = (ODatabaseDocument) db;
+        var c = odb.createClass(MapBlock.OBJECT_TYPE, GameMapObject.OBJECT_TYPE);
         c.createProperty(MATERIAL_FIELD, OType.LONG);
         c.createProperty(OBJECT_FIELD, OType.LONG);
         c.createProperty(PROPERTIES_FIELD, OType.INTEGER);
         new NeighboringSchema().createSchema(db, c);
         new CenterExtentSchema().createSchema(db, c);
-	}
+    }
 
 }

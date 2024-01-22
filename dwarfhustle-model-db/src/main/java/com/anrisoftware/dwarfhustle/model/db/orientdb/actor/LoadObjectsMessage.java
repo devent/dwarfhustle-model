@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
 
@@ -29,8 +29,8 @@ import akka.actor.typed.ActorRef;
 import lombok.ToString;
 
 /**
- * Message to load multiple {@link GameObject} from the database. Responds with
- * either {@link LoadObjectsSuccessMessage} or {@link DbErrorMessage}.
+ * Message to load multiple {@link StoredObject} from the database. Responds
+ * with either {@link LoadObjectsSuccessMessage} or {@link DbErrorMessage}.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
@@ -40,12 +40,12 @@ public class LoadObjectsMessage<T extends Message> extends DbMessage<T> {
     public static class LoadObjectsSuccessMessage<T extends Message> extends DbSuccessMessage<T> {
     }
 
-    private static final Consumer<GameObject> EMPTY_CONSUMER = go -> {
+    private static final Consumer<StoredObject> EMPTY_CONSUMER = go -> {
     };
 
     public final String objectType;
 
-    public final Consumer<GameObject> consumer;
+    public final Consumer<StoredObject> consumer;
 
     public final Function<ODatabaseDocument, OResultSet> query;
 
@@ -53,7 +53,7 @@ public class LoadObjectsMessage<T extends Message> extends DbMessage<T> {
         this(replyTo, objectType, EMPTY_CONSUMER, query);
     }
 
-    public LoadObjectsMessage(ActorRef<T> replyTo, String objectType, Consumer<GameObject> consumer,
+    public LoadObjectsMessage(ActorRef<T> replyTo, String objectType, Consumer<StoredObject> consumer,
             Function<ODatabaseDocument, OResultSet> query) {
         super(replyTo);
         this.objectType = objectType;

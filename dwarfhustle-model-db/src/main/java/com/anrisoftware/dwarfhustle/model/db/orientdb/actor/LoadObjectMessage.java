@@ -22,6 +22,7 @@ import java.util.function.Function;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
 
@@ -40,16 +41,16 @@ public class LoadObjectMessage<T extends Message> extends DbMessage<T> {
 
     @RequiredArgsConstructor
     public static class LoadObjectSuccessMessage<T extends Message> extends DbSuccessMessage<T> {
-        public final GameObject go;
-        public final Consumer<GameObject> consumer;
+        public final StoredObject go;
+        public final Consumer<StoredObject> consumer;
     }
 
-    private static final Consumer<GameObject> EMPTY_CONSUMER = go -> {
+    private static final Consumer<StoredObject> EMPTY_CONSUMER = go -> {
     };
 
     public final String objectType;
 
-    public final Consumer<GameObject> consumer;
+    public final Consumer<StoredObject> consumer;
 
     public final Function<ODatabaseDocument, OResultSet> query;
 
@@ -57,7 +58,7 @@ public class LoadObjectMessage<T extends Message> extends DbMessage<T> {
         this(replyTo, objectType, EMPTY_CONSUMER, query);
     }
 
-    public LoadObjectMessage(ActorRef<T> replyTo, String objectType, Consumer<GameObject> consumer,
+    public LoadObjectMessage(ActorRef<T> replyTo, String objectType, Consumer<StoredObject> consumer,
             Function<ODatabaseDocument, OResultSet> query) {
         super(replyTo);
         this.objectType = objectType;

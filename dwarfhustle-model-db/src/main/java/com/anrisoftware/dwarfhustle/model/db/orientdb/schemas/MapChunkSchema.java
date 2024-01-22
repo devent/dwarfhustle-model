@@ -18,7 +18,6 @@
 package com.anrisoftware.dwarfhustle.model.db.orientdb.schemas;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
-import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 import com.orientechnologies.orient.core.metadata.schema.OType;
@@ -37,6 +36,8 @@ public class MapChunkSchema implements GameObjectSchema {
     public static final String CHUNKS_FIELD = "chunks";
 
     public static final String BLOCKS_FIELD = "blocks";
+
+    public static final String BLOCK_ID_CLASS = "MapBlockId";
 
     public static final String MAP_FIELD = "map";
 
@@ -60,12 +61,13 @@ public class MapChunkSchema implements GameObjectSchema {
     public void createSchema(Object db) {
         var odb = (ODatabaseDocument) db;
         var c = odb.createClass(MapChunk.OBJECT_TYPE, GameObject.OBJECT_TYPE);
-        var cid = odb.createClass(CHUNK_ID_CLASS);
-        cid.createProperty(OBJECTID_FIELD, OType.LONG);
-        c.createProperty(CHUNKS_FIELD, OType.EMBEDDEDMAP, cid);
-        var mapBlock = odb.getClass(MapBlock.OBJECT_TYPE);
-        c.createProperty(BLOCKS_FIELD, OType.EMBEDDEDMAP, mapBlock);
-        c.createProperty(MAP_FIELD, OType.INTEGER);
+        var chunksid = odb.createClass(CHUNK_ID_CLASS);
+        chunksid.createProperty(OBJECTID_FIELD, OType.LONG);
+        c.createProperty(CHUNKS_FIELD, OType.EMBEDDEDMAP, chunksid);
+        var blocksid = odb.createClass(BLOCK_ID_CLASS);
+        blocksid.createProperty(OBJECTID_FIELD, OType.LONG);
+        c.createProperty(BLOCKS_FIELD, OType.EMBEDDEDMAP, blocksid);
+        c.createProperty(MAP_FIELD, OType.LONG);
         new CenterExtentSchema().createSchema(db, c);
         c.createProperty(ROOT_FIELD, OType.BOOLEAN);
         new NeighboringSchema().createSchema(db, c);

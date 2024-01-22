@@ -30,132 +30,132 @@ public enum NeighboringDir {
 	/**
 	 * Up.
 	 */
-    U(new GameBlockPos(0, 0, 0, -1)),
+    U(new GameBlockPos(0, 0, -1)),
 
 	/**
 	 * Down.
 	 */
-    D(new GameBlockPos(0, 0, 0, 1)),
+    D(new GameBlockPos(0, 0, 1)),
 
 	/**
 	 * North.
 	 */
-    N(new GameBlockPos(0, 0, -1, 0)),
+    N(new GameBlockPos(0, -1, 0)),
 
 	/**
 	 * North east.
 	 */
-    NE(new GameBlockPos(0, 1, -1, 0)),
+    NE(new GameBlockPos(1, -1, 0)),
 
 	/**
 	 * East.
 	 */
-    E(new GameBlockPos(0, 1, 0, 0)),
+    E(new GameBlockPos(1, 0, 0)),
 
 	/**
 	 * South east.
 	 */
-    SE(new GameBlockPos(0, 1, 1, 0)),
+    SE(new GameBlockPos(1, 1, 0)),
 
 	/**
 	 * South.
 	 */
-    S(new GameBlockPos(0, 0, 1, 0)),
+    S(new GameBlockPos(0, 1, 0)),
 
 	/**
 	 * South west.
 	 */
-    SW(new GameBlockPos(0, -1, 1, 0)),
+    SW(new GameBlockPos(-1, 1, 0)),
 
 	/**
 	 * West.
 	 */
-    W(new GameBlockPos(0, -1, 0, 0)),
+    W(new GameBlockPos(-1, 0, 0)),
 
 	/**
 	 * North west.
 	 */
-    NW(new GameBlockPos(0, -1, -1, 0)),
+    NW(new GameBlockPos(-1, -1, 0)),
 
 	/**
 	 * Up north.
 	 */
-    UN(new GameBlockPos(0, 0, -1, -1)),
+    UN(new GameBlockPos(0, -1, -1)),
 
 	/**
 	 * Up north east.
 	 */
-    UNE(new GameBlockPos(0, 1, -1, -1)),
+    UNE(new GameBlockPos(1, -1, -1)),
 
 	/**
 	 * Up east.
 	 */
-    UE(new GameBlockPos(0, 1, 0, -1)),
+    UE(new GameBlockPos(1, 0, -1)),
 
 	/**
 	 * Up south east.
 	 */
-    USE(new GameBlockPos(0, 1, 1, -1)),
+    USE(new GameBlockPos(1, 1, -1)),
 
 	/**
 	 * Up south.
 	 */
-    US(new GameBlockPos(0, 0, 1, -1)),
+    US(new GameBlockPos(0, 1, -1)),
 
 	/**
 	 * Up south west.
 	 */
-    USW(new GameBlockPos(0, -1, 1, -1)),
+    USW(new GameBlockPos(-1, 1, -1)),
 
 	/**
 	 * Up west.
 	 */
-    UW(new GameBlockPos(0, -1, 0, -1)),
+    UW(new GameBlockPos(-1, 0, -1)),
 
 	/**
 	 * Up north west.
 	 */
-    UNW(new GameBlockPos(0, -1, -1, -1)),
+    UNW(new GameBlockPos(-1, -1, -1)),
 
 	/**
 	 * Down north.
 	 */
-    DN(new GameBlockPos(0, 0, -1, 1)),
+    DN(new GameBlockPos(0, -1, 1)),
 
 	/**
 	 * Down north east.
 	 */
-    DNE(new GameBlockPos(0, 1, -1, 1)),
+    DNE(new GameBlockPos(1, -1, 1)),
 
 	/**
 	 * Down east.
 	 */
-    DE(new GameBlockPos(0, 1, 0, 1)),
+    DE(new GameBlockPos(1, 0, 1)),
 
 	/**
 	 * Down south east.
 	 */
-    DSE(new GameBlockPos(0, 1, 1, 1)),
+    DSE(new GameBlockPos(1, 1, 1)),
 
 	/**
 	 * Down south.
 	 */
-    DS(new GameBlockPos(0, 0, 1, 1)),
+    DS(new GameBlockPos(0, 1, 1)),
 
 	/**
 	 * Down south west.
 	 */
-    DSW(new GameBlockPos(0, -1, 1, 1)),
+    DSW(new GameBlockPos(-1, 1, 1)),
 
 	/**
 	 * Down west.
 	 */
-    DW(new GameBlockPos(0, -1, 0, 1)),
+    DW(new GameBlockPos(-1, 0, 1)),
 
 	/**
 	 * Down north west.
 	 */
-    DNW(new GameBlockPos(0, -1, -1, 1));
+    DNW(new GameBlockPos(-1, -1, 1));
 
     public final GameBlockPos pos;
 }

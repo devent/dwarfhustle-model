@@ -19,44 +19,29 @@ package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import java.io.Serializable;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
-
 /**
  * Base for all game objects that are stored in the backend.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@NoArgsConstructor
-@ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
-@Data
-public abstract class StoredObject extends GameObject {
-
-    private static final long serialVersionUID = 1L;
-
-    public static final long ID_FLAG = 0;
+public interface StoredObject extends Serializable {
 
     public static final String OBJECT_TYPE = StoredObject.class.getSimpleName();
 
     /**
      * Record ID set after the object was once stored in the backend.
      */
-    public Serializable rid = null;
+    void setRid(Serializable rid);
 
-    public StoredObject(byte[] idbuf) {
-        super(idbuf);
-    }
+    /**
+     * Record ID set after the object was once stored in the backend.
+     */
+    Serializable getRid();
 
-    public StoredObject(long id) {
-        super(id);
-    }
+    void setId(long property);
 
-    @Override
-    public String getObjectType() {
-        return StoredObject.OBJECT_TYPE;
-    }
+    long getId();
+
+    String getObjectType();
 
 }

@@ -1,8 +1,12 @@
 package com.anrisoftware.dwarfhustle.model.terrainimage;
 
+import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlock.getMapBlock;
+import static com.anrisoftware.dwarfhustle.model.api.objects.MapChunk.getMapChunk;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.Deque;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.eclipse.collections.api.map.MutableMap;
@@ -21,8 +25,10 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.IdsObjectsProvider.IdsObjects;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
+import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 import com.anrisoftware.dwarfhustle.model.db.cache.CachePutMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.CachePutsMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor;
 import com.google.inject.assistedinject.Assisted;
 
@@ -75,10 +81,12 @@ public class TerrainImageCreateMap {
         gm.root = mcRoot.id;
         mcRoot.setRoot(true);
         createMap(mcRoot, 0, 0, 0, gm.width, gm.height, gm.depth);
+        createNeighbors(mcRoot);
+        putObjectToBackend(gm);
     }
 
     private void createMap(MapChunk chunk, int sx, int sy, int sz, int ex, int ey, int ez) throws GeneratorException {
-        chunk.setPos(new GameChunkPos(gm.id, sx, sy, sz, ex, ey, ez));
+        chunk.setPos(new GameChunkPos(sx, sy, sz, ex, ey, ez));
         MutableObjectLongMap<GameChunkPos> chunks = ObjectLongMaps.mutable.empty();
         this.idsBatch = gen.batch(128);
         Supplier<byte[]> idsSupplier = this::supplyIds;
@@ -88,7 +96,7 @@ public class TerrainImageCreateMap {
         for (int xx = sx; xx < ex; xx += cx) {
             for (int yy = sy; yy < ey; yy += cy) {
                 for (int zz = sz; zz < ez; zz += cz) {
-                    createChunk(idsSupplier, terrain, chunk, chunks, gm.id, xx, yy, zz, xx + cx, yy + cy, zz + cz);
+                    createChunk(idsSupplier, terrain, chunk, chunks, xx, yy, zz, xx + cx, yy + cy, zz + cz);
                 }
             }
         }
@@ -108,20 +116,21 @@ public class TerrainImageCreateMap {
     }
 
     private void createChunk(Supplier<byte[]> ids, long[][][] terrain, MapChunk parent,
-            MutableObjectLongMap<GameChunkPos> chunks, long map, int x, int y, int z, int ex, int ey, int ez)
+            MutableObjectLongMap<GameChunkPos> chunks, int x, int y, int z, int ex, int ey, int ez)
             throws GeneratorException {
         var chunk = new MapChunk(gen.generate());
         chunk.setParent(parent.getId());
-        chunk.setPos(new GameChunkPos(map, x, y, z, ex, ey, ez));
+        chunk.setPos(new GameChunkPos(x, y, z, ex, ey, ez));
         chunk.updateCenterExtent(gm.width, gm.height, gm.depth);
         int csize = gm.getChunkSize();
         if (ex - x == csize || ey - y == csize || ez - z == csize) {
             MutableMap<GameBlockPos, MapBlock> blocks = Maps.mutable.empty();
+            MutableObjectLongMap<GameBlockPos> blocksids = ObjectLongMaps.mutable.empty();
             for (int xx = x; xx < ex; xx++) {
                 for (int yy = y; yy < ey; yy++) {
                     for (int zz = z; zz < ez; zz++) {
                         var mb = new MapBlock(ids.get());
-                        mb.pos = new GameBlockPos(map, xx, yy, zz);
+                        mb.pos = new GameBlockPos(xx, yy, zz);
                         mb.setMaterialRid(terrain[zz][yy][xx]);
                         mb.setObjectRid(809);
                         mb.updateCenterExtent(gm.width, gm.height, gm.depth);
@@ -132,10 +141,12 @@ public class TerrainImageCreateMap {
                             mb.setMined(true);
                         }
                         blocks.put(mb.pos, mb);
+                        blocksids.put(mb.pos, mb.id);
                     }
                 }
             }
-            chunk.setBlocks(blocks);
+            chunk.setBlocks(blocksids);
+            putObjectsToBackend(MapBlock.class, blocks.values());
         } else {
             createMap(chunk, x, y, z, ex, ey, ez);
         }
@@ -143,8 +154,107 @@ public class TerrainImageCreateMap {
         putObjectToBackend(chunk);
     }
 
+    private void createNeighbors(MapChunk rootc) {
+        var pos = rootc.pos;
+        int xs = (pos.ep.x - pos.x) / 2;
+        int ys = (pos.ep.y - pos.y) / 2;
+        int zs = (pos.ep.z - pos.z) / 2;
+        Function<Long, MapChunk> r = id -> getMapChunk(og, id);
+        for (int x = pos.x; x < pos.ep.x; x += xs) {
+            for (int y = pos.y; y < pos.ep.y; y += ys) {
+                for (int z = pos.z; z < pos.ep.z; z += zs) {
+                    var chunk = getMapChunk(og, rootc.chunks.get(new GameChunkPos(x, y, z, x + xs, y + ys, z + zs)));
+                    assert chunk != null;
+                    if (xs > gm.chunkSize && ys > gm.chunkSize && zs > gm.chunkSize) {
+                        createNeighbors(chunk);
+                    }
+                    int bz = z + zs;
+                    int tz = z - zs;
+                    int sy = y + zs;
+                    int ny = y - zs;
+                    int ex = x + zs;
+                    int wx = x - zs;
+                    long b, t, s, n, e, w;
+                    if ((b = mcRoot.findChild(x, y, bz, x + xs, y + ys, bz + zs, r)) != 0) {
+                        chunk.setNeighborBottom(b);
+                    }
+                    if ((t = mcRoot.findChild(x, y, tz, x + xs, y + ys, tz + zs, r)) != 0) {
+                        chunk.setNeighborTop(t);
+                    }
+                    if ((s = mcRoot.findChild(x, sy, z, x + xs, sy + ys, z + zs, r)) != 0) {
+                        chunk.setNeighborSouth(s);
+                    }
+                    if ((n = mcRoot.findChild(x, ny, z, x + xs, ny + ys, z + zs, r)) != 0) {
+                        chunk.setNeighborNorth(n);
+                    }
+                    if ((e = mcRoot.findChild(ex, y, z, ex + xs, y + ys, z + zs, r)) != 0) {
+                        chunk.setNeighborEast(e);
+                    }
+                    if ((e = mcRoot.findChild(ex, sy, z, ex + xs, y + ys, z + zs, r)) != 0) {
+                        chunk.setNeighborSouthEast(e);
+                    }
+                    if ((w = mcRoot.findChild(wx, y, z, wx + xs, y + ys, z + zs, r)) != 0) {
+                        chunk.setNeighborWest(w);
+                    }
+                    if ((w = mcRoot.findChild(wx, sy, z, wx + xs, y + ys, z + zs, r)) != 0) {
+                        chunk.setNeighborSouthWest(w);
+                    }
+                    if (chunk.getBlocks().notEmpty()) {
+                        chunk.getBlocks().forEachValue(mb -> setupBlockNeighbors(chunk, mb));
+                    }
+                    putObjectToBackend(chunk);
+                }
+            }
+        }
+    }
+
+    private void setupBlockNeighbors(MapChunk chunk, long id) {
+        var mb = getMapBlock(og, id);
+        var pos = mb.pos;
+        var t = pos.addZ(-1);
+        long tbid = chunk.getBlock(t);
+        final long empty = chunk.getBlocksEmptyValue();
+        if (tbid != empty && checkSetNeighbor(getMapBlock(og, tbid))) {
+            mb.setNeighborTop(tbid);
+        } else {
+            long chunkid;
+            if ((chunkid = chunk.getNeighborTop()) != 0) {
+                var c = getMapChunk(og, chunkid);
+                tbid = c.getBlock(t);
+                if (tbid != empty && checkSetNeighbor(getMapBlock(og, tbid))) {
+                    mb.setNeighborTop(tbid);
+                }
+            }
+        }
+        for (var d : NeighboringDir.values()) {
+            var b = pos.add(d.pos);
+            var bbid = chunk.getBlock(b);
+            if (bbid != empty && checkSetNeighbor(getMapBlock(og, bbid))) {
+                mb.setNeighbor(d, bbid);
+            } else {
+                long chunkid;
+                if ((chunkid = chunk.getNeighbor(d)) != 0) {
+                    var c = getMapChunk(og, chunkid);
+                    bbid = c.getBlock(b);
+                    if (bbid != empty && checkSetNeighbor(getMapBlock(og, bbid))) {
+                        mb.setNeighbor(d, bbid);
+                    }
+                }
+            }
+        }
+        putObjectToBackend(mb);
+    }
+
+    private boolean checkSetNeighbor(MapBlock mb) {
+        return !mb.isMined();
+    }
+
+    private void putObjectsToBackend(Class<?> keyType, Iterable<? extends GameObject> values) {
+        cache.tell(new CachePutsMessage<>(actor.get(), keyType, (go) -> go.getId(), values));
+    }
+
     private void putObjectToBackend(GameObject go) {
-        cache.tell(new CachePutMessage<Message>(actor.get(), go, go));
+        cache.tell(new CachePutMessage<>(actor.get(), go.id, go));
     }
 
 }

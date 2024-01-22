@@ -29,7 +29,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.orientechnologies.orient.core.record.OElement;
 
 /**
- * Stores and retrieves the properties of a {@link GameMapObject} to/from the
+ * Stores and retrieves the properties of a {@link StoredObject} to/from the
  * database. Does not commit the changes into the database.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
@@ -40,7 +40,7 @@ public class AbstractGameMapObjectStorage extends AbstractGameObjectStorage {
     public void store(Object db, Object o, StoredObject go) {
         var v = (OElement) o;
         var gmo = (GameMapObject) go;
-        v.setProperty(MAP_FIELD, gmo.pos.map);
+        v.setProperty(MAP_FIELD, gmo.map);
         v.setProperty(POS_X_FIELD, gmo.pos.x);
         v.setProperty(POS_Y_FIELD, gmo.pos.y);
         v.setProperty(POS_Z_FIELD, gmo.pos.z);
@@ -51,8 +51,8 @@ public class AbstractGameMapObjectStorage extends AbstractGameObjectStorage {
     public StoredObject retrieve(Object db, Object o, StoredObject go) {
         var v = (OElement) o;
         var gmo = (GameMapObject) go;
-        gmo.pos = new GameBlockPos(v.getProperty(MAP_FIELD), v.getProperty(POS_X_FIELD), v.getProperty(POS_Y_FIELD),
-                v.getProperty(POS_Z_FIELD));
+        gmo.map = v.getProperty(MAP_FIELD);
+        gmo.pos = new GameBlockPos(v.getProperty(POS_X_FIELD), v.getProperty(POS_Y_FIELD), v.getProperty(POS_Z_FIELD));
         return super.retrieve(db, o, go);
     }
 

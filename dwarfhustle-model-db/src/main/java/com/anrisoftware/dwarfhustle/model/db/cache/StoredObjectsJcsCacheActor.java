@@ -25,8 +25,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import jakarta.inject.Inject;
-
 import org.apache.commons.jcs3.JCS;
 import org.apache.commons.jcs3.access.CacheAccess;
 import org.apache.commons.jcs3.access.exception.CacheException;
@@ -42,6 +40,7 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectMessage.LoadObjectSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.SaveObjectMessage;
 import com.google.inject.Injector;
+import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -50,6 +49,7 @@ import akka.actor.typed.javadsl.BehaviorBuilder;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.StashBuffer;
 import akka.actor.typed.receptionist.ServiceKey;
+import jakarta.inject.Inject;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -173,10 +173,11 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
         retrieveGameObject(m.type, (long) m.key, consumer);
     }
 
-    private void retrieveGameObject(String type, long id, Consumer<GameObject> consumer) {
-        actor.tell(new LoadObjectMessage<>(dbResponseAdapter, type, consumer, db -> {
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private void retrieveGameObject(String type, long id, Consumer consumer) {
+        actor.tell(new LoadObjectMessage(dbResponseAdapter, type, consumer, db -> {
             var query = "SELECT * from ? where objecttype = ? and objectid = ? limit 1";
-            return db.query(query, type, type, id);
+            return ((ODatabaseDocument) db).query(query, type, type, id);
         }));
     }
 

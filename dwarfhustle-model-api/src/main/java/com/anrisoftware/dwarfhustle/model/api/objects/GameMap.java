@@ -17,6 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.io.Serializable;
 import java.time.ZoneOffset;
 
 import lombok.Data;
@@ -33,7 +34,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class GameMap extends StoredObject {
+public class GameMap extends GameObject implements StoredObject {
 
     /**
      * Calculates the total count of {@link MapChunk} blocks for the specified
@@ -79,6 +80,11 @@ public class GameMap extends StoredObject {
     private static final long serialVersionUID = 1L;
 
     public static final String OBJECT_TYPE = GameMap.class.getSimpleName();
+
+    /**
+     * Record ID set after the object was once stored in the backend.
+     */
+    public Serializable rid;
 
     public String name;
 

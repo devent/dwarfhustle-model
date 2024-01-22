@@ -40,11 +40,6 @@ public class GameBlockPos implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * The {@link GameMap} ID.
-     */
-    public final long map;
-
-    /**
      * X position on the game map
      */
     public final int x;
@@ -72,10 +67,10 @@ public class GameBlockPos implements Serializable {
     }
 
     /**
-     * Returns string that can be used to store the block position.
+     * Returns string that can be used to store the block position: {@code X/Y/Z}
      */
     public String toSaveString() {
-        return getMap() + "/" + getX() + "/" + getY() + "/" + getZ();
+        return getX() + "/" + getY() + "/" + getZ();
     }
 
     /**
@@ -83,7 +78,7 @@ public class GameBlockPos implements Serializable {
      */
     public static GameBlockPos parse(String s) {
         var split = StringUtils.split(s, "/");
-        var pos = new GameBlockPos(toInt(split[0]), toInt(split[1]), toInt(split[2]), toInt(split[3]));
+        var pos = new GameBlockPos(toInt(split[0]), toInt(split[1]), toInt(split[2]));
         return pos;
     }
 
@@ -92,19 +87,19 @@ public class GameBlockPos implements Serializable {
     }
 
     public GameBlockPos add(GameBlockPos p) {
-        return new GameBlockPos(map, x + p.x, y + p.y, z + p.z);
+        return new GameBlockPos(x + p.x, y + p.y, z + p.z);
     }
 
     public GameBlockPos addX(int n) {
-        return new GameBlockPos(map, x + n, y, z);
+        return new GameBlockPos(x + n, y, z);
     }
 
     public GameBlockPos addY(int n) {
-        return new GameBlockPos(map, x, y + n, z);
+        return new GameBlockPos(x, y + n, z);
     }
 
     public GameBlockPos addZ(int n) {
-        return new GameBlockPos(map, x, y, z + n);
+        return new GameBlockPos(x, y, z + n);
     }
 
     public boolean isEqual(int x2, int y2, int z2) {
