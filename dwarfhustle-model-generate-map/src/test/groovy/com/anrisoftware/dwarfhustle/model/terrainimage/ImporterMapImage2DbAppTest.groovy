@@ -71,11 +71,11 @@ class ImporterMapImage2DbAppTest {
     @Test
     @Timeout(600)
     void test_start_import(@TempDir File tmp) {
-        def importer = injector.getInstance(ImporterMapImage2DbApp)
-        importer.initEmbedded(injector, tmp, "test", "root", "admin").get()
         def image = TerrainImage.terrain_32_32_32
+        def importer = injector.getInstance(ImporterMapImage2DbApp)
+        importer.initEmbedded(injector, tmp, image.name, "root", "admin").get()
         long gmid = importer.createGameMap(image.terrain)
-        importer.startImport(ImporterMapImage2DbAppTest.class.getResource(image.name), image.terrain, gmid)
+        importer.startImport(ImporterMapImage2DbAppTest.class.getResource(image.imageName), image.terrain, gmid)
         def actor = injector.getInstance(ActorSystemProvider)
         importer.shutdownEmbedded().get()
         println "done"

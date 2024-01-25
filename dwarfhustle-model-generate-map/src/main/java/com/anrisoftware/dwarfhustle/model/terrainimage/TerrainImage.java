@@ -36,10 +36,10 @@ public enum TerrainImage {
     }
 
     public long[][][] loadTerrain() throws IOException {
-        return getTerrain().load(TerrainImage.class.getResource(getName()));
+        return getTerrain().load(TerrainImage.class.getResource(getImageName()));
     }
 
-    public String getName() {
+    public String getImageName() {
         return String.format("terrain-%d-%d-%d.png", w, h, d);
     }
 }

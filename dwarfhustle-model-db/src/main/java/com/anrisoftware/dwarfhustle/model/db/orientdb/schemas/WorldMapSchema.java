@@ -49,7 +49,7 @@ public class WorldMapSchema implements GameObjectSchema {
         c.createProperty(DIST_LAT_FIELD, OType.FLOAT);
         c.createProperty(DIST_LON_FIELD, OType.FLOAT);
         c.createProperty(TIME_FIELD, OType.STRING);
-        c.createProperty(CURRENT_MAP_FIELD, OType.INTEGER);
+        c.createProperty(CURRENT_MAP_FIELD, OType.LONG);
         odb.createEdgeClass(WORLD_CLASS);
         try (var q = odb.command(
                 "CREATE INDEX WorldMap_name ON WorldMap (objecttype, name) NOTUNIQUE METADATA {ignoreNullValues: false}")) {
