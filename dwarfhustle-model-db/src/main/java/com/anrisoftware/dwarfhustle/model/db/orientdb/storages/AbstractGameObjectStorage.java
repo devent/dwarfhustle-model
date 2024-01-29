@@ -20,8 +20,11 @@ package com.anrisoftware.dwarfhustle.model.db.orientdb.storages;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameObjectSchemaSchema.OBJECTID_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameObjectSchemaSchema.OBJECTTYPE_FIELD;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
+import org.eclipse.collections.api.LongIterable;
 import org.eclipse.collections.api.map.primitive.ObjectLongMap;
 import org.eclipse.collections.impl.factory.Maps;
 
@@ -29,9 +32,11 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
+import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.OElement;
 import com.orientechnologies.orient.core.record.impl.ODocument;
+import com.orientechnologies.orient.core.sql.executor.OResultSet;
 
 /**
  * Stores and retrieves the properties of a {@link StoredObject} to/from the
@@ -65,6 +70,25 @@ public abstract class AbstractGameObjectStorage implements GameObjectStorage {
             omap.put(pos.toSaveString(), o);
         });
         v.setProperty(field, omap, OType.EMBEDDEDMAP);
+    }
+
+    protected OResultSet queryByObjectId(ODatabaseDocument odb, String objectType, long id) {
+        return odb.query("SELECT * from ? where objecttype = ? and objectid = ?", objectType, objectType, id);
+    }
+
+    protected OResultSet queryByObjectIds(ODatabaseDocument odb, String objectType, LongIterable ids) {
+        var s = new StringBuilder("SELECT * from ? where objecttype = ? and objectid in [");
+        for (var i = ids.longIterator(); i.hasNext();) {
+            s.append(i.next());
+            s.append(",");
+        }
+        s.deleteCharAt(s.length() - 1);
+        s.append("]");
+        return odb.query(s.toString(), objectType, objectType);
+    }
+
+    protected String toString(LocalDateTime time) {
+        return time.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
     }
 
 }

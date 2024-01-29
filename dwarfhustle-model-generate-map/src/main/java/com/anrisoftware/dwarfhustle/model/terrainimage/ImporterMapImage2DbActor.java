@@ -181,8 +181,8 @@ public class ImporterMapImage2DbActor {
             terrainImageCreateMap.create(og).startImport(m.url, m.image, m.mapid);
             m.replyTo.tell(new ImportImageSuccessMessage());
         } catch (IOException | GeneratorException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            log.error("onImportImage", e);
+            return Behaviors.stopped();
         }
         return Behaviors.same();
     }

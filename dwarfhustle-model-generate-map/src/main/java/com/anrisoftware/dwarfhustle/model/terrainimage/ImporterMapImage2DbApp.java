@@ -1,5 +1,6 @@
 package com.anrisoftware.dwarfhustle.model.terrainimage;
 
+import static com.anrisoftware.dwarfhustle.model.db.cache.CachePutMessage.askCachePut;
 import static com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.askImportImage;
 import static com.anrisoftware.dwarfhustle.model.terrainimage.ImporterStartEmbeddedServerMessage.askImporterStartEmbeddedServer;
 import static com.anrisoftware.dwarfhustle.model.terrainimage.ImporterStopEmbeddedServerMessage.askImporterStopEmbeddedServer;
@@ -15,7 +16,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CountDownLatch;
 
-import org.lable.oss.uniqueid.GeneratorException;
 import org.lable.oss.uniqueid.IDGenerator;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
@@ -26,7 +26,6 @@ import com.anrisoftware.dwarfhustle.model.api.objects.IdsObjectsProvider.IdsObje
 import com.anrisoftware.dwarfhustle.model.api.objects.MapArea;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
-import com.anrisoftware.dwarfhustle.model.db.cache.CachePutMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor;
@@ -233,9 +232,9 @@ public class ImporterMapImage2DbApp {
      *
      * @param image the {@link TerrainLoadImage}
      * @return the ID of the created {@link GameMap}.
-     * @throws GeneratorException
      */
-    public long createGameMap(TerrainLoadImage image) throws GeneratorException {
+    @SneakyThrows
+    public long createGameMap(TerrainLoadImage image) {
         var gm = new GameMap(gen.generate());
         var wm = new WorldMap(gen.generate());
         wm.addMap(gm);
@@ -254,8 +253,8 @@ public class ImporterMapImage2DbApp {
         // gm.setCameraPos(0.0f, 0.0f, 12.0f);
         gm.setCameraRot(0.0f, 1.0f, 0.0f, 0.0f);
         gm.setCursorZ(0);
-        CachePutMessage.askCachePut(actor.getActorSystem(), ofSeconds(1), wm.id, wm);
-        CachePutMessage.askCachePut(actor.getActorSystem(), ofSeconds(1), gm.id, gm);
+        askCachePut(actor.getActorSystem(), ofSeconds(1), gm.id, gm).toCompletableFuture().get();
+        askCachePut(actor.getActorSystem(), ofSeconds(1), wm.id, wm).toCompletableFuture().get();
         return gm.id;
     }
 }

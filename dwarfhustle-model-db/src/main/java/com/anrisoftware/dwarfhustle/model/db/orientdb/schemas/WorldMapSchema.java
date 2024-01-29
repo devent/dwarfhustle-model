@@ -37,9 +37,9 @@ public class WorldMapSchema implements GameObjectSchema {
 
     public static final String TIME_FIELD = "time";
 
-    public static final String WORLD_CLASS = "world";
+    public static final String CURRENT_MAP_CLASS = "CurrentMap";
 
-    public static final String CURRENT_MAP_FIELD = "currentMap";
+    public static final String MAP_CLASS = "map";
 
     @Override
     public void createSchema(Object db) {
@@ -49,8 +49,8 @@ public class WorldMapSchema implements GameObjectSchema {
         c.createProperty(DIST_LAT_FIELD, OType.FLOAT);
         c.createProperty(DIST_LON_FIELD, OType.FLOAT);
         c.createProperty(TIME_FIELD, OType.STRING);
-        c.createProperty(CURRENT_MAP_FIELD, OType.LONG);
-        odb.createEdgeClass(WORLD_CLASS);
+        odb.createEdgeClass(CURRENT_MAP_CLASS);
+        odb.createEdgeClass(MAP_CLASS);
         try (var q = odb.command(
                 "CREATE INDEX WorldMap_name ON WorldMap (objecttype, name) NOTUNIQUE METADATA {ignoreNullValues: false}")) {
         }

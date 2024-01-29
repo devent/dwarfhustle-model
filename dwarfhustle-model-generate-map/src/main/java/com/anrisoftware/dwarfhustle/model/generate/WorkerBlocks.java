@@ -43,7 +43,6 @@ import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.WorldMapSchema;
 import com.google.inject.assistedinject.Assisted;
 import com.orientechnologies.orient.core.db.ODatabaseSession;
 import com.orientechnologies.orient.core.db.OrientDB;
@@ -175,8 +174,6 @@ public class WorkerBlocks {
         var wmv = db.newVertex(WorldMap.OBJECT_TYPE);
         worldMapStore.store(db, wmv, m.worldMap);
         wmv.save();
-        var e = wmv.addEdge(gmv, WorldMapSchema.WORLD_CLASS);
-        e.save();
     }
 
     private MapChunk generateMapBlock(GenerateMapMessage m, ODatabaseSession db,

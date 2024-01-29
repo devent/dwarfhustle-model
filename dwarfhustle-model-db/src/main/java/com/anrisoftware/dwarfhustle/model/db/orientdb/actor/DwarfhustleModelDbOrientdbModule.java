@@ -66,7 +66,6 @@ public class DwarfhustleModelDbOrientdbModule extends AbstractModule {
         map.put(MapChunk.OBJECT_TYPE, mapBlockStorage);
         map.put(GameMap.OBJECT_TYPE, new GameMapStorage());
         var worldMapStorage = new WorldMapStorage();
-        worldMapStorage.setStorages(map);
         map.put(WorldMap.OBJECT_TYPE, worldMapStorage);
         return map;
     }

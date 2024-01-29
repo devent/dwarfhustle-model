@@ -17,24 +17,23 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.storages;
 
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.WorldMapSchema.CURRENT_MAP_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameObjectSchemaSchema.OBJECTID_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.WorldMapSchema.CURRENT_MAP_CLASS;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.WorldMapSchema.DIST_LAT_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.WorldMapSchema.DIST_LON_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.WorldMapSchema.MAP_CLASS;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.WorldMapSchema.NAME_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.WorldMapSchema.TIME_FIELD;
+import static com.orientechnologies.orient.core.record.ODirection.OUT;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
 import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 import com.orientechnologies.orient.core.record.OElement;
-
-import jakarta.inject.Inject;
 
 /**
  * Stores and retrieves the properties of a {@link WorldMap} to/from the
@@ -44,27 +43,40 @@ import jakarta.inject.Inject;
  */
 public class WorldMapStorage extends AbstractGameObjectStorage {
 
-    private GameObjectStorage gameMapStorage;
-
-    @Inject
-    public void setStorages(Map<String, GameObjectStorage> storages) {
-        this.gameMapStorage = storages.get(GameMap.OBJECT_TYPE);
-    }
-
     @Override
     public void store(Object db, Object o, StoredObject go) {
         var v = (OElement) o;
         var wm = (WorldMap) go;
+        var odb = (ODatabaseDocument) db;
         v.setProperty(NAME_FIELD, wm.getName());
         v.setProperty(DIST_LAT_FIELD, wm.getDistanceLat());
         v.setProperty(DIST_LON_FIELD, wm.getDistanceLon());
         v.setProperty(TIME_FIELD, toString(wm.getTime()));
-        v.setProperty(CURRENT_MAP_FIELD, wm.currentMap);
+        storeCurrentMap(odb, v, wm);
+        storeMaps(odb, v, wm);
         super.store(db, o, go);
     }
 
-    private String toString(LocalDateTime time) {
-        return time.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+    private void storeMaps(ODatabaseDocument odb, OElement v, WorldMap wm) {
+        try (var rs = queryByObjectIds(odb, GameMap.OBJECT_TYPE, wm.maps)) {
+            while (rs.hasNext()) {
+                var vv = rs.next().getVertex();
+                if (vv.isPresent()) {
+                    odb.newEdge(v.asVertex().get(), vv.get(), MAP_CLASS).save();
+                }
+            }
+        }
+    }
+
+    private void storeCurrentMap(ODatabaseDocument odb, OElement v, WorldMap wm) {
+        try (var rs = queryByObjectId(odb, GameMap.OBJECT_TYPE, wm.currentMap)) {
+            if (rs.hasNext()) {
+                var vv = rs.next().getVertex();
+                if (vv.isPresent()) {
+                    odb.newEdge(v.asVertex().get(), vv.get(), CURRENT_MAP_CLASS).save();
+                }
+            }
+        }
     }
 
     @Override
@@ -75,24 +87,21 @@ public class WorldMapStorage extends AbstractGameObjectStorage {
         wm.setName(v.getProperty(NAME_FIELD));
         wm.setDistance(v.getProperty(DIST_LAT_FIELD), v.getProperty(DIST_LON_FIELD));
         wm.setTime(parseTime(v.getProperty(TIME_FIELD)));
-        wm.currentMap = v.getProperty(CURRENT_MAP_FIELD);
+        var vcurrentMap = v.asVertex().get().getEdges(OUT, CURRENT_MAP_CLASS);
+        for (var currentMap : vcurrentMap) {
+            wm.currentMap = currentMap.getProperty(OBJECTID_FIELD);
+        }
         retrieveGameMaps(v, wm, odb);
         return super.retrieve(db, o, go);
     }
 
     private void retrieveGameMaps(OElement v, WorldMap wm, ODatabaseDocument db) {
         var query = "select expand(out()) from ?";
-        var rs = db.query(query, WorldMap.OBJECT_TYPE);
-        try {
+        try (var rs = db.query(query, WorldMap.OBJECT_TYPE)) {
             while (rs.hasNext()) {
-                var item = rs.next().getVertex();
-                if (item.isPresent()) {
-                    var gm = gameMapStorage.retrieve(db, item.get(), gameMapStorage.create());
-                    wm.addMap((GameMap) gm);
-                }
+                var item = rs.next().getVertex().get();
+                wm.maps.add(item.getProperty(OBJECTID_FIELD));
             }
-        } finally {
-            rs.close();
         }
     }
 
