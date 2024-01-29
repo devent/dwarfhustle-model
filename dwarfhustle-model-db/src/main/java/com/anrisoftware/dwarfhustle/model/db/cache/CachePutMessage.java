@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.cache;
 
+import static akka.actor.typed.javadsl.AskPattern.ask;
+
 import java.time.Duration;
 import java.util.concurrent.CompletionStage;
 
@@ -25,7 +27,6 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.ActorSystem;
-import akka.actor.typed.javadsl.AskPattern;
 import lombok.ToString;
 
 /**
@@ -38,16 +39,16 @@ public class CachePutMessage<T extends Message> extends CacheMessage<T> {
 
     /**
      * Asks the actor to put the value with the key in the cache.
-     * 
+     *
      * @param a       the {@link ActorSystem}.
+     * @param timeout the {@link Duration} timeout.
      * @param key     the {@link Object} key.
      * @param value   the {@link GameObject} value.
-     * @param timeout the {@link Duration} timeout.
      * @return {@link CompletionStage} with the {@link CacheResponseMessage}.
      */
-    public static CompletionStage<CacheResponseMessage<?>> askCachePut(ActorSystem<Message> a, Object key,
-            GameObject value, Duration timeout) {
-        return AskPattern.ask(a, replyTo -> new CachePutMessage<>(replyTo, key, value), timeout, a.scheduler());
+    public static CompletionStage<CacheResponseMessage<?>> askCachePut(ActorSystem<Message> a, Duration timeout,
+            Object key, GameObject value) {
+        return ask(a, replyTo -> new CachePutMessage<>(replyTo, key, value), timeout, a.scheduler());
     }
 
     public final Object key;

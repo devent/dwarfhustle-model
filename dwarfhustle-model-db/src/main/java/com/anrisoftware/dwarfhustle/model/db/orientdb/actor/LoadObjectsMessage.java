@@ -17,6 +17,10 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
+import static akka.actor.typed.javadsl.AskPattern.ask;
+
+import java.time.Duration;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -26,6 +30,7 @@ import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
 
 import akka.actor.typed.ActorRef;
+import akka.actor.typed.ActorSystem;
 import lombok.ToString;
 
 /**
@@ -36,6 +41,31 @@ import lombok.ToString;
  */
 @ToString
 public class LoadObjectsMessage<T extends Message> extends DbMessage<T> {
+
+    /**
+     * Asks the actor to load multiple {@link StoredObject} from the database.
+     *
+     * @param a       the {@link ActorSystem}.
+     * @param timeout the {@link Duration} timeout.
+     * @return {@link CompletionStage} with the {@link DbResponseMessage}.
+     */
+    public static CompletionStage<DbResponseMessage<?>> askLoadObjects(ActorSystem<Message> a, Duration timeout,
+            String objectType, Consumer<StoredObject> consumer, Function<ODatabaseDocument, OResultSet> query) {
+        return ask(a, replyTo -> new LoadObjectsMessage<>(replyTo, objectType, consumer, query), timeout,
+                a.scheduler());
+    }
+
+    /**
+     * Asks the actor to load multiple {@link StoredObject} from the database.
+     *
+     * @param a       the {@link ActorSystem}.
+     * @param timeout the {@link Duration} timeout.
+     * @return {@link CompletionStage} with the {@link DbResponseMessage}.
+     */
+    public static CompletionStage<DbResponseMessage<?>> askLoadObjects(ActorSystem<Message> a, Duration timeout,
+            String objectType, Function<ODatabaseDocument, OResultSet> query) {
+        return ask(a, replyTo -> new LoadObjectsMessage<>(replyTo, objectType, query), timeout, a.scheduler());
+    }
 
     public static class LoadObjectsSuccessMessage<T extends Message> extends DbSuccessMessage<T> {
     }

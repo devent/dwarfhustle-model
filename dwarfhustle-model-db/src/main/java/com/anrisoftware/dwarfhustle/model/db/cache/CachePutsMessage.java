@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.cache;
 
+import static akka.actor.typed.javadsl.AskPattern.ask;
+
 import java.time.Duration;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
@@ -25,8 +27,7 @@ import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 import akka.actor.typed.ActorRef;
-import akka.actor.typed.Scheduler;
-import akka.actor.typed.javadsl.AskPattern;
+import akka.actor.typed.ActorSystem;
 import lombok.ToString;
 
 /**
@@ -37,23 +38,23 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class CachePutsMessage<T extends Message> extends CacheMessage<T> {
 
-    public static CompletionStage<CacheResponseMessage<?>> askCachePuts(ActorRef<Message> a, Class<?> keyType,
-            Function<GameObject, Object> key, Iterable<GameObject> value, Duration timeout, Scheduler scheduler) {
-        return AskPattern.ask(a, replyTo -> new CachePutsMessage<>(replyTo, keyType, key, value), timeout, scheduler);
+    public static CompletionStage<CacheResponseMessage<?>> askCachePuts(ActorSystem<Message> a, Duration timeout,
+            Class<?> keyType, Function<GameObject, Object> key, Iterable<? extends GameObject> values) {
+        return ask(a, replyTo -> new CachePutsMessage<>(replyTo, keyType, key, values), timeout, a.scheduler());
     }
 
     public final Class<?> keyType;
 
     public final Function<GameObject, Object> key;
 
-    public final Iterable<? extends GameObject> value;
+    public final Iterable<? extends GameObject> values;
 
     public CachePutsMessage(ActorRef<T> replyTo, Class<?> keyType, Function<GameObject, Object> key,
-            Iterable<? extends GameObject> value) {
+            Iterable<? extends GameObject> values) {
         super(replyTo);
         this.keyType = keyType;
         this.key = key;
-        this.value = value;
+        this.values = values;
     }
 
 }

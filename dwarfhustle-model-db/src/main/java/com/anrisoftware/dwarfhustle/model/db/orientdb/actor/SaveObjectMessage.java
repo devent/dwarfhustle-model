@@ -17,10 +17,16 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
+import static akka.actor.typed.javadsl.AskPattern.ask;
+
+import java.time.Duration;
+import java.util.concurrent.CompletionStage;
+
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 
 import akka.actor.typed.ActorRef;
+import akka.actor.typed.ActorSystem;
 import lombok.ToString;
 
 /**
@@ -31,6 +37,18 @@ import lombok.ToString;
  */
 @ToString(callSuper = true)
 public class SaveObjectMessage<T extends Message> extends DbMessage<T> {
+
+    /**
+     * Asks the actor to save a {@link StoredObject} in the database.
+     *
+     * @param a       the {@link ActorSystem}.
+     * @param timeout the {@link Duration} timeout.
+     * @return {@link CompletionStage} with the {@link DbResponseMessage}.
+     */
+    public static CompletionStage<DbResponseMessage<?>> askSaveObject(ActorSystem<Message> a, Duration timeout,
+            StoredObject go) {
+        return ask(a, replyTo -> new SaveObjectMessage<>(replyTo, go), timeout, a.scheduler());
+    }
 
     public final StoredObject go;
 

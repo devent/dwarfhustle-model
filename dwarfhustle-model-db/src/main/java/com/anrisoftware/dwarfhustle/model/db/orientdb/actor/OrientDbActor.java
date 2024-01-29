@@ -40,6 +40,7 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbCommandMessage.DbC
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DeleteDbMessage.DbNotExistMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectMessage.LoadObjectNotFoundMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectMessage.LoadObjectSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectsMessage.LoadObjectsSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StartEmbeddedServerMessage.StartEmbeddedServerSuccessMessage;
@@ -373,7 +374,7 @@ public class OrientDbActor implements ObjectsGetter {
         try (var db = orientdb.get().open(database, user, password)) {
             var rs = m.query.apply(db);
             try {
-                while (rs.hasNext()) {
+                if (rs.hasNext()) {
                     var v = rs.next().getVertex();
                     if (v.isPresent()) {
                         var gos = storages.get(m.objectType);
@@ -382,6 +383,8 @@ public class OrientDbActor implements ObjectsGetter {
                     } else {
                         mm.replyTo.tell(new DbErrorMessage<>(new ObjectNotFoundException(m.objectType)));
                     }
+                } else {
+                    mm.replyTo.tell(new LoadObjectNotFoundMessage<>());
                 }
             } finally {
                 rs.close();

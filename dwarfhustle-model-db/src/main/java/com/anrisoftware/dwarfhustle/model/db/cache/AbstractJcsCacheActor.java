@@ -194,7 +194,7 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
     private Behavior<Message> onCachePuts(@SuppressWarnings("rawtypes") CachePutsMessage m) {
         log.debug("onCachePuts {}", m);
         try {
-            for (var o : m.value) {
+            for (var o : m.values) {
                 var go = (GameObject) o;
                 cache.put(m.key.apply(o), go);
                 storeValueBackend(m.keyType, m.key, go);

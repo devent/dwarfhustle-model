@@ -16,7 +16,6 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheGetMessage
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheGetMessage.CacheGetSuccessMessage
-import com.anrisoftware.dwarfhustle.model.db.cache.DwarfhustleModelDbCacheModule
 import com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DwarfhustleModelDbOrientdbModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustlePowerloomModule
@@ -38,7 +37,6 @@ class ImporterMapImage2DbAppTest {
                 new DwarfhustlePowerloomModule(),
                 new DwarfhustleModelDbOrientdbModule(),
                 new DwarfhustleModelApiObjectsModule(),
-                new DwarfhustleModelDbCacheModule(),
                 new DwarfhustleModelTerrainimageModule(),
                 )
     }
@@ -71,9 +69,9 @@ class ImporterMapImage2DbAppTest {
     @Test
     @Timeout(600)
     void test_start_import(@TempDir File tmp) {
-        def image = TerrainImage.terrain_32_32_32
+        def image = TerrainImage.terrain_8_8_8
         def importer = injector.getInstance(ImporterMapImage2DbApp)
-        importer.initEmbedded(injector, tmp, image.name, "root", "admin").get()
+        importer.initEmbedded(injector, tmp, image.name(), "root", "admin").get()
         long gmid = importer.createGameMap(image.terrain)
         importer.startImport(ImporterMapImage2DbAppTest.class.getResource(image.imageName), image.terrain, gmid)
         def actor = injector.getInstance(ActorSystemProvider)

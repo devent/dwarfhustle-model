@@ -113,7 +113,7 @@ public class ImporterMapImage2DbApp {
 
     private static CompletionStage<ActorRef<Message>> createObjectsCache(Injector injector,
             CompletionStage<ObjectsGetter> og) {
-        var task = StoredObjectsJcsCacheActor.create(injector, Duration.ofSeconds(30), og);
+        var task = ImporterObjectsJcsCacheActor.create(injector, Duration.ofSeconds(30), og);
         return task.whenComplete((ret, ex) -> {
             if (ex != null) {
                 log.error("ObjectsJcsCacheActor.create", ex);
@@ -254,8 +254,8 @@ public class ImporterMapImage2DbApp {
         // gm.setCameraPos(0.0f, 0.0f, 12.0f);
         gm.setCameraRot(0.0f, 1.0f, 0.0f, 0.0f);
         gm.setCursorZ(0);
-        CachePutMessage.askCachePut(actor.getActorSystem(), wm.id, wm, ofSeconds(1));
-        CachePutMessage.askCachePut(actor.getActorSystem(), gm.id, gm, ofSeconds(1));
+        CachePutMessage.askCachePut(actor.getActorSystem(), ofSeconds(1), wm.id, wm);
+        CachePutMessage.askCachePut(actor.getActorSystem(), ofSeconds(1), gm.id, gm);
         return gm.id;
     }
 }

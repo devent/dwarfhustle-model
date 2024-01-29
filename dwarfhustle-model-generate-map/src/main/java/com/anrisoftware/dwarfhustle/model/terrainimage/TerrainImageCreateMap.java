@@ -2,9 +2,13 @@ package com.anrisoftware.dwarfhustle.model.terrainimage;
 
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlock.getMapBlock;
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapChunk.getMapChunk;
+import static com.anrisoftware.dwarfhustle.model.db.cache.CachePutMessage.askCachePut;
+import static com.anrisoftware.dwarfhustle.model.db.cache.CachePutsMessage.askCachePuts;
+import static java.time.Duration.ofSeconds;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.Duration;
 import java.util.Deque;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -27,21 +31,25 @@ import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
-import com.anrisoftware.dwarfhustle.model.db.cache.CachePutMessage;
-import com.anrisoftware.dwarfhustle.model.db.cache.CachePutsMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage;
+import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage.CacheErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor;
 import com.google.inject.assistedinject.Assisted;
 
 import akka.actor.typed.ActorRef;
 import jakarta.inject.Inject;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Imports a map from an image file to the database.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
+@Slf4j
 public class TerrainImageCreateMap {
+
+    private static final Duration CACHE_TIMEOUT = ofSeconds(100);
 
     /**
      * @see TerrainImageCreateMap
@@ -119,6 +127,7 @@ public class TerrainImageCreateMap {
             MutableObjectLongMap<GameChunkPos> chunks, int x, int y, int z, int ex, int ey, int ez)
             throws GeneratorException {
         var chunk = new MapChunk(gen.generate());
+        chunk.map = gm.id;
         chunk.setParent(parent.getId());
         chunk.setPos(new GameChunkPos(x, y, z, ex, ey, ez));
         chunk.updateCenterExtent(gm.width, gm.height, gm.depth);
@@ -131,6 +140,7 @@ public class TerrainImageCreateMap {
                     for (int zz = z; zz < ez; zz++) {
                         var mb = new MapBlock(ids.get());
                         mb.pos = new GameBlockPos(xx, yy, zz);
+                        mb.map = gm.id;
                         mb.setMaterialRid(terrain[zz][yy][xx]);
                         mb.setObjectRid(809);
                         mb.updateCenterExtent(gm.width, gm.height, gm.depth);
@@ -249,12 +259,36 @@ public class TerrainImageCreateMap {
         return !mb.isMined();
     }
 
+    @SneakyThrows
     private void putObjectsToBackend(Class<?> keyType, Iterable<? extends GameObject> values) {
-        cache.tell(new CachePutsMessage<>(actor.get(), keyType, (go) -> go.getId(), values));
+        System.out.println("TerrainImageCreateMap.putObjectsToBackend()"); // TODO
+        askCachePuts(actor.getActorSystem(), CACHE_TIMEOUT, keyType, (go) -> go.getId(), values)
+                .whenComplete(this::putObjectToBackendCompleted).toCompletableFuture().get();
+        System.out.println("END TerrainImageCreateMap.putObjectsToBackend()"); // TODO
     }
 
+    @SneakyThrows
     private void putObjectToBackend(GameObject go) {
-        cache.tell(new CachePutMessage<>(actor.get(), go.id, go));
+        System.out.println("TerrainImageCreateMap.putObjectToBackend()"); // TODO
+        askCachePut(actor.getActorSystem(), CACHE_TIMEOUT, go.id, go).whenComplete(this::putObjectToBackendCompleted)
+                .toCompletableFuture().get();
+        System.out.println("END TerrainImageCreateMap.putObjectToBackend()"); // TODO
+    }
+
+    private void putObjectToBackendCompleted(CacheResponseMessage<?> res, Throwable ex) {
+        logError(res, ex);
+    }
+
+    private void logError(CacheResponseMessage<?> res, Throwable ex) {
+        if (ex != null) {
+            log.error("storeValueBackend", ex);
+        } else {
+            if (res instanceof CacheErrorMessage m) {
+                log.error("storeValueBackend", m.error);
+            } else {
+                // success
+            }
+        }
     }
 
 }
