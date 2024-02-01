@@ -35,17 +35,19 @@ import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSche
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.DEPTH_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.HEIGHT_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.NAME_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.ROOT_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.ROOT_CHUNK_CLASS;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.TIME_ZONE_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.WIDTH_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.WORLD_FIELD;
 
 import java.time.ZoneOffset;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapArea;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapCursor;
 import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.WorldMapSchema;
+import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 import com.orientechnologies.orient.core.record.OElement;
 
 /**
@@ -59,51 +61,62 @@ public class GameMapStorage extends AbstractGameObjectStorage {
     @Override
     public void store(Object db, Object o, StoredObject go) {
         var v = (OElement) o;
-        var mb = (GameMap) go;
-        v.setProperty(NAME_FIELD, mb.name);
-        v.setProperty(ROOT_FIELD, mb.root);
-        v.setProperty(WIDTH_FIELD, mb.width);
-        v.setProperty(HEIGHT_FIELD, mb.height);
-        v.setProperty(DEPTH_FIELD, mb.depth);
-        v.setProperty(CHUNK_SIZE_FIELD, mb.chunkSize);
-        v.setProperty(WORLD_FIELD, mb.world);
-        v.setProperty(TIME_ZONE_FIELD, mb.timeZone.getTotalSeconds());
-        v.setProperty(AREA_NW_LAT_FIELD, mb.area.nw.lat);
-        v.setProperty(AREA_NW_LON_FIELD, mb.area.nw.lon);
-        v.setProperty(AREA_SE_LAT_FIELD, mb.area.se.lat);
-        v.setProperty(AREA_SE_LON_FIELD, mb.area.se.lon);
-        v.setProperty(CAMERA_POS_X_FIELD, mb.cameraPos[0]);
-        v.setProperty(CAMERA_POS_Y_FIELD, mb.cameraPos[1]);
-        v.setProperty(CAMERA_POS_Z_FIELD, mb.cameraPos[2]);
-        v.setProperty(CAMERA_ROT_X_FIELD, mb.cameraRot[0]);
-        v.setProperty(CAMERA_ROT_Y_FIELD, mb.cameraRot[1]);
-        v.setProperty(CAMERA_ROT_Z_FIELD, mb.cameraRot[2]);
-        v.setProperty(CAMERA_ROT_W_FIELD, mb.cameraRot[3]);
-        v.setProperty(CURSOR_X_FIELD, mb.cursor.x);
-        v.setProperty(CURSOR_Y_FIELD, mb.cursor.y);
-        v.setProperty(CURSOR_Z_FIELD, mb.cursor.z);
+        var gm = (GameMap) go;
+        var odb = (ODatabaseDocument) db;
+        v.setProperty(NAME_FIELD, gm.name);
+        storeRootChunk(odb, v, gm);
+        v.setProperty(WIDTH_FIELD, gm.width);
+        v.setProperty(HEIGHT_FIELD, gm.height);
+        v.setProperty(DEPTH_FIELD, gm.depth);
+        v.setProperty(CHUNK_SIZE_FIELD, gm.chunkSize);
+        v.setProperty(TIME_ZONE_FIELD, gm.timeZone.getTotalSeconds());
+        v.setProperty(AREA_NW_LAT_FIELD, gm.area.nw.lat);
+        v.setProperty(AREA_NW_LON_FIELD, gm.area.nw.lon);
+        v.setProperty(AREA_SE_LAT_FIELD, gm.area.se.lat);
+        v.setProperty(AREA_SE_LON_FIELD, gm.area.se.lon);
+        v.setProperty(CAMERA_POS_X_FIELD, gm.cameraPos[0]);
+        v.setProperty(CAMERA_POS_Y_FIELD, gm.cameraPos[1]);
+        v.setProperty(CAMERA_POS_Z_FIELD, gm.cameraPos[2]);
+        v.setProperty(CAMERA_ROT_X_FIELD, gm.cameraRot[0]);
+        v.setProperty(CAMERA_ROT_Y_FIELD, gm.cameraRot[1]);
+        v.setProperty(CAMERA_ROT_Z_FIELD, gm.cameraRot[2]);
+        v.setProperty(CAMERA_ROT_W_FIELD, gm.cameraRot[3]);
+        v.setProperty(CURSOR_X_FIELD, gm.cursor.x);
+        v.setProperty(CURSOR_Y_FIELD, gm.cursor.y);
+        v.setProperty(CURSOR_Z_FIELD, gm.cursor.z);
         super.store(db, o, go);
+    }
+
+    private void storeRootChunk(ODatabaseDocument odb, OElement v, GameMap gm) {
+        try (var rs = queryByObjectId(odb, MapChunk.OBJECT_TYPE, gm.root)) {
+            if (rs.hasNext()) {
+                var vv = rs.next().getVertex();
+                if (vv.isPresent()) {
+                    odb.newEdge(v.asVertex().get(), vv.get(), ROOT_CHUNK_CLASS).save();
+                }
+            }
+        }
     }
 
     @Override
     public StoredObject retrieve(Object db, Object o, StoredObject go) {
         var v = (OElement) o;
-        var mb = (GameMap) go;
-        mb.name = v.getProperty(NAME_FIELD);
-        mb.root = v.getProperty(ROOT_FIELD);
-        mb.width = v.getProperty(WIDTH_FIELD);
-        mb.height = v.getProperty(HEIGHT_FIELD);
-        mb.depth = v.getProperty(DEPTH_FIELD);
-        mb.chunkSize = v.getProperty(CHUNK_SIZE_FIELD);
-        mb.world = v.getProperty(WORLD_FIELD);
-        mb.timeZone = ZoneOffset.ofTotalSeconds(v.getProperty(TIME_ZONE_FIELD));
-        mb.area = MapArea.create(v.getProperty(AREA_NW_LAT_FIELD), v.getProperty(AREA_NW_LON_FIELD),
+        var gm = (GameMap) go;
+        gm.name = v.getProperty(NAME_FIELD);
+        gm.width = v.getProperty(WIDTH_FIELD);
+        gm.height = v.getProperty(HEIGHT_FIELD);
+        gm.depth = v.getProperty(DEPTH_FIELD);
+        gm.chunkSize = v.getProperty(CHUNK_SIZE_FIELD);
+        gm.root = retrieveEdgeOutToId(v, ROOT_CHUNK_CLASS);
+        gm.world = retrieveEdgeInFromId(v, WorldMapSchema.MAP_CLASS);
+        gm.timeZone = ZoneOffset.ofTotalSeconds(v.getProperty(TIME_ZONE_FIELD));
+        gm.area = MapArea.create(v.getProperty(AREA_NW_LAT_FIELD), v.getProperty(AREA_NW_LON_FIELD),
                 v.getProperty(AREA_SE_LAT_FIELD), v.getProperty(AREA_SE_LON_FIELD));
-        mb.setCameraPos(v.getProperty(CAMERA_POS_X_FIELD), v.getProperty(CAMERA_POS_Y_FIELD),
+        gm.setCameraPos(v.getProperty(CAMERA_POS_X_FIELD), v.getProperty(CAMERA_POS_Y_FIELD),
                 v.getProperty(CAMERA_POS_Z_FIELD));
-        mb.setCameraRot(v.getProperty(CAMERA_ROT_X_FIELD), v.getProperty(CAMERA_ROT_Y_FIELD),
+        gm.setCameraRot(v.getProperty(CAMERA_ROT_X_FIELD), v.getProperty(CAMERA_ROT_Y_FIELD),
                 v.getProperty(CAMERA_ROT_Z_FIELD), v.getProperty(CAMERA_ROT_W_FIELD));
-        mb.setCursor(new MapCursor(v.getProperty(CURSOR_X_FIELD), v.getProperty(CURSOR_Y_FIELD),
+        gm.setCursor(new MapCursor(v.getProperty(CURSOR_X_FIELD), v.getProperty(CURSOR_Y_FIELD),
                 v.getProperty(CURSOR_Z_FIELD)));
         return super.retrieve(db, o, go);
     }

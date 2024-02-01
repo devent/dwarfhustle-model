@@ -87,12 +87,16 @@ public class WorldMapStorage extends AbstractGameObjectStorage {
         wm.setName(v.getProperty(NAME_FIELD));
         wm.setDistance(v.getProperty(DIST_LAT_FIELD), v.getProperty(DIST_LON_FIELD));
         wm.setTime(parseTime(v.getProperty(TIME_FIELD)));
-        var vcurrentMap = v.asVertex().get().getEdges(OUT, CURRENT_MAP_CLASS);
-        for (var currentMap : vcurrentMap) {
-            wm.currentMap = currentMap.getProperty(OBJECTID_FIELD);
-        }
+        retrieveCurrentMap(v, wm);
         retrieveGameMaps(v, wm, odb);
         return super.retrieve(db, o, go);
+    }
+
+    private void retrieveCurrentMap(OElement v, WorldMap wm) {
+        var vcurrentMap = v.asVertex().get().getEdges(OUT, CURRENT_MAP_CLASS);
+        for (var currentMap : vcurrentMap) {
+            wm.currentMap = currentMap.getTo().getProperty(OBJECTID_FIELD);
+        }
     }
 
     private void retrieveGameMaps(OElement v, WorldMap wm, ODatabaseDocument db) {

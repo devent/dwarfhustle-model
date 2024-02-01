@@ -19,6 +19,8 @@ package com.anrisoftware.dwarfhustle.model.db.orientdb.storages;
 
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameObjectSchemaSchema.OBJECTID_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameObjectSchemaSchema.OBJECTTYPE_FIELD;
+import static com.orientechnologies.orient.core.record.ODirection.IN;
+import static com.orientechnologies.orient.core.record.ODirection.OUT;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -34,6 +36,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 import com.orientechnologies.orient.core.metadata.schema.OType;
+import com.orientechnologies.orient.core.record.ODirection;
 import com.orientechnologies.orient.core.record.OElement;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
@@ -85,6 +88,30 @@ public abstract class AbstractGameObjectStorage implements GameObjectStorage {
         s.deleteCharAt(s.length() - 1);
         s.append("]");
         return odb.query(s.toString(), objectType, objectType);
+    }
+
+    protected long retrieveEdgeOutToId(OElement v, String edgeClass) {
+        return retrieveEdgeId(OUT, IN, v, edgeClass);
+    }
+
+    protected long retrieveEdgeOutFromId(OElement v, String edgeClass) {
+        return retrieveEdgeId(OUT, OUT, v, edgeClass);
+    }
+
+    protected long retrieveEdgeInToId(OElement v, String edgeClass) {
+        return retrieveEdgeId(IN, IN, v, edgeClass);
+    }
+
+    protected long retrieveEdgeInFromId(OElement v, String edgeClass) {
+        return retrieveEdgeId(IN, OUT, v, edgeClass);
+    }
+
+    private long retrieveEdgeId(ODirection edir, ODirection vdir, OElement v, String edgeClass) {
+        var edges = v.asVertex().get().getEdges(edir, edgeClass);
+        for (var e : edges) {
+            return e.getVertex(vdir).getProperty(OBJECTID_FIELD);
+        }
+        return 0;
     }
 
     protected String toString(LocalDateTime time) {
