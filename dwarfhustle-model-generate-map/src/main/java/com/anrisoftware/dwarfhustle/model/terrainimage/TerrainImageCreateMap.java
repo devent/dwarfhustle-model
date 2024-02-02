@@ -21,7 +21,6 @@ import org.lable.oss.uniqueid.GeneratorException;
 import org.lable.oss.uniqueid.IDGenerator;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
-import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameChunkPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
@@ -33,10 +32,8 @@ import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage.CacheErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor;
 import com.google.inject.assistedinject.Assisted;
 
-import akka.actor.typed.ActorRef;
 import jakarta.inject.Inject;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -79,15 +76,13 @@ public class TerrainImageCreateMap {
 
     private Deque<byte[]> idsBatch;
 
-    private ActorRef<Message> cache;
-
     public void startImport(URL url, TerrainLoadImage image, long mapid) throws IOException, GeneratorException {
-        this.cache = actor.getActor(StoredObjectsJcsCacheActor.ID);
         this.terrain = image.load(url);
         this.mcRoot = new MapChunk(gen.generate());
         this.gm = og.get(GameMap.class, GameMap.OBJECT_TYPE, mapid);
         gm.root = mcRoot.id;
-        mcRoot.setRoot(true);
+        mcRoot.root = true;
+        mcRoot.map = gm.id;
         createMap(mcRoot, 0, 0, 0, gm.width, gm.height, gm.depth);
         createNeighbors(mcRoot);
         putObjectToBackend(gm);

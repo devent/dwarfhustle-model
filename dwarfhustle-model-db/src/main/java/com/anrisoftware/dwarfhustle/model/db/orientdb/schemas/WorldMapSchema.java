@@ -39,7 +39,7 @@ public class WorldMapSchema implements GameObjectSchema {
 
     public static final String CURRENT_MAP_CLASS = "CurrentMap";
 
-    public static final String MAP_CLASS = "map";
+    public static final String MAP_CLASS = "Map";
 
     @Override
     public void createSchema(Object db) {
