@@ -78,9 +78,6 @@ public class MapChunkSchema implements GameObjectSchema {
         c.createProperty(POS_END_X_FIELD, OType.INTEGER);
         c.createProperty(POS_END_Y_FIELD, OType.INTEGER);
         c.createProperty(POS_END_Z_FIELD, OType.INTEGER);
-        try (var q = odb.command(
-                "CREATE INDEX MapChunk_type_pos ON MapChunk (objecttype, map, sx, sy, sz, ex, ey, ez) UNIQUE METADATA {ignoreNullValues: false}")) {
-        }
     }
 
 }
