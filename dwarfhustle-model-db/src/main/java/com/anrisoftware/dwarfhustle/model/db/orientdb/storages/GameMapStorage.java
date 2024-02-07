@@ -21,6 +21,7 @@ import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSche
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.AREA_NW_LON_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.AREA_SE_LAT_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.AREA_SE_LON_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.BLOCKS_COUNT_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CAMERA_POS_X_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CAMERA_POS_Y_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CAMERA_POS_Z_FIELD;
@@ -28,6 +29,7 @@ import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSche
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CAMERA_ROT_X_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CAMERA_ROT_Y_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CAMERA_ROT_Z_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CHUNKS_COUNT_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CHUNK_SIZE_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CURSOR_X_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.CURSOR_Y_FIELD;
@@ -84,6 +86,8 @@ public class GameMapStorage extends AbstractGameObjectStorage {
         v.setProperty(CURSOR_X_FIELD, gm.cursor.x);
         v.setProperty(CURSOR_Y_FIELD, gm.cursor.y);
         v.setProperty(CURSOR_Z_FIELD, gm.cursor.z);
+        v.setProperty(CHUNKS_COUNT_FIELD, gm.chunksCount);
+        v.setProperty(BLOCKS_COUNT_FIELD, gm.blocksCount);
         super.store(db, o, go);
     }
 
@@ -118,6 +122,8 @@ public class GameMapStorage extends AbstractGameObjectStorage {
                 v.getProperty(CAMERA_ROT_Z_FIELD), v.getProperty(CAMERA_ROT_W_FIELD));
         gm.setCursor(new MapCursor(v.getProperty(CURSOR_X_FIELD), v.getProperty(CURSOR_Y_FIELD),
                 v.getProperty(CURSOR_Z_FIELD)));
+        gm.chunksCount = v.getProperty(CHUNKS_COUNT_FIELD);
+        gm.blocksCount = v.getProperty(BLOCKS_COUNT_FIELD);
         return super.retrieve(db, o, go);
     }
 

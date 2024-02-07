@@ -101,6 +101,10 @@ public class GameMap extends GameObject implements StoredObject {
 
     public int chunkSize;
 
+    public int chunksCount;
+
+    public int blocksCount;
+
     /**
      * The {@link WorldMap} ID of the map.
      */

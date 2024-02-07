@@ -76,15 +76,24 @@ public class TerrainImageCreateMap {
 
     private Deque<byte[]> idsBatch;
 
+    private int chunksCount;
+
+    private int blocksCount;
+
     public void startImport(URL url, TerrainLoadImage image, long mapid) throws IOException, GeneratorException {
         this.terrain = image.load(url);
         this.mcRoot = new MapChunk(gen.generate());
         this.gm = og.get(GameMap.class, GameMap.OBJECT_TYPE, mapid);
+        this.chunksCount = 0;
+        this.blocksCount = 0;
         gm.root = mcRoot.id;
         mcRoot.root = true;
         mcRoot.map = gm.id;
+        chunksCount++;
         createMap(mcRoot, 0, 0, 0, gm.width, gm.height, gm.depth);
         createNeighbors(mcRoot);
+        gm.chunksCount = chunksCount;
+        gm.blocksCount = blocksCount;
         putObjectToBackend(gm);
     }
 
@@ -122,6 +131,7 @@ public class TerrainImageCreateMap {
             MutableObjectLongMap<GameChunkPos> chunks, int x, int y, int z, int ex, int ey, int ez)
             throws GeneratorException {
         var chunk = new MapChunk(gen.generate());
+        chunksCount++;
         chunk.map = gm.id;
         chunk.setParent(parent.getId());
         chunk.setPos(new GameChunkPos(x, y, z, ex, ey, ez));
@@ -134,6 +144,7 @@ public class TerrainImageCreateMap {
                 for (int yy = y; yy < ey; yy++) {
                     for (int zz = z; zz < ez; zz++) {
                         var mb = new MapBlock(ids.get());
+                        blocksCount++;
                         mb.pos = new GameBlockPos(xx, yy, zz);
                         mb.map = gm.id;
                         mb.chunk = chunk.id;

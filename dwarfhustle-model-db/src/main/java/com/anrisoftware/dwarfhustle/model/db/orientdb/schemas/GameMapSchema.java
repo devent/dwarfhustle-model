@@ -71,6 +71,10 @@ public class GameMapSchema implements GameObjectSchema {
 
     public static final String CURSOR_X_FIELD = "cursorX";
 
+    public static final String CHUNKS_COUNT_FIELD = "chunksCount";
+
+    public static final String BLOCKS_COUNT_FIELD = "blocksCount";
+
 	@Override
 	public void createSchema(Object db) {
 		var odb = (ODatabaseDocument) db;
@@ -96,6 +100,8 @@ public class GameMapSchema implements GameObjectSchema {
         c.createProperty(CURSOR_Z_FIELD, OType.INTEGER);
         c.createProperty(CURSOR_Y_FIELD, OType.INTEGER);
         c.createProperty(CURSOR_X_FIELD, OType.INTEGER);
+        c.createProperty(CHUNKS_COUNT_FIELD, OType.INTEGER);
+        c.createProperty(BLOCKS_COUNT_FIELD, OType.INTEGER);
 		try (var q = odb.command(
 				"CREATE INDEX GameMap_name ON GameMap (objecttype, name) NOTUNIQUE METADATA {ignoreNullValues: false}")) {
 		}
