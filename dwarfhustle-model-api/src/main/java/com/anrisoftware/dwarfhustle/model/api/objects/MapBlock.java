@@ -71,6 +71,11 @@ public class MapBlock extends GameMapObject implements StoredObject {
     public long object = -1;
 
     /**
+     * ID of the parent {@link MapChunk}.
+     */
+    public long chunk = 0;
+
+    /**
      * Bit field that defines the properties of the map tile.
      * <ul>
      * <li>{@code 0000 0000 0000 0000 0000 0000 0000 0001} - mined

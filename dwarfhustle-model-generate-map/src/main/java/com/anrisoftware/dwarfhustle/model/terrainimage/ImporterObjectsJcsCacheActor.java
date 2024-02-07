@@ -136,7 +136,6 @@ public class ImporterObjectsJcsCacheActor extends AbstractJcsCacheActor {
     @Override
     @SneakyThrows
     protected void storeValueBackend(Object key, GameObject go) {
-        System.out.printf("ImporterObjectsJcsCacheActor.storeValueBackend(%s, %s)\n", key, go); // TODO
         askSaveObject(actor.getActorSystem(), timeout, (StoredObject) go).whenComplete(this::storeValueBackendCompleted)
                 .toCompletableFuture().get();
     }
@@ -144,7 +143,6 @@ public class ImporterObjectsJcsCacheActor extends AbstractJcsCacheActor {
     @Override
     @SneakyThrows
     protected void storeValueBackend(Class<?> keyType, Function<GameObject, Object> key, GameObject go) {
-        System.out.printf("ImporterObjectsJcsCacheActor.storeValueBackend(%s, %s)\n", key, go); // TODO
         askSaveObject(actor.getActorSystem(), timeout, (StoredObject) go).whenComplete(this::storeValueBackendCompleted)
                 .toCompletableFuture().get();
     }
@@ -188,7 +186,6 @@ public class ImporterObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     private void logError(DbResponseMessage<?> res, Throwable ex) {
-        System.out.printf("ImporterObjectsJcsCacheActor.logError(%s, %s)\n", res, ex); // TODO
         if (ex != null) {
             log.error("storeValueBackend", ex);
             context.getSelf().tell(new ShutdownMessage());

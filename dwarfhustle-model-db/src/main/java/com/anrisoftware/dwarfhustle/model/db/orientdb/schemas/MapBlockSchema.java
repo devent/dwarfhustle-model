@@ -36,6 +36,8 @@ public class MapBlockSchema implements GameObjectSchema {
 
     public static final String PROPERTIES_FIELD = "p";
 
+    public static final String CHUNK_FIELD = "chunk";
+
     @Override
     public void createSchema(Object db) {
         var odb = (ODatabaseDocument) db;
@@ -43,6 +45,7 @@ public class MapBlockSchema implements GameObjectSchema {
         c.createProperty(MATERIAL_FIELD, OType.LONG);
         c.createProperty(OBJECT_FIELD, OType.LONG);
         c.createProperty(PROPERTIES_FIELD, OType.INTEGER);
+        c.createProperty(CHUNK_FIELD, OType.LONG);
         new NeighboringSchema().createSchema(db, c);
         new CenterExtentSchema().createSchema(db, c);
     }

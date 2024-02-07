@@ -43,6 +43,7 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DeleteDbMessage.DbNo
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectMessage.LoadObjectNotFoundMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectMessage.LoadObjectSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectsMessage.LoadObjectsSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.RebuildIndexMessage.RebuildIndexSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StartEmbeddedServerMessage.StartEmbeddedServerSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StopEmbeddedServerMessage.StopEmbeddedServerSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameObjectSchema;
@@ -83,6 +84,7 @@ import lombok.extern.slf4j.Slf4j;
  * <li>{@link LoadObjectMessage}</li>
  * <li>{@link LoadObjectsMessage}</li>
  * <li>{@link SaveObjectMessage}</li>
+ * <li>{@link RebuildIndexMessage}</li>
  * </ul>
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
@@ -346,7 +348,7 @@ public class OrientDbActor implements ObjectsGetter {
     }
 
     /**
-     * Returns a behavior for the messages from {@link #getInitialBehavior()}
+     * Returns a behavior for the messages from {@link #getConnectedBehavior()}
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private Behavior<Message> onCreateSchemas(CreateSchemasMessage m) {
@@ -365,7 +367,7 @@ public class OrientDbActor implements ObjectsGetter {
     }
 
     /**
-     * Returns a behavior for the messages from {@link #getInitialBehavior()}
+     * Returns a behavior for the messages from {@link #getConnectedBehavior()}
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private Behavior<Message> onLoadGameObject(LoadObjectMessage<?> m) {
@@ -397,7 +399,7 @@ public class OrientDbActor implements ObjectsGetter {
     }
 
     /**
-     * Returns a behavior for the messages from {@link #getInitialBehavior()}
+     * Returns a behavior for the messages from {@link #getConnectedBehavior()}
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private Behavior<Message> onLoadGameObjects(LoadObjectsMessage<?> m) {
@@ -426,7 +428,7 @@ public class OrientDbActor implements ObjectsGetter {
     }
 
     /**
-     * Returns a behavior for the messages from {@link #getInitialBehavior()}
+     * Returns a behavior for the messages from {@link #getConnectedBehavior()}
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private Behavior<Message> onSaveObject(SaveObjectMessage<?> m) {
@@ -463,6 +465,23 @@ public class OrientDbActor implements ObjectsGetter {
             db.rollback();
             throw e;
         }
+    }
+
+    /**
+     * Returns a behavior for the messages from {@link #getConnectedBehavior()}
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private Behavior<Message> onRebuildIndex(RebuildIndexMessage<?> m) {
+        log.debug("onRebuildIndex {}", m);
+        RebuildIndexMessage mm = m;
+        try (var db = orientdb.get().open(database, user, password)) {
+            db.command("REBUILD INDEX *");
+            mm.replyTo.tell(new RebuildIndexSuccessMessage<>());
+        } catch (Exception e) {
+            log.error("onRebuildIndex", e);
+            mm.replyTo.tell(new DbErrorMessage<>(e));
+        }
+        return Behaviors.same();
     }
 
     /**
@@ -515,6 +534,7 @@ public class OrientDbActor implements ObjectsGetter {
      * <li>{@link LoadObjectMessage}
      * <li>{@link LoadObjectsMessage}
      * <li>{@link SaveObjectMessage}
+     * <li>{@link RebuildIndexMessage}
      * </ul>
      */
     private BehaviorBuilder<Message> getConnectedBehavior() {
@@ -529,6 +549,7 @@ public class OrientDbActor implements ObjectsGetter {
                 .onMessage(LoadObjectMessage.class, this::onLoadGameObject)//
                 .onMessage(LoadObjectsMessage.class, this::onLoadGameObjects)//
                 .onMessage(SaveObjectMessage.class, this::onSaveObject)//
+                .onMessage(RebuildIndexMessage.class, this::onRebuildIndex)//
         ;
     }
 

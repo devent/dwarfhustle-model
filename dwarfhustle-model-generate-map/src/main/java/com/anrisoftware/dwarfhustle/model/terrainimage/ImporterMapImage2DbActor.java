@@ -29,6 +29,8 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbErrorMes
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbResponseMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.RebuildIndexMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.RebuildIndexMessage.RebuildIndexSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StartEmbeddedServerMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StartEmbeddedServerMessage.StartEmbeddedServerSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StopEmbeddedServerMessage;
@@ -147,6 +149,9 @@ public class ImporterMapImage2DbActor {
     @SuppressWarnings("rawtypes")
     private ActorRef stopServerReplyTo;
 
+    @SuppressWarnings("rawtypes")
+    private ActorRef importImageReplyTo;
+
     /**
      * @see #getInitialBehavior()
      */
@@ -174,12 +179,12 @@ public class ImporterMapImage2DbActor {
         return getInitialBehavior().build();
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    private Behavior<Message> onImportImage(ImportImageMessage m) {
+    private Behavior<Message> onImportImage(ImportImageMessage<?> m) {
         log.debug("onImportImage {}", m);
+        this.importImageReplyTo = m.replyTo;
         try {
             terrainImageCreateMap.create(og).startImport(m.url, m.image, m.mapid);
-            m.replyTo.tell(new ImportImageSuccessMessage());
+            dbActor.tell(new RebuildIndexMessage<>(dbResponseAdapter));
         } catch (IOException | GeneratorException e) {
             log.error("onImportImage", e);
             return Behaviors.stopped();
@@ -207,6 +212,8 @@ public class ImporterMapImage2DbActor {
             dbActor.tell(new CreateSchemasMessage<>(dbResponseAdapter));
         } else if (r instanceof CreateSchemasSuccessMessage rm) {
             startServerReplyTo.tell(new ImporterStartEmbeddedServerSuccessMessage<>());
+        } else if (r instanceof RebuildIndexSuccessMessage rm) {
+            importImageReplyTo.tell(new ImportImageSuccessMessage<>());
         } else if (r instanceof CloseDbSuccessMessage rm) {
             dbActor.tell(new StopEmbeddedServerMessage<>(dbResponseAdapter));
         } else if (r instanceof StopEmbeddedServerSuccessMessage rm) {

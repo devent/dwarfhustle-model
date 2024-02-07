@@ -136,6 +136,7 @@ public class TerrainImageCreateMap {
                         var mb = new MapBlock(ids.get());
                         mb.pos = new GameBlockPos(xx, yy, zz);
                         mb.map = gm.id;
+                        mb.chunk = chunk.id;
                         mb.setMaterialRid(terrain[zz][yy][xx]);
                         mb.setObjectRid(809);
                         mb.updateCenterExtent(gm.width, gm.height, gm.depth);
@@ -256,18 +257,14 @@ public class TerrainImageCreateMap {
 
     @SneakyThrows
     private void putObjectsToBackend(Class<?> keyType, Iterable<? extends GameObject> values) {
-        System.out.println("TerrainImageCreateMap.putObjectsToBackend()"); // TODO
         askCachePuts(actor.getActorSystem(), CACHE_TIMEOUT, keyType, (go) -> go.getId(), values)
                 .whenComplete(this::putObjectToBackendCompleted).toCompletableFuture().get();
-        System.out.println("END TerrainImageCreateMap.putObjectsToBackend()"); // TODO
     }
 
     @SneakyThrows
     private void putObjectToBackend(GameObject go) {
-        System.out.println("TerrainImageCreateMap.putObjectToBackend()"); // TODO
         askCachePut(actor.getActorSystem(), CACHE_TIMEOUT, go.id, go).whenComplete(this::putObjectToBackendCompleted)
                 .toCompletableFuture().get();
-        System.out.println("END TerrainImageCreateMap.putObjectToBackend()"); // TODO
     }
 
     private void putObjectToBackendCompleted(CacheResponseMessage<?> res, Throwable ex) {

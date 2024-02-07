@@ -17,6 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.storages;
 
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapBlockSchema.CHUNK_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapBlockSchema.MATERIAL_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapBlockSchema.OBJECT_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapBlockSchema.PROPERTIES_FIELD;
@@ -41,6 +42,7 @@ public class MapBlockStorage extends AbstractGameMapObjectStorage {
         var mb = (MapBlock) go;
         v.setProperty(MATERIAL_FIELD, mb.material);
         v.setProperty(OBJECT_FIELD, mb.object);
+        v.setProperty(CHUNK_FIELD, mb.chunk);
         v.setProperty(PROPERTIES_FIELD, mb.p.bits);
         for (var n : NeighboringDir.values()) {
             v.setProperty(NeighboringSchema.getName(n), mb.blockDir.get(n.ordinal()));
@@ -54,6 +56,7 @@ public class MapBlockStorage extends AbstractGameMapObjectStorage {
         var mb = (MapBlock) go;
         mb.material = v.getProperty(MATERIAL_FIELD);
         mb.object = v.getProperty(OBJECT_FIELD);
+        mb.chunk = v.getProperty(CHUNK_FIELD);
         mb.p = new PropertiesSet(v.getProperty(PROPERTIES_FIELD));
         for (var n : NeighboringDir.values()) {
             mb.setNeighbor(n, v.getProperty(NeighboringSchema.getName(n)));
