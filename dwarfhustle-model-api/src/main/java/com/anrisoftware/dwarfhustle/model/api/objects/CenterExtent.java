@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.io.Serializable;
+
 import lombok.Data;
 
 /**
@@ -25,7 +27,9 @@ import lombok.Data;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Data
-public class CenterExtent {
+public class CenterExtent implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     public final float centerx;
 

@@ -17,12 +17,16 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.io.Serializable;
+
 /**
  * Simple bit set that for properties.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-public class PropertiesSet {
+public class PropertiesSet implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private static int empty = 0x00000000;
 

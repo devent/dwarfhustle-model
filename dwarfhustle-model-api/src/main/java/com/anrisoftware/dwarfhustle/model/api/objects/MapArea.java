@@ -18,7 +18,6 @@
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import java.io.Serializable;
-import java.util.Optional;
 
 import lombok.Data;
 
@@ -79,15 +78,12 @@ public class MapArea implements Serializable {
      */
     public final MapCoordinate se;
 
-    private Optional<MapCoordinate> center = Optional.empty();
+    public final MapCoordinate center;
 
-    /**
-     * Returns the center of the area.
-     */
-    public MapCoordinate getCenter() {
-        return center.orElseGet(() -> {
-            center = Optional.of(getCentralGeoCoordinate(nw, se));
-            return center.get();
-        });
+    public MapArea(MapCoordinate nw, MapCoordinate se) {
+        this.nw = nw;
+        this.se = se;
+        this.center = getCentralGeoCoordinate(nw, se);
     }
+
 }

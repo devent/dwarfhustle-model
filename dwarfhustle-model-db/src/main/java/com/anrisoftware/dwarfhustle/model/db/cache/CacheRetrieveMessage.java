@@ -17,10 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.cache;
 
-import org.apache.commons.jcs3.access.CacheAccess;
-
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 import akka.actor.typed.ActorRef;
 import lombok.RequiredArgsConstructor;
@@ -47,7 +44,7 @@ public class CacheRetrieveMessage extends Message {
         @ToString.Exclude
         public final Message m;
 
-        public final CacheAccess<Object, GameObject> cache;
+        public final Object cache;
     }
 
     /**
