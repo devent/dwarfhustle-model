@@ -18,33 +18,33 @@
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
 /**
- * Returns {@link GameObject} game objects.
+ * Stores {@link GameObject} game objects.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-public interface ObjectsGetter {
+public interface ObjectsSetter {
 
     /**
      * Exception if there was an error getting the {@link GameObject}.
      *
      * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
      */
-    public static class ObjectsGetterException extends RuntimeException {
+    public static class ObjectsSetterException extends RuntimeException {
 
         private static final long serialVersionUID = 1L;
 
-        public ObjectsGetterException(String message, Throwable cause) {
+        public ObjectsSetterException(String message, Throwable cause) {
             super(message, cause);
         }
 
-        public ObjectsGetterException(String message) {
+        public ObjectsSetterException(String message) {
             super(message);
         }
     }
 
     /**
-     * Returns the {@link GameObject}.
+     * Stores the {@link GameObject}.
      */
-    <T extends GameObject> T get(Class<T> typeClass, String type, Object key);
+    <T extends GameObject> void set(Class<T> typeClass, String type, T key) throws ObjectsSetterException;
 
 }

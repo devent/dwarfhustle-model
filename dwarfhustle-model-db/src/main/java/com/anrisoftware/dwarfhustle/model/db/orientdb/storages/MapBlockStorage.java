@@ -17,11 +17,18 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.storages;
 
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.CenterExtentSchema.CENTER_X_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.CenterExtentSchema.CENTER_Y_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.CenterExtentSchema.CENTER_Z_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.CenterExtentSchema.EXTENT_X_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.CenterExtentSchema.EXTENT_Y_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.CenterExtentSchema.EXTENT_Z_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapBlockSchema.CHUNK_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapBlockSchema.MATERIAL_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapBlockSchema.OBJECT_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapBlockSchema.PROPERTIES_FIELD;
 
+import com.anrisoftware.dwarfhustle.model.api.objects.CenterExtent;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
 import com.anrisoftware.dwarfhustle.model.api.objects.PropertiesSet;
@@ -47,6 +54,12 @@ public class MapBlockStorage extends AbstractGameMapObjectStorage {
         for (var n : NeighboringDir.values()) {
             v.setProperty(NeighboringSchema.getName(n), mb.blockDir.get(n.ordinal()));
         }
+        v.setProperty(CENTER_X_FIELD, mb.centerExtent.centerx);
+        v.setProperty(CENTER_Y_FIELD, mb.centerExtent.centery);
+        v.setProperty(CENTER_Z_FIELD, mb.centerExtent.centerz);
+        v.setProperty(EXTENT_X_FIELD, mb.centerExtent.extentx);
+        v.setProperty(EXTENT_Y_FIELD, mb.centerExtent.extenty);
+        v.setProperty(EXTENT_Z_FIELD, mb.centerExtent.extentz);
         super.store(db, o, go);
     }
 
@@ -61,6 +74,9 @@ public class MapBlockStorage extends AbstractGameMapObjectStorage {
         for (var n : NeighboringDir.values()) {
             mb.setNeighbor(n, v.getProperty(NeighboringSchema.getName(n)));
         }
+        mb.centerExtent = new CenterExtent(v.getProperty(CENTER_X_FIELD), v.getProperty(CENTER_Y_FIELD),
+                v.getProperty(CENTER_Z_FIELD), v.getProperty(EXTENT_X_FIELD), v.getProperty(EXTENT_Y_FIELD),
+                v.getProperty(EXTENT_Z_FIELD));
         return super.retrieve(db, o, go);
     }
 

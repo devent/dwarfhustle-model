@@ -77,7 +77,7 @@ public class ImporterMapImage2DbApp {
         });
         return CompletableFuture.allOf( //
                 createDb(injector).thenAccept((adb) -> { //
-                    createObjectsCache(injector, actor.getObjectsAsync(OrientDbActor.ID)).thenAccept((a) -> {
+                    createObjectsCache(injector, actor.getObjectGetterAsync(OrientDbActor.ID)).thenAccept((a) -> {
                         createPowerLoom(injector, actor).thenAccept((aa) -> {
                             createKnowledgeCache(injector, actor, aa).whenComplete((ret, ex) -> {
                             });
@@ -90,7 +90,7 @@ public class ImporterMapImage2DbApp {
 
     private CompletionStage<ActorRef<Message>> createImporter(Injector injector) {
         return ImporterMapImage2DbActor
-                .create(injector, ofSeconds(1), actor.getObjectsAsync(StoredObjectsJcsCacheActor.ID))
+                .create(injector, ofSeconds(1), actor.getObjectGetterAsync(StoredObjectsJcsCacheActor.ID))
                 .whenComplete((ret, ex) -> {
                     if (ex != null) {
                         log.error("ImporterMapImage2DbActor.create", ex);
@@ -136,7 +136,7 @@ public class ImporterMapImage2DbApp {
 
     private static CompletionStage<ActorRef<Message>> createKnowledgeCache(Injector injector, ActorSystemProvider actor,
             ActorRef<Message> powerLoom) {
-        return KnowledgeJcsCacheActor.create(injector, ofSeconds(10), actor.getObjectsAsync(PowerLoomKnowledgeActor.ID))
+        return KnowledgeJcsCacheActor.create(injector, ofSeconds(10), actor.getObjectGetterAsync(PowerLoomKnowledgeActor.ID))
                 .whenComplete((ret, ex) -> {
                     if (ex != null) {
                         log.error("KnowledgeJcsCacheActor.create", ex);

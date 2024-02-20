@@ -42,6 +42,7 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbSuccessM
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DeleteDbMessage.DbNotExistMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectMessage.LoadObjectNotFoundMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectMessage.LoadObjectSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectsMessage.LoadObjectsEmptyMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectsMessage.LoadObjectsSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.RebuildIndexMessage.RebuildIndexSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StartEmbeddedServerMessage.StartEmbeddedServerSuccessMessage;
@@ -408,6 +409,9 @@ public class OrientDbActor implements ObjectsGetter {
         try (var db = orientdb.get().open(database, user, password)) {
             var rs = m.query.apply(db);
             try {
+                if (!rs.hasNext()) {
+                    mm.replyTo.tell(new LoadObjectsEmptyMessage<>(m.type, m.objectType));
+                }
                 while (rs.hasNext()) {
                     var v = rs.next().getVertex();
                     if (v.isPresent()) {
@@ -416,7 +420,7 @@ public class OrientDbActor implements ObjectsGetter {
                         m.consumer.accept(go);
                     }
                 }
-                mm.replyTo.tell(new LoadObjectsSuccessMessage<>());
+                mm.replyTo.tell(new LoadObjectsSuccessMessage<>(m.type, m.objectType));
             } finally {
                 rs.close();
             }
@@ -555,7 +559,7 @@ public class OrientDbActor implements ObjectsGetter {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends GameObject> T get(Class<T> typeClass, String type, Object key) throws ObjectsGetterException {
+    public <T extends GameObject> T get(Class<T> typeClass, String type, Object key) {
         try (var db = orientdb.get().open(database, user, password)) {
             var query = "SELECT * from ? where objecttype = ? and objectid = ? limit 1";
             var rs = db.query(query, type, type, key);

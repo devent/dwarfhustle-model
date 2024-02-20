@@ -32,6 +32,7 @@ import org.apache.commons.jcs3.access.exception.CacheException;
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheGetMessage;
@@ -46,7 +47,8 @@ import akka.actor.typed.receptionist.ServiceKey;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Cache for {@link KnowledgeLoadedObject} game knowledge objects.
+ * Cache for {@link KnowledgeLoadedObject} and {@link KnowledgeObject} game
+ * knowledge objects.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */

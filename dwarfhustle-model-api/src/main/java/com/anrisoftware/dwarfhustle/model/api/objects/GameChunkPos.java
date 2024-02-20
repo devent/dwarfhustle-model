@@ -35,6 +35,54 @@ public class GameChunkPos extends GameBlockPos {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Builds {@link GameChunkPos}.
+     * 
+     * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+     */
+    public static class GameChunkPosBuilder {
+
+        private int sx, sy, sz, ex, ey, ez;
+
+        public GameChunkPosBuilder sx(int sx) {
+            this.sx = sx;
+            return this;
+        }
+
+        public GameChunkPosBuilder sy(int sy) {
+            this.sy = sy;
+            return this;
+        }
+
+        public GameChunkPosBuilder sz(int sz) {
+            this.sz = sz;
+            return this;
+        }
+
+        public GameChunkPosBuilder ex(int ex) {
+            this.ex = ex;
+            return this;
+        }
+
+        public GameChunkPosBuilder ey(int ey) {
+            this.ey = ey;
+            return this;
+        }
+
+        public GameChunkPosBuilder ez(int ez) {
+            this.ez = ez;
+            return this;
+        }
+
+        public GameChunkPos build() {
+            return new GameChunkPos(new GameBlockPos(sx, sy, sz), new GameBlockPos(ex, ey, ez));
+        }
+    }
+
+    public static GameChunkPosBuilder builder() {
+        return new GameChunkPosBuilder();
+    }
+
     public final GameBlockPos ep;
 
     public GameChunkPos(int sx, int sy, int sz, int ex, int ey, int ez) {

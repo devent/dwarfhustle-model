@@ -21,13 +21,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeoutException;
 
-import org.eclipse.collections.api.map.primitive.IntObjectMap;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
 
 import com.anrisoftware.dwarfhustle.model.actor.MainActor.MainActorFactory;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsSetter;
 
 import akka.Done;
 import akka.actor.typed.ActorRef;
@@ -56,7 +56,9 @@ public class ActorSystemProvider implements Provider<ActorRef<Message>> {
 
     private final ActorSystem<Message> actors;
 
-    private final IntObjectMap<ObjectsGetter> ogs = IntObjectMaps.mutable.empty();
+    private final MutableIntObjectMap<ObjectsGetter> ogs = IntObjectMaps.mutable.empty();
+
+    private final MutableIntObjectMap<ObjectsSetter> oss = IntObjectMaps.mutable.empty();
 
     @Delegate
     private MainActor mainActor;
@@ -115,12 +117,20 @@ public class ActorSystemProvider implements Provider<ActorRef<Message>> {
 
     public synchronized void registerObjectsGetter(int id, ObjectsGetter og) {
         log.trace("registerObjectsGetter {} {}", id, og);
-        MutableIntObjectMap<ObjectsGetter> mogs = (MutableIntObjectMap<ObjectsGetter>) ogs;
-        mogs.put(id, og);
+        ogs.put(id, og);
     }
 
-    public CompletionStage<ObjectsGetter> getObjectsAsync(int id) {
+    public CompletionStage<ObjectsGetter> getObjectGetterAsync(int id) {
         return CompletableFuture.supplyAsync(() -> supplyObjectGetter(id));
+    }
+
+    public synchronized void registerObjectsSetter(int id, ObjectsSetter os) {
+        log.trace("registerObjectsSetter {} {}", id, os);
+        oss.put(id, os);
+    }
+
+    public CompletionStage<ObjectsSetter> getObjectSetterAsync(int id) {
+        return CompletableFuture.supplyAsync(() -> supplyObjectSetter(id));
     }
 
     @SneakyThrows
@@ -130,5 +140,14 @@ public class ActorSystemProvider implements Provider<ActorRef<Message>> {
             Thread.sleep(10);
         }
         return og;
+    }
+
+    @SneakyThrows
+    private ObjectsSetter supplyObjectSetter(int id) {
+        ObjectsSetter os;
+        while ((os = oss.get(id)) == null) {
+            Thread.sleep(10);
+        }
+        return os;
     }
 }

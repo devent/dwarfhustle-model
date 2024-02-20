@@ -141,7 +141,7 @@ class GenerateMap {
         PowerLoomKnowledgeActor.create(injector, ofSeconds(1), CompletableFuture.supplyAsync({ objectsActor })).whenComplete({ret, ex ->
             log_reply_failure "PowerLoomKnowledgeActor.create", ret, ex
         }).get(5, TimeUnit.SECONDS)
-        KnowledgeJcsCacheActor.create(injector, ofSeconds(1), actor.getObjectsAsync(PowerLoomKnowledgeActor.ID)).whenComplete({ret, ex ->
+        KnowledgeJcsCacheActor.create(injector, ofSeconds(1), actor.getObjectGetterAsync(PowerLoomKnowledgeActor.ID)).whenComplete({ret, ex ->
             log_reply_failure "KnowledgeJcsCacheActor.create", ret, ex
         }).get(5, TimeUnit.SECONDS)
         OrientDbActor.create(injector, ofSeconds(1)).whenComplete({ret, ex ->

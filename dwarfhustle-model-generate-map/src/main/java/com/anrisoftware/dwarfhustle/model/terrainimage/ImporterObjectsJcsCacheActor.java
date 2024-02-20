@@ -128,9 +128,7 @@ public class ImporterObjectsJcsCacheActor extends AbstractJcsCacheActor {
 
     @Override
     protected void handleCacheMiss(@SuppressWarnings("rawtypes") CacheGetMessage m) {
-        if (m.key instanceof Long id && StoredObject.class.isAssignableFrom(m.typeClass)) {
-            super.handleCacheMiss(m);
-        }
+        // nothing to do
     }
 
     @Override
@@ -167,7 +165,7 @@ public class ImporterObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @Override
-    public <T extends GameObject> T get(Class<T> typeClass, String type, Object key) throws ObjectsGetterException {
+    public <T extends GameObject> T get(Class<T> typeClass, String type, Object key) {
         return super.get(typeClass, type, key);
     }
 

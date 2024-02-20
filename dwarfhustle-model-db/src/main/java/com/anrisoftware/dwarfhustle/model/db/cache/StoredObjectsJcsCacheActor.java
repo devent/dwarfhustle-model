@@ -187,14 +187,10 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @Override
-    public <T extends GameObject> T get(Class<T> typeClass, String type, Object key) throws ObjectsGetterException {
-        return super.get(typeClass, type, key);
-    }
-
-    @Override
     protected BehaviorBuilder<Message> getInitialBehavior() {
         return super.getInitialBehavior()//
                 .onMessage(WrappedDbResponse.class, this::onWrappedDbResponse)//
         ;
     }
+
 }

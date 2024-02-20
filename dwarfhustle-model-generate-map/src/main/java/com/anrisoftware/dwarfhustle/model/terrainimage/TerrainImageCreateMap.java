@@ -167,12 +167,12 @@ public class TerrainImageCreateMap {
         } else {
             createMap(chunk, x, y, z, ex, ey, ez);
         }
-        chunks.put(chunk.pos, chunk.getId());
+        chunks.put(chunk.getPos(), chunk.getId());
         putObjectToBackend(chunk);
     }
 
     private void createNeighbors(MapChunk rootc) {
-        var pos = rootc.pos;
+        var pos = rootc.getPos();
         int xs = (pos.ep.x - pos.x) / 2;
         int ys = (pos.ep.y - pos.y) / 2;
         int zs = (pos.ep.z - pos.z) / 2;

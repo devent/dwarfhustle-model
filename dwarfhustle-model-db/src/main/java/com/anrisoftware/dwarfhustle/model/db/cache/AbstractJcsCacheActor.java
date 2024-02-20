@@ -25,8 +25,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import jakarta.inject.Inject;
-
 import org.apache.commons.jcs3.access.CacheAccess;
 import org.apache.commons.jcs3.access.exception.CacheException;
 import org.apache.commons.jcs3.engine.CacheElement;
@@ -37,6 +35,7 @@ import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsSetter;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheGetMessage.CacheGetSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage.CacheErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage.CacheSuccessMessage;
@@ -49,6 +48,7 @@ import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.BehaviorBuilder;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.StashBuffer;
+import jakarta.inject.Inject;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -58,7 +58,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
-public abstract class AbstractJcsCacheActor implements IElementEventHandler, ObjectsGetter {
+public abstract class AbstractJcsCacheActor implements IElementEventHandler, ObjectsGetter, ObjectsSetter {
 
     @RequiredArgsConstructor
     @ToString(callSuper = true)
@@ -132,6 +132,7 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
      */
     public Behavior<Message> start() {
         actor.registerObjectsGetter(getId(), this);
+        actor.registerObjectsSetter(getId(), this);
         return Behaviors.receive(Message.class)//
                 .onMessage(InitialStateMessage.class, this::onInitialState)//
                 .onMessage(SetupErrorMessage.class, this::onSetupError)//
@@ -352,7 +353,7 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
      */
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends GameObject> T get(Class<T> typeClass, String type, Object key) throws ObjectsGetterException {
+    public <T extends GameObject> T get(Class<T> typeClass, String type, Object key) {
         return (T) cache.get(key, () -> supplyValue(typeClass, type, key));
     }
 
@@ -360,4 +361,9 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
         return getValueFromBackend(typeClass, type, key);
     }
 
+    @Override
+    public <T extends GameObject> void set(Class<T> typeClass, String type, T key) {
+        cache.put(type, key);
+        storeValueBackend(key, key);
+    }
 }

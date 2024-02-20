@@ -80,7 +80,7 @@ class ListKnowledges {
         PowerLoomKnowledgeActor.create(injector, Duration.ofSeconds(1), supplyAsync({objectsCache})).whenComplete({ it, ex ->
             knowledgeActor = it
         } ).get()
-        KnowledgeJcsCacheActor.create(injector, Duration.ofSeconds(1), actor.getObjectsAsync(PowerLoomKnowledgeActor.ID)).whenComplete({ it, ex ->
+        KnowledgeJcsCacheActor.create(injector, Duration.ofSeconds(1), actor.getObjectGetterAsync(PowerLoomKnowledgeActor.ID)).whenComplete({ it, ex ->
             cacheActor = it
         } ).get()
     }

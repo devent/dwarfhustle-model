@@ -78,8 +78,6 @@ public class MapChunk extends GameMapObject implements StoredObject {
      */
     public long parent;
 
-    public GameChunkPos pos;
-
     @ToString.Exclude
     public CenterExtent centerExtent;
 
@@ -110,9 +108,14 @@ public class MapChunk extends GameMapObject implements StoredObject {
      * Updates the world coordinates center and extend of this chunk.
      */
     public void updateCenterExtent(float w, float h, float d) {
-        float tx = -w + 2f * pos.x + pos.getSizeX();
-        float ty = h - 2f * pos.y - pos.getSizeY();
-        this.centerExtent = new CenterExtent(tx, ty, 0, pos.getSizeX(), pos.getSizeY(), pos.getSizeZ());
+        float tx = -w + 2f * pos.x + getPos().getSizeX();
+        float ty = h - 2f * pos.y - getPos().getSizeY();
+        this.centerExtent = new CenterExtent(tx, ty, 0, getPos().getSizeX(), getPos().getSizeY(), getPos().getSizeZ());
+    }
+
+    @Override
+    public GameChunkPos getPos() {
+        return (GameChunkPos) pos;
     }
 
     public long getBlock(GameBlockPos pos) {

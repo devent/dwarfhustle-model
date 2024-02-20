@@ -240,9 +240,9 @@ public class WorkerBlocks {
     }
 
     private void createMapBlocks(ODatabaseSession db, MapChunk chunk) throws GeneratorException {
-        var w = chunk.pos.ep.getDiffX(chunk.getPos());
-        var h = chunk.pos.ep.getDiffY(chunk.getPos());
-        var d = chunk.pos.ep.getDiffZ(chunk.getPos());
+        var w = chunk.getPos().ep.getDiffX(chunk.getPos());
+        var h = chunk.getPos().ep.getDiffY(chunk.getPos());
+        var d = chunk.getPos().ep.getDiffZ(chunk.getPos());
         var blocks = createBlocksMap(w * h * d);
         var blocksids = createBlocksIdsMap(w * h * d);
         var ids = generator.batch(w * h * d);

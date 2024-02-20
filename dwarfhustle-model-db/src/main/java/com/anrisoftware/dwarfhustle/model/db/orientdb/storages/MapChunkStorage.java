@@ -17,6 +17,12 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.orientdb.storages;
 
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.CenterExtentSchema.CENTER_X_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.CenterExtentSchema.CENTER_Y_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.CenterExtentSchema.CENTER_Z_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.CenterExtentSchema.EXTENT_X_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.CenterExtentSchema.EXTENT_Y_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.CenterExtentSchema.EXTENT_Z_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.BLOCKS_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.BLOCK_ID_CLASS;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.CHUNKS_FIELD;
@@ -37,6 +43,7 @@ import java.util.Map;
 import org.eclipse.collections.api.map.primitive.MutableObjectLongMap;
 import org.eclipse.collections.impl.factory.primitive.ObjectLongMaps;
 
+import com.anrisoftware.dwarfhustle.model.api.objects.CenterExtent;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameChunkPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
@@ -66,14 +73,20 @@ public class MapChunkStorage extends AbstractGameObjectStorage {
         v.setProperty(POS_START_X_FIELD, mc.pos.x);
         v.setProperty(POS_START_Y_FIELD, mc.pos.y);
         v.setProperty(POS_START_Z_FIELD, mc.pos.z);
-        v.setProperty(POS_END_X_FIELD, mc.pos.ep.getX());
-        v.setProperty(POS_END_Y_FIELD, mc.pos.ep.getY());
-        v.setProperty(POS_END_Z_FIELD, mc.pos.ep.getZ());
+        v.setProperty(POS_END_X_FIELD, mc.getPos().ep.x);
+        v.setProperty(POS_END_Y_FIELD, mc.getPos().ep.y);
+        v.setProperty(POS_END_Z_FIELD, mc.getPos().ep.z);
         v.setProperty(ROOT_FIELD, mc.isRoot());
         for (var n : NeighboringDir.values()) {
             v.setProperty(NeighboringSchema.getName(n), mc.chunkDir.get(n.ordinal()));
         }
         v.setProperty(PARENT_FIELD, mc.getParent());
+        v.setProperty(CENTER_X_FIELD, mc.centerExtent.centerx);
+        v.setProperty(CENTER_Y_FIELD, mc.centerExtent.centery);
+        v.setProperty(CENTER_Z_FIELD, mc.centerExtent.centerz);
+        v.setProperty(EXTENT_X_FIELD, mc.centerExtent.extentx);
+        v.setProperty(EXTENT_Y_FIELD, mc.centerExtent.extenty);
+        v.setProperty(EXTENT_Z_FIELD, mc.centerExtent.extentz);
         super.store(db, o, go);
     }
 
@@ -84,14 +97,17 @@ public class MapChunkStorage extends AbstractGameObjectStorage {
         retrieveChunks(v, mc);
         retrieveBlocks(db, v, mc);
         mc.map = v.getProperty(MAP_FIELD);
-        mc.setPos(new GameChunkPos(v.getProperty(POS_START_X_FIELD), v.getProperty(POS_START_Y_FIELD),
-                v.getProperty(POS_START_Z_FIELD), v.getProperty(POS_END_X_FIELD), v.getProperty(POS_END_Y_FIELD),
-                v.getProperty(POS_END_Z_FIELD)));
+        mc.setPos(GameChunkPos.builder().sx(v.getProperty(POS_START_X_FIELD)).sy(v.getProperty(POS_START_Y_FIELD))
+                .sz(v.getProperty(POS_START_Z_FIELD)).ex(v.getProperty(POS_END_X_FIELD))
+                .ey(v.getProperty(POS_END_Y_FIELD)).ez(v.getProperty(POS_END_Z_FIELD)).build());
         mc.setRoot(v.getProperty(ROOT_FIELD));
         for (var n : NeighboringDir.values()) {
             mc.setNeighbor(n, v.getProperty(NeighboringSchema.getName(n)));
         }
         mc.setParent(v.getProperty(PARENT_FIELD));
+        mc.centerExtent = new CenterExtent(v.getProperty(CENTER_X_FIELD), v.getProperty(CENTER_Y_FIELD),
+                v.getProperty(CENTER_Z_FIELD), v.getProperty(EXTENT_X_FIELD), v.getProperty(EXTENT_Y_FIELD),
+                v.getProperty(EXTENT_Z_FIELD));
         return super.retrieve(db, o, go);
     }
 

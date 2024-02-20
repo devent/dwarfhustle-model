@@ -70,4 +70,8 @@ public class GameObject implements Serializable {
 	public String getObjectType() {
         return GameObject.OBJECT_TYPE;
 	}
+
+    public <T extends GameObject> T getAs(Class<T> type) {
+        return type.cast(this);
+    }
 }

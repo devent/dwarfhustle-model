@@ -32,8 +32,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.inject.Inject;
-
 import org.apache.commons.io.IOUtils;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
@@ -67,6 +65,7 @@ import akka.actor.typed.javadsl.StashOverflowException;
 import akka.actor.typed.receptionist.ServiceKey;
 import edu.isi.powerloom.PLI;
 import edu.isi.powerloom.logic.LogicObject;
+import jakarta.inject.Inject;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.ToString;
@@ -113,17 +112,14 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
     public interface PowerLoomKnowledgeActorFactory {
 
         PowerLoomKnowledgeActor create(ActorContext<Message> context, StashBuffer<Message> stash,
-                @Assisted("knowledgeCache") ActorRef<Message> knowledgeCache,
                 @Assisted("objectsCache") ActorRef<Message> objectsCache);
     }
 
     public static Behavior<Message> create(Injector injector, CompletionStage<ActorRef<Message>> objectsCache) {
         return Behaviors.withStash(100, stash -> Behaviors.setup(context -> {
             loadKnowledgeBase(injector, context);
-            var actor = injector.getInstance(ActorSystemProvider.class);
-            var kc = actor.getActorAsync(KnowledgeJcsCacheActor.ID).toCompletableFuture().get(15, TimeUnit.SECONDS);
             var oc = objectsCache.toCompletableFuture().get(15, TimeUnit.SECONDS);
-            return injector.getInstance(PowerLoomKnowledgeActorFactory.class).create(context, stash, kc, oc).start();
+            return injector.getInstance(PowerLoomKnowledgeActorFactory.class).create(context, stash, oc).start();
         }));
     }
 
@@ -185,10 +181,6 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
     @Inject
     @Assisted
     private StashBuffer<Message> buffer;
-
-    @Inject
-    @Assisted("knowledgeCache")
-    private ActorRef<Message> knowledgeCache;
 
     @Inject
     @Assisted("objectsCache")
@@ -264,7 +256,7 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
     @SneakyThrows
     private Behavior<Message> onKnowledgeGet(KnowledgeGetMessage<?> m) {
         log.debug("onKnowledgeGet {}", m);
-        knowledgeCache.tell(new CacheGetMessage<>(cacheResponseAdapter, KnowledgeLoadedObject.class,
+        objectsCache.tell(new CacheGetMessage<>(cacheResponseAdapter, KnowledgeLoadedObject.class,
                 KnowledgeLoadedObject.OBJECT_TYPE, m.type, go -> {
                     cacheHit(m, go);
                 }, () -> {
@@ -278,7 +270,7 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
     private void cacheMiss(@SuppressWarnings("rawtypes") KnowledgeGetMessage m) {
         var glo = retrieveKnowledgeLoadedObject(m.type);
         cacheObjects(glo);
-        knowledgeCache.tell(new CachePutMessage<>(cacheResponseAdapter, glo.type, glo));
+        objectsCache.tell(new CachePutMessage<>(cacheResponseAdapter, glo.type, glo));
         m.replyTo.tell(new KnowledgeResponseSuccessMessage(glo));
     }
 
