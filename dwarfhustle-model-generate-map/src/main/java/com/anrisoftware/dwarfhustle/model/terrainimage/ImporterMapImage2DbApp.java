@@ -51,6 +51,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ImporterMapImage2DbApp {
 
+    private static final Duration IMPORT_IMAGE_TIMEOUT = Duration.ofMinutes(30);
+
     @Inject
     private ActorSystemProvider actor;
 
@@ -136,7 +138,8 @@ public class ImporterMapImage2DbApp {
 
     private static CompletionStage<ActorRef<Message>> createKnowledgeCache(Injector injector, ActorSystemProvider actor,
             ActorRef<Message> powerLoom) {
-        return KnowledgeJcsCacheActor.create(injector, ofSeconds(10), actor.getObjectGetterAsync(PowerLoomKnowledgeActor.ID))
+        return KnowledgeJcsCacheActor
+                .create(injector, ofSeconds(10), actor.getObjectGetterAsync(PowerLoomKnowledgeActor.ID))
                 .whenComplete((ret, ex) -> {
                     if (ex != null) {
                         log.error("KnowledgeJcsCacheActor.create", ex);
@@ -183,7 +186,7 @@ public class ImporterMapImage2DbApp {
     @SneakyThrows
     public CompletionStage<Done> shutdownEmbedded() {
         var lock = new CountDownLatch(1);
-        var ret = askImporterStopEmbeddedServer(actor.getActorSystem(), ofSeconds(600));
+        var ret = askImporterStopEmbeddedServer(actor.getActorSystem(), IMPORT_IMAGE_TIMEOUT);
         ret.whenComplete((res, ex) -> {
             if (ex != null) {
                 logError("ImporterStopEmbeddedServerMessage", ex);
@@ -210,7 +213,7 @@ public class ImporterMapImage2DbApp {
     @SneakyThrows
     public void startImport(URL url, TerrainLoadImage image, long map) {
         var lock = new CountDownLatch(1);
-        var ret = askImportImage(actor.getActorSystem(), ofSeconds(600), url, image, map);
+        var ret = askImportImage(actor.getActorSystem(), IMPORT_IMAGE_TIMEOUT, url, image, map);
         ret.whenComplete((res, ex) -> {
             if (ex != null) {
                 logError("ImportImageMessage", ex);

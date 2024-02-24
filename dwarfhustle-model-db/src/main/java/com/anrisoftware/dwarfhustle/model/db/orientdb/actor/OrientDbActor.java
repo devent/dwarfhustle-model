@@ -31,6 +31,7 @@ import com.anrisoftware.dwarfhustle.model.actor.ShutdownMessage;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
+import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CloseDbMessage.CloseDbSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CreateDbMessage.CreateDbSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CreateDbMessage.DbAlreadyExistMessage;
@@ -312,7 +313,6 @@ public class OrientDbActor implements ObjectsGetter {
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private Behavior<Message> onDbCommand(DbCommandMessage m) {
-        log.debug("onDbCommand {}", m);
         try {
             Object ret = null;
             try (var db = orientdb.get().open(database, user, password)) {
@@ -372,7 +372,6 @@ public class OrientDbActor implements ObjectsGetter {
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private Behavior<Message> onLoadGameObject(LoadObjectMessage<?> m) {
-        log.debug("onLoadGameObject {}", m);
         LoadObjectMessage mm = m;
         try (var db = orientdb.get().open(database, user, password)) {
             var rs = m.query.apply(db);
@@ -404,7 +403,6 @@ public class OrientDbActor implements ObjectsGetter {
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private Behavior<Message> onLoadGameObjects(LoadObjectsMessage<?> m) {
-        log.debug("onLoadGameObjects {}", m);
         LoadObjectsMessage mm = m;
         try (var db = orientdb.get().open(database, user, password)) {
             var rs = m.query.apply(db);
@@ -436,10 +434,12 @@ public class OrientDbActor implements ObjectsGetter {
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private Behavior<Message> onSaveObject(SaveObjectMessage<?> m) {
-        log.debug("onSaveObject {}", m);
+        log.trace("onSaveObject", m);
         SaveObjectMessage mm = m;
         try (var db = orientdb.get().open(database, user, password)) {
-            saveObject(m, db);
+            var storage = storages.get(m.go.getObjectType());
+            saveObject(m.go, storage, db);
+            mm.replyTo.tell(new DbSuccessMessage<>());
         } catch (Exception e) {
             log.error("onSaveObject", e);
             mm.replyTo.tell(new DbErrorMessage<>(e));
@@ -447,24 +447,42 @@ public class OrientDbActor implements ObjectsGetter {
         return Behaviors.same();
     }
 
+    /**
+     * Returns a behavior for the messages from {@link #getConnectedBehavior()}
+     */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private void saveObject(SaveObjectMessage m, ODatabaseSession db) throws Exception {
+    private Behavior<Message> onSaveObjects(SaveObjectsMessage<?> m) {
+        log.trace("onSaveObjects", m);
+        SaveObjectsMessage mm = m;
+        try (var db = orientdb.get().open(database, user, password)) {
+            var storage = storages.get(m.objectType);
+            for (var go : m.gos) {
+                saveObject((StoredObject) go, storage, db);
+            }
+            mm.replyTo.tell(new DbSuccessMessage<>());
+        } catch (Exception e) {
+            log.error("onSaveObject", e);
+            mm.replyTo.tell(new DbErrorMessage<>(e));
+        }
+        return Behaviors.same();
+    }
+
+    private void saveObject(StoredObject go, GameObjectStorage storage, ODatabaseSession db) throws Exception {
         OElement v = null;
-        var arid = m.go.getRid();
+        var arid = go.getRid();
         if (arid instanceof ORID rid) {
             v = db.load(rid);
         } else {
-            v = db.newVertex(m.go.getObjectType());
+            v = db.newVertex(go.getObjectType());
         }
         db.begin();
         try {
-            storages.get(m.go.getObjectType()).store(db, v, m.go);
+            storage.store(db, v, go);
             v.save();
             db.commit();
             if (arid == null) {
-                m.go.setRid(v.getIdentity());
+                go.setRid(v.getIdentity());
             }
-            m.replyTo.tell(new DbSuccessMessage<>());
         } catch (Exception e) {
             db.rollback();
             throw e;
@@ -538,6 +556,7 @@ public class OrientDbActor implements ObjectsGetter {
      * <li>{@link LoadObjectMessage}
      * <li>{@link LoadObjectsMessage}
      * <li>{@link SaveObjectMessage}
+     * <li>{@link SaveObjectsMessage}
      * <li>{@link RebuildIndexMessage}
      * </ul>
      */
@@ -553,6 +572,7 @@ public class OrientDbActor implements ObjectsGetter {
                 .onMessage(LoadObjectMessage.class, this::onLoadGameObject)//
                 .onMessage(LoadObjectsMessage.class, this::onLoadGameObjects)//
                 .onMessage(SaveObjectMessage.class, this::onSaveObject)//
+                .onMessage(SaveObjectsMessage.class, this::onSaveObjects)//
                 .onMessage(RebuildIndexMessage.class, this::onRebuildIndex)//
         ;
     }

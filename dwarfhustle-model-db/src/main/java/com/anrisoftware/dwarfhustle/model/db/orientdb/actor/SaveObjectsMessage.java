@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.db.cache;
+package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
 import static akka.actor.typed.javadsl.AskPattern.ask;
 
@@ -24,32 +24,41 @@ import java.util.concurrent.CompletionStage;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.ActorSystem;
 import lombok.ToString;
 
 /**
- * Message to put multiple objects in the cache.
+ * Message to save multiple {@link StoredObject}s in the database. Responds with
+ * either {@link DbSuccessMessage} or {@link DbErrorMessage}.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @ToString(callSuper = true)
-public class CachePutsMessage<T extends Message> extends CacheMessage<T> {
+public class SaveObjectsMessage<T extends Message> extends DbMessage<T> {
 
-    public static CompletionStage<CacheResponseMessage<?>> askCachePuts(ActorSystem<Message> a, Duration timeout,
-            String objectType, Iterable<? extends GameObject> values) {
-        return ask(a, replyTo -> new CachePutsMessage<>(replyTo, objectType, values), timeout, a.scheduler());
+    /**
+     * Asks the actor to saves multiple {@link StoredObject}s in the database.
+     *
+     * @param a       the {@link ActorSystem}.
+     * @param timeout the {@link Duration} timeout.
+     * @return {@link CompletionStage} with the {@link DbResponseMessage}.
+     */
+    public static CompletionStage<DbResponseMessage<?>> askSaveObjects(ActorSystem<Message> a, Duration timeout,
+            String objectType, Iterable<GameObject> values) {
+        return ask(a, replyTo -> new SaveObjectsMessage<>(replyTo, objectType, values), timeout, a.scheduler());
     }
 
     public final String objectType;
 
-    public final Iterable<? extends GameObject> values;
+    public final Iterable<GameObject> gos;
 
-    public CachePutsMessage(ActorRef<T> replyTo, String objectType, Iterable<? extends GameObject> values) {
+    public SaveObjectsMessage(ActorRef<T> replyTo, String objectType, Iterable<GameObject> gos) {
         super(replyTo);
         this.objectType = objectType;
-        this.values = values;
+        this.gos = gos;
     }
 
 }

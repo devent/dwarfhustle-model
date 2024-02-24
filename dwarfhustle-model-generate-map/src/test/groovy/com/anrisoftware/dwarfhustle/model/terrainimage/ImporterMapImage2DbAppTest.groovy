@@ -2,6 +2,7 @@ package com.anrisoftware.dwarfhustle.model.terrainimage
 
 import static java.time.Duration.ofSeconds
 
+import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 
 import org.junit.jupiter.api.BeforeAll
@@ -83,6 +84,19 @@ class ImporterMapImage2DbAppTest {
     @Timeout(600)
     void test_start_import_32_32_32(@TempDir File tmp) {
         def image = TerrainImage.terrain_32_32_32
+        def importer = injector.getInstance(ImporterMapImage2DbApp)
+        importer.initEmbedded(injector, tmp, image.name(), "root", "admin").get()
+        long gmid = importer.createGameMap(image.terrain)
+        importer.startImport(ImporterMapImage2DbAppTest.class.getResource(image.imageName), image.terrain, gmid)
+        def actor = injector.getInstance(ActorSystemProvider)
+        importer.shutdownEmbedded().get()
+        println "done"
+    }
+
+    @Test
+    @Timeout(value = 30, unit = TimeUnit.MINUTES)
+    void test_start_import_128_128_128(@TempDir File tmp) {
+        def image = TerrainImage.terrain_128_128_128
         def importer = injector.getInstance(ImporterMapImage2DbApp)
         importer.initEmbedded(injector, tmp, image.name(), "root", "admin").get()
         long gmid = importer.createGameMap(image.terrain)

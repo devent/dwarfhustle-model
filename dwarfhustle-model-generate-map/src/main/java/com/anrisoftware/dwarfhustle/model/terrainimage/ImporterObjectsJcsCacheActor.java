@@ -28,12 +28,10 @@ import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import org.apache.commons.jcs3.JCS;
 import org.apache.commons.jcs3.access.CacheAccess;
 import org.apache.commons.jcs3.access.exception.CacheException;
-import org.apache.commons.jcs3.engine.control.event.behavior.IElementEvent;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
@@ -46,6 +44,7 @@ import com.anrisoftware.dwarfhustle.model.db.cache.CacheGetMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbErrorMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbResponseMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.SaveObjectsMessage;
 import com.google.inject.Injector;
 
 import akka.actor.typed.ActorRef;
@@ -122,11 +121,6 @@ public class ImporterObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @Override
-    public <T> void handleElementEvent(IElementEvent<T> event) {
-        // nothing to do
-    }
-
-    @Override
     protected void handleCacheMiss(@SuppressWarnings("rawtypes") CacheGetMessage m) {
         // nothing to do
     }
@@ -140,9 +134,9 @@ public class ImporterObjectsJcsCacheActor extends AbstractJcsCacheActor {
 
     @Override
     @SneakyThrows
-    protected void storeValueBackend(Class<?> keyType, Function<GameObject, Object> key, GameObject go) {
-        askSaveObject(actor.getActorSystem(), timeout, (StoredObject) go).whenComplete(this::storeValueBackendCompleted)
-                .toCompletableFuture().get();
+    protected void storeValuesBackend(String objectType, Iterable<GameObject> values) {
+        SaveObjectsMessage.askSaveObjects(actor.getActorSystem(), timeout, objectType, values)
+                .whenComplete(this::storeValueBackendCompleted).toCompletableFuture().get();
     }
 
     @Override

@@ -282,7 +282,7 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
     }
 
     private void cacheObjects(KnowledgeLoadedObject ko) {
-        objectsCache.tell(new CachePutsMessage<>(cacheResponseAdapter, Long.class, GameObject::getId, ko.objects));
+        objectsCache.tell(new CachePutsMessage<>(cacheResponseAdapter, KnowledgeLoadedObject.OBJECT_TYPE, ko.objects));
     }
 
     /**

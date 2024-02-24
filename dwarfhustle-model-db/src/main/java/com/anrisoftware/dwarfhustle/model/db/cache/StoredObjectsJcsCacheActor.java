@@ -23,7 +23,6 @@ import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import org.apache.commons.jcs3.JCS;
 import org.apache.commons.jcs3.access.CacheAccess;
@@ -39,6 +38,7 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbResponse
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectMessage.LoadObjectSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.SaveObjectMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.SaveObjectsMessage;
 import com.google.inject.Injector;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 
@@ -164,8 +164,8 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @Override
-    protected void storeValueBackend(Class<?> keyType, Function<GameObject, Object> key, GameObject go) {
-        actor.tell(new SaveObjectMessage<>(dbResponseAdapter, (StoredObject) go));
+    protected void storeValuesBackend(String objectType, Iterable<GameObject> values) {
+        actor.tell(new SaveObjectsMessage<>(dbResponseAdapter, objectType, values));
     }
 
     @Override

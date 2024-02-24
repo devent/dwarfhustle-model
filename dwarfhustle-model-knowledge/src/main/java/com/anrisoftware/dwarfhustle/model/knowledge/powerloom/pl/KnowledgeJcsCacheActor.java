@@ -23,7 +23,6 @@ import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import org.apache.commons.jcs3.JCS;
 import org.apache.commons.jcs3.access.CacheAccess;
@@ -127,7 +126,7 @@ public class KnowledgeJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @Override
-    protected void storeValueBackend(Class<?> keyType, Function<GameObject, Object> key, GameObject go) {
+    protected void storeValuesBackend(String objectType, Iterable<GameObject> values) {
         // nop
     }
 

@@ -19,6 +19,8 @@ public enum TerrainImage {
 
     terrain_32_32_32(32, 32, 32, 8, 4),
 
+    terrain_128_128_128(128, 128, 128, 8, 16),
+
     ;
 
     public final int w;
@@ -40,6 +42,6 @@ public enum TerrainImage {
     }
 
     public String getImageName() {
-        return String.format("terrain-%d-%d-%d.png", w, h, d);
+        return String.format("terrain-%d-%d-%d-%d.png", w, h, d, columns);
     }
 }

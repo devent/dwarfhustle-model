@@ -20,16 +20,11 @@ package com.anrisoftware.dwarfhustle.model.db.cache;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.time.Duration;
-import java.util.EventObject;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import org.apache.commons.jcs3.access.CacheAccess;
 import org.apache.commons.jcs3.access.exception.CacheException;
-import org.apache.commons.jcs3.engine.CacheElement;
-import org.apache.commons.jcs3.engine.control.event.behavior.IElementEvent;
-import org.apache.commons.jcs3.engine.control.event.behavior.IElementEventHandler;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
@@ -58,7 +53,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
-public abstract class AbstractJcsCacheActor implements IElementEventHandler, ObjectsGetter, ObjectsSetter {
+public abstract class AbstractJcsCacheActor implements ObjectsGetter, ObjectsSetter {
 
     @RequiredArgsConstructor
     @ToString(callSuper = true)
@@ -157,19 +152,7 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
     private Behavior<Message> onInitialState(InitialStateMessage m) {
         log.debug("onInitialState {}", m);
         this.cache = m.cache;
-        var attributes = cache.getDefaultElementAttributes();
-        attributes.addElementEventHandler(this);
-        cache.setDefaultElementAttributes(attributes);
         return initialStage(m);
-    }
-
-    @Override
-    public <T> void handleElementEvent(IElementEvent<T> event) {
-        log.debug("handleElementEvent {} {}", event.getElementEvent(), event);
-        @SuppressWarnings("unchecked")
-        var e = (CacheElement<Object, GameObject>) ((EventObject) event).getSource();
-        var val = e.getVal();
-        context.getSelf().tell(new CacheElementEventMessage(e, val));
     }
 
     /**
@@ -177,7 +160,6 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
      */
     @SuppressWarnings("unchecked")
     private Behavior<Message> onCachePut(@SuppressWarnings("rawtypes") CachePutMessage m) {
-        log.debug("onCachePut {}", m);
         try {
             cache.put(m.key, m.value);
             storeValueBackend(m.key, m.value);
@@ -193,13 +175,12 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
      */
     @SuppressWarnings("unchecked")
     private Behavior<Message> onCachePuts(@SuppressWarnings("rawtypes") CachePutsMessage m) {
-        log.debug("onCachePuts {}", m);
         try {
             for (var o : m.values) {
                 var go = (GameObject) o;
-                cache.put(m.key.apply(o), go);
-                storeValueBackend(m.keyType, m.key, go);
+                cache.put(go.id, go);
             }
+            storeValuesBackend(m.objectType, m.values);
             m.replyTo.tell(new CacheSuccessMessage<>(m));
         } catch (CacheException e) {
             m.replyTo.tell(new CacheErrorMessage<>(m, e));
@@ -212,7 +193,6 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
      */
     @SuppressWarnings("unchecked")
     private Behavior<Message> onCacheGet(@SuppressWarnings("rawtypes") CacheGetMessage m) {
-        log.debug("onCacheGet {}", m);
         try {
             var v = cache.get(m.key);
             if (v == null) {
@@ -241,7 +221,6 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
      * from {@link #getInitialBehavior()}
      */
     protected Behavior<Message> onCacheElementEvent(Object m) {
-        log.debug("onCacheElementEvent {}", m);
         return Behaviors.same();
     }
 
@@ -251,7 +230,6 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
      * messages from {@link #getInitialBehavior()}
      */
     protected Behavior<Message> onCacheRetrieve(CacheRetrieveMessage m) {
-        log.debug("onCacheRetrieve {}", m);
         if (m.id == getId()) {
             m.replyTo.tell(new CacheRetrieveResponseMessage(m, cache));
         }
@@ -263,7 +241,6 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
      * messages from {@link #getInitialBehavior()}
      */
     protected Behavior<Message> onCacheRetrieveFromBackend(CacheRetrieveFromBackendMessage m) {
-        log.debug("onCacheRetrieveFromBackend {}", m);
         retrieveValueFromBackend(m.m, m.consumer);
         return Behaviors.same();
     }
@@ -313,9 +290,9 @@ public abstract class AbstractJcsCacheActor implements IElementEventHandler, Obj
     protected abstract void storeValueBackend(Object key, GameObject go);
 
     /**
-     * Stores the put value in the database.
+     * Stores the put values in the database.
      */
-    protected abstract void storeValueBackend(Class<?> keyType, Function<GameObject, Object> key, GameObject go);
+    protected abstract void storeValuesBackend(String objectType, Iterable<GameObject> values);
 
     /**
      * Retrieves the value from the database. Example send a database command:

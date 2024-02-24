@@ -13,6 +13,8 @@ import java.util.Deque;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.map.primitive.MutableObjectLongMap;
 import org.eclipse.collections.impl.factory.Maps;
@@ -163,7 +165,7 @@ public class TerrainImageCreateMap {
                 }
             }
             chunk.setBlocks(blocksids);
-            putObjectsToBackend(MapBlock.class, blocks.values());
+            putObjectsToBackend(MapBlock.OBJECT_TYPE, blocks.values());
         } else {
             createMap(chunk, x, y, z, ex, ey, ez);
         }
@@ -177,6 +179,7 @@ public class TerrainImageCreateMap {
         int ys = (pos.ep.y - pos.y) / 2;
         int zs = (pos.ep.z - pos.z) / 2;
         Function<Long, MapChunk> r = id -> getMapChunk(og, id);
+        MutableList<MapChunk> chunks = Lists.mutable.empty();
         for (int x = pos.x; x < pos.ep.x; x += xs) {
             for (int y = pos.y; y < pos.ep.y; y += ys) {
                 for (int z = pos.z; z < pos.ep.z; z += zs) {
@@ -219,8 +222,9 @@ public class TerrainImageCreateMap {
                     if (chunk.getBlocks().notEmpty()) {
                         chunk.getBlocks().forEachValue(mb -> setupBlockNeighbors(chunk, mb));
                     }
-                    putObjectToBackend(chunk);
+                    chunks.add(chunk);
                 }
+                putObjectsToBackend(MapChunk.OBJECT_TYPE, chunks);
             }
         }
     }
@@ -267,8 +271,8 @@ public class TerrainImageCreateMap {
     }
 
     @SneakyThrows
-    private void putObjectsToBackend(Class<?> keyType, Iterable<? extends GameObject> values) {
-        askCachePuts(actor.getActorSystem(), CACHE_TIMEOUT, keyType, (go) -> go.getId(), values)
+    private void putObjectsToBackend(String objectType, Iterable<? extends GameObject> values) {
+        askCachePuts(actor.getActorSystem(), CACHE_TIMEOUT, objectType, values)
                 .whenComplete(this::putObjectToBackendCompleted).toCompletableFuture().get();
     }
 
