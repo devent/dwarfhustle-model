@@ -17,31 +17,39 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Center extent of a map tile or chunk.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
+@NoArgsConstructor
+@AllArgsConstructor
 @Data
-public class CenterExtent implements Serializable {
+public class CenterExtent implements Serializable, Externalizable {
 
     private static final long serialVersionUID = 1L;
 
-    public final float centerx;
+    public float centerx;
 
-    public final float centery;
+    public float centery;
 
-    public final float centerz;
+    public float centerz;
 
-    public final float extentx;
+    public float extentx;
 
-    public final float extenty;
+    public float extenty;
 
-    public final float extentz;
+    public float extentz;
 
     public float getBottomX() {
         return centerx - extentx;
@@ -65,6 +73,26 @@ public class CenterExtent implements Serializable {
 
     public float getTopZ() {
         return centerz + extentz;
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeFloat(centerx);
+        out.writeFloat(centery);
+        out.writeFloat(centerz);
+        out.writeFloat(extentx);
+        out.writeFloat(extenty);
+        out.writeFloat(extentz);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        this.centerx = in.readFloat();
+        this.centery = in.readFloat();
+        this.centerz = in.readFloat();
+        this.extentx = in.readFloat();
+        this.extenty = in.readFloat();
+        this.extentz = in.readFloat();
     }
 
 }

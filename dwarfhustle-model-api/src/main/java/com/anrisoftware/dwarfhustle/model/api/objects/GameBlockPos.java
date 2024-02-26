@@ -17,42 +17,44 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 
 import org.apache.commons.lang3.StringUtils;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * X, Y and Z position of a {@link GameObject} on the game map.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@RequiredArgsConstructor
-@ToString
-@EqualsAndHashCode
-@Getter
-public class GameBlockPos implements Serializable {
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class GameBlockPos implements Serializable, Externalizable {
 
     private static final long serialVersionUID = 1L;
 
     /**
      * X position on the game map
      */
-    public final int x;
+    public int x = -1;
 
     /**
      * Y position on the game map
      */
-    public final int y;
+    public int y = -1;
 
     /**
      * Z position on the game map
      */
-    public final int z;
+    public int z = -1;
 
     public int getDiffX(GameBlockPos pos) {
         return x - pos.x;
@@ -104,5 +106,19 @@ public class GameBlockPos implements Serializable {
 
     public boolean isEqual(int x2, int y2, int z2) {
         return x == x2 && y == y2 && z == z2;
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeInt(x);
+        out.writeInt(y);
+        out.writeInt(z);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        this.x = in.readInt();
+        this.y = in.readInt();
+        this.z = in.readInt();
     }
 }

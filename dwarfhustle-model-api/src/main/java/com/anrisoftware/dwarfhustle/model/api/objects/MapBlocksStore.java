@@ -36,46 +36,36 @@ public class MapBlocksStore implements Serializable {
         return z * w * h + y * w + x;
     }
 
-    public static final byte[] int2Bytes(byte[] buff, int value) {
-        buff[0] = (byte) (value >>> 24);
-        buff[1] = (byte) (value >>> 16);
-        buff[2] = (byte) (value >>> 8);
-        buff[3] = (byte) (value);
-        return buff;
-    }
-
-    public static final int bytes2Int(byte[] buff) {
-        return buff[0] << 24 | buff[1] << 16 | buff[2] << 8 | buff[3];
-    }
-
-    private static byte[] sizebuffset = new byte[4];
-
-    private static byte[] sizebuffget = new byte[4];
-
     private byte[] buffer;
 
+    private int chunkSize;
+
+    private int size;
+
     public MapBlocksStore(int chunkSize) {
-        this.buffer = new byte[BLOCK_SIZE_BYTES * chunkSize * chunkSize * chunkSize];
+        this.chunkSize = chunkSize;
+        this.size = chunkSize * chunkSize * chunkSize;
+        this.buffer = new byte[BLOCK_SIZE_BYTES * size];
     }
 
     @SneakyThrows
-    public synchronized void setBlock(int w, int h, MapBlock block) {
-        int index = calcIndex(w, h, block.pos.x, block.pos.y, block.pos.z) * BLOCK_SIZE_BYTES;
-        var stream = new ByteArrayOutputStream(2048);
+    public synchronized void setBlock(MapBlock block) {
+        int index = calcIndex(chunkSize, chunkSize, block.pos.x, block.pos.y, block.pos.z) % size;
+        int pos = index * BLOCK_SIZE_BYTES;
+        var stream = new ByteArrayOutputStream(BLOCK_SIZE_BYTES);
         new ObjectOutputStream(stream).writeObject(block);
         int size = stream.size();
-        int2Bytes(sizebuffset, size);
-        System.arraycopy(sizebuffset, 0, buffer, index, 4);
-        System.arraycopy(stream.toByteArray(), 0, buffer, index + 4, size);
-        System.out.println(buffer.length); // TODO
+        stream.flush();
+        stream.close();
+        System.arraycopy(stream.toByteArray(), 0, buffer, pos, size);
     }
 
     @SneakyThrows
-    public synchronized MapBlock getBlock(int w, int h, GameBlockPos pos) {
-        int index = calcIndex(w, h, pos.x, pos.y, pos.z) * BLOCK_SIZE_BYTES;
+    public synchronized MapBlock getBlock(GameBlockPos pos) {
+        int index = calcIndex(chunkSize, chunkSize, pos.x, pos.y, pos.z) % size;
+        int skip = index * BLOCK_SIZE_BYTES;
         var stream = new ByteArrayInputStream(buffer);
-        stream.read(sizebuffget, index, 4);
-        int size = bytes2Int(sizebuffget);
+        stream.skip(skip);
         var ostream = new ObjectInputStream(stream);
         var block = (MapBlock) ostream.readObject();
         return block;

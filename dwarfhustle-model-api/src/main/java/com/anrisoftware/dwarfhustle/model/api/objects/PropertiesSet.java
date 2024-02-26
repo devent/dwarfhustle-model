@@ -17,6 +17,10 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 
 /**
@@ -24,7 +28,7 @@ import java.io.Serializable;
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-public class PropertiesSet implements Serializable {
+public class PropertiesSet implements Serializable, Externalizable {
 
     private static final long serialVersionUID = 1L;
 
@@ -113,6 +117,16 @@ public class PropertiesSet implements Serializable {
         int result = 1;
         result = (result * PRIME) + bits;
         return result;
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeInt(bits);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        this.bits = in.readInt();
     }
 
 }

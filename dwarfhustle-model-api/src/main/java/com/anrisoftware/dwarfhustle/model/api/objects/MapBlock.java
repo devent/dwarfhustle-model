@@ -17,9 +17,15 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
+import org.eclipse.collections.api.factory.primitive.IntLongMaps;
 import org.eclipse.collections.api.map.primitive.IntLongMap;
 import org.eclipse.collections.api.map.primitive.MutableIntLongMap;
-import org.eclipse.collections.impl.factory.primitive.IntLongMaps;
+import org.eclipse.collections.impl.map.mutable.primitive.IntLongHashMap;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -35,7 +41,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class MapBlock extends GameMapObject {
+public class MapBlock extends GameMapObject implements Externalizable {
 
     private static final int MINED_POS = 0;
 
@@ -89,7 +95,7 @@ public class MapBlock extends GameMapObject {
     public IntLongMap blockDir = IntLongMaps.mutable.empty();
 
     @ToString.Exclude
-    public CenterExtent centerExtent;
+    public CenterExtent centerExtent = new CenterExtent();
 
     public MapBlock(long id) {
         super(id);
@@ -97,6 +103,33 @@ public class MapBlock extends GameMapObject {
 
     public MapBlock(byte[] idbuf) {
         super(idbuf);
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        super.writeExternal(out);
+        out.writeLong(material);
+        out.writeLong(object);
+        out.writeLong(chunk);
+        p.writeExternal(out);
+        ((IntLongHashMap) blockDir).writeExternal(out);
+        centerExtent.writeExternal(out);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        super.readExternal(in);
+        this.material = in.readLong();
+        this.object = in.readLong();
+        this.chunk = in.readLong();
+        this.p.readExternal(in);
+        int size = in.readInt();
+        MutableIntLongMap blockDir = IntLongMaps.mutable.ofInitialCapacity(size);
+        for (int i = 0; i < size; i++) {
+            blockDir.put(in.readInt(), in.readLong());
+        }
+        this.blockDir = blockDir;
+        this.centerExtent.readExternal(in);
     }
 
     @Override

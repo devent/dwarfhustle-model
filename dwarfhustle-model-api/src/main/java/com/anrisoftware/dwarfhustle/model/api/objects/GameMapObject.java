@@ -17,6 +17,10 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -33,9 +37,9 @@ import lombok.ToString;
 @Data
 public abstract class GameMapObject extends GameObject {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public static final String OBJECT_TYPE = GameMapObject.class.getSimpleName();
+    public static final String OBJECT_TYPE = GameMapObject.class.getSimpleName();
 
     /**
      * ID of the {@link GameMap}.
@@ -45,29 +49,43 @@ public abstract class GameMapObject extends GameObject {
     /**
      * Sets the X, Y and Z position of a {@link GameMapObject} on the game map.
      */
-    public GameBlockPos pos;
+    public GameBlockPos pos = new GameBlockPos();
 
-	public GameMapObject(long id) {
-		super(id);
-	}
+    public GameMapObject(long id) {
+        super(id);
+    }
 
-	public GameMapObject(byte[] idbuf) {
-		super(idbuf);
-	}
+    public GameMapObject(byte[] idbuf) {
+        super(idbuf);
+    }
 
-	public GameMapObject(long id, GameBlockPos pos) {
-		super(id);
-		this.pos = pos;
-	}
+    public GameMapObject(long id, GameBlockPos pos) {
+        super(id);
+        this.pos = pos;
+    }
 
-	public GameMapObject(byte[] idbuf, GameBlockPos pos) {
-		super(idbuf);
-		this.pos = pos;
-	}
+    public GameMapObject(byte[] idbuf, GameBlockPos pos) {
+        super(idbuf);
+        this.pos = pos;
+    }
 
-	@Override
-	public String getObjectType() {
-		return OBJECT_TYPE;
-	}
+    @Override
+    public String getObjectType() {
+        return OBJECT_TYPE;
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        super.writeExternal(out);
+        out.writeLong(map);
+        pos.writeExternal(out);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        super.readExternal(in);
+        this.map = in.readLong();
+        pos.readExternal(in);
+    }
 
 }

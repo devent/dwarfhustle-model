@@ -17,6 +17,10 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 
 import lombok.Data;
@@ -33,45 +37,55 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode
 @Data
-public class GameObject implements Serializable {
+public class GameObject implements Serializable, Externalizable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public static final String OBJECT_TYPE = GameObject.class.getSimpleName();
+    public static final String OBJECT_TYPE = GameObject.class.getSimpleName();
 
-	/**
-	 * Converts the byte array to an Id.
-	 */
-	public static long toId(byte[] buf) {
-		return ((buf[7] & 0xFFL) << 56) | //
-				((buf[6] & 0xFFL) << 48) | //
-				((buf[5] & 0xFFL) << 40) | //
-				((buf[4] & 0xFFL) << 32) | //
-				((buf[3] & 0xFFL) << 24) | //
-				((buf[2] & 0xFFL) << 16) | //
-				((buf[1] & 0xFFL) << 8) | //
-				((buf[0] & 0xFFL) << 0);
-	}
+    /**
+     * Converts the byte array to an Id.
+     */
+    public static long toId(byte[] buf) {
+        return ((buf[7] & 0xFFL) << 56) | //
+                ((buf[6] & 0xFFL) << 48) | //
+                ((buf[5] & 0xFFL) << 40) | //
+                ((buf[4] & 0xFFL) << 32) | //
+                ((buf[3] & 0xFFL) << 24) | //
+                ((buf[2] & 0xFFL) << 16) | //
+                ((buf[1] & 0xFFL) << 8) | //
+                ((buf[0] & 0xFFL) << 0);
+    }
 
-	/**
-	 * Unique ID of the object.
-	 */
+    /**
+     * Unique ID of the object.
+     */
     public long id;
 
-	public GameObject(long id) {
-		this.id = id;
-	}
+    public GameObject(long id) {
+        this.id = id;
+    }
 
-	public GameObject(byte[] idbuf) {
-		this(toId(idbuf));
-	}
+    public GameObject(byte[] idbuf) {
+        this(toId(idbuf));
+    }
 
     @EqualsAndHashCode.Include
-	public String getObjectType() {
+    public String getObjectType() {
         return GameObject.OBJECT_TYPE;
-	}
+    }
 
     public <T extends GameObject> T getAs(Class<T> type) {
         return type.cast(this);
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeLong(id);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        this.id = in.readLong();
     }
 }
