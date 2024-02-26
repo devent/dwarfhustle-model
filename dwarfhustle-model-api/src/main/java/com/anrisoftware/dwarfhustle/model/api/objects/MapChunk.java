@@ -60,7 +60,7 @@ public class MapChunk extends GameMapObject implements StoredObject {
     public ObjectLongMap<GameChunkPos> chunks = ObjectLongMaps.immutable.empty();
 
     @ToString.Exclude
-    public ObjectLongMap<GameBlockPos> blocks = ObjectLongMaps.immutable.empty();
+    public byte[] blocks = new byte[0];
 
     /**
      * Contains the IDs of the chunks in each direction that are neighboring this
