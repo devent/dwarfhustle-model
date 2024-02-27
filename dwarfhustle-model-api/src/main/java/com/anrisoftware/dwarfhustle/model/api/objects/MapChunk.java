@@ -36,7 +36,6 @@ import org.eclipse.collections.impl.map.mutable.primitive.ObjectLongHashMap;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -44,7 +43,6 @@ import lombok.ToString;
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -80,6 +78,7 @@ public class MapChunk extends GameMapObject implements StoredObject {
      * Use a mutable map to use write and read external.
      */
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     public MapBlocksStore blocks;
 
     /**
@@ -107,14 +106,21 @@ public class MapChunk extends GameMapObject implements StoredObject {
     @ToString.Exclude
     public CenterExtent centerExtent;
 
+    public MapChunk() {
+        this.pos = new GameChunkPos();
+        this.centerExtent = new CenterExtent();
+    }
+
     public MapChunk(long id, int chunkSize) {
         super(id);
+        this.pos = new GameChunkPos();
         this.chunkSize = chunkSize;
         this.blocks = new MapBlocksStore(chunkSize);
     }
 
     public MapChunk(byte[] idbuf, int chunkSize) {
         super(idbuf);
+        this.pos = new GameChunkPos();
         this.chunkSize = chunkSize;
         this.blocks = new MapBlocksStore(chunkSize);
     }

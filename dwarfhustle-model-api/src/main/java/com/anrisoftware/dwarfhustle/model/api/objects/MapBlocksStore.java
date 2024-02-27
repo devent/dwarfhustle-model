@@ -69,6 +69,9 @@ public class MapBlocksStore implements Serializable, Externalizable {
 
     @SneakyThrows
     public synchronized MapBlock getBlock(GameBlockPos pos) {
+        if (empty) {
+            return null;
+        }
         int index = calcIndex(chunkSize, chunkSize, pos.x, pos.y, pos.z) % size;
         int skip = index * BLOCK_SIZE_BYTES;
         var stream = new ByteArrayInputStream(buffer);
@@ -84,8 +87,6 @@ public class MapBlocksStore implements Serializable, Externalizable {
 
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeInt(chunkSize);
-        out.writeInt(size);
         out.writeBoolean(empty);
         if (!empty) {
             out.write(buffer);
@@ -94,12 +95,9 @@ public class MapBlocksStore implements Serializable, Externalizable {
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        this.chunkSize = in.readInt();
-        this.size = in.readInt();
-        this.buffer = new byte[BLOCK_SIZE_BYTES * size];
         this.empty = in.readBoolean();
         if (!empty) {
-            in.read(buffer, 0, buffer.length);
+            in.readFully(buffer);
         }
     }
 

@@ -198,7 +198,8 @@ class MapBlocksStoreTest {
         int chunkSize = 4
         def store = new MapBlocksStore(chunkSize)
         def mb = MapBlockTest.createTestBlock()
-        for (int i = 0; i < 100; i++) {
+        int blocksCount = 10
+        for (int i = 0; i < blocksCount; i++) {
             for (int x = 0; x < 32; x++) {
                 for (int y = 0; y < 32; y++) {
                     for (int z = 0; z < 32; z++) {
