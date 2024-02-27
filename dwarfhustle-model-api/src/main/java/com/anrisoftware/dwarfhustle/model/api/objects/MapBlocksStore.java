@@ -2,7 +2,11 @@ package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
@@ -14,7 +18,7 @@ import lombok.SneakyThrows;
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-public class MapBlocksStore implements Serializable {
+public class MapBlocksStore implements Serializable, Externalizable {
 
     private static final long serialVersionUID = 1L;
 
@@ -42,6 +46,8 @@ public class MapBlocksStore implements Serializable {
 
     private int size;
 
+    private boolean empty = true;
+
     public MapBlocksStore(int chunkSize) {
         this.chunkSize = chunkSize;
         this.size = chunkSize * chunkSize * chunkSize;
@@ -58,6 +64,7 @@ public class MapBlocksStore implements Serializable {
         stream.flush();
         stream.close();
         System.arraycopy(stream.toByteArray(), 0, buffer, pos, size);
+        this.empty = false;
     }
 
     @SneakyThrows
@@ -69,6 +76,31 @@ public class MapBlocksStore implements Serializable {
         var ostream = new ObjectInputStream(stream);
         var block = (MapBlock) ostream.readObject();
         return block;
+    }
+
+    public synchronized boolean isEmpty() {
+        return empty;
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeInt(chunkSize);
+        out.writeInt(size);
+        out.writeBoolean(empty);
+        if (!empty) {
+            out.write(buffer);
+        }
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        this.chunkSize = in.readInt();
+        this.size = in.readInt();
+        this.buffer = new byte[BLOCK_SIZE_BYTES * size];
+        this.empty = in.readBoolean();
+        if (!empty) {
+            in.read(buffer, 0, buffer.length);
+        }
     }
 
 }

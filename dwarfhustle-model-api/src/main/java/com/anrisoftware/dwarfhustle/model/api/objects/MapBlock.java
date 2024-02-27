@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readExternalIntLongMap;
+
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -123,12 +125,7 @@ public class MapBlock extends GameMapObject implements Externalizable {
         this.object = in.readLong();
         this.chunk = in.readLong();
         this.p.readExternal(in);
-        int size = in.readInt();
-        MutableIntLongMap blockDir = IntLongMaps.mutable.ofInitialCapacity(size);
-        for (int i = 0; i < size; i++) {
-            blockDir.put(in.readInt(), in.readLong());
-        }
-        this.blockDir = blockDir;
+        this.blockDir = readExternalIntLongMap(in);
         this.centerExtent.readExternal(in);
     }
 

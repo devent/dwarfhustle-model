@@ -33,9 +33,9 @@ class GameChunkPosTest {
 
     static Stream two_chunk_pos_equals() {
         Stream.of(
-                of(new GameChunkPos(0, 0, 0, 0, 0, 0, 0), new GameChunkPos(0, 0, 0, 0, 0, 0, 0), true),
-                of(new GameChunkPos(0, 0, 0, 0, 4, 4, 4), new GameChunkPos(0, 0, 0, 0, 4, 4, 4), true),
-                of(new GameChunkPos(1, 0, 0, 0, 4, 4, 4), new GameChunkPos(0, 0, 0, 0, 4, 4, 4), false),
+                of(new GameChunkPos(0, 0, 0, 0, 0, 0), new GameChunkPos(0, 0, 0, 0, 0, 0), true),
+                of(new GameChunkPos(0, 0, 0, 4, 4, 4), new GameChunkPos(0, 0, 0, 4, 4, 4), true),
+                of(new GameChunkPos(0, 0, 0, 4, 4, 5), new GameChunkPos(0, 0, 0, 5, 4, 4), false),
                 )
     }
 
@@ -51,9 +51,9 @@ class GameChunkPosTest {
 
     static Stream chunk_pos_toSaveString() {
         Stream.of(
-                of(new GameChunkPos(0, 0, 0, 0, 0, 0, 0), "0/0/0/0/0/0/0"),
-                of(new GameChunkPos(0, 0, 0, 0, 4, 4, 4), "0/0/0/0/4/4/4"),
-                of(new GameChunkPos(1, 0, 0, 0, 4, 4, 4), "1/0/0/0/4/4/4"),
+                of(new GameChunkPos(0, 0, 0, 0, 0, 0), "0/0/0/0/0/0"),
+                of(new GameChunkPos(0, 0, 0, 4, 4, 4), "0/0/0/4/4/4"),
+                of(new GameChunkPos(0, 0, 0, 4, 4, 4), "0/0/0/4/4/4"),
                 )
     }
 
@@ -71,10 +71,10 @@ class GameChunkPosTest {
 
     static Stream chunk_size() {
         Stream.of(
-                of(new GameChunkPos(0, 0, 0, 0, 0, 0, 0), 0, 0, 0),
-                of(new GameChunkPos(0, 0, 0, 0, 64, 64, 64), 64, 64, 64),
-                of(new GameChunkPos(0, 0, 0, 0, 32, 32, 32), 32, 32, 32),
-                of(new GameChunkPos(0, 32, 0, 0, 64, 32, 32), 32, 32, 32),
+                of(new GameChunkPos(0, 0, 0, 0, 0, 0), 0, 0, 0),
+                of(new GameChunkPos(0, 0, 0, 64, 64, 64), 64, 64, 64),
+                of(new GameChunkPos(0, 0, 0, 32, 32, 32), 32, 32, 32),
+                of(new GameChunkPos(32, 0, 0, 64, 32, 32), 32, 32, 32),
                 )
     }
 
@@ -84,5 +84,24 @@ class GameChunkPosTest {
         assert p.sizeX == exsizex
         assert p.sizeY == exsizey
         assert p.sizeZ == esizez
+    }
+
+    static Stream chunk_contains_pos() {
+        Stream.of(
+                of(new GameChunkPos(0, 0, 0, 0, 0, 0), new GameBlockPos(0, 0, 0), true),
+                of(new GameChunkPos(0, 0, 0, 64, 64, 64), new GameBlockPos(10, 10, 10), true),
+                of(new GameChunkPos(0, 0, 0, 64, 64, 64), new GameBlockPos(64, 10, 10), true),
+                of(new GameChunkPos(0, 0, 0, 64, 64, 64), new GameBlockPos(64, 64, 10), true),
+                of(new GameChunkPos(0, 0, 0, 64, 64, 64), new GameBlockPos(64, 64, 64), true),
+                of(new GameChunkPos(4, 0, 0, 8, 4, 4), new GameBlockPos(0, 0, 0), false),
+                of(new GameChunkPos(4, 0, 0, 8, 4, 4), new GameBlockPos(4, 0, 0), true),
+                of(new GameChunkPos(4, 0, 0, 8, 4, 4), new GameBlockPos(4, 5, 0), false),
+                )
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    void chunk_contains_pos(GameChunkPos p, GameBlockPos p1, boolean contains) {
+        assert p.contains(p1) == contains
     }
 }

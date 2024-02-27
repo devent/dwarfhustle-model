@@ -78,14 +78,14 @@ public abstract class GameMapObject extends GameObject {
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);
         out.writeLong(map);
-        pos.writeExternal(out);
+        getPos().writeExternal(out);
     }
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         super.readExternal(in);
         this.map = in.readLong();
-        pos.readExternal(in);
+        getPos().readExternal(in);
     }
 
 }

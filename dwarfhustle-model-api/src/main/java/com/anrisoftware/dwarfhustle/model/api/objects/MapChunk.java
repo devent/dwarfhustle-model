@@ -17,6 +17,12 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readExternalIntLongMap;
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readExternalObjectLongMap;
+
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.function.Function;
 
@@ -25,6 +31,7 @@ import org.eclipse.collections.api.map.primitive.MutableIntLongMap;
 import org.eclipse.collections.api.map.primitive.ObjectLongMap;
 import org.eclipse.collections.impl.factory.primitive.IntLongMaps;
 import org.eclipse.collections.impl.factory.primitive.ObjectLongMaps;
+import org.eclipse.collections.impl.map.mutable.primitive.IntLongHashMap;
 import org.eclipse.collections.impl.map.mutable.primitive.ObjectLongHashMap;
 
 import lombok.Data;
@@ -54,13 +61,26 @@ public class MapChunk extends GameMapObject implements StoredObject {
     /**
      * Record ID set after the object was once stored in the backend.
      */
-    public Serializable rid;
+    public transient Serializable rid;
+
+    /**
+     * Map of GameChunkPos := ID of the children chunks.
+     * <p>
+     * Use a mutable map to use write and read external.
+     */
+    @ToString.Exclude
+    public ObjectLongMap<GameChunkPos> chunks = ObjectLongMaps.mutable.empty();
 
     @ToString.Exclude
-    public ObjectLongMap<GameChunkPos> chunks = ObjectLongMaps.immutable.empty();
+    public int chunkSize;
 
+    /**
+     * The {@link MapBlock}s in the chunk if the chunk is a leaf.
+     * <p>
+     * Use a mutable map to use write and read external.
+     */
     @ToString.Exclude
-    public byte[] blocks = new byte[0];
+    public MapBlocksStore blocks;
 
     /**
      * Contains the IDs of the chunks in each direction that are neighboring this
@@ -71,6 +91,9 @@ public class MapChunk extends GameMapObject implements StoredObject {
     @ToString.Exclude
     public IntLongMap chunkDir = IntLongMaps.mutable.empty();
 
+    /**
+     * True if this the root chunk.
+     */
     public boolean root = false;
 
     /**
@@ -78,24 +101,35 @@ public class MapChunk extends GameMapObject implements StoredObject {
      */
     public long parent;
 
+    /**
+     * The {@link CenterExtent} of the chunk.
+     */
     @ToString.Exclude
     public CenterExtent centerExtent;
 
-    public MapChunk(long id) {
+    public MapChunk(long id, int chunkSize) {
         super(id);
+        this.chunkSize = chunkSize;
+        this.blocks = new MapBlocksStore(chunkSize);
     }
 
-    public MapChunk(byte[] idbuf) {
+    public MapChunk(byte[] idbuf, int chunkSize) {
         super(idbuf);
+        this.chunkSize = chunkSize;
+        this.blocks = new MapBlocksStore(chunkSize);
     }
 
-    public MapChunk(long id, GameChunkPos pos) {
+    public MapChunk(long id, GameChunkPos pos, int chunkSize) {
         super(id);
+        this.chunkSize = chunkSize;
+        this.blocks = new MapBlocksStore(chunkSize);
         this.pos = pos;
     }
 
-    public MapChunk(byte[] idbuf, GameChunkPos pos) {
+    public MapChunk(byte[] idbuf, GameChunkPos pos, int chunkSize) {
         super(idbuf);
+        this.chunkSize = chunkSize;
+        this.blocks = new MapBlocksStore(chunkSize);
         this.pos = pos;
     }
 
@@ -118,16 +152,16 @@ public class MapChunk extends GameMapObject implements StoredObject {
         return (GameChunkPos) pos;
     }
 
-    public long getBlock(GameBlockPos pos) {
-        return blocks.get(pos);
+    public MapBlock getBlock(GameBlockPos pos) {
+        return blocks.getBlock(pos);
     }
 
-    public boolean haveBlock(GameBlockPos pos) {
-        return blocks.containsKey(pos);
+    public void setBlock(MapBlock block) {
+        blocks.setBlock(block);
     }
 
-    public long getBlocksEmptyValue() {
-        return ObjectLongHashMap.EMPTY_VALUE;
+    public boolean haveBlock(GameBlockPos p) {
+        return getPos().contains(p);
     }
 
     public void setNeighbor(NeighboringDir dir, long id) {
@@ -230,11 +264,11 @@ public class MapChunk extends GameMapObject implements StoredObject {
         return this;
     }
 
-    public long findMapBlock(int x, int y, int z, Function<Long, MapChunk> retriever) {
+    public MapBlock findMapBlock(int x, int y, int z, Function<Long, MapChunk> retriever) {
         return findMapBlock(new GameBlockPos(x, y, z), retriever);
     }
 
-    public long findMapBlock(GameBlockPos pos, Function<Long, MapChunk> retriever) {
+    public MapBlock findMapBlock(GameBlockPos pos, Function<Long, MapChunk> retriever) {
         int x = pos.getX();
         int y = pos.getY();
         int z = pos.getZ();
@@ -254,7 +288,7 @@ public class MapChunk extends GameMapObject implements StoredObject {
                 }
             }
         }
-        return blocks.get(pos);
+        return blocks.getBlock(pos);
     }
 
     /**
@@ -287,6 +321,31 @@ public class MapChunk extends GameMapObject implements StoredObject {
             }
         }
         return 0;
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        super.writeExternal(out);
+        out.writeInt(chunkSize);
+        blocks.writeExternal(out);
+        centerExtent.writeExternal(out);
+        ((IntLongHashMap) chunkDir).writeExternal(out);
+        ((ObjectLongHashMap<GameChunkPos>) chunks).writeExternal(out);
+        out.writeLong(parent);
+        out.writeBoolean(root);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        super.readExternal(in);
+        this.chunkSize = in.readInt();
+        this.blocks = new MapBlocksStore(chunkSize);
+        blocks.readExternal(in);
+        this.centerExtent.readExternal(in);
+        this.chunkDir = readExternalIntLongMap(in);
+        this.chunks = readExternalObjectLongMap(in, GameChunkPos::new);
+        this.parent = in.readLong();
+        this.root = in.readBoolean();
     }
 
 }

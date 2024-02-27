@@ -17,10 +17,15 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -28,16 +33,17 @@ import lombok.ToString;
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
+@NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-@Getter
+@Data
 public class GameChunkPos extends GameBlockPos {
 
     private static final long serialVersionUID = 1L;
 
     /**
      * Builds {@link GameChunkPos}.
-     * 
+     *
      * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
      */
     public static class GameChunkPosBuilder {
@@ -83,7 +89,7 @@ public class GameChunkPos extends GameBlockPos {
         return new GameChunkPosBuilder();
     }
 
-    public final GameBlockPos ep;
+    public GameBlockPos ep = new GameBlockPos();
 
     public GameChunkPos(int sx, int sy, int sz, int ex, int ey, int ez) {
         this(new GameBlockPos(sx, sy, sz), new GameBlockPos(ex, ey, ez));
@@ -132,4 +138,21 @@ public class GameChunkPos extends GameBlockPos {
     public int getSizeZ() {
         return ep.z - z;
     }
+
+    public boolean contains(GameBlockPos p) {
+        return x <= p.x && y <= p.y && z <= p.z && ep.x >= p.x && ep.y >= p.y && ep.z >= p.z;
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        super.writeExternal(out);
+        ep.writeExternal(out);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        super.readExternal(in);
+        this.ep.readExternal(in);
+    }
+
 }
