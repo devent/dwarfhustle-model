@@ -9,6 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.function.Consumer;
 
 import lombok.Data;
 import lombok.SneakyThrows;
@@ -54,6 +55,12 @@ public class MapBlocksStore implements Serializable, Externalizable {
         this.buffer = new byte[BLOCK_SIZE_BYTES * size];
     }
 
+    public void setBlocks(Iterable<MapBlock> blocks) {
+        for (var block : blocks) {
+            setBlock(block);
+        }
+    }
+
     @SneakyThrows
     public synchronized void setBlock(MapBlock block) {
         int index = calcIndex(chunkSize, chunkSize, block.pos.x, block.pos.y, block.pos.z) % size;
@@ -81,8 +88,33 @@ public class MapBlocksStore implements Serializable, Externalizable {
         return block;
     }
 
+    /**
+     * Iterates over all {@link MapBlock}s in the storage. The order is not
+     * necessarily the same as the order the blocks were set.
+     */
+    @SneakyThrows
+    public synchronized void forEachValue(Consumer<MapBlock> consumer) {
+        if (empty) {
+            return;
+        }
+        for (int i = 0; i < size; i++) {
+            var stream = new ByteArrayInputStream(buffer);
+            stream.skip(i * BLOCK_SIZE_BYTES);
+            var ostream = new ObjectInputStream(stream);
+            consumer.accept((MapBlock) ostream.readObject());
+        }
+    }
+
     public synchronized boolean isEmpty() {
         return empty;
+    }
+
+    public synchronized void setData(byte[] data) {
+        this.buffer = data;
+    }
+
+    public synchronized byte[] getData() {
+        return buffer;
     }
 
     @Override

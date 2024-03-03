@@ -24,7 +24,6 @@ import java.util.Map;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
-import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapObjectSchema;
@@ -35,7 +34,6 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapBlockSchema;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.WorldMapSchema;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.storages.GameMapStorage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.storages.MapBlockStorage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.storages.MapChunkStorage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.storages.WorldMapStorage;
 import com.google.inject.AbstractModule;
@@ -56,8 +54,6 @@ public class DwarfhustleModelDbStoragesSchemasModule extends AbstractModule {
     @Provides
     public Map<String, GameObjectStorage> getStorages() {
         var map = new HashMap<String, GameObjectStorage>();
-        var mapTileStorage = new MapBlockStorage();
-        map.put(MapBlock.OBJECT_TYPE, mapTileStorage);
         var mapBlockStorage = new MapChunkStorage();
         map.put(MapChunk.OBJECT_TYPE, mapBlockStorage);
         map.put(GameMap.OBJECT_TYPE, new GameMapStorage());

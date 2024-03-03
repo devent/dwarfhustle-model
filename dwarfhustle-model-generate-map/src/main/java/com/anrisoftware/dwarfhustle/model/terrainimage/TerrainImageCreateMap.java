@@ -15,9 +15,7 @@ import java.util.function.Supplier;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.map.primitive.MutableObjectLongMap;
-import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.factory.primitive.ObjectLongMaps;
 import org.lable.oss.uniqueid.GeneratorException;
 import org.lable.oss.uniqueid.IDGenerator;
@@ -82,9 +80,12 @@ public class TerrainImageCreateMap {
 
     private int blocksCount;
 
+    private int chunkSize;
+
     public void startImport(URL url, TerrainLoadImage image, long mapid) throws IOException, GeneratorException {
         this.terrain = image.load(url);
-        this.mcRoot = new MapChunk(gen.generate());
+        this.chunkSize = image.chunkSize;
+        this.mcRoot = new MapChunk(gen.generate(), chunkSize);
         this.gm = og.get(GameMap.class, GameMap.OBJECT_TYPE, mapid);
         this.chunksCount = 0;
         this.blocksCount = 0;
@@ -132,7 +133,7 @@ public class TerrainImageCreateMap {
     private void createChunk(Supplier<byte[]> ids, long[][][] terrain, MapChunk parent,
             MutableObjectLongMap<GameChunkPos> chunks, int x, int y, int z, int ex, int ey, int ez)
             throws GeneratorException {
-        var chunk = new MapChunk(gen.generate());
+        var chunk = new MapChunk(gen.generate(), chunkSize);
         chunksCount++;
         chunk.map = gm.id;
         chunk.setParent(parent.getId());
@@ -140,8 +141,7 @@ public class TerrainImageCreateMap {
         chunk.updateCenterExtent(gm.width, gm.height, gm.depth);
         int csize = gm.getChunkSize();
         if (ex - x == csize || ey - y == csize || ez - z == csize) {
-            MutableMap<GameBlockPos, MapBlock> blocks = Maps.mutable.empty();
-            MutableObjectLongMap<GameBlockPos> blocksids = ObjectLongMaps.mutable.empty();
+            MutableList<MapBlock> blocks = Lists.mutable.empty();
             for (int xx = x; xx < ex; xx++) {
                 for (int yy = y; yy < ey; yy++) {
                     for (int zz = z; zz < ez; zz++) {
@@ -159,13 +159,12 @@ public class TerrainImageCreateMap {
                         if (mb.getMaterialRid() == 898) {
                             mb.setMined(true);
                         }
-                        blocks.put(mb.pos, mb);
-                        blocksids.put(mb.pos, mb.id);
+                        blocks.add(mb);
                     }
                 }
             }
-            chunk.setBlocks(blocksids);
-            putObjectsToBackend(MapBlock.OBJECT_TYPE, blocks.values());
+            chunk.setBlocks(blocks);
+            putObjectsToBackend(MapBlock.OBJECT_TYPE, blocks);
         } else {
             createMap(chunk, x, y, z, ex, ey, ez);
         }
@@ -219,7 +218,7 @@ public class TerrainImageCreateMap {
                     if ((w = mcRoot.findChild(wx, sy, z, wx + xs, y + ys, z + zs, r)) != 0) {
                         chunk.setNeighborSouthWest(w);
                     }
-                    if (chunk.getBlocks().notEmpty()) {
+                    if (chunk.getBlocksNotEmpty()) {
                         chunk.getBlocks().forEachValue(mb -> setupBlockNeighbors(chunk, mb));
                     }
                     chunks.add(chunk);

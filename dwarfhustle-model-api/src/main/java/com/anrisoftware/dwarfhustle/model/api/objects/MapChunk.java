@@ -166,8 +166,16 @@ public class MapChunk extends GameMapObject implements StoredObject {
         blocks.setBlock(block);
     }
 
+    public void setBlocks(Iterable<MapBlock> blocks) {
+        this.blocks.setBlocks(blocks);
+    }
+
     public boolean haveBlock(GameBlockPos p) {
         return getPos().contains(p);
+    }
+
+    public boolean getBlocksNotEmpty() {
+        return !blocks.isEmpty();
     }
 
     public void setNeighbor(NeighboringDir dir, long id) {

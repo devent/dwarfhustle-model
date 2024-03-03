@@ -35,9 +35,11 @@ public class MapChunkSchema implements GameObjectSchema {
 
     public static final String CHUNKS_FIELD = "chunks";
 
-    public static final String BLOCKS_FIELD = "blocks";
+    public static final String CHUNK_SIZE_FIELD = "chunkSize";
 
-    public static final String BLOCK_ID_CLASS = "MapBlockId";
+    public static final String BLOCKS_EMPTY_FIELD = "blocksEmpty";
+
+    public static final String BLOCKS_FIELD = "blocks";
 
     public static final String MAP_FIELD = "map";
 
@@ -64,9 +66,9 @@ public class MapChunkSchema implements GameObjectSchema {
         var chunksid = odb.createClass(CHUNK_ID_CLASS);
         chunksid.createProperty(OBJECTID_FIELD, OType.LONG);
         c.createProperty(CHUNKS_FIELD, OType.EMBEDDEDMAP, chunksid);
-        var blocksid = odb.createClass(BLOCK_ID_CLASS);
-        blocksid.createProperty(OBJECTID_FIELD, OType.LONG);
-        c.createProperty(BLOCKS_FIELD, OType.EMBEDDEDMAP, blocksid);
+        c.createProperty(CHUNK_SIZE_FIELD, OType.INTEGER);
+        c.createProperty(BLOCKS_EMPTY_FIELD, OType.BOOLEAN);
+        c.createProperty(BLOCKS_FIELD, OType.BINARY);
         c.createProperty(MAP_FIELD, OType.LONG);
         new CenterExtentSchema().createSchema(db, c);
         c.createProperty(ROOT_FIELD, OType.BOOLEAN);

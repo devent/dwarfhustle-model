@@ -23,10 +23,11 @@ import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.CenterExten
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.CenterExtentSchema.EXTENT_X_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.CenterExtentSchema.EXTENT_Y_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.CenterExtentSchema.EXTENT_Z_FIELD;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.BLOCKS_EMPTY_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.BLOCKS_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.BLOCK_ID_CLASS;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.CHUNKS_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.CHUNK_ID_CLASS;
+import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.CHUNK_SIZE_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.MAP_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.OBJECTID_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema.PARENT_FIELD;
@@ -44,8 +45,8 @@ import org.eclipse.collections.api.map.primitive.MutableObjectLongMap;
 import org.eclipse.collections.impl.factory.primitive.ObjectLongMaps;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.CenterExtent;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameChunkPos;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapBlocksStore;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
 import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
@@ -68,7 +69,11 @@ public class MapChunkStorage extends AbstractGameObjectStorage {
         var v = (OElement) o;
         var mc = (MapChunk) go;
         storePosIdsMap(v, mc, mc.getChunks(), CHUNK_ID_CLASS, CHUNKS_FIELD, OBJECTID_FIELD);
-        storePosIdsMap(v, mc, mc.getBlocks(), BLOCK_ID_CLASS, BLOCKS_FIELD, OBJECTID_FIELD);
+        v.setProperty(CHUNK_SIZE_FIELD, mc.chunkSize);
+        v.setProperty(BLOCKS_EMPTY_FIELD, mc.blocks.isEmpty());
+        if (!mc.blocks.isEmpty()) {
+            v.setProperty(BLOCKS_FIELD, mc.blocks.getData());
+        }
         v.setProperty(MAP_FIELD, mc.map);
         v.setProperty(POS_START_X_FIELD, mc.pos.x);
         v.setProperty(POS_START_Y_FIELD, mc.pos.y);
@@ -95,7 +100,12 @@ public class MapChunkStorage extends AbstractGameObjectStorage {
         var v = (OElement) o;
         var mc = (MapChunk) go;
         retrieveChunks(v, mc);
-        retrieveBlocks(db, v, mc);
+        mc.chunkSize = v.getProperty(CHUNK_SIZE_FIELD);
+        mc.blocks = new MapBlocksStore(mc.chunkSize);
+        boolean blocksEmpty = v.getProperty(BLOCKS_EMPTY_FIELD);
+        if (!blocksEmpty) {
+            mc.blocks.setData(v.getProperty(BLOCKS_FIELD));
+        }
         mc.map = v.getProperty(MAP_FIELD);
         mc.setPos(GameChunkPos.builder().sx(v.getProperty(POS_START_X_FIELD)).sy(v.getProperty(POS_START_Y_FIELD))
                 .sz(v.getProperty(POS_START_Z_FIELD)).ex(v.getProperty(POS_END_X_FIELD))
@@ -109,16 +119,6 @@ public class MapChunkStorage extends AbstractGameObjectStorage {
                 v.getProperty(CENTER_Z_FIELD), v.getProperty(EXTENT_X_FIELD), v.getProperty(EXTENT_Y_FIELD),
                 v.getProperty(EXTENT_Z_FIELD));
         return super.retrieve(db, o, go);
-    }
-
-    private void retrieveBlocks(Object db, OElement v, MapChunk mc) {
-        Map<String, OElement> omap = v.getProperty(BLOCKS_FIELD);
-        MutableObjectLongMap<GameBlockPos> ids = ObjectLongMaps.mutable.ofInitialCapacity(omap.size());
-        for (Map.Entry<String, OElement> entry : omap.entrySet()) {
-            var pos = GameBlockPos.parse(entry.getKey());
-            ids.put(pos, entry.getValue().getProperty(OBJECTID_FIELD));
-        }
-        mc.setBlocks(ids.asUnmodifiable());
     }
 
     private void retrieveChunks(OElement v, MapChunk mc) {

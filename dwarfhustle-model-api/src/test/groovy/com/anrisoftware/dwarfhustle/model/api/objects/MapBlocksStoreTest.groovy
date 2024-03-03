@@ -80,103 +80,15 @@ class MapBlocksStoreTest {
     }
 
     static Stream put_and_get_map_block() {
-        int chunkSize = 2
-        MapBlocksStore store
         def args = []
-        store = new MapBlocksStore(chunkSize)
-        args.addAll([
-            of(store, 0, 0, 1),
-            of(store, 0, 0, 0),
-            of(store, 1, 1, 0),
-            of(store, 1, 0, 0),
-            of(store, 1, 1, 1),
-            of(store, 0, 1, 1),
-            of(store, 0, 1, 0),
-            of(store, 1, 0, 1),
-            //
-        ])
-        chunkSize = 2
-        store = new MapBlocksStore(chunkSize)
-        args.addAll([
-            of(store, 1, 5, 1),
-            of(store, 1, 5, 0),
-            of(store, 1, 4, 1),
-            of(store, 0, 5, 1),
-            of(store, 0, 5, 0),
-            of(store, 0, 4, 0),
-            of(store, 0, 4, 1),
-            of(store, 1, 4, 0),
-            //
-        ])
-        chunkSize = 4
-        store = new MapBlocksStore(chunkSize)
-        args.addAll([
-            of(store, 14, 12, 29),
-            of(store, 15, 14, 29),
-            of(store, 14, 13, 31),
-            of(store, 14, 12, 28),
-            of(store, 14, 13, 30),
-            of(store, 15, 15, 29),
-            of(store, 15, 15, 28),
-            of(store, 15, 14, 28),
-            of(store, 15, 15, 31),
-            of(store, 15, 15, 30),
-            of(store, 15, 14, 31),
-            of(store, 14, 13, 29),
-            of(store, 14, 12, 30),
-            of(store, 15, 14, 30),
-            of(store, 14, 13, 28),
-            of(store, 15, 12, 29),
-            of(store, 15, 12, 28),
-            of(store, 15, 13, 28),
-            of(store, 15, 13, 29),
-            of(store, 14, 12, 31),
-            of(store, 13, 14, 30),
-            of(store, 13, 14, 31),
-            of(store, 15, 13, 30),
-            of(store, 13, 14, 28),
-            of(store, 15, 12, 31),
-            of(store, 15, 12, 30),
-            of(store, 13, 14, 29),
-            of(store, 12, 14, 31),
-            of(store, 12, 12, 31),
-            of(store, 12, 12, 30),
-            of(store, 12, 14, 30),
-            of(store, 15, 13, 31),
-            of(store, 14, 15, 28),
-            of(store, 14, 15, 29),
-            of(store, 14, 15, 31),
-            of(store, 14, 15, 30),
-            of(store, 12, 12, 28),
-            of(store, 12, 14, 29),
-            of(store, 12, 14, 28),
-            of(store, 12, 12, 29),
-            of(store, 13, 12, 28),
-            of(store, 14, 14, 29),
-            of(store, 12, 15, 31),
-            of(store, 13, 15, 30),
-            of(store, 14, 14, 28),
-            of(store, 12, 15, 30),
-            of(store, 12, 13, 30),
-            of(store, 12, 13, 31),
-            of(store, 13, 13, 30),
-            of(store, 13, 15, 31),
-            of(store, 13, 13, 31),
-            of(store, 13, 12, 29),
-            of(store, 14, 14, 30),
-            of(store, 13, 12, 30),
-            of(store, 14, 14, 31),
-            of(store, 13, 12, 31),
-            of(store, 12, 15, 28),
-            of(store, 12, 13, 28),
-            of(store, 12, 15, 29),
-            of(store, 13, 15, 28),
-            of(store, 13, 15, 29),
-            of(store, 13, 13, 29),
-            of(store, 13, 13, 28),
-            of(store, 12, 13, 29),
-            //
-        ])
+        List positionsList = new BlocksPosList().run()
+        positionsList.each { List positions ->
+            int chunkSize = Math.cbrt(positions.size() / 3) as int
+            MapBlocksStore store = new MapBlocksStore(chunkSize)
+            for (int i = 0; i < positions.size(); i += 3) {
+                args.add(of(store, positions[i + 0], positions[i + 1], positions[i + 2]))
+            }
+        }
         Stream.of(args as Arguments[])
     }
 
@@ -191,6 +103,30 @@ class MapBlocksStoreTest {
         assert mb.pos.x == x
         assert mb.pos.y == y
         assert mb.pos.z == z
+    }
+
+    @Test
+    void for_each_blocks() {
+        def positionsList = new BlocksPosList().run()
+        positionsList.each { List positions ->
+            def store = new MapBlocksStore(Math.cbrt(positions.size() / 3) as int)
+            def mb = MapBlockTest.createTestBlock()
+            for (int i = 0; i < positions.size(); i += 3) {
+                mb.pos = new GameBlockPos(positions[i + 0], positions[i + 1], positions[i + 2])
+                store.setBlock(mb)
+            }
+            def list = []
+            store.forEachValue({ list.add(it) })
+            assert list.size() == positions.size() / 3
+            list.eachWithIndex { MapBlock block, int i ->
+                def blockpos = [
+                    block.pos.x,
+                    block.pos.y,
+                    block.pos.z
+                ]
+                assert positions.containsAll(blockpos)
+            }
+        }
     }
 
     @Test

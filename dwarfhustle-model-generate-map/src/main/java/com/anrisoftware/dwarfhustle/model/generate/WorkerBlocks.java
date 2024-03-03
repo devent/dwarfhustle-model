@@ -19,10 +19,11 @@ package com.anrisoftware.dwarfhustle.model.generate;
 
 import java.util.Map;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.primitive.ObjectLongMaps;
 import org.eclipse.collections.api.list.ListIterable;
-import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.primitive.MutableObjectLongMap;
 import org.lable.oss.uniqueid.GeneratorException;
 import org.lable.oss.uniqueid.IDGenerator;
@@ -110,6 +111,8 @@ public class WorkerBlocks {
 
     private long rootid;
 
+    private int chunkSize;
+
     @Inject
     public void setMaterials(@Assisted Map<String, ListIterable<GameObject>> materials) {
         var mm = this.materials;
@@ -146,6 +149,7 @@ public class WorkerBlocks {
         this.blocksDone = 0;
         this.generateDone = false;
         this.rootset = false;
+        this.chunkSize = m.gameMap.chunkSize;
         int w1 = m.gameMap.getWidth();
         int h1 = m.gameMap.getHeight();
         int d1 = m.gameMap.getDepth();
@@ -244,7 +248,6 @@ public class WorkerBlocks {
         var h = chunk.getPos().ep.getDiffY(chunk.getPos());
         var d = chunk.getPos().ep.getDiffZ(chunk.getPos());
         var blocks = createBlocksMap(w * h * d);
-        var blocksids = createBlocksIdsMap(w * h * d);
         var ids = generator.batch(w * h * d);
         for (var z = 0; z < d; z++) {
             if (cancelled) {
@@ -258,12 +261,11 @@ public class WorkerBlocks {
                     var block = new MapBlock(ids.pop());
                     setMaterial(zz, block);
                     block.setPos(new GameBlockPos(xx, yy, zz));
-                    blocks.put(block.getPos(), block);
-                    blocksids.put(block.getPos(), block.id);
+                    blocks.add(block);
                 }
             }
         }
-        chunk.setBlocks(blocksids.asUnmodifiable());
+        chunk.setBlocks(blocks);
     }
 
     private void setMaterial(int z, MapBlock block) {
@@ -298,17 +300,12 @@ public class WorkerBlocks {
 
     private MapChunk createChunk(GenerateMapMessage m, ODatabaseSession db, GameBlockPos pos, GameBlockPos endPos)
             throws GeneratorException {
-        var block = new MapChunk(generator.generate());
-        block.setPos(new GameChunkPos(pos, endPos));
+        var block = new MapChunk(generator.generate(), new GameChunkPos(pos, endPos), chunkSize);
         return block;
     }
 
-    private MutableMap<GameBlockPos, MapBlock> createBlocksMap(int n) {
-        return Maps.mutable.ofInitialCapacity(n);
-    }
-
-    private MutableObjectLongMap<GameBlockPos> createBlocksIdsMap(int n) {
-        return ObjectLongMaps.mutable.ofInitialCapacity(n);
+    private MutableList<MapBlock> createBlocksMap(int n) {
+        return Lists.mutable.ofInitialCapacity(n);
     }
 
 }
