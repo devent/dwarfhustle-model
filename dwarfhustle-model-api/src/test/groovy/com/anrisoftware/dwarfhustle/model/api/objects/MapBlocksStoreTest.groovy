@@ -65,20 +65,6 @@ class MapBlocksStoreTest {
         assert MapBlocksStore.calcIndex(w, h, x, y, z) == expected
     }
 
-    @Test
-    void convert_int_bytes_and_revert() {
-        assert MapBlocksStore.int2Bytes(new byte[4], 0) == [0, 0, 0, 0]
-        assert MapBlocksStore.int2Bytes(new byte[4], 10) == [0, 0, 0, 10]
-        assert MapBlocksStore.int2Bytes(new byte[4], 1024) == [0, 0, 4, 0]
-        assert MapBlocksStore.int2Bytes(new byte[4], 2048) == [0, 0, 8, 0]
-        assert MapBlocksStore.int2Bytes(new byte[4], 1340) == [0, 0, 5, 60]
-        assert MapBlocksStore.bytes2Int([0, 0, 0, 0] as byte[]) == 0
-        assert MapBlocksStore.bytes2Int([0, 0, 0, 10] as byte[]) == 10
-        assert MapBlocksStore.bytes2Int([0, 0, 4, 0] as byte[]) == 1024
-        assert MapBlocksStore.bytes2Int([0, 0, 8, 0] as byte[]) == 2048
-        assert MapBlocksStore.bytes2Int([0, 0, 5, 60] as byte[]) == 1340
-    }
-
     static Stream put_and_get_map_block() {
         def args = []
         List positionsList = new BlocksPosList().run()

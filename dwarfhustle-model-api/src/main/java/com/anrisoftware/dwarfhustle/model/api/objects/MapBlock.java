@@ -35,7 +35,8 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
- * Tile on the game map.
+ * Block on the game map. The block is not stored individually but inside the
+ * {@link MapChunk}.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
@@ -56,10 +57,6 @@ public class MapBlock extends GameMapObject implements Externalizable {
     private static final long serialVersionUID = 1L;
 
     public static final String OBJECT_TYPE = MapBlock.class.getSimpleName();
-
-    public static MapBlock getMapBlock(ObjectsGetter og, long id) {
-        return og.get(MapBlock.class, OBJECT_TYPE, id);
-    }
 
     /**
      * ID of the material.

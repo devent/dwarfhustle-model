@@ -20,10 +20,10 @@ package com.anrisoftware.dwarfhustle.model.db.orientdb.actor
 import java.time.Duration
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
-import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos
-import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock
+import com.anrisoftware.dwarfhustle.model.api.objects.GameChunkPos
+import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbErrorMessage
-import com.anrisoftware.dwarfhustle.model.db.orientdb.storages.MapBlockStorage
+import com.anrisoftware.dwarfhustle.model.db.orientdb.storages.MapChunkStorage
 import com.orientechnologies.orient.core.db.ODatabaseType
 import com.orientechnologies.orient.core.db.OrientDB
 
@@ -144,12 +144,11 @@ class DbTestUtils {
                 AskPattern.ask(
                 dbActor, {replyTo ->
                     new DbCommandMessage(replyTo, { db ->
-                        def go = new MapBlock(generator.generate())
-                        go.pos = new GameBlockPos(0, 10, 20, 2)
-                        go.material = 1
+                        def go = new MapChunk(generator.generate())
+                        go.pos = new GameChunkPos(4, 4, 4, 8, 8, 8)
                         def doc = db.newVertex(go.getType());
                         db.begin();
-                        new MapBlockStorage().save(doc, go)
+                        new MapChunkStorage().save(doc, go)
                         doc.save();
                         db.commit();
                     })

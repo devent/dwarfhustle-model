@@ -19,5 +19,6 @@
 <entry name="log.file.level" value="fine"/>
    //The following is required to eliminate an error or warning "Error on resolving property: ORIENTDB_HOME"
 <entry name="plugin.dynamic" value="false"/>
+<entry name="storage.diskCache.bufferSize" value="1024"/>
 </properties>
 </orient-server>

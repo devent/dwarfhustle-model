@@ -51,6 +51,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ImporterMapImage2DbApp {
 
+    private static final Duration START_EMBEDDED_TIMEOUT = Duration.ofMinutes(10);
+
     private static final Duration IMPORT_IMAGE_TIMEOUT = Duration.ofMinutes(30);
 
     @Inject
@@ -164,7 +166,8 @@ public class ImporterMapImage2DbApp {
     private void connectDbEmbedded(File root, String database, String user, String password) {
         URL config = ImporterMapImage2DbApp.class.getResource("orientdb-config.xml");
         var lock = new CountDownLatch(1);
-        var ret = askImporterStartEmbeddedServer(actor.getActorSystem(), ofSeconds(30), root.getAbsolutePath(), config,
+        var ret = askImporterStartEmbeddedServer(actor.getActorSystem(), START_EMBEDDED_TIMEOUT, root.getAbsolutePath(),
+                config,
                 database, user, password);
         ret.whenComplete((res, ex) -> {
             if (ex != null) {

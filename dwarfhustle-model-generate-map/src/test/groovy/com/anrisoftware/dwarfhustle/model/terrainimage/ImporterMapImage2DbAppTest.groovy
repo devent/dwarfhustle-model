@@ -94,15 +94,17 @@ class ImporterMapImage2DbAppTest {
     }
 
     @Test
-    @Timeout(value = 30, unit = TimeUnit.MINUTES)
-    void test_start_import_128_128_128(@TempDir File tmp) {
+    @Timeout(value = 10, unit = TimeUnit.MINUTES)
+    void test_start_import_128_128_128() {
         def image = TerrainImage.terrain_128_128_128
         def importer = injector.getInstance(ImporterMapImage2DbApp)
-        importer.initEmbedded(injector, tmp, image.name(), "root", "admin").get()
+        def out = new File("db", image.name())
+        assert out.deleteDir()
+        importer.initEmbedded(injector, out, image.name(), "root", "admin").get()
         long gmid = importer.createGameMap(image.terrain)
         importer.startImport(ImporterMapImage2DbAppTest.class.getResource(image.imageName), image.terrain, gmid)
         def actor = injector.getInstance(ActorSystemProvider)
         importer.shutdownEmbedded().get()
-        println "done"
+        println "done in ${out}"
     }
 }
