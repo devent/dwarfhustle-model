@@ -128,17 +128,13 @@ public class MapBlocksStore implements Serializable, Externalizable, StreamStora
     @Override
     public void writeStream(DataOutput out) throws IOException {
         out.writeBoolean(empty);
-        if (!empty) {
-            out.write(buffer);
-        }
+        out.write(buffer);
     }
 
     @Override
     public void readStream(DataInput in) throws IOException {
         this.empty = in.readBoolean();
-        if (!empty) {
-            in.readFully(buffer);
-        }
+        in.readFully(buffer);
     }
 
 }
