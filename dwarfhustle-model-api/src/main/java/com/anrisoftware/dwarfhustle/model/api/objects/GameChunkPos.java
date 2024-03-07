@@ -17,9 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -30,6 +30,12 @@ import lombok.ToString;
 
 /**
  * Start position and end position and a {@link MapChunk}.
+ * <p>
+ * Size 24 bytes
+ * <ul>
+ * <li>12(super)
+ * <li>3*4(ex,ey,ez)
+ * </ul>
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
@@ -144,15 +150,15 @@ public class GameChunkPos extends GameBlockPos {
     }
 
     @Override
-    public void writeExternal(ObjectOutput out) throws IOException {
-        super.writeExternal(out);
-        ep.writeExternal(out);
+    public void writeStream(DataOutput out) throws IOException {
+        super.writeStream(out);
+        this.ep.writeStream(out);
     }
 
     @Override
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        super.readExternal(in);
-        this.ep.readExternal(in);
+    public void readStream(DataInput in) throws IOException {
+        super.readStream(in);
+        this.ep.readStream(in);
     }
 
 }

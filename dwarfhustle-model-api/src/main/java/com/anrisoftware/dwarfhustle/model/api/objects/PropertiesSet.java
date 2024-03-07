@@ -17,18 +17,24 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.io.Serializable;
 
 /**
  * Simple bit set that for properties.
+ * <p>
+ * Size 4 bytes
+ * <ul>
+ * <li>4(bits)
+ * </ul>
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-public class PropertiesSet implements Serializable, Externalizable {
+public class PropertiesSet implements Externalizable, StreamStorage {
 
     private static final long serialVersionUID = 1L;
 
@@ -121,11 +127,21 @@ public class PropertiesSet implements Serializable, Externalizable {
 
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeInt(bits);
+        writeStream(out);
     }
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        readStream(in);
+    }
+
+    @Override
+    public void writeStream(DataOutput out) throws IOException {
+        out.writeInt(bits);
+    }
+
+    @Override
+    public void readStream(DataInput in) throws IOException {
         this.bits = in.readInt();
     }
 

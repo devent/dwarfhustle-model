@@ -26,20 +26,19 @@ import org.junit.jupiter.api.Test
  */
 class MapChunkTest {
 
-    @Test
-    void map_tile_type() {
-        def go = new MapChunk()
-        assert go.objectType == "MapChunk"
+    static MapChunk createTestChunk() {
+        def go = new MapChunk(11111111, new GameChunkPos(0, 0, 0, 4, 4, 4), 2)
+        go.updateCenterExtent(4, 4, 4)
+        go.parent = 1000001
+        (0..7).each { go.chunks.put(new GameChunkPos(it, it, it, it + 1, it + 1, it + 1), 88888888) }
+        NeighboringDir.values().each { go.setNeighbor(it, 11111111) }
+        return go
     }
 
     @Test
     void serialize_deserialize_no_block() {
-        def chunk = new MapChunk(11111111, new GameChunkPos(0, 0, 0, 4, 4, 4), 2)
-        chunk.map = 111111101
-        chunk.updateCenterExtent(4, 4, 4)
-        chunk.root = true
-        chunk.parent = 0
-        def buffout = new ByteArrayOutputStream()
+        def chunk = createTestChunk()
+        def buffout = new ByteArrayOutputStream(1024)
         def oout = new ObjectOutputStream(buffout)
         oout.writeObject(chunk)
         oout.close()
@@ -47,12 +46,34 @@ class MapChunkTest {
         def oin = new ObjectInputStream(buffin)
         def thatchunk = oin.readObject() as MapChunk
         assert chunk.id == thatchunk.id
-        assert chunk.map == thatchunk.map
         assert chunk.pos == thatchunk.pos
         assert chunk.blocks != thatchunk.blocks
         assert chunk.centerExtent == thatchunk.centerExtent
-        assert chunk.chunkDir == thatchunk.chunkDir
+        assert chunk.dir == thatchunk.dir
         assert chunk.chunks == thatchunk.chunks
+        assert chunk.chunkSize == thatchunk.chunkSize
+        assert chunk.parent == thatchunk.parent
+        assert chunk.root == thatchunk.root
+        assert chunk == thatchunk
+    }
+
+    @Test
+    void stream_write_read_no_block() {
+        def chunk = createTestChunk()
+        def buffout = new ByteArrayOutputStream(1024)
+        def oout = new DataOutputStream(buffout)
+        chunk.writeStream(oout)
+        oout.close()
+        def buffin = new ByteArrayInputStream(buffout.toByteArray())
+        def oin = new DataInputStream(buffin)
+        def thatchunk = new MapChunk()
+        thatchunk.readStream(oin)
+        assert chunk.id == thatchunk.id
+        assert chunk.pos == thatchunk.pos
+        assert chunk.blocks != thatchunk.blocks
+        assert chunk.centerExtent == thatchunk.centerExtent
+        assert chunk.dir == thatchunk.dir
+        assert chunk.chunks.containsAll(thatchunk.chunks.values())
         assert chunk.chunkSize == thatchunk.chunkSize
         assert chunk.parent == thatchunk.parent
         assert chunk.root == thatchunk.root
@@ -61,14 +82,10 @@ class MapChunkTest {
 
     @Test
     void serialize_deserialize_one_block() {
-        def chunk = new MapChunk(11111111, new GameChunkPos(0, 0, 0, 4, 4, 4), 2)
+        def chunk = createTestChunk()
         def block = MapBlockTest.createTestBlock()
         block.pos = new GameBlockPos(0, 0, 0)
         chunk.setBlock(block)
-        chunk.map = 111111101
-        chunk.updateCenterExtent(4, 4, 4)
-        chunk.root = true
-        chunk.parent = 0
         def buffout = new ByteArrayOutputStream()
         def oout = new ObjectOutputStream(buffout)
         oout.writeObject(chunk)
@@ -76,17 +93,6 @@ class MapChunkTest {
         def buffin = new ByteArrayInputStream(buffout.toByteArray())
         def oin = new ObjectInputStream(buffin)
         def thatchunk = oin.readObject() as MapChunk
-        assert chunk.id == thatchunk.id
-        assert chunk.map == thatchunk.map
-        assert chunk.pos == thatchunk.pos
-        assert chunk.blocks != thatchunk.blocks
-        assert chunk.centerExtent == thatchunk.centerExtent
-        assert chunk.chunkDir == thatchunk.chunkDir
-        assert chunk.chunks == thatchunk.chunks
-        assert chunk.chunkSize == thatchunk.chunkSize
-        assert chunk.parent == thatchunk.parent
-        assert chunk.root == thatchunk.root
-        assert chunk == thatchunk
         def thatblock = chunk.getBlock(new GameBlockPos(0, 0, 0))
         assert block == thatblock
     }
@@ -116,7 +122,7 @@ class MapChunkTest {
         def oin = new ObjectInputStream(buffin)
         for (int i = 0; i < chunksCount; i++) {
             def thatchunk = oin.readObject() as MapChunk
-            assert thatchunk.id == 11111111 + i
+            assert thatchunk.cid == 11111111 + i
         }
     }
 }

@@ -28,29 +28,31 @@ class MapBlockTest {
 
     static MapBlock createTestBlock() {
         def go = new MapBlock()
-        go.id = 23423234
-        go.map = 6666666
         go.pos = new GameBlockPos(10, 10, 10)
         go.updateCenterExtent(4, 4, 4)
-        go.chunk = 7777777
+        go.parent = 7777777
         go.material = 8888888
         go.setNaturalFloor(true)
         go.setNaturalRoof(true)
-        NeighboringDir.values().each { go.setNeighbor(it, 11111111) }
+        NeighboringDir.values().eachWithIndex { it, i -> go.setNeighbor(it, new GameBlockPos(i, i, i)) }
         return go
     }
 
     @Test
-    void map_tile_type() {
-        def go = new MapBlock()
-        assert go.objectType == "MapBlock"
+    void map_tile_byte_size_objectstream() {
+        def stream = new ByteArrayOutputStream()
+        def ostream = new ObjectOutputStream(stream)
+        def go = createTestBlock()
+        ostream.writeObject(go)
+        assert stream.size() == 458
     }
 
     @Test
-    void map_tile_byte_size() {
+    void map_tile_byte_size_datastream() {
         def stream = new ByteArrayOutputStream()
-        def ostream = new ObjectOutputStream(stream)
-        ostream.writeObject(go)
-        assert stream.size() == 1340
+        def ostream = new DataOutputStream(stream)
+        def go = createTestBlock()
+        go.writeStream(ostream)
+        assert stream.size() == 376
     }
 }

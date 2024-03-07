@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -28,6 +30,13 @@ import lombok.ToString;
 
 /**
  * Game object on the game map.
+ * <p>
+ * Size 28 bytes
+ * <ul>
+ * <li>8(super)
+ * <li>8(map)
+ * <li>12(pos)
+ * </ul>
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
@@ -76,16 +85,26 @@ public abstract class GameMapObject extends GameObject {
 
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
-        super.writeExternal(out);
-        out.writeLong(map);
-        getPos().writeExternal(out);
+        writeStream(out);
     }
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        super.readExternal(in);
+        readStream(in);
+    }
+
+    @Override
+    public void writeStream(DataOutput out) throws IOException {
+        super.writeStream(out);
+        out.writeLong(map);
+        getPos().writeStream(out);
+    }
+
+    @Override
+    public void readStream(DataInput in) throws IOException {
+        super.readStream(in);
         this.map = in.readLong();
-        getPos().readExternal(in);
+        getPos().readStream(in);
     }
 
 }

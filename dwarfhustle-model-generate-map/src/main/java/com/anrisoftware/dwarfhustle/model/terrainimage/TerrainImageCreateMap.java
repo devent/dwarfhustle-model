@@ -152,7 +152,7 @@ public class TerrainImageCreateMap {
                         blocksCount++;
                         mb.pos = new GameBlockPos(xx, yy, zz);
                         mb.map = gm.id;
-                        mb.chunk = chunk.id;
+                        mb.parent = chunk.id;
                         mb.setMaterialRid(terrain[zz][yy][xx]);
                         mb.setObjectRid(809);
                         mb.updateCenterExtent(gm.width, gm.height, gm.depth);
@@ -221,7 +221,7 @@ public class TerrainImageCreateMap {
                         chunk.setNeighborSouthWest(w);
                     }
                     if (chunk.getBlocksNotEmpty()) {
-                        chunk.getBlocks().forEachValue(mb -> setupBlockNeighbors(chunk, mb));
+                        chunk.getBlocks().forEachValue(mb -> setupBlockNeighbors(parent, mb));
                     }
                     chunks.add(chunk);
                 }

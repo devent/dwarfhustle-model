@@ -17,11 +17,12 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.io.Serializable;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -30,6 +31,11 @@ import lombok.ToString;
 
 /**
  * Game object of the game.
+ * <p>
+ * Size 8 bytes
+ * <ul>
+ * <li>8(id)
+ * </ul>
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
@@ -37,7 +43,7 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode
 @Data
-public class GameObject implements Serializable, Externalizable {
+public class GameObject implements Externalizable, StreamStorage {
 
     private static final long serialVersionUID = 1L;
 
@@ -81,11 +87,21 @@ public class GameObject implements Serializable, Externalizable {
 
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeLong(id);
+        writeStream(out);
     }
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        readStream(in);
+    }
+
+    @Override
+    public void writeStream(DataOutput out) throws IOException {
+        out.writeLong(id);
+    }
+
+    @Override
+    public void readStream(DataInput in) throws IOException {
         this.id = in.readLong();
     }
 }

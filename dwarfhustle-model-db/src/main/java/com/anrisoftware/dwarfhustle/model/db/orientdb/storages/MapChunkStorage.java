@@ -83,7 +83,7 @@ public class MapChunkStorage extends AbstractGameObjectStorage {
         v.setProperty(POS_END_Z_FIELD, mc.getPos().ep.z);
         v.setProperty(ROOT_FIELD, mc.isRoot());
         for (var n : NeighboringDir.values()) {
-            v.setProperty(NeighboringSchema.getName(n), mc.chunkDir.get(n.ordinal()));
+            v.setProperty(NeighboringSchema.getName(n), mc.dir.get(n.ordinal()));
         }
         v.setProperty(PARENT_FIELD, mc.getParent());
         v.setProperty(CENTER_X_FIELD, mc.centerExtent.centerx);

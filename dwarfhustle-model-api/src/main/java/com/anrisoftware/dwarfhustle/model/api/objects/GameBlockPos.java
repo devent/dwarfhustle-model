@@ -17,11 +17,12 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.io.Serializable;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -31,13 +32,18 @@ import lombok.NoArgsConstructor;
 
 /**
  * X, Y and Z position of a {@link GameObject} on the game map.
+ * <p>
+ * Size 12 bytes
+ * <ul>
+ * <li>3*4(x,y,z)
+ * </ul>
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class GameBlockPos implements Serializable, Externalizable {
+public class GameBlockPos implements Externalizable, StreamStorage {
 
     private static final long serialVersionUID = 1L;
 
@@ -110,13 +116,23 @@ public class GameBlockPos implements Serializable, Externalizable {
 
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
+        writeStream(out);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        readStream(in);
+    }
+
+    @Override
+    public void writeStream(DataOutput out) throws IOException {
         out.writeInt(x);
         out.writeInt(y);
         out.writeInt(z);
     }
 
     @Override
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+    public void readStream(DataInput in) throws IOException {
         this.x = in.readInt();
         this.y = in.readInt();
         this.z = in.readInt();

@@ -21,6 +21,7 @@ import static org.junit.jupiter.params.provider.Arguments.of
 
 import java.util.stream.Stream
 
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 
@@ -103,5 +104,18 @@ class GameChunkPosTest {
     @MethodSource
     void chunk_contains_pos(GameChunkPos p, GameBlockPos p1, boolean contains) {
         assert p.contains(p1) == contains
+    }
+
+    @Test
+    void chunkpos_serialize() {
+        def pos = new GameChunkPos(1, 2, 3, 4, 5, 6)
+        def buffout = new ByteArrayOutputStream(1024)
+        def oout = new ObjectOutputStream(buffout)
+        oout.writeObject(pos)
+        oout.close()
+        def buffin = new ByteArrayInputStream(buffout.toByteArray())
+        def oin = new ObjectInputStream(buffin)
+        def thatpos = oin.readObject() as GameChunkPos
+        assert thatpos == pos
     }
 }
