@@ -16,6 +16,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.commons.compress.archivers.zip.ZipFile;
+
 import lombok.SneakyThrows;
 
 /**
@@ -45,10 +49,18 @@ public class MapChunksStore {
 
     private final byte[] buffer;
 
+    private ZipFile zipFile;
+
+    private ZipArchiveOutputStream zstream;
+
     public MapChunksStore(Path file, int chunkSize) throws IOException {
         this.channel = Files.newByteChannel(file, CREATE, READ, WRITE);
+        if (channel.size() > 0) {
+            this.zipFile = ZipFile.builder().setSeekableByteChannel(channel).get();
+        }
         this.buffer = new byte[MapChunk.SIZE + chunkSize * chunkSize * chunkSize * BLOCK_SIZE_BYTES];
         this.cache = ByteBuffer.allocate(MapChunk.SIZE + chunkSize * chunkSize * chunkSize * BLOCK_SIZE_BYTES);
+        this.zstream = new ZipArchiveOutputStream(channel);
     }
 
     public void setChunks(Iterable<MapChunk> chunks) {
@@ -60,15 +72,22 @@ public class MapChunksStore {
     @SneakyThrows
     public synchronized void setChunk(MapChunk chunk) {
         int index = (int) chunk.getCid();
-        int pos = index * buffer.length;
+        // int pos = index * buffer.length;
+        var entry = new ZipArchiveEntry(Integer.toString(index));
+
         var stream = new ByteArrayOutputStream(buffer.length);
         var dstream = new DataOutputStream(stream);
         chunk.writeStream(dstream);
         dstream.close();
-        cache.position(0);
-        cache.put(stream.toByteArray());
-        cache.rewind();
-        channel.position(pos).write(cache);
+        entry.setSize(stream.size());
+        zstream.putArchiveEntry(entry);
+        zstream.write(stream.toByteArray());
+        zstream.closeArchiveEntry();
+
+        // cache.position(0);
+        // cache.put(stream.toByteArray());
+        // cache.rewind();
+        // channel.position(pos).write(cache);
     }
 
     @SneakyThrows
@@ -106,6 +125,7 @@ public class MapChunksStore {
 
     public void close() throws IOException {
         System.out.println(channel.size()); // TODO
+        zstream.close();
         channel.close();
     }
 }
