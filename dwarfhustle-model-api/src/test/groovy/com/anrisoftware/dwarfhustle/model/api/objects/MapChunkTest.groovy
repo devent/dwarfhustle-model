@@ -26,8 +26,9 @@ import org.junit.jupiter.api.Test
  */
 class MapChunkTest {
 
-    static MapChunk createTestChunk() {
-        def go = new MapChunk(11111111, new GameChunkPos(0, 0, 0, 4, 4, 4), 2)
+    static MapChunk createTestChunk(long cid = 0, int chunkSize = 2) {
+        def go = new MapChunk(cid, chunkSize)
+        go.pos = new GameChunkPos(0, 0, 0, 4, 4, 4)
         go.updateCenterExtent(4, 4, 4)
         go.parent = 1000001
         (0..7).each { go.chunks.put(new GameChunkPos(it, it, it, it + 1, it + 1, it + 1), 88888888) }
@@ -105,7 +106,8 @@ class MapChunkTest {
         def mb = MapBlockTest.createTestBlock()
         int chunksCount = 10
         for (int i = 0; i < chunksCount; i++) {
-            def chunk = new MapChunk(11111111 + i, new GameChunkPos(0, 0, 0, 32, 32, 32), chunkSize)
+            def chunk = new MapChunk(11111111 + i, chunkSize)
+            chunk.pos = new GameChunkPos(0, 0, 0, 32, 32, 32)
             chunk.updateCenterExtent(32, 32, 32)
             for (int x = 0; x < 32; x++) {
                 for (int y = 0; y < 32; y++) {

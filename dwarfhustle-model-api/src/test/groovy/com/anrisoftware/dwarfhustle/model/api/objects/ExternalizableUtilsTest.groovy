@@ -22,6 +22,8 @@ import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils
 import org.eclipse.collections.api.factory.primitive.IntLongMaps
 import org.eclipse.collections.api.factory.primitive.ObjectLongMaps
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 
 /**
  * @see ExternalizableUtils
@@ -47,7 +49,7 @@ class ExternalizableUtilsTest {
     }
 
     @Test
-    void map_tile_byte_size_objectstream() {
+    void map_block_byte_size_objectstream() {
         def stream = new ByteArrayOutputStream(1024)
         def ostream = new ObjectOutputStream(stream)
         def go = MapBlockTest.createTestBlock()
@@ -56,13 +58,28 @@ class ExternalizableUtilsTest {
     }
 
     @Test
-    void map_tile_byte_size_stream_storage() {
+    void map_block_byte_size_stream_storage() {
         def sout = new ByteArrayOutputStream(1024)
         def bout = new DataOutputStream(sout)
         def go = MapBlockTest.createTestBlock()
         go.writeStream(bout)
         sout.flush()
         assert sout.size() == 396
+    }
+
+    @ParameterizedTest
+    @CsvSource([
+        "2,4633",
+        "4,33305",
+        "8,262681"
+    ])
+    void map_chunk_byte_size_stream_storage(int chunkSize, int expectedSize) {
+        def sout = new ByteArrayOutputStream(1024)
+        def bout = new DataOutputStream(sout)
+        def go = MapChunkTest.createTestChunk(0, chunkSize)
+        go.writeStream(bout)
+        sout.flush()
+        assert sout.size() == expectedSize
     }
 
     @Test

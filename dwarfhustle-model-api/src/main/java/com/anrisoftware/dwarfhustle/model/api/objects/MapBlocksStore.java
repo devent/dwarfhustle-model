@@ -30,7 +30,7 @@ public class MapBlocksStore implements Serializable, Externalizable, StreamStora
 
     private static final long serialVersionUID = 1L;
 
-    private static final int BLOCK_SIZE_BYTES = 512;
+    public static final int BLOCK_SIZE_BYTES = 512;
 
     public static int calcIndex(int w, int h, int x, int y, int z) {
         return z * w * h + y * w + x;

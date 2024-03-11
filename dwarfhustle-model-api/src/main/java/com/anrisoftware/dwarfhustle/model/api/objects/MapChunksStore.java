@@ -1,12 +1,19 @@
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlocksStore.BLOCK_SIZE_BYTES;
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.READ;
+import static java.nio.file.StandardOpenOption.WRITE;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.SeekableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.function.Consumer;
 
 import lombok.SneakyThrows;
@@ -14,106 +21,91 @@ import lombok.SneakyThrows;
 /**
  * Stores {@link MapChunk}s from an indexed file.
  *
+ * <ul>
+ * <li>4x4x4 2 9 64 = 41697 bytes = 42 KB 41697
+ * <li>8x8x8 2 73 512 = 338209 bytes = 338 KB
+ * <li>32x32x32 4 585 32768 = 19483425 bytes = 20 MB
+ * <li>128x128x128 16 585 2097152 = 1227148065 bytes = 1,227 GB
+ * <li>256x256x128 16 585 8388608 = 1227148065 bytes = 1,227 GB
+ * </ul>
+ *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-public class MapChunksStore implements StreamStorage {
+public class MapChunksStore {
 
-    private static final int CHUNK_SIZE_BYTES = 512;
+    public static final int CHUNK_SIZE_BYTES = MapChunk.SIZE;
 
     public static int calcIndex(int w, int h, int x, int y, int z) {
         return z * w * h + y * w + x;
     }
 
-    private byte[] buffer;
+    private final SeekableByteChannel channel;
 
-    private int chunkSize;
+    private final ByteBuffer cache;
 
-    private int size;
+    private final byte[] buffer;
 
-    private boolean empty = true;
-
-    public MapChunksStore(int chunkSize) {
-        this.chunkSize = chunkSize;
-        this.size = chunkSize * chunkSize * chunkSize;
-        this.buffer = new byte[BLOCK_SIZE_BYTES * size];
+    public MapChunksStore(Path file, int chunkSize) throws IOException {
+        this.channel = Files.newByteChannel(file, CREATE, READ, WRITE);
+        this.buffer = new byte[MapChunk.SIZE + chunkSize * chunkSize * chunkSize * BLOCK_SIZE_BYTES];
+        this.cache = ByteBuffer.allocate(MapChunk.SIZE + chunkSize * chunkSize * chunkSize * BLOCK_SIZE_BYTES);
     }
 
-    public void setBlocks(Iterable<MapBlock> blocks) {
-        for (var block : blocks) {
-            setBlock(block);
+    public void setChunks(Iterable<MapChunk> chunks) {
+        for (var chunk : chunks) {
+            setChunk(chunk);
         }
     }
 
     @SneakyThrows
-    public synchronized void setBlock(MapBlock block) {
-        int index = calcIndex(chunkSize, chunkSize, block.pos.x, block.pos.y, block.pos.z) % size;
-        int pos = index * BLOCK_SIZE_BYTES;
-        var stream = new ByteArrayOutputStream(BLOCK_SIZE_BYTES);
-        new ObjectOutputStream(stream).writeObject(block);
-        int size = stream.size();
-        stream.flush();
-        stream.close();
-        System.arraycopy(stream.toByteArray(), 0, buffer, pos, size);
-        this.empty = false;
+    public synchronized void setChunk(MapChunk chunk) {
+        int index = (int) chunk.getCid();
+        int pos = index * buffer.length;
+        var stream = new ByteArrayOutputStream(buffer.length);
+        var dstream = new DataOutputStream(stream);
+        chunk.writeStream(dstream);
+        dstream.close();
+        cache.position(0);
+        cache.put(stream.toByteArray());
+        cache.rewind();
+        channel.position(pos).write(cache);
     }
 
     @SneakyThrows
-    public synchronized MapBlock getBlock(GameBlockPos pos) {
-        if (empty) {
-            return null;
-        }
-        int index = calcIndex(chunkSize, chunkSize, pos.x, pos.y, pos.z) % size;
-        int skip = index * BLOCK_SIZE_BYTES;
+    public synchronized MapChunk getChunk(long cid) {
+        int index = (int) cid;
+        int skip = index * CHUNK_SIZE_BYTES;
+        channel.position(skip).read(cache);
+        cache.get(buffer);
         var stream = new ByteArrayInputStream(buffer);
-        stream.skip(skip);
-        var ostream = new ObjectInputStream(stream);
-        var block = (MapBlock) ostream.readObject();
-        return block;
+        var ostream = new DataInputStream(stream);
+        var chunk = new MapChunk();
+        chunk.readStream(ostream);
+        return chunk;
     }
 
     /**
-     * Iterates over all {@link MapBlock}s in the storage. The order is not
-     * necessarily the same as the order the blocks were set.
+     * Iterates over all {@link MapChunk}s in the storage. The order is not
+     * necessarily the same as the order the chunks were set.
      */
     @SneakyThrows
-    public synchronized void forEachValue(Consumer<MapBlock> consumer) {
-        if (empty) {
+    public synchronized void forEachValue(Consumer<MapChunk> consumer) {
+        if (channel.size() == 0) {
             return;
         }
-        for (int i = 0; i < size; i++) {
+        channel.position(0);
+        while (channel.read(cache) > 0) {
+            cache.put(buffer);
             var stream = new ByteArrayInputStream(buffer);
-            stream.skip(i * BLOCK_SIZE_BYTES);
-            var ostream = new ObjectInputStream(stream);
-            consumer.accept((MapBlock) ostream.readObject());
+            var ostream = new DataInputStream(stream);
+            var chunk = new MapChunk();
+            chunk.readStream(ostream);
+            consumer.accept(chunk);
         }
     }
 
-    public synchronized boolean isEmpty() {
-        return empty;
+    public void close() throws IOException {
+        System.out.println(channel.size()); // TODO
+        channel.close();
     }
-
-    public synchronized void setData(byte[] data) {
-        this.buffer = data;
-    }
-
-    public synchronized byte[] getData() {
-        return buffer;
-    }
-
-    @Override
-    public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeBoolean(empty);
-        if (!empty) {
-            out.write(buffer);
-        }
-    }
-
-    @Override
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        this.empty = in.readBoolean();
-        if (!empty) {
-            in.readFully(buffer);
-        }
-    }
-
 }

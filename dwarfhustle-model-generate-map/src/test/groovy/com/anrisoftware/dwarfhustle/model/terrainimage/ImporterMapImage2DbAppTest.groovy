@@ -67,6 +67,27 @@ class ImporterMapImage2DbAppTest {
         }).get()
     }
 
+    /**
+     * chunksCount = 9
+     * blocksCount = 64
+     */
+    @Test
+    @Timeout(600)
+    void test_start_import_4_4_4(@TempDir File tmp) {
+        def image = TerrainImage.terrain_4_4_4
+        def importer = injector.getInstance(ImporterMapImage2DbApp)
+        importer.initEmbedded(injector, tmp, image.name(), "root", "admin").get()
+        long gmid = importer.createGameMap(image.terrain)
+        importer.startImport(ImporterMapImage2DbAppTest.class.getResource(image.imageName), image.terrain, gmid)
+        def actor = injector.getInstance(ActorSystemProvider)
+        importer.shutdownEmbedded().get()
+        println "done"
+    }
+
+    /**
+     * chunksCount = 73
+     * blocksCount = 512
+     */
     @Test
     @Timeout(600)
     void test_start_import_8_8_8(@TempDir File tmp) {
@@ -80,6 +101,10 @@ class ImporterMapImage2DbAppTest {
         println "done"
     }
 
+    /**
+     * chunksCount = 585
+     * blocksCount = 32768
+     */
     @Test
     @Timeout(600)
     void test_start_import_32_32_32(@TempDir File tmp) {
@@ -93,10 +118,33 @@ class ImporterMapImage2DbAppTest {
         println "done"
     }
 
+    /**
+     * chunksCount = 585
+     * blocksCount = 2097152
+     */
     @Test
     @Timeout(value = 10, unit = TimeUnit.MINUTES)
     void test_start_import_128_128_128() {
         def image = TerrainImage.terrain_128_128_128
+        def importer = injector.getInstance(ImporterMapImage2DbApp)
+        def out = new File("db", image.name())
+        assert out.deleteDir()
+        importer.initEmbedded(injector, out, image.name(), "root", "admin").get()
+        long gmid = importer.createGameMap(image.terrain)
+        importer.startImport(ImporterMapImage2DbAppTest.class.getResource(image.imageName), image.terrain, gmid)
+        def actor = injector.getInstance(ActorSystemProvider)
+        importer.shutdownEmbedded().get()
+        println "done in ${out}"
+    }
+
+    /**
+     * chunksCount = 585
+     * blocksCount = 8388608
+     */
+    @Test
+    @Timeout(value = 10, unit = TimeUnit.MINUTES)
+    void test_start_import_256_256_128() {
+        def image = TerrainImage.terrain_256_256_128
         def importer = injector.getInstance(ImporterMapImage2DbApp)
         def out = new File("db", image.name())
         assert out.deleteDir()

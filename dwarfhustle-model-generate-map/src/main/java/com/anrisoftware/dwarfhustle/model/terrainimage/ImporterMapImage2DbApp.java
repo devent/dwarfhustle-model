@@ -166,8 +166,8 @@ public class ImporterMapImage2DbApp {
     private void connectDbEmbedded(File root, String database, String user, String password) {
         URL config = ImporterMapImage2DbApp.class.getResource("orientdb-config.xml");
         var lock = new CountDownLatch(1);
-        var ret = askImporterStartEmbeddedServer(actor.getActorSystem(), START_EMBEDDED_TIMEOUT, root.getAbsolutePath(),
-                config,
+        String rootPath = root.getAbsolutePath();
+        var ret = askImporterStartEmbeddedServer(actor.getActorSystem(), START_EMBEDDED_TIMEOUT, rootPath, config,
                 database, user, password);
         ret.whenComplete((res, ex) -> {
             if (ex != null) {

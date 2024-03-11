@@ -1,10 +1,12 @@
 package com.anrisoftware.dwarfhustle.model.terrainimage;
 
 import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
+import static com.anrisoftware.dwarfhustle.model.api.objects.GameMap.getGameMap;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StopEmbeddedServerMessage.askStopEmbeddedServer;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.concurrent.CompletionStage;
 
@@ -15,6 +17,7 @@ import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.actor.ShutdownMessage;
 import com.anrisoftware.dwarfhustle.model.api.objects.IdsObjectsProvider.IdsObjects;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapChunksStore;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CloseDbMessage;
@@ -152,6 +155,8 @@ public class ImporterMapImage2DbActor {
     @SuppressWarnings("rawtypes")
     private ActorRef importImageReplyTo;
 
+    private String root;
+
     /**
      * @see #getInitialBehavior()
      */
@@ -166,9 +171,10 @@ public class ImporterMapImage2DbActor {
         this.database = m.database;
         this.user = m.user;
         this.password = m.password;
+        this.root = m.root;
         dbActor.tell(new StartEmbeddedServerMessage<>(dbResponseAdapter, m.root, m.config));
         this.startServerReplyTo = m.replyTo;
-        return getServerStartedBehavior().build();
+        return Behaviors.same();
     }
 
     @SuppressWarnings({ "rawtypes" })
@@ -183,7 +189,9 @@ public class ImporterMapImage2DbActor {
         log.debug("onImportImage {}", m);
         this.importImageReplyTo = m.replyTo;
         try {
-            terrainImageCreateMap.create(og).startImport(m.url, m.image, m.mapid);
+            var gm = getGameMap(og, m.mapid);
+            var chunksStore = new MapChunksStore(Path.of(root, String.format("%4d.map", m.mapid)), gm.chunkSize);
+            terrainImageCreateMap.create(chunksStore).startImport(m.url, m.image, gm);
             dbActor.tell(new RebuildIndexMessage<>(dbResponseAdapter));
         } catch (IOException | GeneratorException e) {
             log.error("onImportImage", e);
@@ -212,6 +220,7 @@ public class ImporterMapImage2DbActor {
             dbActor.tell(new CreateSchemasMessage<>(dbResponseAdapter));
         } else if (r instanceof CreateSchemasSuccessMessage rm) {
             startServerReplyTo.tell(new ImporterStartEmbeddedServerSuccessMessage<>());
+            return getServerStartedBehavior().build();
         } else if (r instanceof RebuildIndexSuccessMessage rm) {
             importImageReplyTo.tell(new ImportImageSuccessMessage<>());
         } else if (r instanceof CloseDbSuccessMessage rm) {

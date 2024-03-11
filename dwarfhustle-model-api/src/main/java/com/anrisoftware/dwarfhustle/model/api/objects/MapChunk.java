@@ -38,15 +38,15 @@ import lombok.ToString;
 /**
  * Collection of map tile chunks and blocks.
  * <p>
- * Size 533 bytes without blocks.
+ * Size 537 bytes without blocks.
  * <ul>
  * <li>8(id)
  * <li>8(parent)
  * <li>24(pos)
  * <li>4(chunkSize)
  * <li>24(centerExtent)
- * <li>26*8(chunkDir)
- * <li>8*24+8*8(chunks)
+ * <li>26*8(dir)
+ * <li>4+8*24+8*8(chunks)
  * <li>1(haveBlocks)
  * <li>chunkSize*chunkSize*chunkSize*512(blocks)
  * </ul>
@@ -62,6 +62,8 @@ public class MapChunk implements Externalizable, StreamStorage {
     public static final String OBJECT_TYPE = MapChunk.class.getSimpleName();
 
     public static final long ID_FLAG = 2;
+
+    public static final int SIZE = 537;
 
     /**
      * Marker that the neighbor in the direction is empty.
@@ -139,11 +141,10 @@ public class MapChunk implements Externalizable, StreamStorage {
         this.centerExtent = new CenterExtent();
     }
 
-    public MapChunk(int cid, GameChunkPos pos, int chunkSize) {
+    public MapChunk(long cid, int chunkSize) {
         this.id = cid2Id(cid);
         this.chunkSize = chunkSize;
         this.blocks = new MapBlocksStore(chunkSize);
-        this.pos = pos;
     }
 
     public long getCid() {

@@ -71,5 +71,4 @@ public class ImportImageMessage<T extends Message> extends Message {
     public final TerrainLoadImage image;
 
     public final long mapid;
-
 }

@@ -77,6 +77,10 @@ public class GameMap extends GameObject implements StoredObject {
         return blocks;
     }
 
+    public static GameMap getGameMap(ObjectsGetter og, long id) {
+        return og.get(GameMap.class, OBJECT_TYPE, id);
+    }
+
     private static final long serialVersionUID = 1L;
 
     public static final String OBJECT_TYPE = GameMap.class.getSimpleName();
@@ -181,5 +185,4 @@ public class GameMap extends GameObject implements StoredObject {
     public void setCursorZ(int z) {
         setCursor(new MapCursor(cursor.x, cursor.y, z));
     }
-
 }
