@@ -10,8 +10,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.SeekableByteChannel;
@@ -60,7 +58,7 @@ public class MapChunksStore {
         this.channel = Files.newByteChannel(file, CREATE, READ, WRITE);
         this.buffer = new byte[MapChunk.SIZE + chunkSize * chunkSize * chunkSize * BLOCK_SIZE_BYTES];
         this.cache = ByteBuffer.allocate(MapChunk.SIZE + chunkSize * chunkSize * chunkSize * BLOCK_SIZE_BYTES);
-        this.indexSize = MapChunksStoreIndex.getSizeObjectStream(chunksCount);
+        this.indexSize = MapChunksStoreIndex.getSizeDataStream(chunksCount);
         if (channel.size() > 0) {
             this.index = readIndex(channel);
         } else {
@@ -73,16 +71,18 @@ public class MapChunksStore {
     @SneakyThrows
     private void writeIndex(SeekableByteChannel channel, MapChunksStoreIndex index) {
         var stream = Channels.newOutputStream(channel);
-        var ostream = new ObjectOutputStream(stream);
-        ostream.writeObject(index);
+        var ostream = new DataOutputStream(stream);
+        index.writeStream(ostream);
         ostream.flush();
     }
 
     @SneakyThrows
     private MapChunksStoreIndex readIndex(SeekableByteChannel channel) {
         var stream = Channels.newInputStream(channel);
-        var ostream = new ObjectInputStream(stream);
-        return (MapChunksStoreIndex) ostream.readObject();
+        var ostream = new DataInputStream(stream);
+        var index = new MapChunksStoreIndex();
+        index.readStream(ostream);
+        return index;
     }
 
     public void setChunks(Iterable<MapChunk> chunks) {

@@ -77,7 +77,7 @@ public class MapChunksStoreIndex implements Externalizable, StreamStorage {
     public MapChunksStoreIndex(int count) {
         this.map = LongObjectMaps.mutable.ofInitialCapacity(count);
         // put -1 to avoid a if-branch
-        this.map.put(-1, new Index(getSizeObjectStream(count), 0));
+        this.map.put(-1, new Index(getSizeDataStream(count), 0));
         for (int i = 0; i < count; i++) {
             this.map.put(i, new Index(0, 0));
         }
