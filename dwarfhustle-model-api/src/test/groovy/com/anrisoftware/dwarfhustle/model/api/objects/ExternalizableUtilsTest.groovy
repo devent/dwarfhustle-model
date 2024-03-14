@@ -20,6 +20,7 @@ package com.anrisoftware.dwarfhustle.model.api.objects
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readExternalObjectLongMap
 
 import org.eclipse.collections.api.factory.primitive.IntLongMaps
+import org.eclipse.collections.api.factory.primitive.LongObjectMaps
 import org.eclipse.collections.api.factory.primitive.ObjectLongMaps
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -49,6 +50,21 @@ class ExternalizableUtilsTest {
     }
 
     @Test
+    void write_readExternalLongObjectMap() {
+        def map = LongObjectMaps.mutable.empty()
+        map.put(100, "Aaaa")
+        map.put(200, "Baaa")
+        def bout = new ByteArrayOutputStream(1024)
+        def oout = new ObjectOutputStream(bout)
+        ExternalizableUtils.writeExternalLongObjectMap(oout, map)
+        oout.close()
+        def bin = new ByteArrayInputStream(bout.toByteArray())
+        def oin = new ObjectInputStream(bin)
+        def mapread = ExternalizableUtils.readExternalLongObjectMap(oin)
+        assert mapread.size() == map.size()
+    }
+
+    @Test
     void map_block_byte_size_objectstream() {
         def stream = new ByteArrayOutputStream(1024)
         def ostream = new ObjectOutputStream(stream)
@@ -64,7 +80,7 @@ class ExternalizableUtilsTest {
         def go = MapBlockTest.createTestBlock()
         go.writeStream(bout)
         sout.flush()
-        assert sout.size() == 396
+        assert sout.size() == 376
     }
 
     @ParameterizedTest

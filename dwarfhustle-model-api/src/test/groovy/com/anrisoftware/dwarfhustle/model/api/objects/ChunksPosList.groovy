@@ -3,6 +3,7 @@ package com.anrisoftware.dwarfhustle.model.api.objects
 [
     [
         chunkSize: 2,
+        chunksCount: 9,
         chunks:[
             [chunk: [0, 0, 0, 4, 4, 4],blocks:[],
                 chunks:[

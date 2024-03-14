@@ -10,15 +10,18 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
-import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.eclipse.collections.api.factory.primitive.LongObjectMaps;
+
+import com.anrisoftware.dwarfhustle.model.api.objects.MapChunksStoreIndex.Index;
 
 import lombok.SneakyThrows;
 
@@ -43,24 +46,43 @@ public class MapChunksStore {
         return z * w * h + y * w + x;
     }
 
+    private final MapChunksStoreIndex index;
+
     private final SeekableByteChannel channel;
 
     private final ByteBuffer cache;
 
     private final byte[] buffer;
 
-    private ZipFile zipFile;
+    private final int indexSize;
 
-    private ZipArchiveOutputStream zstream;
-
-    public MapChunksStore(Path file, int chunkSize) throws IOException {
+    public MapChunksStore(Path file, int chunkSize, int chunksCount) throws IOException {
         this.channel = Files.newByteChannel(file, CREATE, READ, WRITE);
-        if (channel.size() > 0) {
-            this.zipFile = ZipFile.builder().setSeekableByteChannel(channel).get();
-        }
         this.buffer = new byte[MapChunk.SIZE + chunkSize * chunkSize * chunkSize * BLOCK_SIZE_BYTES];
         this.cache = ByteBuffer.allocate(MapChunk.SIZE + chunkSize * chunkSize * chunkSize * BLOCK_SIZE_BYTES);
-        this.zstream = new ZipArchiveOutputStream(channel);
+        this.indexSize = MapChunksStoreIndex.getSizeObjectStream(chunksCount);
+        if (channel.size() > 0) {
+            this.index = readIndex(channel);
+        } else {
+            this.index = new MapChunksStoreIndex(chunksCount);
+            writeIndex(channel, index);
+            // System.out.println(channel.position()); // TODO
+        }
+    }
+
+    @SneakyThrows
+    private void writeIndex(SeekableByteChannel channel, MapChunksStoreIndex index) {
+        var stream = Channels.newOutputStream(channel);
+        var ostream = new ObjectOutputStream(stream);
+        ostream.writeObject(index);
+        ostream.flush();
+    }
+
+    @SneakyThrows
+    private MapChunksStoreIndex readIndex(SeekableByteChannel channel) {
+        var stream = Channels.newInputStream(channel);
+        var ostream = new ObjectInputStream(stream);
+        return (MapChunksStoreIndex) ostream.readObject();
     }
 
     public void setChunks(Iterable<MapChunk> chunks) {
@@ -71,31 +93,36 @@ public class MapChunksStore {
 
     @SneakyThrows
     public synchronized void setChunk(MapChunk chunk) {
-        int index = (int) chunk.getCid();
-        // int pos = index * buffer.length;
-        var entry = new ZipArchiveEntry(Integer.toString(index));
-
+        int i = (int) chunk.getCid();
+        var prev = index.map.get(i - 1);
+        int pos = prev.pos + prev.size;
         var stream = new ByteArrayOutputStream(buffer.length);
         var dstream = new DataOutputStream(stream);
         chunk.writeStream(dstream);
         dstream.close();
-        entry.setSize(stream.size());
-        zstream.putArchiveEntry(entry);
-        zstream.write(stream.toByteArray());
-        zstream.closeArchiveEntry();
-
-        // cache.position(0);
-        // cache.put(stream.toByteArray());
-        // cache.rewind();
-        // channel.position(pos).write(cache);
+        cache.position(0);
+        byte[] bytes = stream.toByteArray();
+        cache.limit(cache.capacity());
+        cache.put(bytes);
+        cache.rewind();
+        cache.limit(bytes.length);
+        channel.position(pos).write(cache);
+        // System.out.println(i + " " + pos + " " + channel.position()); // TODO
+        index.map.put(chunk.getCid(), new Index(pos, bytes.length));
+        channel.position(0);
+        writeIndex(channel, index);
+        // System.out.println(channel.position()); // TODO
     }
 
     @SneakyThrows
     public synchronized MapChunk getChunk(long cid) {
-        int index = (int) cid;
-        int skip = index * CHUNK_SIZE_BYTES;
+        var idx = index.map.get(cid);
+        int skip = idx.pos;
+        cache.rewind();
+        cache.limit(idx.size);
         channel.position(skip).read(cache);
-        cache.get(buffer);
+        cache.flip();
+        cache.get(buffer, 0, idx.size);
         var stream = new ByteArrayInputStream(buffer);
         var ostream = new DataInputStream(stream);
         var chunk = new MapChunk();
@@ -112,9 +139,15 @@ public class MapChunksStore {
         if (channel.size() == 0) {
             return;
         }
-        channel.position(0);
-        while (channel.read(cache) > 0) {
-            cache.put(buffer);
+        var map = LongObjectMaps.mutable.withAll(this.index.map);
+        map.remove(-1);
+        for (var idx : map.values()) {
+            cache.rewind();
+            cache.limit(idx.size);
+            channel.position(idx.pos);
+            channel.read(cache);
+            cache.flip();
+            cache.get(buffer, 0, idx.size);
             var stream = new ByteArrayInputStream(buffer);
             var ostream = new DataInputStream(stream);
             var chunk = new MapChunk();
@@ -125,7 +158,6 @@ public class MapChunksStore {
 
     public void close() throws IOException {
         System.out.println(channel.size()); // TODO
-        zstream.close();
         channel.close();
     }
 }

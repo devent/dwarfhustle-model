@@ -30,7 +30,7 @@ public class MapBlocksStore implements Serializable, Externalizable, StreamStora
 
     private static final long serialVersionUID = 1L;
 
-    public static final int BLOCK_SIZE_BYTES = 512;
+    public static final int BLOCK_SIZE_BYTES = 376;
 
     public static int calcIndex(int w, int h, int x, int y, int z) {
         return z * w * h + y * w + x;
@@ -128,13 +128,17 @@ public class MapBlocksStore implements Serializable, Externalizable, StreamStora
     @Override
     public void writeStream(DataOutput out) throws IOException {
         out.writeBoolean(empty);
-        out.write(buffer);
+        if (!empty) {
+            out.write(buffer);
+        }
     }
 
     @Override
     public void readStream(DataInput in) throws IOException {
         this.empty = in.readBoolean();
-        in.readFully(buffer);
+        if (!empty) {
+            in.readFully(buffer);
+        }
     }
 
 }

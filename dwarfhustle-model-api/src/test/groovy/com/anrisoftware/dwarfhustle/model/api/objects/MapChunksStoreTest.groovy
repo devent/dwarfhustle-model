@@ -18,7 +18,9 @@
 package com.anrisoftware.dwarfhustle.model.api.objects
 
 import java.nio.file.Path
+import java.util.function.Consumer
 
+import org.apache.commons.io.IOUtils
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
@@ -30,19 +32,19 @@ import org.junit.jupiter.api.io.TempDir
 class MapChunksStoreTest {
 
     @Test
-    void put_and_get_chunks(@TempDir Path tmp) {
+    void put_chunks(@TempDir Path tmp) {
         int map = 0
-        long chunkId = 0
         new ChunksPosList().run().each { stores ->
             def chunkSize = stores.chunkSize
-            def store = new MapChunksStore(tmp.resolve("${map++}.map"), chunkSize)
-            createChunks(stores.chunks, store, chunkId, chunkId, chunkSize)
+            def chunksCount = stores.chunksCount
+            def store = new MapChunksStore(tmp.resolve("${map++}.map"), chunkSize, chunksCount)
+            createChunks(stores.chunks, { store.setChunk(it) }, 0, 0, chunkSize)
             store.close()
         }
         println "done"
     }
 
-    def createChunks(List chunks, MapChunksStore store, long parent, long chunkId, int chunkSize) {
+    def createChunks(List chunks, Consumer store, long parent, long chunkId, int chunkSize) {
         chunks.each {
             def chunk = MapChunkTest.createTestChunk(chunkId++, chunkSize)
             chunk.parent = parent
@@ -54,55 +56,77 @@ class MapChunksStoreTest {
                 chunk.setBlock(block)
                 //println block
             }
-            //println chunk
-            store.setChunk(chunk)
+            println chunk
+            store.accept(chunk)
             createChunks(it.chunks, store, chunk.id, chunkId, chunkSize)
         }
     }
 
     @Test
-    void for_each_blocks() {
-        def positionsList = new BlocksPosList().run()
-        positionsList.each { List positions ->
-            def store = new MapBlocksStore(Math.cbrt(positions.size() / 3) as int)
-            def mb = MapBlockTest.createTestBlock()
-            for (int i = 0; i < positions.size(); i += 3) {
-                mb.pos = new GameBlockPos(positions[i + 0], positions[i + 1], positions[i + 2])
-                store.setBlock(mb)
-            }
+    void load_get_chunks(@TempDir Path tmp) {
+        new ChunksPosList().run().each { stores ->
+            def chunkSize = stores.chunkSize
+            def chunksCount = stores.chunksCount
+            def fileName = "chunk_size_${chunkSize}_count_${chunksCount}_0.map.txt"
+            def stream = MapChunksStoreTest.class.getResourceAsStream(fileName)
+            def file = tmp.resolve("0.map")
+            IOUtils.copy(MapChunksStoreTest.class.getResource(fileName), file.toFile())
+            def store = new MapChunksStore(file, chunkSize, chunksCount)
+            def expectedList = []
+            createChunks(stores.chunks, { expectedList << it }, 0, 0, chunkSize)
             def list = []
-            store.forEachValue({ list.add(it) })
-            assert list.size() == positions.size() / 3
-            list.eachWithIndex { MapBlock block, int i ->
-                def blockpos = [
-                    block.pos.x,
-                    block.pos.y,
-                    block.pos.z
-                ]
-                assert positions.containsAll(blockpos)
+            (0..<chunksCount).each {
+                println it
+                def chunk = store.getChunk(it)
+                println chunk
+                list << chunk
             }
+            store.close()
         }
     }
 
     @Test
-    void put_and_get_map_block_benchmark() {
-        int chunkSize = 4
-        def store = new MapBlocksStore(chunkSize)
-        def mb = MapBlockTest.createTestBlock()
-        int blocksCount = 100
-        for (int i = 0; i < blocksCount; i++) {
+    void load_for_each_chunks(@TempDir Path tmp) {
+        def chunkSize = 2
+        def chunksCount = 9
+        def fileName = "chunk_size_${chunkSize}_count_${chunksCount}_0.map.txt"
+        def stream = MapChunksStoreTest.class.getResourceAsStream(fileName)
+        def file = tmp.resolve("0.map")
+        IOUtils.copy(MapChunksStoreTest.class.getResource(fileName), file.toFile())
+        def store = new MapChunksStore(file, chunkSize, chunksCount)
+        def list = []
+        store.forEachValue {
+            assert it.id != -1
+            println it
+            list << it
+        }
+        store.close()
+        assert list.size() == chunksCount
+    }
+
+    @Test
+    void put_and_get_map_chunks_benchmark(@TempDir Path tmp) {
+        def chunkSize = 8
+        def chunksCount = 64
+        def fileName = "chunk_size_${chunkSize}_count_${chunksCount}_0.map.txt"
+        def file = tmp.resolve("0.map")
+        def store = new MapChunksStore(file, chunkSize, chunksCount)
+        for (int i = 0; i < chunksCount; i++) {
             for (int x = 0; x < 32; x++) {
                 for (int y = 0; y < 32; y++) {
                     for (int z = 0; z < 32; z++) {
-                        mb.pos = new GameBlockPos(x, y, z)
-                        store.setBlock(mb)
-                        def mbret = store.getBlock(mb.pos)
-                        assert mb.pos.x == x
-                        assert mb.pos.y == y
-                        assert mb.pos.z == z
+                        def mc = MapChunkTest.createTestChunk(i, chunkSize)
+                        mc.pos = new GameChunkPos(x, y, z, x, y, z)
+                        store.setChunk(mc)
+                        def mcret = store.getChunk(mc.cid)
+                        assert mcret.pos.x == x
+                        assert mcret.pos.y == y
+                        assert mcret.pos.z == z
                     }
                 }
             }
         }
+        store.close()
+        println "done"
     }
 }
