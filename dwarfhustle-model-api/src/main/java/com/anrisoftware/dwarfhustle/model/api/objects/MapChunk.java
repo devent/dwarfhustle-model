@@ -25,6 +25,8 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.eclipse.collections.api.factory.primitive.ObjectLongMaps;
@@ -33,6 +35,7 @@ import org.eclipse.collections.impl.map.mutable.primitive.ObjectLongHashMap;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.SneakyThrows;
 import lombok.ToString;
 
 /**
@@ -134,17 +137,43 @@ public class MapChunk implements Externalizable, StreamStorage {
      * Use a mutable map to use write and read external.
      */
     @ToString.Exclude
-    public MapBlocksStore blocks;
+    public Optional<MapBlocksStore> blocks;
+
+    @ToString.Exclude
+    private Consumer<ObjectOutput> writeExternalBlock = (o) -> {
+    };
+
+    @ToString.Exclude
+    private Consumer<ObjectInput> readExternalBlock = (i) -> {
+    };
+
+    @ToString.Exclude
+    private Consumer<DataOutput> writeStreamBlock = (o) -> {
+    };
+
+    @ToString.Exclude
+    private Consumer<DataInput> readStreamBlock = (i) -> {
+    };
 
     public MapChunk() {
         this.pos = new GameChunkPos();
         this.centerExtent = new CenterExtent();
     }
 
-    public MapChunk(long cid, int chunkSize) {
+    public MapChunk(long cid, int chunkSize, GameChunkPos pos) {
         this.id = cid2Id(cid);
         this.chunkSize = chunkSize;
-        this.blocks = new MapBlocksStore(chunkSize);
+        this.pos = pos;
+        boolean leaf = pos.getSizeX() <= chunkSize;
+        if (leaf) {
+            this.blocks = Optional.of(new MapBlocksStore(chunkSize));
+            this.writeExternalBlock = this::writeExternalBlock;
+            this.readExternalBlock = this::readExternalBlock;
+            this.writeStreamBlock = this::writeStreamBlock;
+            this.readStreamBlock = this::readStreamBlock;
+        } else {
+            this.blocks = Optional.empty();
+        }
     }
 
     public long getCid() {
@@ -165,15 +194,15 @@ public class MapChunk implements Externalizable, StreamStorage {
     }
 
     public MapBlock getBlock(GameBlockPos pos) {
-        return blocks.getBlock(pos);
+        return blocks.orElseThrow().getBlock(pos);
     }
 
     public void setBlock(MapBlock block) {
-        blocks.setBlock(block);
+        blocks.orElseThrow().setBlock(block);
     }
 
     public void setBlocks(Iterable<MapBlock> blocks) {
-        this.blocks.setBlocks(blocks);
+        this.blocks.orElseThrow().setBlocks(blocks);
     }
 
     public boolean haveBlock(GameBlockPos p) {
@@ -307,7 +336,7 @@ public class MapChunk implements Externalizable, StreamStorage {
                 }
             }
         }
-        return blocks.getBlock(pos);
+        return blocks.orElseThrow().getBlock(pos);
     }
 
     /**
@@ -353,7 +382,7 @@ public class MapChunk implements Externalizable, StreamStorage {
             out.writeLong(id);
         }
         ((ObjectLongHashMap<GameChunkPos>) chunks).writeExternal(out);
-        blocks.writeExternal(out);
+        writeExternalBlock.accept(out);
     }
 
     @Override
@@ -367,8 +396,7 @@ public class MapChunk implements Externalizable, StreamStorage {
             this.dir[i] = in.readLong();
         }
         this.chunks = readExternalObjectLongMap(in);
-        this.blocks = new MapBlocksStore(chunkSize);
-        blocks.readExternal(in);
+        readExternalBlock.accept(in);
     }
 
     @Override
@@ -386,7 +414,7 @@ public class MapChunk implements Externalizable, StreamStorage {
             v.getOne().writeStream(out);
             out.writeLong(v.getTwo());
         }
-        blocks.writeStream(out);
+        writeStreamBlock.accept(out);
     }
 
     @Override
@@ -406,8 +434,27 @@ public class MapChunk implements Externalizable, StreamStorage {
             p.readStream(in);
             this.chunks.put(pos, in.readLong());
         }
-        this.blocks = new MapBlocksStore(chunkSize);
-        blocks.readStream(in);
+        readStreamBlock.accept(in);
+    }
+
+    @SneakyThrows
+    private void writeExternalBlock(ObjectOutput out) {
+        blocks.get().writeExternal(out);
+    }
+
+    @SneakyThrows
+    private void readExternalBlock(ObjectInput in) {
+        blocks.get().readExternal(in);
+    }
+
+    @SneakyThrows
+    private void writeStreamBlock(DataOutput out) {
+        blocks.get().writeStream(out);
+    }
+
+    @SneakyThrows
+    private void readStreamBlock(DataInput in) {
+        blocks.get().readStream(in);
     }
 
 }

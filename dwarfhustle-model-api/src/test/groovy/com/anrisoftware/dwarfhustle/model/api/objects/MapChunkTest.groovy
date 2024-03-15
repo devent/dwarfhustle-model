@@ -26,9 +26,8 @@ import org.junit.jupiter.api.Test
  */
 class MapChunkTest {
 
-    static MapChunk createTestChunk(long cid = 0, int chunkSize = 2) {
-        def go = new MapChunk(cid, chunkSize)
-        go.pos = new GameChunkPos(0, 0, 0, 4, 4, 4)
+    static MapChunk createTestChunk(long cid = 0, int chunkSize = 2, def pos = new GameChunkPos(0, 0, 0, 4, 4, 4)) {
+        def go = new MapChunk(cid, chunkSize, pos)
         go.updateCenterExtent(4, 4, 4)
         go.parent = 1000001
         (0..7).each { go.chunks.put(new GameChunkPos(it, it, it, it + 1, it + 1, it + 1), 88888888) }
@@ -83,7 +82,7 @@ class MapChunkTest {
 
     @Test
     void serialize_deserialize_one_block() {
-        def chunk = createTestChunk()
+        def chunk = createTestChunk(11111111, 4, new GameChunkPos(0, 0, 0, 4, 4, 4))
         def block = MapBlockTest.createTestBlock()
         block.pos = new GameBlockPos(0, 0, 0)
         chunk.setBlock(block)
@@ -106,8 +105,7 @@ class MapChunkTest {
         def mb = MapBlockTest.createTestBlock()
         int chunksCount = 10
         for (int i = 0; i < chunksCount; i++) {
-            def chunk = new MapChunk(11111111 + i, chunkSize)
-            chunk.pos = new GameChunkPos(0, 0, 0, 32, 32, 32)
+            def chunk = new MapChunk(11111111 + i, chunkSize, new GameChunkPos(0, 0, 0, 4, 4, 4))
             chunk.updateCenterExtent(32, 32, 32)
             for (int x = 0; x < 32; x++) {
                 for (int y = 0; y < 32; y++) {

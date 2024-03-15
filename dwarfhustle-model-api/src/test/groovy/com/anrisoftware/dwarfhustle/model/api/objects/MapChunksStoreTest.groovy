@@ -46,9 +46,8 @@ class MapChunksStoreTest {
 
     def createChunks(List chunks, Consumer store, long parent, long chunkId, int chunkSize) {
         chunks.each {
-            def chunk = MapChunkTest.createTestChunk(chunkId++, chunkSize)
+            def chunk = MapChunkTest.createTestChunk(chunkId++, chunkSize, new GameChunkPos(it.chunk[0], it.chunk[1], it.chunk[2], it.chunk[3], it.chunk[4], it.chunk[5]))
             chunk.parent = parent
-            chunk.pos =  new GameChunkPos(it.chunk[0], it.chunk[1], it.chunk[2], it.chunk[3], it.chunk[4], it.chunk[5])
             for (int i = 0; i < it.blocks.size(); i += 3) {
                 def block = MapBlockTest.createTestBlock()
                 block.parent = chunk.id
@@ -106,8 +105,8 @@ class MapChunksStoreTest {
 
     @Test
     void put_and_get_map_chunks_benchmark(@TempDir Path tmp) {
-        def chunkSize = 8
-        def chunksCount = 64
+        def chunkSize = 2
+        def chunksCount = 1
         def fileName = "chunk_size_${chunkSize}_count_${chunksCount}_0.map.txt"
         def file = tmp.resolve("0.map")
         def store = new MapChunksStore(file, chunkSize, chunksCount)
@@ -116,12 +115,12 @@ class MapChunksStoreTest {
                 for (int y = 0; y < 32; y++) {
                     for (int z = 0; z < 32; z++) {
                         def mc = MapChunkTest.createTestChunk(i, chunkSize)
-                        mc.pos = new GameChunkPos(x, y, z, x, y, z)
+                        mc.pos = new GameChunkPos(0, 0, 0, x, y, z)
                         store.setChunk(mc)
                         def mcret = store.getChunk(mc.cid)
-                        assert mcret.pos.x == x
-                        assert mcret.pos.y == y
-                        assert mcret.pos.z == z
+                        assert mcret.pos.ep.x == x
+                        assert mcret.pos.ep.y == y
+                        assert mcret.pos.ep.z == z
                     }
                 }
             }

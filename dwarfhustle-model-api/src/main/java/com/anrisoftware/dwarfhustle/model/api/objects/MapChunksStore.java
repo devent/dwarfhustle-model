@@ -1,3 +1,20 @@
+/*
+ * dwarfhustle-model-api - Manages the compile dependencies for the model.
+ * Copyright © 2023 Erwin Müller (erwin.mueller@anrisoftware.com)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlocksStore.BLOCK_SIZE_BYTES;
@@ -52,19 +69,15 @@ public class MapChunksStore {
 
     private final byte[] buffer;
 
-    private final int indexSize;
-
     public MapChunksStore(Path file, int chunkSize, int chunksCount) throws IOException {
         this.channel = Files.newByteChannel(file, CREATE, READ, WRITE);
         this.buffer = new byte[MapChunk.SIZE + chunkSize * chunkSize * chunkSize * BLOCK_SIZE_BYTES];
         this.cache = ByteBuffer.allocate(MapChunk.SIZE + chunkSize * chunkSize * chunkSize * BLOCK_SIZE_BYTES);
-        this.indexSize = MapChunksStoreIndex.getSizeDataStream(chunksCount);
         if (channel.size() > 0) {
             this.index = readIndex(channel);
         } else {
             this.index = new MapChunksStoreIndex(chunksCount);
             writeIndex(channel, index);
-            // System.out.println(channel.position()); // TODO
         }
     }
 

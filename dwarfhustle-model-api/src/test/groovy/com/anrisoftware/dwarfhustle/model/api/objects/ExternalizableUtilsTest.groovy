@@ -70,7 +70,7 @@ class ExternalizableUtilsTest {
         def ostream = new ObjectOutputStream(stream)
         def go = MapBlockTest.createTestBlock()
         ostream.writeObject(go)
-        assert stream.size() == 993
+        assert stream.size() == 458
     }
 
     @Test
@@ -85,9 +85,9 @@ class ExternalizableUtilsTest {
 
     @ParameterizedTest
     @CsvSource([
-        "2,4633",
-        "4,33305",
-        "8,262681"
+        "2,536",
+        "4,537",
+        "8,537"
     ])
     void map_chunk_byte_size_stream_storage(int chunkSize, int expectedSize) {
         def sout = new ByteArrayOutputStream(1024)
