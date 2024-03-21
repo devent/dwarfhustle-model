@@ -92,11 +92,6 @@ public class GameMap extends GameObject implements StoredObject {
 
     public String name;
 
-    /**
-     * The root {@link MapChunk} ID.
-     */
-    public long root;
-
     public int width;
 
     public int height;

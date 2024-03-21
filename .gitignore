@@ -1,3 +1,5 @@
 databases
 dwarf-test-1/
 db/
+*.kate-swp
+chunks.txt

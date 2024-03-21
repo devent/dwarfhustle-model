@@ -35,6 +35,7 @@ import org.eclipse.collections.api.map.primitive.MutableLongObjectMap;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 /**
  * Positions and sizes of the {@link MapChunk}s stored in the
@@ -43,6 +44,7 @@ import lombok.NoArgsConstructor;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @NoArgsConstructor
+@ToString
 public class MapChunksStoreIndex implements Externalizable, StreamStorage {
 
     /**
@@ -67,6 +69,7 @@ public class MapChunksStoreIndex implements Externalizable, StreamStorage {
     @SuppressWarnings("serial")
     @AllArgsConstructor
     @NoArgsConstructor
+    @ToString
     public static class Index implements Serializable, StreamStorage {
 
         public int pos;

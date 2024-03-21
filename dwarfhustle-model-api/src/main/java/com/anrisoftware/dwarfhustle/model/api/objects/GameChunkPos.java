@@ -149,6 +149,10 @@ public class GameChunkPos extends GameBlockPos {
         return x <= p.x && y <= p.y && z <= p.z && ep.x >= p.x && ep.y >= p.y && ep.z >= p.z;
     }
 
+    public boolean equals(int x, int y, int z, int ex, int ey, int ez) {
+        return this.x == x && this.y == y && this.z == z && this.ep.x == ex && this.ep.y == ey && this.ep.z == ez;
+    }
+
     @Override
     public void writeStream(DataOutput out) throws IOException {
         super.writeStream(out);

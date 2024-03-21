@@ -300,7 +300,7 @@ public class WorkerBlocks {
 
     private MapChunk createChunk(GenerateMapMessage m, ODatabaseSession db, GameBlockPos pos, GameBlockPos endPos)
             throws GeneratorException {
-        var block = new MapChunk(generator.generate(), new GameChunkPos(pos, endPos), chunkSize);
+        var block = new MapChunk(generator.generate(), chunkSize, new GameChunkPos(pos, endPos));
         return block;
     }
 

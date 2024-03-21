@@ -30,8 +30,6 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapObjectSchem
 import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameObjectSchema;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameObjectSchemaSchema;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapBlockSchema;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.MapChunkSchema;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.WorldMapSchema;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.storages.GameMapStorage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.storages.WorldMapStorage;
@@ -70,8 +68,6 @@ public class DwarfhustleModelDbOrientdbModule extends AbstractModule {
         list.add(new GameMapObjectSchema());
         list.add(new WorldMapSchema());
         list.add(new GameMapSchema());
-        list.add(new MapBlockSchema());
-        list.add(new MapChunkSchema());
         return list;
     }
 

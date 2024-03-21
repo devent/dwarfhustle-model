@@ -37,7 +37,6 @@ import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSche
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.DEPTH_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.HEIGHT_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.NAME_FIELD;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.ROOT_CHUNK_CLASS;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.TIME_ZONE_FIELD;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSchema.WIDTH_FIELD;
 
@@ -45,11 +44,9 @@ import java.time.ZoneOffset;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapArea;
-import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapCursor;
 import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.WorldMapSchema;
-import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 import com.orientechnologies.orient.core.record.OElement;
 
 /**
@@ -64,9 +61,7 @@ public class GameMapStorage extends AbstractGameObjectStorage {
     public void store(Object db, Object o, StoredObject go) {
         var v = (OElement) o;
         var gm = (GameMap) go;
-        var odb = (ODatabaseDocument) db;
         v.setProperty(NAME_FIELD, gm.name);
-        storeRootChunk(odb, v, gm);
         v.setProperty(WIDTH_FIELD, gm.width);
         v.setProperty(HEIGHT_FIELD, gm.height);
         v.setProperty(DEPTH_FIELD, gm.depth);
@@ -91,17 +86,6 @@ public class GameMapStorage extends AbstractGameObjectStorage {
         super.store(db, o, go);
     }
 
-    private void storeRootChunk(ODatabaseDocument odb, OElement v, GameMap gm) {
-        try (var rs = queryByObjectId(odb, MapChunk.OBJECT_TYPE, gm.root)) {
-            if (rs.hasNext()) {
-                var vv = rs.next().getVertex();
-                if (vv.isPresent()) {
-                    odb.newEdge(v.asVertex().get(), vv.get(), ROOT_CHUNK_CLASS).save();
-                }
-            }
-        }
-    }
-
     @Override
     public StoredObject retrieve(Object db, Object o, StoredObject go) {
         var v = (OElement) o;
@@ -111,7 +95,6 @@ public class GameMapStorage extends AbstractGameObjectStorage {
         gm.height = v.getProperty(HEIGHT_FIELD);
         gm.depth = v.getProperty(DEPTH_FIELD);
         gm.chunkSize = v.getProperty(CHUNK_SIZE_FIELD);
-        gm.root = retrieveEdgeOutToId(v, ROOT_CHUNK_CLASS);
         gm.world = retrieveEdgeInFromId(v, WorldMapSchema.MAP_CLASS);
         gm.timeZone = ZoneOffset.ofTotalSeconds(v.getProperty(TIME_ZONE_FIELD));
         gm.area = MapArea.create(v.getProperty(AREA_NW_LAT_FIELD), v.getProperty(AREA_NW_LON_FIELD),

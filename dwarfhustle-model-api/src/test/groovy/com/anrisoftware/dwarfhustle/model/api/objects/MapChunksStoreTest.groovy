@@ -128,4 +128,30 @@ class MapChunksStoreTest {
         store.close()
         println "done"
     }
+
+    @Test
+    void load_map_chunks(@TempDir Path tmp) {
+        def chunkSize = 2
+        //def chunksCount = 9
+        //def fileName = "terrain_4_4_4_2_9.map.txt"
+        def chunksCount = 73
+        def fileName = "terrain_8_8_8_2_73.map.txt"
+        def stream = MapChunksStoreTest.class.getResourceAsStream(fileName)
+        def file = tmp.resolve("0.map")
+        IOUtils.copy(MapChunksStoreTest.class.getResource(fileName), file.toFile())
+        def store = new MapChunksStore(file, chunkSize, chunksCount)
+        def list = []
+        store.forEachValue { MapChunk chunk ->
+            assert chunk.id != -1
+            println chunk
+            list << chunk
+            chunk.blocks.ifPresent { blocks ->
+                blocks.forEachValue { MapBlock block ->
+                    println block
+                }
+            }
+        }
+        store.close()
+        assert list.size() == chunksCount
+    }
 }

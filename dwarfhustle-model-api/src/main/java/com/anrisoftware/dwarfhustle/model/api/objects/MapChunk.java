@@ -17,7 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readExternalObjectLongMap;
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readExternalLongObjectMap;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -29,12 +29,15 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.eclipse.collections.api.factory.primitive.ObjectLongMaps;
-import org.eclipse.collections.api.map.primitive.MutableObjectLongMap;
-import org.eclipse.collections.impl.map.mutable.primitive.ObjectLongHashMap;
+import org.eclipse.collections.api.factory.primitive.LongObjectMaps;
+import org.eclipse.collections.api.map.primitive.LongObjectMap;
+import org.eclipse.collections.api.map.primitive.MutableLongObjectMap;
+import org.eclipse.collections.impl.map.mutable.primitive.LongObjectHashMap;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.ToString;
 
@@ -59,6 +62,43 @@ import lombok.ToString;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Data
 public class MapChunk implements Externalizable, StreamStorage {
+
+    /**
+     * 
+     */
+    @AllArgsConstructor
+    @NoArgsConstructor
+    private static class PosChunk implements Externalizable, StreamStorage {
+
+        public GameChunkPos pos;
+
+        public long id;
+
+        @Override
+        public void writeStream(DataOutput out) throws IOException {
+            pos.writeStream(out);
+            out.writeLong(id);
+        }
+
+        @Override
+        public void readStream(DataInput in) throws IOException {
+            this.pos = new GameChunkPos();
+            this.pos.readStream(in);
+            this.id = in.readLong();
+        }
+
+        @Override
+        public void writeExternal(ObjectOutput out) throws IOException {
+            out.writeObject(pos);
+            out.writeLong(id);
+        }
+
+        @Override
+        public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+            this.pos = (GameChunkPos) in.readObject();
+            this.id = in.readLong();
+        }
+    }
 
     private static final long serialVersionUID = 1L;
 
@@ -124,12 +164,10 @@ public class MapChunk implements Externalizable, StreamStorage {
     public long[] dir = new long[26];
 
     /**
-     * Map of {@link GameChunkPos} := ID of the children chunks.
-     * <p>
-     * Use a mutable map to use write and read external.
+     * The {@link GameChunkPos} and IDs of the children chunks.
      */
     @ToString.Exclude
-    public MutableObjectLongMap<GameChunkPos> chunks = ObjectLongMaps.mutable.empty();
+    private MutableLongObjectMap<GameChunkPos> chunks;
 
     /**
      * The {@link MapBlock}s in the chunk if the chunk is a leaf.
@@ -140,20 +178,22 @@ public class MapChunk implements Externalizable, StreamStorage {
     public Optional<MapBlocksStore> blocks;
 
     @ToString.Exclude
-    private Consumer<ObjectOutput> writeExternalBlock = (o) -> {
-    };
+    private Consumer<ObjectOutput> writeExternalBlocks;
 
     @ToString.Exclude
-    private Consumer<ObjectInput> readExternalBlock = (i) -> {
-    };
+    private Consumer<ObjectInput> readExternalBlocks;
 
     @ToString.Exclude
-    private Consumer<DataOutput> writeStreamBlock = (o) -> {
-    };
+    private Consumer<DataOutput> writeStreamBlocks;
 
     @ToString.Exclude
-    private Consumer<DataInput> readStreamBlock = (i) -> {
-    };
+    private Consumer<DataInput> readStreamBlocks;
+
+    @ToString.Exclude
+    private Consumer<DataOutput> writeStreamChunks;
+
+    @ToString.Exclude
+    private Consumer<DataInput> readStreamChunks;
 
     public MapChunk() {
         this.pos = new GameChunkPos();
@@ -164,18 +204,54 @@ public class MapChunk implements Externalizable, StreamStorage {
         this.id = cid2Id(cid);
         this.chunkSize = chunkSize;
         this.pos = pos;
-        boolean leaf = pos.getSizeX() <= chunkSize;
+        updateLeaf();
+    }
+
+    private void updateLeaf() {
+        boolean leaf = isLeaf();
         if (leaf) {
             this.blocks = Optional.of(new MapBlocksStore(chunkSize));
-            this.writeExternalBlock = this::writeExternalBlock;
-            this.readExternalBlock = this::readExternalBlock;
-            this.writeStreamBlock = this::writeStreamBlock;
-            this.readStreamBlock = this::readStreamBlock;
+            this.writeExternalBlocks = this::writeExternalBlocks;
+            this.readExternalBlocks = this::readExternalBlocks;
+            this.writeStreamBlocks = this::writeStreamBlocks;
+            this.readStreamBlocks = this::readStreamBlocks;
+            this.writeStreamChunks = (o) -> {
+            };
+            this.readStreamChunks = (i) -> {
+            };
         } else {
             this.blocks = Optional.empty();
+            this.writeExternalBlocks = (o) -> {
+            };
+            this.readExternalBlocks = (i) -> {
+            };
+            this.writeStreamBlocks = (o) -> {
+            };
+            this.readStreamBlocks = (i) -> {
+            };
+            updateChunks();
         }
     }
 
+    private void updateChunks() {
+        if (chunks == null) {
+            this.chunks = LongObjectMaps.mutable.withInitialCapacity(8);
+        }
+        if (chunks.isEmpty()) {
+            this.writeStreamChunks = this::writeStreamChunksEmpty;
+        } else {
+            this.writeStreamChunks = this::writeStreamChunks;
+        }
+        this.readStreamChunks = this::readStreamChunks;
+    }
+
+    public boolean isLeaf() {
+        return pos.getSizeX() <= chunkSize && pos.getSizeY() <= chunkSize && pos.getSizeZ() <= chunkSize;
+    }
+
+    /**
+     * Returns the chunk ID.
+     */
     public long getCid() {
         return id2Cid(id);
     }
@@ -191,6 +267,20 @@ public class MapChunk implements Externalizable, StreamStorage {
 
     public boolean isRoot() {
         return parent == 0;
+    }
+
+    public long getChunk(int x, int y, int z, int ex, int ey, int ez) {
+        for (var view : chunks.keyValuesView()) {
+            if (view.getTwo().equals(x, y, z, ex, ey, ez)) {
+                return view.getOne();
+            }
+        }
+        return 0;
+    }
+
+    public void setChunks(LongObjectMap<GameChunkPos> chunks) {
+        this.chunks.putAll(chunks);
+        updateChunks();
     }
 
     public MapBlock getBlock(GameBlockPos pos) {
@@ -294,7 +384,8 @@ public class MapChunk implements Externalizable, StreamStorage {
         int y = pos.getY();
         int z = pos.getZ();
         if (blocks.isEmpty()) {
-            for (GameChunkPos b : chunks.keysView()) {
+            for (var view : chunks.keyValuesView()) {
+                var b = view.getTwo();
                 int bx = b.getX();
                 int by = b.getY();
                 int bz = b.getZ();
@@ -303,8 +394,7 @@ public class MapChunk implements Externalizable, StreamStorage {
                 int eby = ep.getY();
                 int ebz = ep.getZ();
                 if (x >= bx && y >= by && z >= bz && x < ebx && y < eby && z < ebz) {
-                    long id = chunks.get(b);
-                    var mb = retriever.apply(id);
+                    var mb = retriever.apply(view.getOne());
                     return mb.findMapChunk(pos, retriever);
                 }
             }
@@ -321,7 +411,8 @@ public class MapChunk implements Externalizable, StreamStorage {
         int y = pos.getY();
         int z = pos.getZ();
         if (blocks.isEmpty()) {
-            for (GameChunkPos b : chunks.keysView()) {
+            for (var view : chunks.keyValuesView()) {
+                var b = view.getTwo();
                 int bx = b.getX();
                 int by = b.getY();
                 int bz = b.getZ();
@@ -330,8 +421,7 @@ public class MapChunk implements Externalizable, StreamStorage {
                 int eby = ep.getY();
                 int ebz = ep.getZ();
                 if (x >= bx && y >= by && z >= bz && x < ebx && y < eby && z < ebz) {
-                    long id = chunks.get(b);
-                    var mb = retriever.apply(id);
+                    var mb = retriever.apply(view.getOne());
                     return mb.findMapBlock(pos, retriever);
                 }
             }
@@ -349,11 +439,12 @@ public class MapChunk implements Externalizable, StreamStorage {
             return 0;
         }
         if (blocks.isEmpty()) {
-            long id = chunks.get(new GameChunkPos(x, y, z, ex, ey, ez));
+            long id = findChunk(x, y, z, ex, ey, ez);
             if (id != 0) {
                 return id;
             }
-            for (GameChunkPos b : chunks.keysView()) {
+            for (var view : chunks.keyValuesView()) {
+                var b = view.getTwo();
                 int bx = b.getX();
                 int by = b.getY();
                 int bz = b.getZ();
@@ -362,10 +453,18 @@ public class MapChunk implements Externalizable, StreamStorage {
                 int eby = ep.getY();
                 int ebz = ep.getZ();
                 if (x >= bx && y >= by && z >= bz && x < ebx && y < eby && z < ebz) {
-                    id = chunks.get(b);
-                    var mb = retriever.apply(id);
+                    var mb = retriever.apply(view.getOne());
                     return mb.findChild(x, y, z, ex, ey, ez, retriever);
                 }
+            }
+        }
+        return 0;
+    }
+
+    private long findChunk(int x, int y, int z, int ex, int ey, int ez) {
+        for (var view : chunks.keyValuesView()) {
+            if (view.getTwo().equals(x, y, z, ex, ey, ez)) {
+                return view.getOne();
             }
         }
         return 0;
@@ -381,8 +480,8 @@ public class MapChunk implements Externalizable, StreamStorage {
         for (long id : dir) {
             out.writeLong(id);
         }
-        ((ObjectLongHashMap<GameChunkPos>) chunks).writeExternal(out);
-        writeExternalBlock.accept(out);
+        ((LongObjectHashMap<GameChunkPos>) chunks).writeExternal(out);
+        writeExternalBlocks.accept(out);
     }
 
     @Override
@@ -395,8 +494,9 @@ public class MapChunk implements Externalizable, StreamStorage {
         for (int i = 0; i < dir.length; i++) {
             this.dir[i] = in.readLong();
         }
-        this.chunks = readExternalObjectLongMap(in);
-        readExternalBlock.accept(in);
+        this.chunks = readExternalLongObjectMap(in);
+        updateLeaf();
+        readExternalBlocks.accept(in);
     }
 
     @Override
@@ -409,12 +509,8 @@ public class MapChunk implements Externalizable, StreamStorage {
         for (long id : dir) {
             out.writeLong(id);
         }
-        out.writeInt(chunks.size());
-        for (var v : chunks.keyValuesView()) {
-            v.getOne().writeStream(out);
-            out.writeLong(v.getTwo());
-        }
-        writeStreamBlock.accept(out);
+        writeStreamChunks.accept(out);
+        writeStreamBlocks.accept(out);
     }
 
     @Override
@@ -427,34 +523,55 @@ public class MapChunk implements Externalizable, StreamStorage {
         for (int i = 0; i < dir.length; i++) {
             this.dir[i] = in.readLong();
         }
-        int size = in.readInt();
-        this.chunks = ObjectLongMaps.mutable.ofInitialCapacity(size);
-        for (int i = 0; i < size; i++) {
-            var p = new GameChunkPos();
-            p.readStream(in);
-            this.chunks.put(pos, in.readLong());
-        }
-        readStreamBlock.accept(in);
+        updateLeaf();
+        readStreamChunks.accept(in);
+        readStreamBlocks.accept(in);
     }
 
     @SneakyThrows
-    private void writeExternalBlock(ObjectOutput out) {
+    private void writeExternalBlocks(ObjectOutput out) {
         blocks.get().writeExternal(out);
     }
 
     @SneakyThrows
-    private void readExternalBlock(ObjectInput in) {
+    private void readExternalBlocks(ObjectInput in) {
         blocks.get().readExternal(in);
     }
 
     @SneakyThrows
-    private void writeStreamBlock(DataOutput out) {
+    private void writeStreamBlocks(DataOutput out) {
         blocks.get().writeStream(out);
     }
 
     @SneakyThrows
-    private void readStreamBlock(DataInput in) {
+    private void readStreamBlocks(DataInput in) {
         blocks.get().readStream(in);
+    }
+
+    @SneakyThrows
+    private void writeStreamChunksEmpty(DataOutput out) {
+        out.write(new byte[260]);
+    }
+
+    @SneakyThrows
+    private void writeStreamChunks(DataOutput out) {
+        out.writeInt(chunks.size());
+        for (var v : chunks.keyValuesView()) {
+            out.writeLong(v.getOne());
+            v.getTwo().writeStream(out);
+        }
+    }
+
+    @SneakyThrows
+    private void readStreamChunks(DataInput in) {
+        int size = in.readInt();
+        this.chunks = LongObjectMaps.mutable.ofInitialCapacity(size);
+        for (int i = 0; i < size; i++) {
+            long cid = in.readLong();
+            var p = new GameChunkPos();
+            p.readStream(in);
+            this.chunks.put(cid, p);
+        }
     }
 
 }

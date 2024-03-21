@@ -119,6 +119,7 @@ public class MapChunksStore {
         cache.put(bytes);
         cache.rewind();
         cache.limit(bytes.length);
+        // System.out.println("pos " + pos + "chunk " + chunk);
         channel.position(pos).write(cache);
         // System.out.println(i + " " + pos + " " + channel.position()); // TODO
         index.map.put(chunk.getCid(), new Index(pos, bytes.length));

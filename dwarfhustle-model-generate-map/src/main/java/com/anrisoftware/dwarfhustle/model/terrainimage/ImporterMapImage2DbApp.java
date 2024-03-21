@@ -257,7 +257,7 @@ public class ImporterMapImage2DbApp {
      * @return the ID of the created {@link GameMap}.
      */
     @SneakyThrows
-    public long createGameMap(TerrainLoadImage image) {
+    public long createGameMap(TerrainLoadImage image, int chunksCount) {
         var gm = new GameMap(gen.generate());
         var wm = new WorldMap(gen.generate());
         wm.addMap(gm);
@@ -267,6 +267,7 @@ public class ImporterMapImage2DbApp {
         wm.distanceLon = 100f;
         gm.world = wm.id;
         gm.chunkSize = image.chunkSize;
+        gm.chunksCount = chunksCount;
         gm.width = image.width;
         gm.height = image.height;
         gm.depth = image.depth;

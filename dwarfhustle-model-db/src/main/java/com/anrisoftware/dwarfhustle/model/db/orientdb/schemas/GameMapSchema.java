@@ -29,41 +29,39 @@ import com.orientechnologies.orient.core.metadata.schema.OType;
  */
 public class GameMapSchema implements GameObjectSchema {
 
-	public static final String NAME_FIELD = "name";
+    public static final String NAME_FIELD = "name";
 
-    public static final String ROOT_CHUNK_CLASS = "RootChunk";
+    public static final String WIDTH_FIELD = "width";
 
-	public static final String WIDTH_FIELD = "width";
+    public static final String HEIGHT_FIELD = "height";
 
-	public static final String HEIGHT_FIELD = "height";
-
-	public static final String DEPTH_FIELD = "depth";
+    public static final String DEPTH_FIELD = "depth";
 
     public static final String CHUNK_SIZE_FIELD = "chunkSize";
 
-	public static final String TIME_ZONE_FIELD = "timeZone";
+    public static final String TIME_ZONE_FIELD = "timeZone";
 
-	public static final String AREA_NW_LAT_FIELD = "areaNwLat";
+    public static final String AREA_NW_LAT_FIELD = "areaNwLat";
 
-	public static final String AREA_NW_LON_FIELD = "areaNwLon";
+    public static final String AREA_NW_LON_FIELD = "areaNwLon";
 
-	public static final String AREA_SE_LAT_FIELD = "areaSeLat";
+    public static final String AREA_SE_LAT_FIELD = "areaSeLat";
 
-	public static final String AREA_SE_LON_FIELD = "areaSeLon";
+    public static final String AREA_SE_LON_FIELD = "areaSeLon";
 
-	public static final String CAMERA_POS_X_FIELD = "cameraPodX";
+    public static final String CAMERA_POS_X_FIELD = "cameraPodX";
 
-	public static final String CAMERA_POS_Y_FIELD = "cameraPodY";
+    public static final String CAMERA_POS_Y_FIELD = "cameraPodY";
 
-	public static final String CAMERA_POS_Z_FIELD = "cameraPodZ";
+    public static final String CAMERA_POS_Z_FIELD = "cameraPodZ";
 
-	public static final String CAMERA_ROT_X_FIELD = "cameraRotX";
+    public static final String CAMERA_ROT_X_FIELD = "cameraRotX";
 
-	public static final String CAMERA_ROT_Y_FIELD = "cameraRotY";
+    public static final String CAMERA_ROT_Y_FIELD = "cameraRotY";
 
-	public static final String CAMERA_ROT_Z_FIELD = "cameraRotZ";
+    public static final String CAMERA_ROT_Z_FIELD = "cameraRotZ";
 
-	public static final String CAMERA_ROT_W_FIELD = "cameraRotW";
+    public static final String CAMERA_ROT_W_FIELD = "cameraRotW";
 
     public static final String CURSOR_Z_FIELD = "cursorZ";
 
@@ -75,36 +73,35 @@ public class GameMapSchema implements GameObjectSchema {
 
     public static final String BLOCKS_COUNT_FIELD = "blocksCount";
 
-	@Override
-	public void createSchema(Object db) {
-		var odb = (ODatabaseDocument) db;
-		var c = odb.createClass(GameMap.OBJECT_TYPE, GameObject.OBJECT_TYPE);
-		c.createProperty(NAME_FIELD, OType.STRING);
-        odb.createEdgeClass(ROOT_CHUNK_CLASS);
-		c.createProperty(WIDTH_FIELD, OType.INTEGER);
-		c.createProperty(HEIGHT_FIELD, OType.INTEGER);
-		c.createProperty(DEPTH_FIELD, OType.INTEGER);
-		c.createProperty(CHUNK_SIZE_FIELD, OType.INTEGER);
-		c.createProperty(TIME_ZONE_FIELD, OType.INTEGER);
-		c.createProperty(AREA_NW_LAT_FIELD, OType.FLOAT);
-		c.createProperty(AREA_NW_LON_FIELD, OType.FLOAT);
-		c.createProperty(AREA_SE_LAT_FIELD, OType.FLOAT);
-		c.createProperty(AREA_SE_LON_FIELD, OType.FLOAT);
-		c.createProperty(CAMERA_POS_X_FIELD, OType.FLOAT);
-		c.createProperty(CAMERA_POS_Y_FIELD, OType.FLOAT);
-		c.createProperty(CAMERA_POS_Z_FIELD, OType.FLOAT);
-		c.createProperty(CAMERA_ROT_X_FIELD, OType.FLOAT);
-		c.createProperty(CAMERA_ROT_Y_FIELD, OType.FLOAT);
-		c.createProperty(CAMERA_ROT_Z_FIELD, OType.FLOAT);
-		c.createProperty(CAMERA_ROT_W_FIELD, OType.FLOAT);
+    @Override
+    public void createSchema(Object db) {
+        var odb = (ODatabaseDocument) db;
+        var c = odb.createClass(GameMap.OBJECT_TYPE, GameObject.OBJECT_TYPE);
+        c.createProperty(NAME_FIELD, OType.STRING);
+        c.createProperty(WIDTH_FIELD, OType.INTEGER);
+        c.createProperty(HEIGHT_FIELD, OType.INTEGER);
+        c.createProperty(DEPTH_FIELD, OType.INTEGER);
+        c.createProperty(CHUNK_SIZE_FIELD, OType.INTEGER);
+        c.createProperty(TIME_ZONE_FIELD, OType.INTEGER);
+        c.createProperty(AREA_NW_LAT_FIELD, OType.FLOAT);
+        c.createProperty(AREA_NW_LON_FIELD, OType.FLOAT);
+        c.createProperty(AREA_SE_LAT_FIELD, OType.FLOAT);
+        c.createProperty(AREA_SE_LON_FIELD, OType.FLOAT);
+        c.createProperty(CAMERA_POS_X_FIELD, OType.FLOAT);
+        c.createProperty(CAMERA_POS_Y_FIELD, OType.FLOAT);
+        c.createProperty(CAMERA_POS_Z_FIELD, OType.FLOAT);
+        c.createProperty(CAMERA_ROT_X_FIELD, OType.FLOAT);
+        c.createProperty(CAMERA_ROT_Y_FIELD, OType.FLOAT);
+        c.createProperty(CAMERA_ROT_Z_FIELD, OType.FLOAT);
+        c.createProperty(CAMERA_ROT_W_FIELD, OType.FLOAT);
         c.createProperty(CURSOR_Z_FIELD, OType.INTEGER);
         c.createProperty(CURSOR_Y_FIELD, OType.INTEGER);
         c.createProperty(CURSOR_X_FIELD, OType.INTEGER);
         c.createProperty(CHUNKS_COUNT_FIELD, OType.INTEGER);
         c.createProperty(BLOCKS_COUNT_FIELD, OType.INTEGER);
-		try (var q = odb.command(
-				"CREATE INDEX GameMap_name ON GameMap (objecttype, name) NOTUNIQUE METADATA {ignoreNullValues: false}")) {
-		}
-	}
+        try (var q = odb.command(
+                "CREATE INDEX GameMap_name ON GameMap (objecttype, name) NOTUNIQUE METADATA {ignoreNullValues: false}")) {
+        }
+    }
 
 }

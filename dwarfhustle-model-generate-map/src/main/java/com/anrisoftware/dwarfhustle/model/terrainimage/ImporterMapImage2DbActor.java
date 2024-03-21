@@ -20,6 +20,7 @@ package com.anrisoftware.dwarfhustle.model.terrainimage;
 import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
 import static com.anrisoftware.dwarfhustle.model.api.objects.GameMap.getGameMap;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StopEmbeddedServerMessage.askStopEmbeddedServer;
+import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.io.IOException;
@@ -207,8 +208,9 @@ public class ImporterMapImage2DbActor {
         this.importImageReplyTo = m.replyTo;
         try {
             var gm = getGameMap(og, m.mapid);
-            var chunksStore = new MapChunksStore(Path.of(root, String.format("%4d.map", m.mapid)), gm.chunkSize);
-            terrainImageCreateMap.create(chunksStore).startImport(m.url, m.image, gm);
+            var store = new MapChunksStore(Path.of(root, format("%4d.map", m.mapid)), gm.chunkSize, gm.chunksCount);
+            terrainImageCreateMap.create(store).startImport(m.url, m.image, gm);
+            store.close();
             dbActor.tell(new RebuildIndexMessage<>(dbResponseAdapter));
         } catch (IOException | GeneratorException e) {
             log.error("onImportImage", e);

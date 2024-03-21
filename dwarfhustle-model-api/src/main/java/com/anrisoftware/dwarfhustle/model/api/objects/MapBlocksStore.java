@@ -59,8 +59,6 @@ public class MapBlocksStore implements Serializable, Externalizable, StreamStora
 
     private int size;
 
-    private boolean empty = true;
-
     public MapBlocksStore(int chunkSize) {
         this.chunkSize = chunkSize;
         this.size = chunkSize * chunkSize * chunkSize;
@@ -83,14 +81,10 @@ public class MapBlocksStore implements Serializable, Externalizable, StreamStora
         int size = stream.size();
         dstream.close();
         System.arraycopy(stream.toByteArray(), 0, buffer, pos, size);
-        this.empty = false;
     }
 
     @SneakyThrows
     public synchronized MapBlock getBlock(GameBlockPos pos) {
-        if (empty) {
-            return null;
-        }
         int index = calcIndex(chunkSize, chunkSize, pos.x, pos.y, pos.z) % size;
         int skip = index * BLOCK_SIZE_BYTES;
         var stream = new ByteArrayInputStream(buffer);
@@ -107,9 +101,6 @@ public class MapBlocksStore implements Serializable, Externalizable, StreamStora
      */
     @SneakyThrows
     public synchronized void forEachValue(Consumer<MapBlock> consumer) {
-        if (empty) {
-            return;
-        }
         for (int i = 0; i < size; i++) {
             var stream = new ByteArrayInputStream(buffer);
             stream.skip(i * BLOCK_SIZE_BYTES);
@@ -118,10 +109,6 @@ public class MapBlocksStore implements Serializable, Externalizable, StreamStora
             block.readStream(ostream);
             consumer.accept(block);
         }
-    }
-
-    public synchronized boolean isEmpty() {
-        return empty;
     }
 
     public synchronized void setData(byte[] data) {
@@ -144,18 +131,12 @@ public class MapBlocksStore implements Serializable, Externalizable, StreamStora
 
     @Override
     public void writeStream(DataOutput out) throws IOException {
-        out.writeBoolean(empty);
-        if (!empty) {
-            out.write(buffer);
-        }
+        out.write(buffer);
     }
 
     @Override
     public void readStream(DataInput in) throws IOException {
-        this.empty = in.readBoolean();
-        if (!empty) {
-            in.readFully(buffer);
-        }
+        in.readFully(buffer);
     }
 
 }

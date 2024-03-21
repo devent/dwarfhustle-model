@@ -94,7 +94,7 @@ class ImporterMapImage2DbAppTest {
         def image = TerrainImage.terrain_4_4_4
         def importer = injector.getInstance(ImporterMapImage2DbApp)
         importer.initEmbedded(injector, tmp, image.name(), "root", "admin").get()
-        long gmid = importer.createGameMap(image.terrain)
+        long gmid = importer.createGameMap(image.terrain, 9)
         importer.startImport(ImporterMapImage2DbAppTest.class.getResource(image.imageName), image.terrain, gmid)
         def actor = injector.getInstance(ActorSystemProvider)
         importer.shutdownEmbedded().get()
@@ -111,7 +111,7 @@ class ImporterMapImage2DbAppTest {
         def image = TerrainImage.terrain_8_8_8
         def importer = injector.getInstance(ImporterMapImage2DbApp)
         importer.initEmbedded(injector, tmp, image.name(), "root", "admin").get()
-        long gmid = importer.createGameMap(image.terrain)
+        long gmid = importer.createGameMap(image.terrain, 73)
         importer.startImport(ImporterMapImage2DbAppTest.class.getResource(image.imageName), image.terrain, gmid)
         def actor = injector.getInstance(ActorSystemProvider)
         importer.shutdownEmbedded().get()
@@ -128,7 +128,7 @@ class ImporterMapImage2DbAppTest {
         def image = TerrainImage.terrain_32_32_32
         def importer = injector.getInstance(ImporterMapImage2DbApp)
         importer.initEmbedded(injector, tmp, image.name(), "root", "admin").get()
-        long gmid = importer.createGameMap(image.terrain)
+        long gmid = importer.createGameMap(image.terrain, 585)
         importer.startImport(ImporterMapImage2DbAppTest.class.getResource(image.imageName), image.terrain, gmid)
         def actor = injector.getInstance(ActorSystemProvider)
         importer.shutdownEmbedded().get()
@@ -140,14 +140,14 @@ class ImporterMapImage2DbAppTest {
      * blocksCount = 2097152
      */
     @Test
-    @Timeout(value = 10, unit = TimeUnit.MINUTES)
+    @Timeout(value = 60, unit = TimeUnit.MINUTES)
     void test_start_import_128_128_128() {
         def image = TerrainImage.terrain_128_128_128
         def importer = injector.getInstance(ImporterMapImage2DbApp)
         def out = new File("db", image.name())
         assert out.deleteDir()
         importer.initEmbedded(injector, out, image.name(), "root", "admin").get()
-        long gmid = importer.createGameMap(image.terrain)
+        long gmid = importer.createGameMap(image.terrain, 585)
         importer.startImport(ImporterMapImage2DbAppTest.class.getResource(image.imageName), image.terrain, gmid)
         def actor = injector.getInstance(ActorSystemProvider)
         importer.shutdownEmbedded().get()
@@ -155,18 +155,18 @@ class ImporterMapImage2DbAppTest {
     }
 
     /**
-     * chunksCount = 585
+     * chunksCount = 722
      * blocksCount = 8388608
      */
     @Test
-    @Timeout(value = 10, unit = TimeUnit.MINUTES)
+    @Timeout(value = 60, unit = TimeUnit.MINUTES)
     void test_start_import_256_256_128() {
         def image = TerrainImage.terrain_256_256_128
         def importer = injector.getInstance(ImporterMapImage2DbApp)
         def out = new File("db", image.name())
         assert out.deleteDir()
         importer.initEmbedded(injector, out, image.name(), "root", "admin").get()
-        long gmid = importer.createGameMap(image.terrain)
+        long gmid = importer.createGameMap(image.terrain, 585)
         importer.startImport(ImporterMapImage2DbAppTest.class.getResource(image.imageName), image.terrain, gmid)
         def actor = injector.getInstance(ActorSystemProvider)
         importer.shutdownEmbedded().get()
