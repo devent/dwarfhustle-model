@@ -151,17 +151,7 @@ public class MapChunk implements Externalizable, StreamStorage {
      * The {@link CenterExtent} of the chunk.
      */
     @ToString.Exclude
-    public CenterExtent centerExtent;
-
-    /**
-     * Contains the IDs of the chunks in each direction that are neighboring this
-     * chunk. The size is always 26. Empty directions are marked with
-     * {@link #DIR_EMPTY}.
-     *
-     * @see NeighboringDir
-     */
-    @ToString.Exclude
-    public long[] dir = new long[26];
+    public transient CenterExtent centerExtent;
 
     /**
      * The {@link GameChunkPos} and IDs of the children chunks.
