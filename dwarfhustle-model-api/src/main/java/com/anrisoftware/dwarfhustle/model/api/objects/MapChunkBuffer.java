@@ -2,6 +2,9 @@ package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import java.nio.ByteBuffer;
 
+import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
+import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
+
 /**
  * Writes and reads {@link MapChunk} in a byte buffer.
  * 
@@ -128,4 +131,46 @@ public class MapChunkBuffer {
         return CidGameChunkPosMapBuffer.getEntries(b, offset, dest);
     }
 
+    public static void writeMapChunk(ByteBuffer b, int offset, MapChunk chunk) {
+        b.position(offset);
+        var bi = b.asIntBuffer();
+        bi.put(chunk.cid);
+        bi.put(chunk.parent);
+        bi.put(chunk.chunkSize);
+        GameChunkPosBuffer.putGameChunkPos(bi, chunk.pos);
+        int chunksCount = chunk.getChunksCount();
+        var entries = new int[chunksCount * 7];
+        var viewChunks = chunk.getChunks().keyValuesView().iterator();
+        for (int i = 0; i < chunk.getChunks().size(); i++) {
+            var next = viewChunks.next();
+            entries[i * 7 + 0] = next.getOne();
+            entries[i * 7 + 1] = next.getTwo().x;
+            entries[i * 7 + 2] = next.getTwo().y;
+            entries[i * 7 + 3] = next.getTwo().z;
+            entries[i * 7 + 4] = next.getTwo().ep.x;
+            entries[i * 7 + 5] = next.getTwo().ep.y;
+            entries[i * 7 + 6] = next.getTwo().ep.z;
+        }
+        CidGameChunkPosMapBuffer.putEntries(bi, chunksCount, entries);
+        if (chunk.blocks.isPresent()) {
+            chunk.blocks.get().rewind();
+            b.position(b.position() + bi.position() * 4);
+            b.put(chunk.blocks.get());
+        }
+    }
+
+    public static MapChunk readMapChunk(ByteBuffer b, int offset) {
+        b.position(offset);
+        var bi = b.asIntBuffer();
+        var chunk = new MapChunk(bi.get(), bi.get(), bi.get(), GameChunkPosBuffer.getGameChunkPos(bi));
+        var chunkEntries = CidGameChunkPosMapBuffer.getEntries(b, offset + CHUNKS_OFFSET, null);
+        MutableIntObjectMap<GameChunkPos> chunks = IntObjectMaps.mutable.ofInitialCapacity(chunkEntries.length / 7);
+        for (int i = 0; i < chunkEntries.length / 7; i++) {
+            chunks.put(chunkEntries[i * 7 + 0],
+                    new GameChunkPos(chunkEntries[i * 7 + 1], chunkEntries[i * 7 + 2], chunkEntries[i * 7 + 3],
+                            chunkEntries[i * 7 + 4], chunkEntries[i * 7 + 5], chunkEntries[i * 7 + 6]));
+        }
+        chunk.setChunks(chunks);
+        return chunk;
+    }
 }

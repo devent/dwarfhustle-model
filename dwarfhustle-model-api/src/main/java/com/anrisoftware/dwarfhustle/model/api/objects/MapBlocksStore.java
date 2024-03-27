@@ -49,10 +49,6 @@ public class MapBlocksStore implements Serializable, Externalizable, StreamStora
 
     public static final int BLOCK_SIZE_BYTES = 376;
 
-    public static int calcIndex(int w, int h, int x, int y, int z) {
-        return z * w * h + y * w + x;
-    }
-
     private byte[] buffer;
 
     private int chunkSize;

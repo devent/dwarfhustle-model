@@ -1,6 +1,7 @@
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 
 /**
  * Writes and reads CID := {@link GameChunkPos} entries in a buffer.
@@ -48,55 +49,50 @@ public class CidGameChunkPosMapBuffer {
             int ez) {
         offset += ID_OFFSET + i * SIZE_ENTRY;
         b.position(offset);
-        var buffer = b.asIntBuffer();
-        buffer.put(cid);
-        offset += POS_OFFSET;
-        GameChunkPosBuffer.setX(b, offset, sx);
-        GameChunkPosBuffer.setY(b, offset, sy);
-        GameChunkPosBuffer.setZ(b, offset, sz);
-        GameChunkPosBuffer.setEx(b, offset, ex);
-        GameChunkPosBuffer.setEy(b, offset, ey);
-        GameChunkPosBuffer.setEz(b, offset, ez);
+        var bi = b.asIntBuffer();
+        bi.put(cid);
+        bi.put(sx);
+        bi.put(sy);
+        bi.put(sz);
+        bi.put(ex);
+        bi.put(ey);
+        bi.put(ez);
     }
 
     public static void setEntries(ByteBuffer b, int offset, int count, int[] entries) {
         b.position(offset);
-        var buffer = b.asIntBuffer();
-        buffer.put(count);
+        var bi = b.asIntBuffer();
+        putEntries(bi, count, entries);
+    }
+
+    public static void putEntries(IntBuffer bi, int count, int[] entries) {
+        bi.put(count);
         for (int i = 0; i < count; i++) {
-            int o = offset + ID_OFFSET + i * SIZE_ENTRY;
-            b.position(o);
-            buffer = b.asIntBuffer();
-            buffer.put(entries[i * 7 + 0]);
-            o += POS_OFFSET;
-            GameChunkPosBuffer.setX(b, o, entries[i * 7 + 1]);
-            GameChunkPosBuffer.setY(b, o, entries[i * 7 + 2]);
-            GameChunkPosBuffer.setZ(b, o, entries[i * 7 + 3]);
-            GameChunkPosBuffer.setEx(b, o, entries[i * 7 + 4]);
-            GameChunkPosBuffer.setEy(b, o, entries[i * 7 + 5]);
-            GameChunkPosBuffer.setEz(b, o, entries[i * 7 + 6]);
+            bi.put(entries[i * 7 + 0]);
+            bi.put(entries[i * 7 + 1]);
+            bi.put(entries[i * 7 + 2]);
+            bi.put(entries[i * 7 + 3]);
+            bi.put(entries[i * 7 + 4]);
+            bi.put(entries[i * 7 + 5]);
+            bi.put(entries[i * 7 + 6]);
         }
     }
 
     public static int[] getEntries(ByteBuffer b, int offset, int[] dest) {
         b.position(offset);
-        var buffer = b.asIntBuffer();
-        int count = buffer.get();
+        var bi = b.asIntBuffer();
+        int count = bi.get();
         if (dest == null) {
             dest = new int[count * 7];
         }
         for (int i = 0; i < count; i++) {
-            int o = offset + ID_OFFSET + i * SIZE_ENTRY;
-            b.position(o);
-            buffer = b.asIntBuffer();
-            dest[i * 7 + 0] = buffer.get();
-            o += POS_OFFSET;
-            dest[i * 7 + 1] = GameChunkPosBuffer.getX(b, o);
-            dest[i * 7 + 2] = GameChunkPosBuffer.getY(b, o);
-            dest[i * 7 + 3] = GameChunkPosBuffer.getZ(b, o);
-            dest[i * 7 + 4] = GameChunkPosBuffer.getEx(b, o);
-            dest[i * 7 + 5] = GameChunkPosBuffer.getEy(b, o);
-            dest[i * 7 + 6] = GameChunkPosBuffer.getEz(b, o);
+            dest[i * 7 + 0] = bi.get();
+            dest[i * 7 + 1] = bi.get();
+            dest[i * 7 + 2] = bi.get();
+            dest[i * 7 + 3] = bi.get();
+            dest[i * 7 + 4] = bi.get();
+            dest[i * 7 + 5] = bi.get();
+            dest[i * 7 + 6] = bi.get();
         }
         return dest;
     }

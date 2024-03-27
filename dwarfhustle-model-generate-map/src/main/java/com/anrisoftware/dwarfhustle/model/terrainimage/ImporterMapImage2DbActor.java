@@ -224,7 +224,7 @@ public class ImporterMapImage2DbActor {
      * <li>
      * </ul>
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "unused" })
     private Behavior<Message> onWrappedDbResponse(WrappedDbResponse m) {
         var r = m.response;
         if (r instanceof DbErrorMessage<?> rm) {

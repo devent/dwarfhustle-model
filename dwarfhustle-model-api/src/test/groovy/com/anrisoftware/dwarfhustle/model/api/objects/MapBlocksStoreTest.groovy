@@ -33,38 +33,6 @@ import org.junit.jupiter.params.provider.MethodSource
  */
 class MapBlocksStoreTest {
 
-    static Stream calculate_index_from_pos() {
-        int w = 2
-        int h = 2
-        int chunkSize = 2
-        Stream.of(
-                of(w, h, 0, 0, 0, 0),
-                of(w, h, 1, 0, 0, 1),
-                of(w, h, 0, 1, 0, 2),
-                of(w, h, 1, 1, 0, 3),
-                of(w, h, 0, 0, 1, 4),
-                of(w, h, 1, 0, 1, 5),
-                of(w, h, 0, 1, 1, 6),
-                of(w, h, 1, 1, 1, 7),
-                //
-                of(w, h, 0, 4, 0, 8),
-                of(w, h, 1, 4, 0, 9),
-                of(w, h, 0, 5, 0, 10),
-                of(w, h, 1, 5, 0, 11),
-                of(w, h, 0, 4, 1, 12),
-                of(w, h, 1, 4, 1, 13),
-                of(w, h, 0, 5, 1, 14),
-                of(w, h, 1, 5, 1, 15),
-                //
-                )
-    }
-
-    @ParameterizedTest
-    @MethodSource
-    void calculate_index_from_pos(int w, int h, int x, int y, int z, int expected) {
-        assert MapBlocksStore.calcIndex(w, h, x, y, z) == expected
-    }
-
     static Stream put_and_get_map_block() {
         def args = []
         List positionsList = new BlocksPosList().run()

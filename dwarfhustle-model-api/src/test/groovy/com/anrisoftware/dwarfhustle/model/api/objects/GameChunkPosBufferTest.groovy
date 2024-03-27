@@ -35,44 +35,39 @@ class GameChunkPosBufferTest {
     static Stream set_get_x_y_z() {
         def b = ByteBuffer.allocate(GameChunkPosBuffer.SIZE)
         Stream.of(
-                of(b, 4, 5, 6, [
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    4,
-                    0,
-                    0,
-                    0,
-                    5,
-                    0,
-                    0,
-                    0,
-                    6,
-                ]),
+                of(b, 1, 2, 3, 4, 5, 6, '000000010000000200000003000000040000000500000006'),
                 )
     }
 
     @ParameterizedTest
     @MethodSource()
-    void set_get_x_y_z(ByteBuffer b, int ex, int ey, int ez, def expected) {
+    void set_get_x_y_z(ByteBuffer b, int sx, int sy, int sz, int ex, int ey, int ez, def expected) {
+        GameChunkPosBuffer.setX(b, 0, sx)
+        GameChunkPosBuffer.setY(b, 0, sy)
+        GameChunkPosBuffer.setZ(b, 0, sz)
         GameChunkPosBuffer.setEx(b, 0, ex)
         GameChunkPosBuffer.setEy(b, 0, ey)
         GameChunkPosBuffer.setEz(b, 0, ez)
-        assert b.array() == expected
+        assert HexFormat.of().formatHex(b.array()) == expected
+        assert GameChunkPosBuffer.getX(b, 0) == sx
+        assert GameChunkPosBuffer.getY(b, 0) == sy
+        assert GameChunkPosBuffer.getZ(b, 0) == sz
         assert GameChunkPosBuffer.getEx(b, 0) == ex
         assert GameChunkPosBuffer.getEy(b, 0) == ey
         assert GameChunkPosBuffer.getEz(b, 0) == ez
+    }
+
+    @ParameterizedTest
+    @MethodSource("set_get_x_y_z")
+    void write_read_x_y_z(ByteBuffer b, int sx, int sy, int sz, int ex, int ey, int ez, def expected) {
+        GameChunkPosBuffer.writeGameChunkPos(b, 0, new GameChunkPos(sx, sy, sz, ex, ey, ez))
+        assert HexFormat.of().formatHex(b.array()) == expected
+        def thatPos = GameChunkPosBuffer.readGameChunkPos(b, 0)
+        assert thatPos.x == sx
+        assert thatPos.y == sy
+        assert thatPos.z == sz
+        assert thatPos.ep.x == ex
+        assert thatPos.ep.y == ey
+        assert thatPos.ep.z == ez
     }
 }

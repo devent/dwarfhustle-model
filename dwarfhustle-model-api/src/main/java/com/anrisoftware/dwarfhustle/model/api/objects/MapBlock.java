@@ -17,37 +17,21 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.io.Serializable;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Block on the game map. The block is not stored individually but inside the
- * {@link MapChunk}.
- * <p>
- * Size 376 bytes
- * <ul>
- * <li>12(pos)
- * <li>8(parent)
- * <li>8(material)
- * <li>8(object)
- * <li>4(p)
- * <li>26*12(dir)
- * <li>24(centerExtent)
- * </ul>
+ * Block on the game map.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@NoArgsConstructor
-@Data
-public class MapBlock implements Externalizable, StreamStorage {
+@ToString
+@Getter
+@Setter
+public class MapBlock implements Serializable {
 
     private static final int MINED_POS = 0;
 
@@ -62,19 +46,14 @@ public class MapBlock implements Externalizable, StreamStorage {
     public static final String OBJECT_TYPE = MapBlock.class.getSimpleName();
 
     /**
-     * Marker that the neighbor in the direction is empty.
-     */
-    public static final GameBlockPos DIR_EMPTY = new GameBlockPos();
-
-    /**
      * The {@link GameBlockPos} of the block.
      */
     public GameBlockPos pos = new GameBlockPos();
 
     /**
-     * ID of the parent {@link MapChunk}.
+     * CID of the parent {@link MapChunk}.
      */
-    public long parent = 0;
+    public int parent = 0;
 
     /**
      * ID of the material.
@@ -97,89 +76,17 @@ public class MapBlock implements Externalizable, StreamStorage {
      */
     public PropertiesSet p = new PropertiesSet();
 
-    /**
-     * Contains the {@link GameBlockPos} positions in each direction that are
-     * neighboring this block. Empty directions are marked with {@link #DIR_EMPTY}.
-     * The size is always 26.
-     *
-     * @see NeighboringDir
-     */
-    @ToString.Exclude
-    public GameBlockPos[] dir = new GameBlockPos[] {
-            new GameBlockPos(),
-            new GameBlockPos(),
-            new GameBlockPos(),
-            new GameBlockPos(),
-            new GameBlockPos(),
-            //
-            new GameBlockPos(),
-            new GameBlockPos(),
-            new GameBlockPos(),
-            new GameBlockPos(),
-            new GameBlockPos(),
-            //
-            new GameBlockPos(),
-            new GameBlockPos(),
-            new GameBlockPos(),
-            new GameBlockPos(),
-            new GameBlockPos(),
-            //
-            new GameBlockPos(),
-            new GameBlockPos(),
-            new GameBlockPos(),
-            new GameBlockPos(),
-            new GameBlockPos(),
-            //
-            new GameBlockPos(),
-            new GameBlockPos(),
-            new GameBlockPos(),
-            new GameBlockPos(),
-            new GameBlockPos(),
-            //
-            new GameBlockPos(),
-    };
-
     @ToString.Exclude
     public CenterExtent centerExtent = new CenterExtent();
 
-    public MapBlock(GameBlockPos pos) {
+    public MapBlock() {
+        this.pos = new GameBlockPos();
+        this.p = new PropertiesSet();
+    }
+
+    public MapBlock(int parent, GameBlockPos pos) {
+        this.parent = parent;
         this.pos = pos;
-    }
-
-    @Override
-    public void writeExternal(ObjectOutput out) throws IOException {
-        writeStream(out);
-    }
-
-    @Override
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        readStream(in);
-    }
-
-    @Override
-    public void writeStream(DataOutput out) throws IOException {
-        out.writeLong(parent);
-        pos.writeStream(out);
-        out.writeLong(material);
-        out.writeLong(object);
-        p.writeStream(out);
-        for (var d : dir) {
-            d.writeStream(out);
-        }
-        centerExtent.writeStream(out);
-    }
-
-    @Override
-    public void readStream(DataInput in) throws IOException {
-        this.parent = in.readLong();
-        this.pos.readStream(in);
-        this.material = in.readLong();
-        this.object = in.readLong();
-        this.p.readStream(in);
-        for (int i = 0; i < dir.length; i++) {
-            this.dir[i].readStream(in);
-        }
-        this.centerExtent.readStream(in);
     }
 
     /**
@@ -253,70 +160,6 @@ public class MapBlock implements Externalizable, StreamStorage {
 
     public boolean isRamp() {
         return p.get(RAMP_POS);
-    }
-
-    public void setNeighbor(NeighboringDir dir, GameBlockPos pos) {
-        this.dir[dir.ordinal()] = pos;
-    }
-
-    public GameBlockPos getNeighbor(NeighboringDir dir) {
-        return this.dir[dir.ordinal()];
-    }
-
-    public boolean haveNeighbor(NeighboringDir dir) {
-        return !getNeighbor(dir).equals(DIR_EMPTY);
-    }
-
-    public boolean haveNotNeighbor(NeighboringDir dir) {
-        return getNeighbor(dir).equals(DIR_EMPTY);
-    }
-
-    public GameBlockPos getNeighborTop() {
-        return dir[NeighboringDir.U.ordinal()];
-    }
-
-    public void setNeighborTop(GameBlockPos pos) {
-        setNeighbor(NeighboringDir.U, pos);
-    }
-
-    public GameBlockPos getNeighborBottom() {
-        return dir[NeighboringDir.D.ordinal()];
-    }
-
-    public void setNeighborBottom(GameBlockPos pos) {
-        setNeighbor(NeighboringDir.D, pos);
-    }
-
-    public GameBlockPos getNeighborSouth() {
-        return dir[NeighboringDir.S.ordinal()];
-    }
-
-    public void setNeighborSouth(GameBlockPos pos) {
-        setNeighbor(NeighboringDir.S, pos);
-    }
-
-    public GameBlockPos getNeighborEast() {
-        return dir[NeighboringDir.E.ordinal()];
-    }
-
-    public void setNeighborEast(GameBlockPos pos) {
-        setNeighbor(NeighboringDir.E, pos);
-    }
-
-    public GameBlockPos getNeighborNorth() {
-        return dir[NeighboringDir.N.ordinal()];
-    }
-
-    public void setNeighborNorth(GameBlockPos pos) {
-        setNeighbor(NeighboringDir.N, pos);
-    }
-
-    public GameBlockPos getNeighborWest() {
-        return dir[NeighboringDir.W.ordinal()];
-    }
-
-    public void setNeighborWest(GameBlockPos pos) {
-        setNeighbor(NeighboringDir.W, pos);
     }
 
 }

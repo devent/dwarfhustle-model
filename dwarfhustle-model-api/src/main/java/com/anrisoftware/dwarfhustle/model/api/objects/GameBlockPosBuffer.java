@@ -14,11 +14,11 @@ public class GameBlockPosBuffer {
      */
     public static final int SIZE = 3 * 4;
 
-    private static final int X_INDEX = 0;
+    protected static final int X_INDEX = 0;
 
-    private static final int Y_INDEX = 1;
+    protected static final int Y_INDEX = 1;
 
-    private static final int Z_INDEX = 2;
+    protected static final int Z_INDEX = 2;
 
     public static void setX(ByteBuffer b, int offset, int x) {
         b.position(offset);
@@ -48,6 +48,20 @@ public class GameBlockPosBuffer {
 
     public static int getZ(ByteBuffer b, int offset) {
         return b.position(offset).asIntBuffer().get(Z_INDEX);
+    }
+
+    public static void writeGameBlockPos(ByteBuffer b, int offset, GameBlockPos p) {
+        b.position(offset);
+        var bi = b.asIntBuffer();
+        bi.put(X_INDEX, p.x);
+        bi.put(Y_INDEX, p.y);
+        bi.put(Z_INDEX, p.z);
+    }
+
+    public static GameBlockPos readGameBlockPos(ByteBuffer b, int offset) {
+        b.position(offset);
+        var bi = b.asIntBuffer();
+        return new GameBlockPos(bi.get(X_INDEX), bi.get(Y_INDEX), bi.get(Z_INDEX));
     }
 
 }

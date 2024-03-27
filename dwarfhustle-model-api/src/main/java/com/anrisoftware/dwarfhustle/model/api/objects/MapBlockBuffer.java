@@ -20,7 +20,7 @@ import java.nio.ByteBuffer;
  *      mmmm mmmm oooo oooo PPPP iiii pppp
  * </pre>
  */
-public class MapBlockBuffer extends GameBlockPosBuffer {
+public class MapBlockBuffer {
 
     /**
      * Size in bytes.
@@ -36,6 +36,13 @@ public class MapBlockBuffer extends GameBlockPosBuffer {
     private static final int OBJECT_LONG_INDEX = 1;
 
     private static final int PROP_INT_INDEX = 6;
+
+    /**
+     * Returns the index from the x/y/z position.
+     */
+    public static int calcIndex(int w, int h, int x, int y, int z) {
+        return z * w * h + y * w + x;
+    }
 
     /**
      * Returns the X position from the index.
@@ -106,6 +113,32 @@ public class MapBlockBuffer extends GameBlockPosBuffer {
 
     public static long getObject(ByteBuffer b, int offset) {
         return b.asLongBuffer().get(OBJECT_LONG_INDEX);
+    }
+
+    public static void writeMapBlock(ByteBuffer b, int offset, MapBlock block, int w, int h) {
+        b.position(offset);
+        var bi = b.asIntBuffer();
+        var bl = b.asLongBuffer();
+        bi.put(INDEX_INT_INDEX, calcIndex(w, h, block.pos.x, block.pos.y, block.pos.z));
+        bi.put(PARENT_INT_INDEX, block.parent);
+        bl.put(MAT_LONG_INDEX, block.material);
+        bl.put(OBJECT_LONG_INDEX, block.object);
+        bi.put(PROP_INT_INDEX, block.p.bits);
+    }
+
+    public static MapBlock readMapBlock(ByteBuffer b, int offset, int w, int h) {
+        var block = new MapBlock();
+        b.position(offset);
+        var bi = b.asIntBuffer();
+        var index = bi.get(INDEX_INT_INDEX);
+        block.pos = new GameBlockPos(calcX(index, w), calcY(index, w), calcZ(index, w, h));
+        block.parent = bi.get(PARENT_INT_INDEX);
+        b.position(offset);
+        var bl = b.asLongBuffer();
+        block.material = bl.get(MAT_LONG_INDEX);
+        block.object = bl.get(OBJECT_LONG_INDEX);
+        block.p = new PropertiesSet(bi.get(PROP_INT_INDEX));
+        return block;
     }
 
 }

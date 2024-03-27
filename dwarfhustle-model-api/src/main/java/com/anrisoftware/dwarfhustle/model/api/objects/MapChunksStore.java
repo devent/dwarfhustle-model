@@ -17,26 +17,17 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlocksStore.BLOCK_SIZE_BYTES;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.READ;
 import static java.nio.file.StandardOpenOption.WRITE;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.SeekableByteChannel;
-import java.nio.file.Files;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
 import java.nio.file.Path;
 import java.util.function.Consumer;
-
-import org.eclipse.collections.api.factory.primitive.LongObjectMaps;
-
-import com.anrisoftware.dwarfhustle.model.api.objects.MapChunksStoreIndex.Index;
 
 import lombok.SneakyThrows;
 
@@ -55,47 +46,29 @@ import lombok.SneakyThrows;
  */
 public class MapChunksStore {
 
-    public static final int CHUNK_SIZE_BYTES = MapChunk.SIZE;
-
     public static int calcIndex(int w, int h, int x, int y, int z) {
         return z * w * h + y * w + x;
     }
 
-    private final MapChunksStoreIndex index;
+    private final FileChannel channel;
 
-    private final SeekableByteChannel channel;
+    private long indexSize;
 
-    private final ByteBuffer cache;
-
-    private final byte[] buffer;
+    private MappedByteBuffer indexBuffer;
 
     public MapChunksStore(Path file, int chunkSize, int chunksCount) throws IOException {
-        this.channel = Files.newByteChannel(file, CREATE, READ, WRITE);
-        this.buffer = new byte[MapChunk.SIZE + chunkSize * chunkSize * chunkSize * BLOCK_SIZE_BYTES];
-        this.cache = ByteBuffer.allocate(MapChunk.SIZE + chunkSize * chunkSize * chunkSize * BLOCK_SIZE_BYTES);
-        if (channel.size() > 0) {
-            this.index = readIndex(channel);
-        } else {
-            this.index = new MapChunksStoreIndex(chunksCount);
-            writeIndex(channel, index);
+        this.channel = FileChannel.open(file, CREATE, READ, WRITE);
+        this.indexSize = MapChunksIndexBuffer.SIZE_MIN + chunksCount * MapChunksIndexBuffer.SIZE_ENTRY;
+        this.indexBuffer = channel.map(MapMode.READ_WRITE, 0, indexSize);
+        if (channel.size() == 0) {
+            writeIndex(chunksCount);
         }
     }
 
     @SneakyThrows
-    private void writeIndex(SeekableByteChannel channel, MapChunksStoreIndex index) {
-        var stream = Channels.newOutputStream(channel);
-        var ostream = new DataOutputStream(stream);
-        index.writeStream(ostream);
-        ostream.flush();
-    }
-
-    @SneakyThrows
-    private MapChunksStoreIndex readIndex(SeekableByteChannel channel) {
-        var stream = Channels.newInputStream(channel);
-        var ostream = new DataInputStream(stream);
-        var index = new MapChunksStoreIndex();
-        index.readStream(ostream);
-        return index;
+    private void writeIndex(int chunksCount) {
+        int[] entries = new int[chunksCount * 3];
+        MapChunksIndexBuffer.setEntries(indexBuffer, 0, chunksCount, entries);
     }
 
     public void setChunks(Iterable<MapChunk> chunks) {
@@ -106,42 +79,27 @@ public class MapChunksStore {
 
     @SneakyThrows
     public synchronized void setChunk(MapChunk chunk) {
-        int i = (int) chunk.getCid();
-        var prev = index.map.get(i - 1);
-        int pos = prev.pos + prev.size;
-        var stream = new ByteArrayOutputStream(buffer.length);
-        var dstream = new DataOutputStream(stream);
-        chunk.writeStream(dstream);
-        dstream.close();
-        cache.position(0);
-        byte[] bytes = stream.toByteArray();
-        cache.limit(cache.capacity());
-        cache.put(bytes);
-        cache.rewind();
-        cache.limit(bytes.length);
-        // System.out.println("pos " + pos + "chunk " + chunk);
-        channel.position(pos).write(cache);
-        // System.out.println(i + " " + pos + " " + channel.position()); // TODO
-        index.map.put(chunk.getCid(), new Index(pos, bytes.length));
-        channel.position(0);
-        writeIndex(channel, index);
-        // System.out.println(channel.position()); // TODO
+        int i = chunk.cid;
+        int pos = MapChunksIndexBuffer.getPos(indexBuffer, 0, i);
+        int size = MapChunksIndexBuffer.getSize(indexBuffer, 0, i);
+        var buffer = channel.map(MapMode.READ_WRITE, pos, size);
+        MapChunkBuffer.writeMapChunk(buffer, 0, chunk);
     }
 
     @SneakyThrows
-    public synchronized MapChunk getChunk(long cid) {
-        var idx = index.map.get(cid);
-        int skip = idx.pos;
-        cache.rewind();
-        cache.limit(idx.size);
-        channel.position(skip).read(cache);
-        cache.flip();
-        cache.get(buffer, 0, idx.size);
-        var stream = new ByteArrayInputStream(buffer);
-        var ostream = new DataInputStream(stream);
-        var chunk = new MapChunk();
-        chunk.readStream(ostream);
-        return chunk;
+    public synchronized MapChunk getChunk(int cid) {
+        int i = cid;
+        int pos = MapChunksIndexBuffer.getPos(indexBuffer, 0, i);
+        int size = MapChunksIndexBuffer.getSize(indexBuffer, 0, i);
+        var buffer = channel.map(MapMode.READ_WRITE, pos, size);
+        return MapChunkBuffer.readMapChunk(buffer, 0);
+    }
+
+    @SneakyThrows
+    public synchronized ByteBuffer getBlocksBuffer(int cid) {
+        int pos = MapChunksIndexBuffer.getPos(indexBuffer, 0, cid);
+        int size = MapChunksIndexBuffer.getSize(indexBuffer, 0, cid);
+        return channel.map(MapMode.READ_WRITE, pos, size);
     }
 
     /**
@@ -153,19 +111,12 @@ public class MapChunksStore {
         if (channel.size() == 0) {
             return;
         }
-        var map = LongObjectMaps.mutable.withAll(this.index.map);
-        map.remove(-1);
-        for (var idx : map.values()) {
-            cache.rewind();
-            cache.limit(idx.size);
-            channel.position(idx.pos);
-            channel.read(cache);
-            cache.flip();
-            cache.get(buffer, 0, idx.size);
-            var stream = new ByteArrayInputStream(buffer);
-            var ostream = new DataInputStream(stream);
-            var chunk = new MapChunk();
-            chunk.readStream(ostream);
+        var entries = MapChunksIndexBuffer.getEntries(indexBuffer, 0, null);
+        for (int i = 0; i < entries.length / 3; i++) {
+            int pos = entries[i * 3 + 1];
+            int size = entries[i * 3 + 2];
+            var buffer = channel.map(MapMode.READ_WRITE, pos, size);
+            var chunk = MapChunkBuffer.readMapChunk(buffer, 0);
             consumer.accept(chunk);
         }
     }
@@ -174,4 +125,5 @@ public class MapChunksStore {
         System.out.println(channel.size()); // TODO
         channel.close();
     }
+
 }
