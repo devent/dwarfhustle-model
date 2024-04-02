@@ -28,17 +28,23 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum TerrainImage {
 
-    terrain_2_2_2(2, 2, 2, 2, 1),
+    terrain_2_2_2_1(2, 2, 2, 2, 1, 1),
 
-    terrain_4_4_4(4, 4, 4, 2, 2),
+    terrain_4_4_4_2(4, 4, 4, 2, 2, 9),
 
-    terrain_8_8_8(8, 8, 8, 4, 4),
+    terrain_8_8_8_2(8, 8, 8, 4, 2, 73),
 
-    terrain_32_32_32(32, 32, 32, 8, 4),
+    terrain_8_8_8_4(8, 8, 8, 4, 4, 9),
 
-    terrain_128_128_128(128, 128, 128, 8, 32),
+    terrain_32_32_32_4(32, 32, 32, 8, 4, 585),
 
-    terrain_256_256_128(256, 256, 128, 16, 64),
+    terrain_32_32_32_8(32, 32, 32, 8, 8, 73),
+
+    terrain_128_128_128_16(128, 128, 128, 8, 16, 585),
+
+    terrain_128_128_128_32(128, 128, 128, 8, 32, 73),
+
+    terrain_256_256_128_64(256, 256, 128, 16, 32, 329),
 
     ;
 
@@ -51,6 +57,8 @@ public enum TerrainImage {
     public final int columns;
 
     public final int chunkSize;
+
+    public final int chunksCount;
 
     public TerrainLoadImage getTerrain() {
         return new TerrainLoadImage(d, h, w, columns, chunkSize);

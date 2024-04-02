@@ -44,20 +44,17 @@ class MapChunksStoreTest {
         println "done"
     }
 
-    def createChunks(List chunks, Consumer store, long parent, long chunkId, int chunkSize) {
+    def createChunks(List chunks, Consumer store, int parent, int cid, int chunkSize) {
         chunks.each {
-            def chunk = MapChunkTest.createTestChunk(chunkId++, chunkSize, new GameChunkPos(it.chunk[0], it.chunk[1], it.chunk[2], it.chunk[3], it.chunk[4], it.chunk[5]))
-            chunk.parent = parent
+            def chunk = MapChunkTest.createTestChunk(cid++, parent, chunkSize, new GameChunkPos(it.chunk[0], it.chunk[1], it.chunk[2], it.chunk[3], it.chunk[4], it.chunk[5]))
             for (int i = 0; i < it.blocks.size(); i += 3) {
-                def block = MapBlockTest.createTestBlock()
-                block.parent = chunk.id
-                block.pos = new GameBlockPos(it.blocks[i + 0], it.blocks[i + 1], it.blocks[i + 2])
+                def block = MapBlockTest.createTestBlock(cid, new GameBlockPos(it.blocks[i + 0], it.blocks[i + 1], it.blocks[i + 2]))
                 chunk.setBlock(block)
                 //println block
             }
             println chunk
             store.accept(chunk)
-            createChunks(it.chunks, store, chunk.id, chunkId, chunkSize)
+            createChunks(it.chunks, store, chunk.cid, cid, chunkSize)
         }
     }
 

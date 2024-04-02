@@ -26,15 +26,14 @@ import org.junit.jupiter.api.Test
  */
 class MapBlockTest {
 
-    static MapBlock createTestBlock() {
-        def go = new MapBlock()
+    static MapBlock createTestBlock(int parent, def pos = new GameBlockPos(10, 10, 10)) {
+        def go = new MapBlock(parent, pos)
         go.pos = new GameBlockPos(10, 10, 10)
         go.updateCenterExtent(4, 4, 4)
         go.parent = 7777777
         go.material = 8888888
         go.setNaturalFloor(true)
         go.setNaturalRoof(true)
-        NeighboringDir.values().eachWithIndex { it, i -> go.setNeighbor(it, new GameBlockPos(i, i, i)) }
         return go
     }
 

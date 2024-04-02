@@ -132,8 +132,8 @@ public class TerrainImageCreateMap {
         var chunk = new MapChunk(nextCid(), parent.cid, chunkSize, new GameChunkPos(x, y, z, ex, ey, ez));
         chunksCount++;
         if (chunk.isLeaf()) {
-            var blocksBuffer = store.getBlocksBuffer(chunk.cid);
-            chunk.setBlocksBuffer(blocksBuffer);
+            var bbuffer = store.getBlocksBuffer(chunk);
+            chunk.setBlocksBuffer(bbuffer);
             for (int xx = x; xx < ex; xx++) {
                 for (int yy = y; yy < ey; yy++) {
                     for (int zz = z; zz < ez; zz++) {

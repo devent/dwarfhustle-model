@@ -45,7 +45,18 @@ public class ImportImageMessage<T extends Message> extends Message {
      */
     @ToString
     @RequiredArgsConstructor
-    public static class ImportImageSuccessMessage<T extends Message> extends Message {
+    public static class ImportImageSuccessMessage extends Message {
+    }
+
+    /**
+     * Message that the import finished with error.
+     *
+     * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+     */
+    @ToString
+    @RequiredArgsConstructor
+    public static class ImportImageErrorMessage extends Message {
+        public final Exception e;
     }
 
     /**

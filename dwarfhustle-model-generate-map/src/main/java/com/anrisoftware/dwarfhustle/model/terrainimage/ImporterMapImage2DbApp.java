@@ -48,6 +48,7 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbErrorMes
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor;
+import com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.ImportImageErrorMessage;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.ImportImageSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImporterStartEmbeddedServerMessage.ImporterStartEmbeddedServerSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImporterStopEmbeddedServerMessage.ImporterStopEmbeddedServerSuccessMessage;
@@ -179,6 +180,7 @@ public class ImporterMapImage2DbApp {
         return null;
     }
 
+    @SuppressWarnings("unused")
     @SneakyThrows
     private void connectDbEmbedded(File root, String database, String user, String password) {
         URL config = ImporterMapImage2DbApp.class.getResource("orientdb-config.xml");
@@ -203,6 +205,7 @@ public class ImporterMapImage2DbApp {
     /**
      * Shutdowns the importer.
      */
+    @SuppressWarnings("unused")
     @SneakyThrows
     public CompletionStage<Done> shutdownEmbedded() {
         var lock = new CountDownLatch(1);
@@ -230,6 +233,7 @@ public class ImporterMapImage2DbApp {
      * @param image the {@link TerrainLoadImage} that loads the image.
      * @param map   the ID of the {@link GameMap}.
      */
+    @SuppressWarnings("unused")
     @SneakyThrows
     public void startImport(URL url, TerrainLoadImage image, long map) {
         var lock = new CountDownLatch(1);
@@ -239,14 +243,15 @@ public class ImporterMapImage2DbApp {
                 logError("ImportImageMessage", ex);
             } else if (res instanceof DbErrorMessage<?> rm) {
                 logError("ImportImageMessage", ex);
-            } else if (res instanceof ImportImageSuccessMessage<?> rm) {
+            } else if (res instanceof ImportImageSuccessMessage rm) {
                 log.info("ImportImageMessage Success");
+            } else if (res instanceof ImportImageErrorMessage rm) {
+                log.error("ImportImageMessage Error", rm.e);
             }
             lock.countDown();
         });
         ret.toCompletableFuture().get();
         lock.await();
-
     }
 
     /**

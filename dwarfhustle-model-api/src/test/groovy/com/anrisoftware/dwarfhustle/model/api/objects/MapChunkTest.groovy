@@ -26,12 +26,10 @@ import org.junit.jupiter.api.Test
  */
 class MapChunkTest {
 
-    static MapChunk createTestChunk(long cid = 0, int chunkSize = 2, def pos = new GameChunkPos(0, 0, 0, 4, 4, 4)) {
-        def go = new MapChunk(cid, chunkSize, pos)
+    static MapChunk createTestChunk(int cid = 0, parent = 0, int chunkSize = 2, def pos = new GameChunkPos(0, 0, 0, 4, 4, 4)) {
+        def go = new MapChunk(cid, parent, chunkSize, pos)
         go.updateCenterExtent(4, 4, 4)
-        go.parent = 1000001
-        (0..7).each { go.chunks.put(new GameChunkPos(it, it, it, it + 1, it + 1, it + 1), 88888888) }
-        NeighboringDir.values().each { go.setNeighbor(it, 11111111) }
+        (0..7).each { go.chunks.put(888, new GameChunkPos(it, it, it, it + 1, it + 1, it + 1)) }
         return go
     }
 

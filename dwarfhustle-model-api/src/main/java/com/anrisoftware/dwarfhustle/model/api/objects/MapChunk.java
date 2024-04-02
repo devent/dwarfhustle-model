@@ -147,9 +147,13 @@ public class MapChunk {
         return chunks.size();
     }
 
+    public ByteBuffer getBlocks() {
+        return blocks.orElseThrow();
+    }
+
     public MapBlock getBlock(GameBlockPos pos) {
         var buffer = blocks.orElseThrow();
-        return readMapBlock(buffer);
+        return readMapBlock(buffer, pos.x, pos.y, pos.z);
     }
 
     public void setBlock(MapBlock block) {
@@ -164,12 +168,16 @@ public class MapChunk {
         }
     }
 
-    private MapBlock readMapBlock(ByteBuffer buffer) {
-        return MapBlockBuffer.readMapBlock(buffer, 0, pos.getSizeX(), pos.getSizeY());
+    private MapBlock readMapBlock(ByteBuffer buffer, int x, int y, int z) {
+        int w = pos.getSizeX();
+        int h = pos.getSizeY();
+        int d = pos.getSizeZ();
+        return MapBlockBuffer.readMapBlockIndex(buffer, 0, MapBlockBuffer.calcIndex(w, h, d, x, y, z), w, h, pos.ep.x,
+                pos.ep.y, pos.ep.z);
     }
 
     private void writeMapBlock(ByteBuffer buffer, MapBlock block) {
-        MapBlockBuffer.writeMapBlock(buffer, 0, block, pos.getSizeX(), pos.getSizeY());
+        MapBlockBuffer.writeMapBlockIndex(buffer, 0, block, pos.getSizeX(), pos.getSizeY(), pos.getSizeZ());
     }
 
     public boolean haveBlock(GameBlockPos p) {

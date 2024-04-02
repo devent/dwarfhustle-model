@@ -23,12 +23,10 @@ import static com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StopEmbeddedS
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.concurrent.CompletionStage;
 
-import org.lable.oss.uniqueid.GeneratorException;
 import org.lable.oss.uniqueid.IDGenerator;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
@@ -56,6 +54,7 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StartEmbeddedServerM
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StartEmbeddedServerMessage.StartEmbeddedServerSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StopEmbeddedServerMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StopEmbeddedServerMessage.StopEmbeddedServerSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.ImportImageErrorMessage;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.ImportImageSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImporterStartEmbeddedServerMessage.ImporterStartEmbeddedServerSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImporterStopEmbeddedServerMessage.ImporterStopEmbeddedServerSuccessMessage;
@@ -203,18 +202,20 @@ public class ImporterMapImage2DbActor {
         return getInitialBehavior().build();
     }
 
-    private Behavior<Message> onImportImage(ImportImageMessage<?> m) {
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private Behavior<Message> onImportImage(ImportImageMessage m) {
         log.debug("onImportImage {}", m);
         this.importImageReplyTo = m.replyTo;
         try {
             var gm = getGameMap(og, m.mapid);
-            var store = new MapChunksStore(Path.of(root, format("%4d.map", m.mapid)), gm.chunkSize, gm.chunksCount);
+            var store = new MapChunksStore(Path.of(root, format("%d.map", m.mapid)), gm.chunkSize, gm.chunksCount);
             terrainImageCreateMap.create(store).startImport(m.url, m.image, gm);
             store.close();
             dbActor.tell(new RebuildIndexMessage<>(dbResponseAdapter));
-        } catch (IOException | GeneratorException e) {
+        } catch (Exception e) {
             log.error("onImportImage", e);
-            return Behaviors.stopped();
+            m.replyTo.tell(new ImportImageErrorMessage(e));
+            return Behaviors.same();
         }
         return Behaviors.same();
     }
@@ -229,7 +230,7 @@ public class ImporterMapImage2DbActor {
         var r = m.response;
         if (r instanceof DbErrorMessage<?> rm) {
             log.error("onWrappedDbResponse", rm.error);
-            return Behaviors.stopped();
+            return Behaviors.same();
         } else if (r instanceof StartEmbeddedServerSuccessMessage rm) {
             this.stopServerMessage = () -> askStopEmbeddedServer(actor.getActorSystem(), Duration.ofSeconds(30));
             dbActor.tell(new ConnectDbEmbeddedMessage<>(dbResponseAdapter, rm.server, database, user, password));
@@ -241,7 +242,7 @@ public class ImporterMapImage2DbActor {
             startServerReplyTo.tell(new ImporterStartEmbeddedServerSuccessMessage<>());
             return getServerStartedBehavior().build();
         } else if (r instanceof RebuildIndexSuccessMessage rm) {
-            importImageReplyTo.tell(new ImportImageSuccessMessage<>());
+            importImageReplyTo.tell(new ImportImageSuccessMessage());
         } else if (r instanceof CloseDbSuccessMessage rm) {
             dbActor.tell(new StopEmbeddedServerMessage<>(dbResponseAdapter));
         } else if (r instanceof StopEmbeddedServerSuccessMessage rm) {

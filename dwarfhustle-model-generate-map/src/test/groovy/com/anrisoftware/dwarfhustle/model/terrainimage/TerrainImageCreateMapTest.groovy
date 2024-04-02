@@ -17,8 +17,10 @@
  */
 package com.anrisoftware.dwarfhustle.model.terrainimage
 
+import static java.lang.String.format
 import static org.junit.jupiter.params.provider.Arguments.of
 
+import java.nio.file.Path
 import java.util.stream.Stream
 
 import org.junit.jupiter.api.BeforeAll
@@ -27,38 +29,40 @@ import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 
-import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
-import com.anrisoftware.dwarfhustle.model.actor.DwarfhustleModelActorsModule
-import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DwarfhustleModelDbOrientdbModule
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustlePowerloomModule
+import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
+import com.anrisoftware.dwarfhustle.model.api.objects.MapChunksStore
+import com.anrisoftware.dwarfhustle.model.terrainimage.TerrainImageCreateMap.TerrainImageCreateMapFactory
+import com.google.inject.AbstractModule
 import com.google.inject.Guice
 import com.google.inject.Injector
+import com.google.inject.assistedinject.FactoryModuleBuilder
 
 /**
- * @see ImporterMapImage2DbApp
+ * @see TerrainImageCreateMap
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-class ImporterMapImage2DbAppTest {
+class TerrainImageCreateMapTest {
 
     static Injector injector
 
     @BeforeAll
     static void setupActor() {
         this.injector = Guice.createInjector(
-                new DwarfhustleModelActorsModule(),
-                new DwarfhustlePowerloomModule(),
-                new DwarfhustleModelDbOrientdbModule(),
-                new DwarfhustleModelApiObjectsModule(),
-                new DwarfhustleModelTerrainimageModule(),
+                new AbstractModule() {
+                    @Override
+                    protected void configure() {
+                        install(new FactoryModuleBuilder().implement(TerrainImageCreateMap.class, TerrainImageCreateMap.class)
+                                .build(TerrainImageCreateMapFactory.class));
+                    }
+                }
                 )
     }
 
-    static Stream test_start_import_db() {
+    static Stream test_start_import_terrain() {
         def args = []
         args << of(TerrainImage.terrain_4_4_4_2)
-        //args << of(TerrainImage.terrain_8_8_8_2)
-        //args << of(TerrainImage.terrain_8_8_8_4)
+        args << of(TerrainImage.terrain_8_8_8_2)
+        args << of(TerrainImage.terrain_8_8_8_4)
         //args << of(TerrainImage.terrain_32_32_32_4)
         //args << of(TerrainImage.terrain_32_32_32_8)
         //args << of(TerrainImage.terrain_128_128_128_16)
@@ -71,15 +75,20 @@ class ImporterMapImage2DbAppTest {
     static File tmp
 
     @ParameterizedTest
-    @MethodSource
+    @MethodSource()
     @Timeout(600)
-    void test_start_import_db(TerrainImage image) {
-        def importer = injector.getInstance(ImporterMapImage2DbApp)
-        importer.initEmbedded(injector, tmp, image.name(), "root", "admin").get()
-        long gmid = importer.createGameMap(image.terrain, 9)
-        importer.startImport(ImporterMapImage2DbAppTest.class.getResource(image.imageName), image.terrain, gmid)
-        def actor = injector.getInstance(ActorSystemProvider)
-        importer.shutdownEmbedded().get()
+    void test_start_import_terrain(TerrainImage image) {
+        def terrain = image.terrain
+        def gm = new GameMap(1)
+        gm.chunkSize = image.chunkSize;
+        gm.chunksCount = image.chunksCount
+        gm.width = terrain.width
+        gm.height = terrain.height
+        gm.depth = terrain.depth
+        def file = format("terrain_%d_%d_%d_%d_%d.map", gm.width, gm.height, gm.depth, gm.chunkSize, gm.chunksCount)
+        def store = new MapChunksStore(Path.of(tmp.absolutePath, file), gm.chunkSize, gm.chunksCount);
+        def createMap = injector.getInstance(TerrainImageCreateMapFactory).create(store)
+        createMap.startImport(TerrainImageCreateMapTest.class.getResource(image.imageName), terrain, gm)
         println "done"
     }
 }

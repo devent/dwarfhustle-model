@@ -27,9 +27,20 @@ import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 public class MapChunkBuffer {
 
     /**
-     * Size in bytes without chunks or blocks.
+     * Size in bytes for non-leafs.
      */
-    public static final int SIZE_MIN = 4 + 4 + 4 + GameChunkPosBuffer.SIZE + CidGameChunkPosMapBuffer.SIZE_MIN;
+    public static final int SIZE_MIN = 4 + 4 + 4 + //
+            GameChunkPosBuffer.SIZE + //
+            CidGameChunkPosMapBuffer.SIZE_MIN + //
+            8 * CidGameChunkPosMapBuffer.SIZE_ENTRY;
+
+    /**
+     * Size in bytes for leafs.
+     */
+    public static final int SIZE_LEAF_MIN = 4 + 4 + 4 + //
+            GameChunkPosBuffer.SIZE + //
+            CidGameChunkPosMapBuffer.SIZE_MIN + //
+            0 * CidGameChunkPosMapBuffer.SIZE_ENTRY;
 
     private static final int ID_INT_INDEX = 0;
 
@@ -152,11 +163,6 @@ public class MapChunkBuffer {
             entries[i * 7 + 6] = next.getTwo().ep.z;
         }
         CidGameChunkPosMapBuffer.putEntries(bi, chunksCount, entries);
-        if (chunk.blocks.isPresent()) {
-            chunk.blocks.get().rewind();
-            b.position(b.position() + bi.position() * 4);
-            b.put(chunk.blocks.get());
-        }
     }
 
     public static MapChunk readMapChunk(ByteBuffer b, int offset) {

@@ -25,47 +25,46 @@ import java.util.stream.Stream
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 
+import groovy.util.logging.Slf4j
+
 /**
  * @see MapChunksIndexBuffer
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
+@Slf4j
 class MapChunksIndexBufferTest {
 
     static Stream set_get_entries() {
         def args = []
         def count = 0
         def offset = 0
-        def b = ByteBuffer.allocate(MapChunksIndexBuffer.SIZE_MIN + MapChunksIndexBuffer.SIZE_ENTRY * count)
+        def b = ByteBuffer.allocate(offset + MapChunksIndexBuffer.SIZE_MIN + MapChunksIndexBuffer.SIZE_ENTRY * count)
         args << of(b, offset, count, [], '00000000')
         count = 2
         b = ByteBuffer.allocate(MapChunksIndexBuffer.SIZE_MIN + MapChunksIndexBuffer.SIZE_ENTRY * count)
         args << of(b, offset, count, [
             [
-                1111111,
                 0,
-                128
+                64
             ],
             [
-                2222222,
-                128,
+                64,
                 128
             ]
-        ], '000000020010f44700000000000000800021e88e0000008000000080')
-        b = ByteBuffer.allocate(10 + MapChunksIndexBuffer.SIZE_MIN + MapChunksIndexBuffer.SIZE_ENTRY * count)
-        offset = 10
+        ], '0000000200000000000000400000004000000080')
+        offset = 2 * 4
+        b = ByteBuffer.allocate(offset + MapChunksIndexBuffer.SIZE_MIN + MapChunksIndexBuffer.SIZE_ENTRY * count)
         args << of(b, offset, count, [
             [
-                1111111,
                 0,
-                128
+                64
             ],
             [
-                2222222,
-                128,
+                64,
                 128
             ]
-        ], '00000000000000000000000000020010f44700000000000000800021e88e0000008000000080')
+        ], '00000000000000000000000200000000000000400000004000000080')
         Stream.of(args as Object[])
     }
 
@@ -77,18 +76,17 @@ class MapChunksIndexBufferTest {
             MapChunksIndexBuffer.setEntry(b, offset, i, it as int[])
         }
         b.rewind()
+        log.debug(HexFormat.of().formatHex(b.array()))
         assert HexFormat.of().formatHex(b.array()) == expected
         assert MapChunksIndexBuffer.getCount(b, offset) == count
         entry.eachWithIndex { it, i ->
-            assert MapChunksIndexBuffer.getCid(b, offset, i) == it[0]
-            assert MapChunksIndexBuffer.getPos(b, offset, i) == it[1]
-            assert MapChunksIndexBuffer.getSize(b, offset, i) == it[2]
+            assert MapChunksIndexBuffer.getPos(b, offset, i) == it[0]
+            assert MapChunksIndexBuffer.getSize(b, offset, i) == it[1]
         }
         int[] dest = MapChunksIndexBuffer.getEntries(b, offset, null)
         entry.eachWithIndex { it, i ->
-            assert dest[i * 3 + 0] == it[0]
-            assert dest[i * 3 + 1] == it[1]
-            assert dest[i * 3 + 2] == it[2]
+            assert dest[i * 2 + 0] == it[0]
+            assert dest[i * 2 + 1] == it[1]
         }
     }
 }

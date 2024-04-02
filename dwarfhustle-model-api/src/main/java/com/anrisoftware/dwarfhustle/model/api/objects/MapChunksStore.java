@@ -19,6 +19,7 @@ package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.READ;
+import static java.nio.file.StandardOpenOption.SYNC;
 import static java.nio.file.StandardOpenOption.WRITE;
 
 import java.io.IOException;
@@ -57,17 +58,21 @@ public class MapChunksStore {
     private MappedByteBuffer indexBuffer;
 
     public MapChunksStore(Path file, int chunkSize, int chunksCount) throws IOException {
-        this.channel = FileChannel.open(file, CREATE, READ, WRITE);
-        this.indexSize = MapChunksIndexBuffer.SIZE_MIN + chunksCount * MapChunksIndexBuffer.SIZE_ENTRY;
+        this.channel = FileChannel.open(file, CREATE, READ, WRITE, SYNC);
+        boolean newFile = channel.size() == 0;
+        this.indexSize = MapChunksIndexBuffer.SIZE_MIN + (chunksCount + 1) * MapChunksIndexBuffer.SIZE_ENTRY;
         this.indexBuffer = channel.map(MapMode.READ_WRITE, 0, indexSize);
-        if (channel.size() == 0) {
-            writeIndex(chunksCount);
+        if (newFile) {
+            writeInitialIndex(chunksCount);
         }
     }
 
     @SneakyThrows
-    private void writeIndex(int chunksCount) {
-        int[] entries = new int[chunksCount * 3];
+    private void writeInitialIndex(int chunksCount) {
+        chunksCount++;
+        int[] entries = new int[chunksCount * 2];
+        entries[0] = 0;
+        entries[1] = MapChunksIndexBuffer.SIZE_MIN + chunksCount * MapChunksIndexBuffer.SIZE_ENTRY;
         MapChunksIndexBuffer.setEntries(indexBuffer, 0, chunksCount, entries);
     }
 
@@ -80,10 +85,23 @@ public class MapChunksStore {
     @SneakyThrows
     public synchronized void setChunk(MapChunk chunk) {
         int i = chunk.cid;
-        int pos = MapChunksIndexBuffer.getPos(indexBuffer, 0, i);
-        int size = MapChunksIndexBuffer.getSize(indexBuffer, 0, i);
+        int ppos = MapChunksIndexBuffer.getPos(indexBuffer, 0, i);
+        int psize = MapChunksIndexBuffer.getSize(indexBuffer, 0, i);
+        int pos = ppos + psize;
+        int size = getChunkSize(chunk);
         var buffer = channel.map(MapMode.READ_WRITE, pos, size);
         MapChunkBuffer.writeMapChunk(buffer, 0, chunk);
+        MapChunksIndexBuffer.setEntry(indexBuffer, 0, chunk.cid + 1, pos, size);
+    }
+
+    private int getChunkSize(MapChunk chunk) {
+        if (chunk.isLeaf()) {
+            int size = MapChunkBuffer.SIZE_LEAF_MIN;
+            size += chunk.getBlocks().capacity();
+            return size;
+        } else {
+            return MapChunkBuffer.SIZE_MIN;
+        }
     }
 
     @SneakyThrows
@@ -96,9 +114,11 @@ public class MapChunksStore {
     }
 
     @SneakyThrows
-    public synchronized ByteBuffer getBlocksBuffer(int cid) {
-        int pos = MapChunksIndexBuffer.getPos(indexBuffer, 0, cid);
-        int size = MapChunksIndexBuffer.getSize(indexBuffer, 0, cid);
+    public synchronized ByteBuffer getBlocksBuffer(MapChunk chunk) {
+        int ppos = MapChunksIndexBuffer.getPos(indexBuffer, 0, chunk.cid);
+        int psize = MapChunksIndexBuffer.getSize(indexBuffer, 0, chunk.cid);
+        int pos = ppos + psize + MapChunkBuffer.SIZE_LEAF_MIN;
+        int size = MapBlockBuffer.SIZE * chunk.pos.getSizeX() * chunk.pos.getSizeY() * chunk.pos.getSizeZ();
         return channel.map(MapMode.READ_WRITE, pos, size);
     }
 

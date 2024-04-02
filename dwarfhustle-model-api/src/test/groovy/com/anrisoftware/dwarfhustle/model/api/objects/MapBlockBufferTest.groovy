@@ -35,18 +35,18 @@ class MapBlockBufferTest {
 
     static Stream set_get_map_block() {
         def args = []
-        def b = ByteBuffer.allocate(MapBlockBuffer.SIZE)
         def offset = 0
-        args << of(b, offset, 111111, 22222, 33333, 32, 10, 4, 4, '00000000000056ce00000000000082350001b207000000200000000a')
-        b = ByteBuffer.allocate(10 + MapBlockBuffer.SIZE)
-        offset = 10
-        args << of(b, offset, 111111, 22222, 33333, 32, 10, 4, 4, '0000000000000000000000000000000056ce00000000000082350001b207000000200000000a')
+        def b = ByteBuffer.allocate(offset + MapBlockBuffer.SIZE)
+        args << of(b, offset, 111111, 22222, 33333, 0, 10, 4, 4, 4, 0, 0, 0, '00000000000056ce00000000000082350001b207000000000000000a')
+        offset = 2 * 4
+        b = ByteBuffer.allocate(offset + MapBlockBuffer.SIZE)
+        args << of(b, offset, 111111, 22222, 33333, 0, 10, 4, 4, 4, 0, 0, 0, '000000000000000000000000000056ce00000000000082350001b207000000000000000a')
         Stream.of(args as Object[])
     }
 
     @ParameterizedTest
     @MethodSource()
-    void set_get_map_block(ByteBuffer b, int offset, int parent, long m, long o, int i, int p, int w, int h, def expected) {
+    void set_get_map_block(ByteBuffer b, int offset, int parent, long m, long o, int i, int p, int w, int h, int d, int sx, int sy, int sz, def expected) {
         MapBlockBuffer.setIndex(b, offset, i)
         MapBlockBuffer.setProp(b, offset, p)
         MapBlockBuffer.setParent(b, offset, parent)
@@ -62,14 +62,14 @@ class MapBlockBufferTest {
 
     @ParameterizedTest
     @MethodSource("set_get_map_block")
-    void write_read_map_block(ByteBuffer b, int offset, int parent, long m, long o, int i, int p, int w, int h, def expected) {
-        def block = new MapBlock(parent, new GameBlockPos(MapBlockBuffer.calcX(i, w), MapBlockBuffer.calcY(i, w), MapBlockBuffer.calcZ(i, w, h)))
+    void write_read_map_block(ByteBuffer b, int offset, int parent, long m, long o, int i, int p, int w, int h, int d, int sx, int sy, int sz, def expected) {
+        def block = new MapBlock(parent, new GameBlockPos(MapBlockBuffer.calcX(i, w, sx), MapBlockBuffer.calcY(i, w, sy), MapBlockBuffer.calcZ(i, w, h, sz)))
         block.material = m
         block.object = o
         block.p = new PropertiesSet(p)
-        MapBlockBuffer.writeMapBlock(b, offset, block, w, h)
+        MapBlockBuffer.writeMapBlockIndex(b, offset, block, w, h, d)
         assert HexFormat.of().formatHex(b.array()) == expected
-        def thatBlock = MapBlockBuffer.readMapBlock(b, offset, w, h)
+        def thatBlock = MapBlockBuffer.readMapBlockIndex(b, offset, 0, w, h, sx, sy, sz)
         assert thatBlock.parent == parent
         assert thatBlock.pos == block.pos
         assert thatBlock.material == m
@@ -79,39 +79,39 @@ class MapBlockBufferTest {
 
     @ParameterizedTest
     @CsvSource([
-        "0,0,0,4,4,0",
-        "1,0,0,4,4,1",
-        "0,1,1,4,4,20",
-        "3,0,2,4,4,35",
-        "3,3,2,4,4,47",
+        "0,0,0,4,4,0,0,0,0",
+        "1,0,0,4,4,0,0,0,1",
+        "0,1,1,4,4,0,0,0,20",
+        "3,0,2,4,4,0,0,0,35",
+        "3,3,2,4,4,0,0,0,47",
     ])
-    void calc_x_y_z_from_index(int x, int y, int z, int w, int h, int i) {
-        assert MapBlockBuffer.calcX(i, w) == x
-        assert MapBlockBuffer.calcY(i, w) == y
-        assert MapBlockBuffer.calcZ(i, w, h) == z
+    void calc_x_y_z_from_index(int x, int y, int z, int w, int h, int sx, int sy, int sz, int i) {
+        assert MapBlockBuffer.calcX(i, w, sx) == x
+        assert MapBlockBuffer.calcY(i, w, sy) == y
+        assert MapBlockBuffer.calcZ(i, w, h, sz) == z
     }
 
     @ParameterizedTest
     @CsvSource([
-        "2,2,0,0,0,0",
-        "2,2,1,0,0,1",
-        "2,2,0,1,0,2",
-        "2,2,1,1,0,3",
-        "2,2,0,0,1,4",
-        "2,2,1,0,1,5",
-        "2,2,0,1,1,6",
-        "2,2,1,1,1,7",
+        "2,2,2,0,0,0,0",
+        "2,2,2,1,0,0,1",
+        "2,2,2,0,1,0,2",
+        "2,2,2,1,1,0,3",
+        "2,2,2,0,0,1,4",
+        "2,2,2,1,0,1,5",
+        "2,2,2,0,1,1,6",
+        "2,2,2,1,1,1,7",
         //
-        "2,2,0,4,0,8",
-        "2,2,1,4,0,9",
-        "2,2,0,5,0,10",
-        "2,2,1,5,0,11",
-        "2,2,0,4,1,12",
-        "2,2,1,4,1,13",
-        "2,2,0,5,1,14",
-        "2,2,1,5,1,15",
+        "2,2,2,0,4,0,0",
+        "2,2,2,1,4,0,1",
+        "2,2,2,0,5,0,2",
+        "2,2,2,1,5,0,3",
+        "2,2,2,0,4,1,4",
+        "2,2,2,1,4,1,5",
+        "2,2,2,0,5,1,6",
+        "2,2,2,1,5,1,7",
     ])
-    void calculate_index_from_pos(int w, int h, int x, int y, int z, int expected) {
-        assert MapBlockBuffer.calcIndex(w, h, x, y, z) == expected
+    void calculate_index_from_pos(int w, int h, int d, int x, int y, int z, int expected) {
+        assert MapBlockBuffer.calcIndex(w, h, d, x, y, z) == expected
     }
 }

@@ -40,29 +40,29 @@ public class MapBlockBuffer {
     /**
      * Returns the index from the x/y/z position.
      */
-    public static int calcIndex(int w, int h, int x, int y, int z) {
-        return z * w * h + y * w + x;
+    public static int calcIndex(int w, int h, int d, int x, int y, int z) {
+        return (z * w * h + y * w + x) % (w * h * d);
     }
 
     /**
      * Returns the X position from the index.
      */
-    public static int calcX(int i, int w) {
-        return i % w;
+    public static int calcX(int i, int w, int sx) {
+        return i % w + sx;
     }
 
     /**
      * Returns the Y position from the index.
      */
-    public static int calcY(int i, int w) {
-        return Math.floorMod(i / w, w);
+    public static int calcY(int i, int w, int sy) {
+        return Math.floorMod(i / w, w) + sy;
     }
 
     /**
      * Returns the Z position from the index.
      */
-    public static int calcZ(int i, int w, int h) {
-        return (int) Math.floor(i / w / h);
+    public static int calcZ(int i, int w, int h, int sz) {
+        return (int) Math.floor(i / w / h) + sz;
     }
 
     public static void setIndex(ByteBuffer b, int offset, int i) {
@@ -115,23 +115,48 @@ public class MapBlockBuffer {
         return b.asLongBuffer().get(OBJECT_LONG_INDEX);
     }
 
-    public static void writeMapBlock(ByteBuffer b, int offset, MapBlock block, int w, int h) {
-        b.position(offset);
+    /**
+     * Writes the {@link MapBlock} to the buffer at the block index.
+     * 
+     * @param b      the output {@link ByteBuffer}.
+     * @param offset the offset of the output buffer to write to.
+     * @param block  the {@link MapBlock} to write.
+     * @param w      the map width.
+     * @param h      the map height.
+     * @param d      the map depth.
+     */
+    public static void writeMapBlockIndex(ByteBuffer b, int offset, MapBlock block, int w, int h, int d) {
+        int index = calcIndex(w, h, d, block.pos.x, block.pos.y, block.pos.z);
+        b.position(offset + index * SIZE);
         var bi = b.asIntBuffer();
         var bl = b.asLongBuffer();
-        bi.put(INDEX_INT_INDEX, calcIndex(w, h, block.pos.x, block.pos.y, block.pos.z));
+        bi.put(INDEX_INT_INDEX, index);
         bi.put(PARENT_INT_INDEX, block.parent);
         bl.put(MAT_LONG_INDEX, block.material);
         bl.put(OBJECT_LONG_INDEX, block.object);
         bi.put(PROP_INT_INDEX, block.p.bits);
     }
 
-    public static MapBlock readMapBlock(ByteBuffer b, int offset, int w, int h) {
+    /**
+     * Reads the {@link MapBlock} from the buffer at the block index.
+     * 
+     * @param b      the source {@link ByteBuffer}.
+     * @param offset the offset of the source buffer to read from.
+     * @param index  the index of the block in the buffer.
+     * @param w      the map width.
+     * @param h      the map height.
+     * @param sx     the {@link MapChunk} position start X.
+     * @param sy     the {@link MapChunk} position start Y.
+     * @param sz     the {@link MapChunk} position start Z.
+     * @return the {@link MapBlock}.
+     */
+    public static MapBlock readMapBlockIndex(ByteBuffer b, int offset, int index, int w, int h, int sx, int sy,
+            int sz) {
         var block = new MapBlock();
-        b.position(offset);
+        b.position(offset + index * SIZE);
         var bi = b.asIntBuffer();
-        var index = bi.get(INDEX_INT_INDEX);
-        block.pos = new GameBlockPos(calcX(index, w), calcY(index, w), calcZ(index, w, h));
+        var i = bi.get(INDEX_INT_INDEX);
+        block.pos = new GameBlockPos(calcX(i, w, sx), calcY(i, w, sy), calcZ(i, w, h, sz));
         block.parent = bi.get(PARENT_INT_INDEX);
         b.position(offset);
         var bl = b.asLongBuffer();
