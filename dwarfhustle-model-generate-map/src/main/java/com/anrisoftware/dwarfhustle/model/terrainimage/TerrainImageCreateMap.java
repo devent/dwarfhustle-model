@@ -17,16 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.terrainimage;
 
-import static java.nio.file.StandardOpenOption.CREATE;
-import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
-import static java.time.Duration.ofSeconds;
-
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
@@ -52,8 +44,6 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class TerrainImageCreateMap {
-
-    private static final Duration CACHE_TIMEOUT = ofSeconds(100);
 
     /**
      * @see TerrainImageCreateMap
@@ -82,10 +72,7 @@ public class TerrainImageCreateMap {
 
     private int chunkSize;
 
-    private BufferedWriter out;
-
     public void startImport(URL url, TerrainLoadImage image, GameMap gm) throws IOException, GeneratorException {
-        this.out = Files.newBufferedWriter(Path.of("chunks.txt"), CREATE, TRUNCATE_EXISTING);
         this.cidCounter = new AtomicInteger(0);
         this.terrain = image.load(url);
         this.chunkSize = image.chunkSize;
@@ -96,10 +83,9 @@ public class TerrainImageCreateMap {
         this.blocksCount = 0;
         chunksCount++;
         createMap(mcRoot, 0, 0, 0, gm.width, gm.height, gm.depth);
-        System.out.println("chunks " + chunksCount + " blocks " + blocksCount);
+        log.debug("startImport chunks {} blocks {}", chunksCount, blocksCount);
         gm.chunksCount = chunksCount;
         gm.blocksCount = blocksCount;
-        out.close();
     }
 
     private int nextCid() {
@@ -122,8 +108,6 @@ public class TerrainImageCreateMap {
         chunk.setChunks(chunks);
         chunk.updateCenterExtent(gm.width, gm.height, gm.depth);
         putObjectToBackend(chunk);
-        System.out.println(chunksCount); // TODO
-        // Thread.sleep(1000);
     }
 
     @SneakyThrows
@@ -148,9 +132,6 @@ public class TerrainImageCreateMap {
                             mb.setMined(true);
                         }
                         chunk.setBlock(mb);
-                        out.append(mb.toString());
-                        out.append('\n');
-                        // System.out.println(mb); // TODO
                     }
                 }
             }
@@ -164,24 +145,11 @@ public class TerrainImageCreateMap {
 
     @SneakyThrows
     private void putObjectsToBackend(Iterable<MapChunk> values) {
-        values.forEach((mc) -> {
-            try {
-                out.append(mc.toString());
-                out.append('\n');
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        });
-        // values.forEach(System.out::println); // TODO
         store.setChunks(values);
     }
 
     @SneakyThrows
     private void putObjectToBackend(MapChunk chunk) {
-        out.append(chunk.toString());
-        out.append('\n');
-        // System.out.println(chunk); // TODO
         store.setChunk(chunk);
     }
 

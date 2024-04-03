@@ -19,6 +19,7 @@ package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import java.nio.ByteBuffer;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
@@ -168,6 +169,19 @@ public class MapChunk {
         }
     }
 
+    public void forEachBlocks(Consumer<MapBlock> consumer) {
+        int cw = pos.getSizeX();
+        int ch = pos.getSizeY();
+        int sx = pos.x;
+        int sy = pos.y;
+        int sz = pos.z;
+        blocks.ifPresent((b) -> {
+            for (int i = 0; i < b.capacity() / MapBlockBuffer.SIZE; i++) {
+                consumer.accept(MapBlockBuffer.readMapBlockIndex(b, 0, i, cw, ch, sx, sy, sz));
+            }
+        });
+    }
+
     private MapBlock readMapBlock(ByteBuffer buffer, int x, int y, int z) {
         int w = pos.getSizeX();
         int h = pos.getSizeY();
@@ -184,8 +198,12 @@ public class MapChunk {
         return getPos().contains(p);
     }
 
-    public boolean getBlocksNotEmpty() {
+    public boolean isBlocksNotEmpty() {
         return !blocks.isEmpty();
+    }
+
+    public boolean isBlocksEmpty() {
+        return blocks.isEmpty();
     }
 
     public void setBlocksBuffer(ByteBuffer buffer) {

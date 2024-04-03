@@ -76,7 +76,7 @@ class MapChunksIndexBufferTest {
             MapChunksIndexBuffer.setEntry(b, offset, i, it as int[])
         }
         b.rewind()
-        log.debug(HexFormat.of().formatHex(b.array()))
+        log.debug("set_get_entries {}", HexFormat.of().formatHex(b.array()))
         assert HexFormat.of().formatHex(b.array()) == expected
         assert MapChunksIndexBuffer.getCount(b, offset) == count
         entry.eachWithIndex { it, i ->

@@ -118,7 +118,7 @@ public class MapChunksStore {
         int ppos = MapChunksIndexBuffer.getPos(indexBuffer, 0, chunk.cid);
         int psize = MapChunksIndexBuffer.getSize(indexBuffer, 0, chunk.cid);
         int pos = ppos + psize + MapChunkBuffer.SIZE_LEAF_MIN;
-        int size = MapBlockBuffer.SIZE * chunk.pos.getSizeX() * chunk.pos.getSizeY() * chunk.pos.getSizeZ();
+        int size = MapBlockBuffer.calcMapBufferSize(chunk.pos.getSizeX(), chunk.pos.getSizeY(), chunk.pos.getSizeZ());
         return channel.map(MapMode.READ_WRITE, pos, size);
     }
 
@@ -132,9 +132,9 @@ public class MapChunksStore {
             return;
         }
         var entries = MapChunksIndexBuffer.getEntries(indexBuffer, 0, null);
-        for (int i = 0; i < entries.length / 3; i++) {
-            int pos = entries[i * 3 + 1];
-            int size = entries[i * 3 + 2];
+        for (int i = 1; i < entries.length / 2; i++) {
+            int pos = entries[i * 2 + 0];
+            int size = entries[i * 2 + 1];
             var buffer = channel.map(MapMode.READ_WRITE, pos, size);
             var chunk = MapChunkBuffer.readMapChunk(buffer, 0);
             consumer.accept(chunk);

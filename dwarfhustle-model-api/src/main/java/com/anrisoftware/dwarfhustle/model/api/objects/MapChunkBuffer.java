@@ -177,6 +177,13 @@ public class MapChunkBuffer {
                             chunkEntries[i * 7 + 4], chunkEntries[i * 7 + 5], chunkEntries[i * 7 + 6]));
         }
         chunk.setChunks(chunks);
+        if (chunks.isEmpty()) {
+            offset += SIZE_LEAF_MIN;
+            int size = MapBlockBuffer.calcMapBufferSize(chunk.pos.getSizeX(), chunk.pos.getSizeY(),
+                    chunk.pos.getSizeZ());
+            var bb = b.slice(offset, size);
+            chunk.setBlocksBuffer(bb);
+        }
         return chunk;
     }
 }
