@@ -21,7 +21,6 @@ import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.create
 import static com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor.ID;
 import static com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor.KEY;
 import static com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor.NAME;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.actor.SaveObjectMessage.askSaveObject;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import java.time.Duration;
@@ -35,16 +34,11 @@ import org.apache.commons.jcs3.access.exception.CacheException;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.actor.ShutdownMessage;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheGetMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbResponseMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.SaveObjectsMessage;
 import com.google.inject.Injector;
 
 import akka.actor.typed.ActorRef;
@@ -52,8 +46,6 @@ import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.BehaviorBuilder;
 import akka.actor.typed.javadsl.StashBuffer;
-import jakarta.inject.Inject;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -106,9 +98,6 @@ public class ImporterObjectsJcsCacheActor extends AbstractJcsCacheActor {
         return initCache;
     }
 
-    @Inject
-    private ActorSystemProvider actor;
-
     @Override
     protected Behavior<Message> initialStage(InitialStateMessage m) {
         log.debug("initialStage {}", m);
@@ -126,17 +115,13 @@ public class ImporterObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @Override
-    @SneakyThrows
     protected void storeValueBackend(Object key, GameObject go) {
-        askSaveObject(actor.getActorSystem(), timeout, (StoredObject) go).whenComplete(this::storeValueBackendCompleted)
-                .toCompletableFuture().get();
+        // nothing to do
     }
 
     @Override
-    @SneakyThrows
     protected void storeValuesBackend(String objectType, Iterable<GameObject> values) {
-        SaveObjectsMessage.askSaveObjects(actor.getActorSystem(), timeout, objectType, values)
-                .whenComplete(this::storeValueBackendCompleted).toCompletableFuture().get();
+        // nothing to do
     }
 
     @Override
@@ -144,18 +129,15 @@ public class ImporterObjectsJcsCacheActor extends AbstractJcsCacheActor {
         retrieveGameObject(m.type, (long) m.key, consumer);
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    @SneakyThrows
+    @SuppressWarnings({ "rawtypes" })
     private void retrieveGameObject(String type, long id, Consumer consumer) {
-        LoadObjectMessage.askLoadObject(actor.getActorSystem(), timeout, type, consumer, db -> {
-            var query = "SELECT * from ? where objecttype = ? and objectid = ? limit 1";
-            return db.query(query, type, type, id);
-        }).whenComplete(this::retrieveGameObjectCompleted).toCompletableFuture().get();
+        // nothing to do
     }
 
     @Override
     protected <T extends GameObject> T getValueFromBackend(Class<T> typeClass, String type, Object key) {
-        return og.get(typeClass, type, key);
+        // nothing to do
+        return null;
     }
 
     @Override
@@ -167,28 +149,6 @@ public class ImporterObjectsJcsCacheActor extends AbstractJcsCacheActor {
     protected BehaviorBuilder<Message> getInitialBehavior() {
         return super.getInitialBehavior()//
         ;
-    }
-
-    private void storeValueBackendCompleted(DbResponseMessage<?> res, Throwable ex) {
-        logError(res, ex);
-    }
-
-    private void retrieveGameObjectCompleted(Object res, Object ex) {
-        logError((DbResponseMessage<?>) res, (Throwable) ex);
-    }
-
-    private void logError(DbResponseMessage<?> res, Throwable ex) {
-        if (ex != null) {
-            log.error("storeValueBackend", ex);
-            context.getSelf().tell(new ShutdownMessage());
-        } else {
-            if (res instanceof DbErrorMessage m) {
-                log.error("storeValueBackend", m.error);
-                context.getSelf().tell(new ShutdownMessage());
-            } else {
-                // success
-            }
-        }
     }
 
 }

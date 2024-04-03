@@ -43,6 +43,10 @@ public class WorldMap extends GameObject implements StoredObject {
 
     public static final String OBJECT_TYPE = WorldMap.class.getSimpleName();
 
+    public static WorldMap getWorldMap(ObjectsGetter og, long id) {
+        return og.get(WorldMap.class, OBJECT_TYPE, id);
+    }
+
     /**
      * Record ID set after the object was once stored in the backend.
      */

@@ -19,8 +19,10 @@ package com.anrisoftware.dwarfhustle.model.terrainimage
 
 import static org.junit.jupiter.params.provider.Arguments.of
 
+import java.nio.file.Path
 import java.util.stream.Stream
 
+import org.apache.commons.lang3.RegExUtils
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.io.TempDir
@@ -56,29 +58,34 @@ class ImporterMapImage2DbAppTest {
 
     static Stream test_start_import_db() {
         def args = []
-        args << of(TerrainImage.terrain_4_4_4_2)
+        def mapProperties = new Properties()
+        mapProperties.setProperty("world_name", "The Central World")
+        mapProperties.setProperty("map_name", "Fierybringer Castle")
+        //args << of(TerrainImage.terrain_4_4_4_2)
         //args << of(TerrainImage.terrain_8_8_8_2)
         //args << of(TerrainImage.terrain_8_8_8_4)
         //args << of(TerrainImage.terrain_32_32_32_4)
         //args << of(TerrainImage.terrain_32_32_32_8)
         //args << of(TerrainImage.terrain_128_128_128_16)
         //args << of(TerrainImage.terrain_128_128_128_32)
-        //args << of(TerrainImage.terrain_256_256_128_64)
+        args << of(TerrainImage.terrain_256_256_128_16, mapProperties)
+        //args << of(TerrainImage.terrain_256_256_128_32)
         Stream.of(args as Object[])
     }
 
     @TempDir
-    static File tmp
+    static Path tmp
 
     @ParameterizedTest
     @MethodSource
     @Timeout(600)
-    void test_start_import_db(TerrainImage image) {
-        def importer = injector.getInstance(ImporterMapImage2DbApp)
-        importer.initEmbedded(injector, tmp, image.name(), "root", "admin").get()
-        long gmid = importer.createGameMap(image.terrain, 9)
-        importer.startImport(ImporterMapImage2DbAppTest.class.getResource(image.imageName), image.terrain, gmid)
+    void test_start_import_db(TerrainImage image, Properties mapProperties) {
         def actor = injector.getInstance(ActorSystemProvider)
+        def importer = injector.getInstance(ImporterMapImage2DbApp)
+        importer.init(injector).get()
+        def gmid = importer.createGameMap(image.terrain, mapProperties, image.chunksCount)
+        importer.initEmbedded(tmp.resolve(image.name()).toFile(),RegExUtils.replaceAll(mapProperties.map_name, /(\s+)/, "_"), "root", "admin").get()
+        importer.startImport(ImporterMapImage2DbAppTest.class.getResource(image.imageName), image.terrain, gmid)
         importer.shutdownEmbedded().get()
         println "done"
     }

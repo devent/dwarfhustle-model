@@ -19,6 +19,7 @@ package com.anrisoftware.dwarfhustle.model.terrainimage;
 
 import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
 import static com.anrisoftware.dwarfhustle.model.api.objects.GameMap.getGameMap;
+import static com.anrisoftware.dwarfhustle.model.api.objects.WorldMap.getWorldMap;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StopEmbeddedServerMessage.askStopEmbeddedServer;
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -50,6 +51,7 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbSuccessM
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.RebuildIndexMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.RebuildIndexMessage.RebuildIndexSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.SaveObjectMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StartEmbeddedServerMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StartEmbeddedServerMessage.StartEmbeddedServerSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StopEmbeddedServerMessage;
@@ -208,9 +210,12 @@ public class ImporterMapImage2DbActor {
         this.importImageReplyTo = m.replyTo;
         try {
             var gm = getGameMap(og, m.mapid);
+            var wm = getWorldMap(og, gm.world);
             var store = new MapChunksStore(Path.of(root, format("%d.map", m.mapid)), gm.chunkSize, gm.chunksCount);
             terrainImageCreateMap.create(store).startImport(m.url, m.image, gm);
             store.close();
+            dbActor.tell(new SaveObjectMessage<>(dbResponseAdapter, gm));
+            dbActor.tell(new SaveObjectMessage<>(dbResponseAdapter, wm));
             dbActor.tell(new RebuildIndexMessage<>(dbResponseAdapter));
         } catch (Exception e) {
             log.error("onImportImage", e);

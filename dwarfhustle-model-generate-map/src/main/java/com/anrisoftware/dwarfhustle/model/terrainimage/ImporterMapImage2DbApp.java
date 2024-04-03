@@ -29,6 +29,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZoneOffset;
+import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CountDownLatch;
@@ -81,16 +82,11 @@ public class ImporterMapImage2DbApp {
     private IDGenerator gen;
 
     /**
-     * Initiate the importer with embedded database.
+     * Initiate the importer.
      *
-     * @param injector  the {@link Injector} with external modules.
-     * @param parentDir the {@link File} of the database parent directory.
-     * @param database  the {@link String} database name.
-     * @param user      the {@link String} user name.
-     * @param password  the {@link String} password.
+     * @param injector the {@link Injector} with external modules.
      */
-    public CompletableFuture<Void> initEmbedded(Injector injector, File parentDir, String database, String user,
-            String password) {
+    public CompletableFuture<Void> init(Injector injector) {
         var childInjector = injector.createChildInjector(new AbstractModule() {
             @Override
             protected void configure() {
@@ -107,7 +103,22 @@ public class ImporterMapImage2DbApp {
                     });
                 }).toCompletableFuture(), //
                 createImporter(childInjector).toCompletableFuture()).toCompletableFuture()
-                .exceptionally(this::errorInit).thenRun(() -> connectDbEmbedded(parentDir, database, user, password));
+                .exceptionally(this::errorInit);
+    }
+
+    /**
+     * Init with embedded database.
+     *
+     * @param injector  the {@link Injector} with external modules.
+     * @param parentDir the {@link File} of the database parent directory.
+     * @param database  the {@link String} database name.
+     * @param user      the {@link String} user name.
+     * @param password  the {@link String} password.
+     */
+    public CompletableFuture<Void> initEmbedded(File parentDir, String database, String user, String password) {
+        return CompletableFuture.runAsync(() -> {
+            connectDbEmbedded(parentDir, database, user, password);
+        });
     }
 
     private CompletionStage<ActorRef<Message>> createImporter(Injector injector) {
@@ -256,15 +267,16 @@ public class ImporterMapImage2DbApp {
 
     /**
      * Creates the {@link WorldMap} and {@link GameMap} according the the terrain
-     * image.
+     * image and map properties.
      *
      * @param image the {@link TerrainLoadImage}
-     * @return the ID of the created {@link GameMap}.
+     * @return the ID of the {@link GameMap}
      */
     @SneakyThrows
-    public long createGameMap(TerrainLoadImage image, int chunksCount) {
+    public long createGameMap(TerrainLoadImage image, Properties mapProperties, int chunksCount) {
         var gm = new GameMap(gen.generate());
         var wm = new WorldMap(gen.generate());
+        wm.setName(mapProperties.getProperty("world_name"));
         wm.addMap(gm);
         wm.currentMap = gm.id;
         wm.time = LocalDateTime.of(2023, Month.APRIL, 15, 12, 0);
@@ -282,8 +294,9 @@ public class ImporterMapImage2DbApp {
         // gm.setCameraPos(0.0f, 0.0f, 12.0f);
         gm.setCameraRot(0.0f, 1.0f, 0.0f, 0.0f);
         gm.setCursorZ(0);
-        askCachePut(actor.getActorSystem(), ofSeconds(1), gm.id, gm).toCompletableFuture().get();
-        askCachePut(actor.getActorSystem(), ofSeconds(1), wm.id, wm).toCompletableFuture().get();
+        gm.setName(mapProperties.getProperty("map_name"));
+        askCachePut(actor.getActorSystem(), ofSeconds(333331), gm.id, gm).toCompletableFuture().get();
+        askCachePut(actor.getActorSystem(), ofSeconds(333331), wm.id, wm).toCompletableFuture().get();
         return gm.id;
     }
 }
