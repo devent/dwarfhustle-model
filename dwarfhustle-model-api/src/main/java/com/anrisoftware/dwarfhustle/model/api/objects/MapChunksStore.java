@@ -106,7 +106,7 @@ public class MapChunksStore {
 
     @SneakyThrows
     public synchronized MapChunk getChunk(int cid) {
-        int i = cid;
+        int i = cid + 1;
         int pos = MapChunksIndexBuffer.getPos(indexBuffer, 0, i);
         int size = MapChunksIndexBuffer.getSize(indexBuffer, 0, i);
         var buffer = channel.map(MapMode.READ_WRITE, pos, size);
