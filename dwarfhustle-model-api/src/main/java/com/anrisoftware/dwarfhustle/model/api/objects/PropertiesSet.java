@@ -25,7 +25,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 /**
- * Simple bit set that for properties.
+ * Bit set that for properties.
  * <p>
  * Size 4 bytes
  * <ul>
@@ -107,8 +107,9 @@ public class PropertiesSet implements Externalizable, StreamStorage {
 
     @Override
     public boolean equals(Object o) {
-        if (o == this)
+        if (o == this) {
             return true;
+        }
         if (o instanceof PropertiesSet other) {
             return bits == other.bits;
         } else if (o instanceof Number other) {

@@ -255,7 +255,7 @@ class OrientDbActorTest {
         MapChunk rootChunk
         askLoadObject MapChunk.OBJECT_TYPE, { it.query("SELECT * from ? where objecttype = ? LIMIT 1", MapChunk.OBJECT_TYPE, MapChunk.OBJECT_TYPE) }, { rootChunk = it }
         assert gm.root == rootChunk.id
-        rootChunk.blocks.forEach {
+        rootChunk.blocksBuffer.forEach {
         }
     }
 

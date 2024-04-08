@@ -18,6 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import java.nio.ByteBuffer;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -28,6 +29,7 @@ import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -92,6 +94,11 @@ public class MapChunk {
      */
     public CenterExtent centerExtent;
 
+    /**
+     * The {@link NeighboringDir} neighbors of this chunk.
+     */
+    public int[] neighbors = new int[NeighboringDir.values().length];
+
     private boolean leaf;
 
     public MapChunk() {
@@ -131,7 +138,12 @@ public class MapChunk {
         return parent == 0;
     }
 
-    public long getChunk(int x, int y, int z, int ex, int ey, int ez) {
+    public boolean isInside(GameBlockPos other) {
+        return other.x >= pos.x && other.y >= pos.y && other.z >= pos.z && other.x < pos.ep.x && other.y < pos.ep.y
+                && other.z < pos.ep.z;
+    }
+
+    public int getChunk(int x, int y, int z, int ex, int ey, int ez) {
         for (var view : chunks.keyValuesView()) {
             if (view.getTwo().equals(x, y, z, ex, ey, ez)) {
                 return view.getOne();
@@ -148,8 +160,48 @@ public class MapChunk {
         return chunks.size();
     }
 
-    public ByteBuffer getBlocks() {
+    public ByteBuffer getBlocksBuffer() {
         return blocks.orElseThrow();
+    }
+
+    public Iterable<MapBlock> getBlocks() {
+        int cw = pos.getSizeX();
+        int ch = pos.getSizeY();
+        int sx = pos.x;
+        int sy = pos.y;
+        int sz = pos.z;
+        var b = blocks.orElseThrow();
+
+        return new Iterable<MapBlock>() {
+
+            @Override
+            public Iterator<MapBlock> iterator() {
+                return new Itr(cw, ch, sx, sy, sz, b, b.capacity() / MapBlockBuffer.SIZE);
+            }
+        };
+
+    }
+
+    @RequiredArgsConstructor
+    private static class Itr implements Iterator<MapBlock> {
+        final int cw;
+        final int ch;
+        final int sx;
+        final int sy;
+        final int sz;
+        final ByteBuffer b;
+        final int size;
+        int i = 0;
+
+        @Override
+        public MapBlock next() {
+            return MapBlockBuffer.readMapBlockIndex(b, 0, i++, cw, ch, sx, sy, sz);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return i < size;
+        }
     }
 
     public MapBlock getBlock(GameBlockPos pos) {
@@ -210,11 +262,11 @@ public class MapChunk {
         this.blocks = Optional.of(buffer);
     }
 
-    public MapChunk findMapChunk(int x, int y, int z, Function<Integer, MapChunk> retriever) {
-        return findMapChunk(new GameBlockPos(x, y, z), retriever);
+    public MapChunk findChunk(int x, int y, int z, Function<Integer, MapChunk> retriever) {
+        return findChunk(new GameBlockPos(x, y, z), retriever);
     }
 
-    public MapChunk findMapChunk(GameBlockPos pos, Function<Integer, MapChunk> retriever) {
+    public MapChunk findChunk(GameBlockPos pos, Function<Integer, MapChunk> retriever) {
         int x = pos.getX();
         int y = pos.getY();
         int z = pos.getZ();
@@ -230,18 +282,18 @@ public class MapChunk {
                 int ebz = ep.getZ();
                 if (x >= bx && y >= by && z >= bz && x < ebx && y < eby && z < ebz) {
                     var mb = retriever.apply(view.getOne());
-                    return mb.findMapChunk(pos, retriever);
+                    return mb.findChunk(pos, retriever);
                 }
             }
         }
         return this;
     }
 
-    public MapBlock findMapBlock(int x, int y, int z, Function<Integer, MapChunk> retriever) {
-        return findMapBlock(new GameBlockPos(x, y, z), retriever);
+    public MapBlock findBlock(int x, int y, int z, Function<Integer, MapChunk> retriever) {
+        return findBlock(new GameBlockPos(x, y, z), retriever);
     }
 
-    public MapBlock findMapBlock(GameBlockPos pos, Function<Integer, MapChunk> retriever) {
+    public MapBlock findBlock(GameBlockPos pos, Function<Integer, MapChunk> retriever) {
         int x = pos.getX();
         int y = pos.getY();
         int z = pos.getZ();
@@ -257,7 +309,7 @@ public class MapChunk {
                 int ebz = ep.getZ();
                 if (x >= bx && y >= by && z >= bz && x < ebx && y < eby && z < ebz) {
                     var mb = retriever.apply(view.getOne());
-                    return mb.findMapBlock(pos, retriever);
+                    return mb.findBlock(pos, retriever);
                 }
             }
         }
@@ -269,12 +321,12 @@ public class MapChunk {
      *
      * @return the ID of the chunk or 0.
      */
-    public long findChild(int x, int y, int z, int ex, int ey, int ez, Function<Integer, MapChunk> retriever) {
+    public int findChild(int x, int y, int z, int ex, int ey, int ez, Function<Integer, MapChunk> retriever) {
         if (x < 0 || y < 0 || z < 0) {
             return 0;
         }
         if (blocks.isEmpty()) {
-            long id = findChunk(x, y, z, ex, ey, ez);
+            int id = findChunk(x, y, z, ex, ey, ez);
             if (id != 0) {
                 return id;
             }
@@ -296,13 +348,29 @@ public class MapChunk {
         return 0;
     }
 
-    private long findChunk(int x, int y, int z, int ex, int ey, int ez) {
+    private int findChunk(int x, int y, int z, int ex, int ey, int ez) {
         for (var view : chunks.keyValuesView()) {
             if (view.getTwo().equals(x, y, z, ex, ey, ez)) {
                 return view.getOne();
             }
         }
         return 0;
+    }
+
+    /**
+     * Returns the CID of the {@link MapChunk} in the direction of the
+     * {@link NeighboringDir} or 0.
+     */
+    public int getNeighbor(NeighboringDir dir) {
+        return neighbors[dir.ordinal()];
+    }
+
+    public int getNeighborEast() {
+        return getNeighbor(NeighboringDir.E);
+    }
+
+    public int getNeighborSouth() {
+        return getNeighbor(NeighboringDir.S);
     }
 
 }

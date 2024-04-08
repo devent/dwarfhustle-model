@@ -20,6 +20,7 @@ package com.anrisoftware.dwarfhustle.model.terrainimage;
 import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
@@ -31,6 +32,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunksStore;
+import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
 import com.google.inject.assistedinject.Assisted;
 
 import jakarta.inject.Inject;
@@ -83,6 +85,7 @@ public class TerrainImageCreateMap {
         this.blocksCount = 0;
         chunksCount++;
         createMap(mcRoot, 0, 0, 0, gm.width, gm.height, gm.depth);
+        createNeighbors(mcRoot);
         log.debug("startImport chunks {} blocks {}", chunksCount, blocksCount);
         gm.chunksCount = chunksCount;
         gm.blocksCount = blocksCount;
@@ -141,6 +144,37 @@ public class TerrainImageCreateMap {
         }
         chunks.put(chunk.cid, chunk.getPos());
         putObjectToBackend(chunk);
+    }
+
+    private void createNeighbors(MapChunk rootc) {
+        var pos = rootc.getPos();
+        int xs = (pos.ep.x - pos.x) / 2;
+        int ys = (pos.ep.y - pos.y) / 2;
+        int zs = (pos.ep.z - pos.z) / 2;
+        Function<Integer, MapChunk> r = store::getChunk;
+        for (int x = pos.x; x < pos.ep.x; x += xs) {
+            for (int y = pos.y; y < pos.ep.y; y += ys) {
+                for (int z = pos.z; z < pos.ep.z; z += zs) {
+                    int chunkid = rootc.getChunk(x, y, z, x + xs, y + ys, z + zs);
+                    assert chunkid != 0;
+                    var chunk = store.getChunk(chunkid);
+                    assert chunk != null;
+                    if (xs > gm.chunkSize && ys > gm.chunkSize && zs > gm.chunkSize) {
+                        createNeighbors(chunk);
+                    }
+                    int[] neighbors = new int[NeighboringDir.values().length];
+                    int b = 0;
+                    for (NeighboringDir dir : NeighboringDir.values()) {
+                        var dp = (GameChunkPos) chunk.pos.add(dir.pos.mul(gm.chunkSize));
+                        if ((b = mcRoot.findChild(dp.x, dp.y, dp.z, dp.ep.x, dp.ep.y, dp.ep.z, r)) != 0) {
+                            neighbors[dir.ordinal()] = b;
+                        }
+                    }
+                    chunk.setNeighbors(neighbors);
+                    putObjectToBackend(chunk);
+                }
+            }
+        }
     }
 
     @SneakyThrows

@@ -1,6 +1,7 @@
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
@@ -18,10 +19,10 @@ import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
  * </ul>
  * 
  * <pre>
- * long 0         1         2         3         4         5         6
- * int  0    1    2    3    4    5    6    7    8    9    10   11   12
- * byte 0    4    8    12   16   20   24   28   32   36   40   44   48
- *      iiii PPPP cccc xxxx yyyy zzzz XXXX YYYY ZZZZ CCCC .... bbbb ....
+ * long 0         1         2         3         4         5         6         7         8         9         10        11        12        13        14        15        16        17        18        19        20
+ * int  0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21   22   23   24   24   25   26   27   28   29   30   31   32   33   34   35   36   37   38   39
+ * byte 0    4    8    12   16   20   24   28   32   36   40   44   48   52   56   58   60   64   68   72   76   80   84   88   92   96   100  104  108  112  116  120  124  128  132  136  140
+ *      iiii PPPP cccc xxxx yyyy zzzz XXXX YYYY ZZZZ NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN CCCC .... bbbb ....
  * </pre>
  */
 public class MapChunkBuffer {
@@ -31,6 +32,7 @@ public class MapChunkBuffer {
      */
     public static final int SIZE_MIN = 4 + 4 + 4 + //
             GameChunkPosBuffer.SIZE + //
+            26 * 4 + //
             CidGameChunkPosMapBuffer.SIZE_MIN + //
             8 * CidGameChunkPosMapBuffer.SIZE_ENTRY;
 
@@ -39,6 +41,7 @@ public class MapChunkBuffer {
      */
     public static final int SIZE_LEAF_MIN = 4 + 4 + 4 + //
             GameChunkPosBuffer.SIZE + //
+            26 * 4 + //
             CidGameChunkPosMapBuffer.SIZE_MIN + //
             0 * CidGameChunkPosMapBuffer.SIZE_ENTRY;
 
@@ -50,7 +53,7 @@ public class MapChunkBuffer {
 
     private static final int CHUNK_SIZE_INT_INDEX = 2;
 
-    private static final int CHUNKS_OFFSET = 36;
+    private static final int CHUNKS_OFFSET = 140;
 
     public static void setCid(ByteBuffer b, int offset, int id) {
         b.position(offset);
@@ -149,7 +152,16 @@ public class MapChunkBuffer {
         bi.put(chunk.parent);
         bi.put(chunk.chunkSize);
         GameChunkPosBuffer.putGameChunkPos(bi, chunk.pos);
+        bi.put(chunk.neighbors);
         int chunksCount = chunk.getChunksCount();
+        if (!chunk.isLeaf() && chunksCount == 0) {
+            writeEmptyChunks(bi, 8);
+        } else {
+            writeChunks(bi, chunk, chunksCount);
+        }
+    }
+
+    private static void writeChunks(IntBuffer bi, MapChunk chunk, int chunksCount) {
         var entries = new int[chunksCount * 7];
         var viewChunks = chunk.getChunks().keyValuesView().iterator();
         for (int i = 0; i < chunk.getChunks().size(); i++) {
@@ -165,19 +177,31 @@ public class MapChunkBuffer {
         CidGameChunkPosMapBuffer.putEntries(bi, chunksCount, entries);
     }
 
+    private static void writeEmptyChunks(IntBuffer bi, int chunksCount) {
+        bi.put(chunksCount);
+        var entries = new int[8 * 7];
+        bi.put(entries);
+    }
+
     public static MapChunk readMapChunk(ByteBuffer b, int offset) {
         b.position(offset);
         var bi = b.asIntBuffer();
         var chunk = new MapChunk(bi.get(), bi.get(), bi.get(), GameChunkPosBuffer.getGameChunkPos(bi));
+        bi.get(chunk.neighbors);
         var chunkEntries = CidGameChunkPosMapBuffer.getEntries(b, offset + CHUNKS_OFFSET, null);
-        MutableIntObjectMap<GameChunkPos> chunks = IntObjectMaps.mutable.ofInitialCapacity(chunkEntries.length / 7);
-        for (int i = 0; i < chunkEntries.length / 7; i++) {
-            chunks.put(chunkEntries[i * 7 + 0],
-                    new GameChunkPos(chunkEntries[i * 7 + 1], chunkEntries[i * 7 + 2], chunkEntries[i * 7 + 3],
-                            chunkEntries[i * 7 + 4], chunkEntries[i * 7 + 5], chunkEntries[i * 7 + 6]));
-        }
-        chunk.setChunks(chunks);
-        if (chunks.isEmpty()) {
+        if (!chunk.isLeaf()) {
+            MutableIntObjectMap<GameChunkPos> chunks = IntObjectMaps.mutable.ofInitialCapacity(chunkEntries.length / 7);
+            for (int i = 0; i < chunkEntries.length / 7; i++) {
+                chunks.put(chunkEntries[i * 7 + 0], //
+                        new GameChunkPos(chunkEntries[i * 7 + 1], //
+                                chunkEntries[i * 7 + 2], //
+                                chunkEntries[i * 7 + 3], //
+                                chunkEntries[i * 7 + 4], //
+                                chunkEntries[i * 7 + 5], //
+                                chunkEntries[i * 7 + 6]));
+            }
+            chunk.setChunks(chunks);
+        } else {
             offset += SIZE_LEAF_MIN;
             int size = MapBlockBuffer.calcMapBufferSize(chunk.pos.getSizeX(), chunk.pos.getSizeY(),
                     chunk.pos.getSizeZ());

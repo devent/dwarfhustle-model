@@ -18,6 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import java.io.Serializable;
+import java.util.function.Function;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -66,12 +67,12 @@ public class MapBlock implements Serializable {
     public long object = -1;
 
     /**
-     * Bit field that defines the properties of the map tile.
+     * Bit field that defines the properties of the map block.
      * <ul>
-     * <li>{@code 0000 0000 0000 0000 0000 0000 0000 0001} - mined
-     * <li>{@code 0000 0000 0000 0000 0000 0000 0000 0010} - natural roof
-     * <li>{@code 0000 0000 0000 0000 0000 0000 0000 0100} - natural floor
-     * <li>{@code 0000 0000 0000 0000 0000 0000 0000 1000} - ramp
+     * <li>{@code 00000000 00000000 00000000 00000001} - mined
+     * <li>{@code 00000000 00000000 00000000 00000010} - natural roof
+     * <li>{@code 00000000 00000000 00000000 00000100} - natural floor
+     * <li>{@code 00000000 00000000 00000000 00001000} - ramp
      * </ul>
      */
     public PropertiesSet p = new PropertiesSet();
@@ -160,6 +161,36 @@ public class MapBlock implements Serializable {
 
     public boolean isRamp() {
         return p.get(RAMP_POS);
+    }
+
+    public MapBlock getNeighbor(NeighboringDir dir, MapChunk chunk, Function<Integer, MapChunk> retriever) {
+        var dirpos = this.pos.add(dir.pos);
+        if (chunk.isInside(dirpos)) {
+            return chunk.getBlock(dirpos);
+        } else {
+            var parent = retriever.apply(chunk.parent);
+            return parent.findBlock(dirpos, retriever);
+        }
+    }
+
+    public MapBlock getNeighborNorth(MapChunk chunk, Function<Integer, MapChunk> retriever) {
+        return getNeighbor(NeighboringDir.N, chunk, retriever);
+    }
+
+    public MapBlock getNeighborSouth(MapChunk chunk, Function<Integer, MapChunk> retriever) {
+        return getNeighbor(NeighboringDir.S, chunk, retriever);
+    }
+
+    public MapBlock getNeighborEast(MapChunk chunk, Function<Integer, MapChunk> retriever) {
+        return getNeighbor(NeighboringDir.E, chunk, retriever);
+    }
+
+    public MapBlock getNeighborWest(MapChunk chunk, Function<Integer, MapChunk> retriever) {
+        return getNeighbor(NeighboringDir.W, chunk, retriever);
+    }
+
+    public MapBlock getNeighborUp(MapChunk chunk, Function<Integer, MapChunk> retriever) {
+        return getNeighbor(NeighboringDir.U, chunk, retriever);
     }
 
 }

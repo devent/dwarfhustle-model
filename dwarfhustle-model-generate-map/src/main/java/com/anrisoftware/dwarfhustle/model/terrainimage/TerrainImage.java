@@ -48,6 +48,8 @@ public enum TerrainImage {
 
     terrain_256_256_128_32(256, 256, 128, 16, 32, 329),
 
+    terrain_256_256_128_64(256, 256, 128, 16, 64, 41),
+
     ;
 
     public final int w;

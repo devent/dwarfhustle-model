@@ -28,8 +28,11 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.nio.file.Path;
+import java.util.Iterator;
+import java.util.Optional;
 import java.util.function.Consumer;
 
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
 /**
@@ -53,11 +56,14 @@ public class MapChunksStore {
 
     private final FileChannel channel;
 
+    private final int chunksCount;
+
     private long indexSize;
 
     private MappedByteBuffer indexBuffer;
 
     public MapChunksStore(Path file, int chunkSize, int chunksCount) throws IOException {
+        this.chunksCount = chunksCount;
         this.channel = FileChannel.open(file, CREATE, READ, WRITE, SYNC);
         boolean newFile = channel.size() == 0;
         this.indexSize = MapChunksIndexBuffer.SIZE_MIN + (chunksCount + 1) * MapChunksIndexBuffer.SIZE_ENTRY;
@@ -97,7 +103,7 @@ public class MapChunksStore {
     private int getChunkSize(MapChunk chunk) {
         if (chunk.isLeaf()) {
             int size = MapChunkBuffer.SIZE_LEAF_MIN;
-            size += chunk.getBlocks().capacity();
+            size += chunk.getBlocksBuffer().capacity();
             return size;
         } else {
             return MapChunkBuffer.SIZE_MIN;
@@ -111,6 +117,18 @@ public class MapChunksStore {
         int size = MapChunksIndexBuffer.getSize(indexBuffer, 0, i);
         var buffer = channel.map(MapMode.READ_WRITE, pos, size);
         return MapChunkBuffer.readMapChunk(buffer, 0);
+    }
+
+    /**
+     * Finds the {@link MapChunk} with the {@link GameChunkPos}.
+     */
+    public synchronized Optional<MapChunk> findChunk(GameChunkPos pos) {
+        for (var chunk : getChunks()) {
+            if (chunk.pos.equals(pos)) {
+                return Optional.of(chunk);
+            }
+        }
+        return Optional.empty();
     }
 
     @SneakyThrows
@@ -138,6 +156,36 @@ public class MapChunksStore {
             var buffer = channel.map(MapMode.READ_WRITE, pos, size);
             var chunk = MapChunkBuffer.readMapChunk(buffer, 0);
             consumer.accept(chunk);
+        }
+    }
+
+    /**
+     * Returns an {@link Iterable} over all {@link MapChunk}.
+     */
+    public synchronized Iterable<MapChunk> getChunks() {
+        return new Iterable<MapChunk>() {
+
+            @Override
+            public Iterator<MapChunk> iterator() {
+                return new Itr(MapChunksStore.this.chunksCount);
+            }
+        };
+
+    }
+
+    @RequiredArgsConstructor
+    private class Itr implements Iterator<MapChunk> {
+        final int size;
+        int i = 0;
+
+        @Override
+        public MapChunk next() {
+            return getChunk(i++);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return i < size;
         }
     }
 

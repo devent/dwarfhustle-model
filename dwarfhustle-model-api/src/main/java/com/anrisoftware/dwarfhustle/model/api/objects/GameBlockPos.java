@@ -110,6 +110,10 @@ public class GameBlockPos implements Externalizable, StreamStorage {
         return new GameBlockPos(x, y, z + n);
     }
 
+    public GameBlockPos mul(int n) {
+        return new GameBlockPos(x * n, y * n, z * n);
+    }
+
     public boolean isEqual(int x2, int y2, int z2) {
         return x == x2 && y == y2 && z == z2;
     }
@@ -137,4 +141,5 @@ public class GameBlockPos implements Externalizable, StreamStorage {
         this.y = in.readInt();
         this.z = in.readInt();
     }
+
 }

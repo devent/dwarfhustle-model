@@ -41,6 +41,14 @@ class MapChunksStoreTest {
     @TempDir
     static Path tmp
 
+    static MapChunksStore createStore(Path tmp, def name, int chunkSize, int chunksCount) {
+        def fileName = "${name}.map.txt"
+        def stream = MapChunksStoreTest.class.getResourceAsStream(fileName)
+        def file = tmp.resolve("${name}.map")
+        IOUtils.copy(MapChunksStoreTest.class.getResource(fileName), file.toFile())
+        return new MapChunksStore(file, chunkSize, chunksCount)
+    }
+
     static Stream load_map_chunks_from_file() {
         def args = []
         args << of(4, 4, 4, 2, 9)
@@ -54,12 +62,8 @@ class MapChunksStoreTest {
     @ParameterizedTest
     @MethodSource
     void load_map_chunks_from_file(int w, int h, int d, int chunkSize, int chunksCount) {
-        def fileName = "terrain_${w}_${h}_${d}_${chunkSize}_${chunksCount}.map.txt"
-        def stream = MapChunksStoreTest.class.getResourceAsStream(fileName)
-        def file = tmp.resolve("terrain_${w}_${h}_${d}_${chunkSize}_${chunksCount}.map")
         def out = new StringBuilder()
-        IOUtils.copy(MapChunksStoreTest.class.getResource(fileName), file.toFile())
-        def store = new MapChunksStore(file, chunkSize, chunksCount)
+        def store = createStore(tmp, "terrain_${w}_${h}_${d}_${chunkSize}_${chunksCount}", chunkSize, chunksCount)
         def chunksList = []
         def blocksList = []
         store.forEachValue { MapChunk chunk ->

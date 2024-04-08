@@ -17,7 +17,11 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects
 
-import org.junit.jupiter.api.Test
+import java.nio.file.Path
+
+import org.junit.jupiter.api.io.TempDir
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 
 /**
  * @see MapChunk
@@ -33,94 +37,46 @@ class MapChunkTest {
         return go
     }
 
-    @Test
-    void serialize_deserialize_no_block() {
-        def chunk = createTestChunk()
-        def buffout = new ByteArrayOutputStream(1024)
-        def oout = new ObjectOutputStream(buffout)
-        oout.writeObject(chunk)
-        oout.close()
-        def buffin = new ByteArrayInputStream(buffout.toByteArray())
-        def oin = new ObjectInputStream(buffin)
-        def thatchunk = oin.readObject() as MapChunk
-        assert chunk.id == thatchunk.id
-        assert chunk.pos == thatchunk.pos
-        assert chunk.blocks != thatchunk.blocks
-        assert chunk.centerExtent == thatchunk.centerExtent
-        assert chunk.dir == thatchunk.dir
-        assert chunk.chunks == thatchunk.chunks
-        assert chunk.chunkSize == thatchunk.chunkSize
-        assert chunk.parent == thatchunk.parent
-        assert chunk.root == thatchunk.root
-        assert chunk == thatchunk
+    @ParameterizedTest
+    @CsvSource([
+        "0,0,0,0,0,0,0,0,0,false",
+        "0,0,0,0,0,0,1,0,0,false",
+        "0,0,0,2,2,2,0,0,0,true",
+        "0,0,0,2,2,2,1,0,0,true",
+        "0,0,0,2,2,2,2,0,0,false",
+        //
+        "2,2,2,4,4,4,0,2,2,false",
+        "2,2,2,4,4,4,1,2,2,false",
+        "2,2,2,4,4,4,2,2,2,true",
+        "2,2,2,4,4,4,3,2,2,true",
+        "2,2,2,4,4,4,4,2,2,false",
+    ])
+    void isInside_chunk(int sx, int sy, int sz, int ex, int ey, int ez, int px, int py, int pz, boolean expected) {
+        def chunk = new MapChunk()
+        chunk.pos = new GameChunkPos(sx, sy, sz, ex, ey, ez)
+        assert chunk.isInside(new GameBlockPos(px, py, pz)) == expected
     }
 
-    @Test
-    void stream_write_read_no_block() {
-        def chunk = createTestChunk()
-        def buffout = new ByteArrayOutputStream(1024)
-        def oout = new DataOutputStream(buffout)
-        chunk.writeStream(oout)
-        oout.close()
-        def buffin = new ByteArrayInputStream(buffout.toByteArray())
-        def oin = new DataInputStream(buffin)
-        def thatchunk = new MapChunk()
-        thatchunk.readStream(oin)
-        assert chunk.id == thatchunk.id
-        assert chunk.pos == thatchunk.pos
-        assert chunk.blocks != thatchunk.blocks
-        assert chunk.centerExtent == thatchunk.centerExtent
-        assert chunk.dir == thatchunk.dir
-        assert chunk.chunks.containsAll(thatchunk.chunks.values())
-        assert chunk.chunkSize == thatchunk.chunkSize
-        assert chunk.parent == thatchunk.parent
-        assert chunk.root == thatchunk.root
-        assert chunk == thatchunk
-    }
+    @TempDir
+    static Path tmp
 
-    @Test
-    void serialize_deserialize_one_block() {
-        def chunk = createTestChunk(11111111, 4, new GameChunkPos(0, 0, 0, 4, 4, 4))
-        def block = MapBlockTest.createTestBlock()
-        block.pos = new GameBlockPos(0, 0, 0)
-        chunk.setBlock(block)
-        def buffout = new ByteArrayOutputStream()
-        def oout = new ObjectOutputStream(buffout)
-        oout.writeObject(chunk)
-        oout.close()
-        def buffin = new ByteArrayInputStream(buffout.toByteArray())
-        def oin = new ObjectInputStream(buffin)
-        def thatchunk = oin.readObject() as MapChunk
-        def thatblock = chunk.getBlock(new GameBlockPos(0, 0, 0))
-        assert block == thatblock
-    }
-
-    @Test
-    void serialize_deserialize_multiple_block_benchmark() {
-        def buffout = new ByteArrayOutputStream()
-        def oout = new ObjectOutputStream(buffout)
-        int chunkSize = 4
-        def mb = MapBlockTest.createTestBlock()
-        int chunksCount = 10
-        for (int i = 0; i < chunksCount; i++) {
-            def chunk = new MapChunk(11111111 + i, chunkSize, new GameChunkPos(0, 0, 0, 4, 4, 4))
-            chunk.updateCenterExtent(32, 32, 32)
-            for (int x = 0; x < 32; x++) {
-                for (int y = 0; y < 32; y++) {
-                    for (int z = 0; z < 32; z++) {
-                        mb.pos = new GameBlockPos(x, y, z)
-                        chunk.setBlock(mb)
-                    }
-                }
-            }
-            oout.writeObject(chunk)
-        }
-        oout.close()
-        def buffin = new ByteArrayInputStream(buffout.toByteArray())
-        def oin = new ObjectInputStream(buffin)
-        for (int i = 0; i < chunksCount; i++) {
-            def thatchunk = oin.readObject() as MapChunk
-            assert thatchunk.cid == 11111111 + i
-        }
+    @ParameterizedTest
+    @CsvSource([
+        "0,0,0,2,2,2,U,0,0,0,4,4,4",
+        "0,0,0,2,2,2,D,0,0,2,2,2,4",
+        "0,0,0,2,2,2,E,2,0,0,4,2,2",
+        "0,0,0,2,2,2,W,0,0,0,4,4,4",
+    ])
+    void getNeighboar_chunk(int sx, int sy, int sz, int ex, int ey, int ez, String dir, int expectedSx, int expectedSy, int expectedSz, int expectedEx, int expectedEy, int expectedEz) {
+        def store = MapChunksStoreTest.createStore(tmp, "terrain_4_4_4_2_9", 2, 9)
+        def chunk = store.findChunk(new GameChunkPos(sx, sy, sz, ex, ey, ez))
+        int ncid = chunk.orElseThrow().getNeighbor(NeighboringDir.valueOf(dir))
+        def nchunk = store.getChunk(ncid)
+        assert nchunk.pos.x == expectedSx
+        assert nchunk.pos.y == expectedSy
+        assert nchunk.pos.z == expectedSz
+        assert nchunk.pos.ep.x == expectedEx
+        assert nchunk.pos.ep.y == expectedEy
+        assert nchunk.pos.ep.z == expectedEz
     }
 }

@@ -154,6 +154,26 @@ public class GameChunkPos extends GameBlockPos {
     }
 
     @Override
+    public GameBlockPos addX(int n) {
+        return new GameChunkPos(x + n, y, z, ep.x + n, ep.y, ep.z);
+    }
+
+    @Override
+    public GameBlockPos addY(int n) {
+        return new GameChunkPos(x, y + n, z, ep.x, ep.y + n, ep.z);
+    }
+
+    @Override
+    public GameBlockPos addZ(int n) {
+        return new GameChunkPos(x, y, z + n, ep.x, ep.y, ep.z + n);
+    }
+
+    @Override
+    public GameBlockPos add(GameBlockPos p) {
+        return new GameChunkPos(x + p.x, y + p.y, z + p.z, ep.x + p.x, ep.y + p.y, ep.z + p.z);
+    }
+
+    @Override
     public void writeStream(DataOutput out) throws IOException {
         super.writeStream(out);
         this.ep.writeStream(out);
