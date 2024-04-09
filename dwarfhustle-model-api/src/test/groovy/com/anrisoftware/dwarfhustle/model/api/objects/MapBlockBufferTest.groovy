@@ -67,7 +67,7 @@ class MapBlockBufferTest {
         block.material = m
         block.object = o
         block.p = new PropertiesSet(p)
-        MapBlockBuffer.writeMapBlockIndex(b, offset, block, w, h, d)
+        MapBlockBuffer.writeMapBlockIndex(b, offset, block, w, h, d, sx, sy, sz)
         assert HexFormat.of().formatHex(b.array()) == expected
         def thatBlock = MapBlockBuffer.readMapBlockIndex(b, offset, 0, w, h, sx, sy, sz)
         assert thatBlock.parent == parent
@@ -112,25 +112,25 @@ class MapBlockBufferTest {
 
     @ParameterizedTest
     @CsvSource([
-        "2,2,2,0,0,0,0",
-        "2,2,2,1,0,0,1",
-        "2,2,2,0,1,0,2",
-        "2,2,2,1,1,0,3",
-        "2,2,2,0,0,1,4",
-        "2,2,2,1,0,1,5",
-        "2,2,2,0,1,1,6",
-        "2,2,2,1,1,1,7",
+        "2,2,2,0,0,0,0,0,0,0",
+        "2,2,2,0,0,0,1,0,0,1",
+        "2,2,2,0,0,0,0,1,0,2",
+        "2,2,2,0,0,0,1,1,0,3",
+        "2,2,2,0,0,0,0,0,1,4",
+        "2,2,2,0,0,0,1,0,1,5",
+        "2,2,2,0,0,0,0,1,1,6",
+        "2,2,2,0,0,0,1,1,1,7",
         //
-        "2,2,2,0,0,2,0",
-        "2,2,2,1,0,2,1",
-        "2,2,2,0,1,2,2",
-        "2,2,2,1,1,2,3",
-        "2,2,2,0,0,3,4",
-        "2,2,2,1,0,3,5",
-        "2,2,2,0,1,3,6",
-        "2,2,2,1,1,3,7",
+        "2,2,2,2,2,2,2,2,2,0",
+        "2,2,2,2,2,2,3,2,2,1",
+        "2,2,2,2,2,2,2,3,2,2",
+        "2,2,2,2,2,2,3,3,2,3",
+        "2,2,2,2,2,2,2,2,3,4",
+        "2,2,2,2,2,2,3,2,3,5",
+        "2,2,2,2,2,2,2,3,3,6",
+        "2,2,2,2,2,2,3,3,3,7",
     ])
-    void calculate_index_from_pos(int w, int h, int d, int x, int y, int z, int expected) {
-        assert MapBlockBuffer.calcIndex(w, h, d, x, y, z) == expected
+    void calculate_index_from_pos(int w, int h, int d, int sx, int sy, int sz, int x, int y, int z, int expected) {
+        assert MapBlockBuffer.calcIndex(w, h, d, sx, sy, sz, x, y, z) == expected
     }
 }

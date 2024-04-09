@@ -32,6 +32,9 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
+
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
@@ -129,6 +132,35 @@ public class MapChunksStore {
             }
         }
         return Optional.empty();
+    }
+
+    /**
+     * Finds the {@link MapChunk} and {@link MapBlock} with the
+     * {@link GameBlockPos}.
+     */
+    public synchronized Optional<Pair<MapChunk, MapBlock>> findBlock(GameBlockPos pos) {
+        if (pos.isNegative()) {
+            return Optional.empty();
+        }
+        for (var chunk : getChunks()) {
+            if (chunk.isInside(pos)) {
+                return findBlock(chunk, pos);
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Finds the {@link MapChunk} and {@link MapBlock} with the
+     * {@link GameBlockPos}.
+     */
+    public synchronized Optional<Pair<MapChunk, MapBlock>> findBlock(MapChunk chunk, GameBlockPos pos) {
+        for (var chunks : chunk.getChunks().keyValuesView()) {
+            if (chunks.getTwo().contains(pos)) {
+                return findBlock(getChunk(chunks.getOne()), pos);
+            }
+        }
+        return Optional.of(Tuples.pair(chunk, chunk.getBlock(pos)));
     }
 
     @SneakyThrows
