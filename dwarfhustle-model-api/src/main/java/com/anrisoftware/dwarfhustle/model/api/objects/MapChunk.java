@@ -17,6 +17,10 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockBuffer.calcIndex;
+import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockBuffer.readMapBlockIndex;
+import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockBuffer.writeMapBlockIndex;
+
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.Optional;
@@ -229,7 +233,7 @@ public class MapChunk {
         int sz = pos.z;
         blocks.ifPresent((b) -> {
             for (int i = 0; i < b.capacity() / MapBlockBuffer.SIZE; i++) {
-                consumer.accept(MapBlockBuffer.readMapBlockIndex(b, 0, i, cw, ch, sx, sy, sz));
+                consumer.accept(readMapBlockIndex(b, 0, i, cw, ch, sx, sy, sz));
             }
         });
     }
@@ -238,12 +242,12 @@ public class MapChunk {
         int w = pos.getSizeX();
         int h = pos.getSizeY();
         int d = pos.getSizeZ();
-        return MapBlockBuffer.readMapBlockIndex(buffer, 0, MapBlockBuffer.calcIndex(w, h, d, x, y, z), w, h, pos.ep.x,
-                pos.ep.y, pos.ep.z);
+        int i = calcIndex(w, h, d, pos.x, pos.y, pos.z, x, y, z);
+        return readMapBlockIndex(buffer, 0, i, w, h, pos.x, pos.y, pos.z);
     }
 
     private void writeMapBlock(ByteBuffer buffer, MapBlock block) {
-        MapBlockBuffer.writeMapBlockIndex(buffer, 0, block, pos.getSizeX(), pos.getSizeY(), pos.getSizeZ());
+        writeMapBlockIndex(buffer, 0, block, pos.getSizeX(), pos.getSizeY(), pos.getSizeZ(), pos.x, pos.y, pos.z);
     }
 
     public boolean haveBlock(GameBlockPos p) {
@@ -294,24 +298,15 @@ public class MapChunk {
     }
 
     public MapBlock findBlock(GameBlockPos pos, Function<Integer, MapChunk> retriever) {
-        int x = pos.getX();
-        int y = pos.getY();
-        int z = pos.getZ();
         if (blocks.isEmpty()) {
             for (var view : chunks.keyValuesView()) {
                 var b = view.getTwo();
-                int bx = b.getX();
-                int by = b.getY();
-                int bz = b.getZ();
-                var ep = b.getEp();
-                int ebx = ep.getX();
-                int eby = ep.getY();
-                int ebz = ep.getZ();
-                if (x >= bx && y >= by && z >= bz && x < ebx && y < eby && z < ebz) {
+                if (b.contains(pos)) {
                     var mb = retriever.apply(view.getOne());
                     return mb.findBlock(pos, retriever);
                 }
             }
+            return null;
         }
         return getBlock(pos);
     }

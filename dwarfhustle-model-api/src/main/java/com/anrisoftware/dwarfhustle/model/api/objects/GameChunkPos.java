@@ -146,7 +146,7 @@ public class GameChunkPos extends GameBlockPos {
     }
 
     public boolean contains(GameBlockPos p) {
-        return x <= p.x && y <= p.y && z <= p.z && ep.x >= p.x && ep.y >= p.y && ep.z >= p.z;
+        return x <= p.x && y <= p.y && z <= p.z && p.x < ep.x && p.y < ep.y && p.z < ep.z;
     }
 
     public boolean equals(int x, int y, int z, int ex, int ey, int ez) {

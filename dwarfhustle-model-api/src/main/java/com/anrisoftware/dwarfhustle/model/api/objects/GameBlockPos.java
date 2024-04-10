@@ -118,6 +118,10 @@ public class GameBlockPos implements Externalizable, StreamStorage {
         return x == x2 && y == y2 && z == z2;
     }
 
+    public boolean isNegative() {
+        return x < 0 || y < 0 || z < 0;
+    }
+
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
         writeStream(out);

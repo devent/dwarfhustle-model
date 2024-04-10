@@ -40,8 +40,8 @@ public class MapBlockBuffer {
     /**
      * Returns the index from the x/y/z position.
      */
-    public static int calcIndex(int w, int h, int d, int x, int y, int z) {
-        return (z * w * h + y * w + x) % (w * h * d);
+    public static int calcIndex(int w, int h, int d, int sx, int sy, int sz, int x, int y, int z) {
+        return (z - sz) * w * h + (y - sy) * w + x - sx;
     }
 
     /**
@@ -128,9 +128,13 @@ public class MapBlockBuffer {
      * @param cw     the chunk width.
      * @param ch     the chunk height.
      * @param cd     the chunk depth.
+     * @param sx     the {@link MapChunk} position start X.
+     * @param sy     the {@link MapChunk} position start Y.
+     * @param sz     the {@link MapChunk} position start Z.
      */
-    public static void writeMapBlockIndex(ByteBuffer b, int offset, MapBlock block, int cw, int ch, int cd) {
-        int index = calcIndex(cw, ch, cd, block.pos.x, block.pos.y, block.pos.z);
+    public static void writeMapBlockIndex(ByteBuffer b, int offset, MapBlock block, int cw, int ch, int cd, int sx,
+            int sy, int sz) {
+        int index = calcIndex(cw, ch, cd, sx, sy, sz, block.pos.x, block.pos.y, block.pos.z);
         b.position(offset + index * SIZE);
         var bi = b.asIntBuffer();
         var bl = b.asLongBuffer();

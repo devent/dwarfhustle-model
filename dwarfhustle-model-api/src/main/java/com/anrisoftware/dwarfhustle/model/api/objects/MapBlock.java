@@ -165,6 +165,9 @@ public class MapBlock implements Serializable {
 
     public MapBlock getNeighbor(NeighboringDir dir, MapChunk chunk, Function<Integer, MapChunk> retriever) {
         var dirpos = this.pos.add(dir.pos);
+        if (dirpos.isNegative()) {
+            return null;
+        }
         if (chunk.isInside(dirpos)) {
             return chunk.getBlock(dirpos);
         } else {

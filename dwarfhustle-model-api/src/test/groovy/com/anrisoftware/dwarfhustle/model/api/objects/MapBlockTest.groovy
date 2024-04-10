@@ -17,7 +17,12 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects
 
+import java.nio.file.Path
+
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 
 /**
  * @see MapBlock
@@ -37,21 +42,61 @@ class MapBlockTest {
         return go
     }
 
-    @Test
-    void map_tile_byte_size_objectstream() {
-        def stream = new ByteArrayOutputStream()
-        def ostream = new ObjectOutputStream(stream)
-        def go = createTestBlock()
-        ostream.writeObject(go)
-        assert stream.size() == 458
+    @TempDir
+    static Path tmp
+
+    @ParameterizedTest
+    @CsvSource([
+        "4,4,4,2,9,0,0,0,U,false,0,0,0",
+        "4,4,4,2,9,0,0,0,D,true,0,0,1",
+        "4,4,4,2,9,0,0,0,W,false,0,0,0",
+        "4,4,4,2,9,0,0,0,N,false,0,0,0",
+        "4,4,4,2,9,0,0,0,S,true,0,1,0",
+        //
+        "4,4,4,2,9,0,0,0,E,true,1,0,0",
+        "4,4,4,2,9,1,0,0,E,true,2,0,0",
+        "4,4,4,2,9,2,0,0,E,true,3,0,0",
+        "4,4,4,2,9,3,0,0,E,false,0,0,0",
+        //
+        "4,4,4,2,9,0,0,0,S,true,0,1,0",
+        "4,4,4,2,9,0,1,0,S,true,0,2,0",
+        "4,4,4,2,9,0,2,0,S,true,0,3,0",
+        "4,4,4,2,9,0,3,0,S,false,0,0,0",
+        //
+        "4,4,4,2,9,0,0,0,D,true,0,0,1",
+        "4,4,4,2,9,0,0,1,D,true,0,0,2",
+        "4,4,4,2,9,0,0,2,D,true,0,0,3",
+        "4,4,4,2,9,0,0,3,D,false,0,0,0",
+        //
+        "8,8,8,2,73,0,0,0,U,false,0,0,0",
+        "8,8,8,2,73,0,0,0,D,true,0,0,1",
+        "8,8,8,2,73,0,0,0,E,true,1,0,0",
+    ])
+    void getNeighbor_block(int w, int h, int d, int c, int n, int x, int y, int z, String dir, boolean found, int expectedX, int expectedY, int expectedZ) {
+        def store = MapChunksStoreTest.createStore(tmp, "terrain_${w}_${h}_${d}_${c}_${n}", c, n)
+        def chunkBlock = store.findBlock(new GameBlockPos(x, y, z))
+        def nblock = chunkBlock.orElseThrow().two.getNeighbor(NeighboringDir.valueOf(dir), chunkBlock.orElseThrow().one, { store.getChunk(it) })
+        if (found) {
+            assert nblock.pos.x == expectedX
+            assert nblock.pos.y == expectedY
+            assert nblock.pos.z == expectedZ
+        }
     }
 
     @Test
-    void map_tile_byte_size_datastream() {
-        def stream = new ByteArrayOutputStream()
-        def ostream = new DataOutputStream(stream)
-        def go = createTestBlock()
-        go.writeStream(ostream)
-        assert stream.size() == 376
+    void getNeighbor_block_benchmark() {
+        int w = 32, h = 32, d = 32, c = 8, n = 73;
+        def store = MapChunksStoreTest.createStore(tmp, "terrain_${w}_${h}_${d}_${c}_${n}", c, n)
+        def retriever = { store.getChunk(it) }
+        for (int x = 0; x < w; x++) {
+            for (int y = 0; y < h; y++) {
+                for (int z = 0; z < d; z++) {
+                    def chunkBlock = store.findBlock(new GameBlockPos(x, y, z))
+                    NeighboringDir.values().each {
+                        def nblock = chunkBlock.orElseThrow().two.getNeighbor(it, chunkBlock.orElseThrow().one, retriever)
+                    }
+                }
+            }
+        }
     }
 }

@@ -62,13 +62,19 @@ class MapChunkTest {
 
     @ParameterizedTest
     @CsvSource([
-        "0,0,0,2,2,2,U,0,0,0,4,4,4",
-        "0,0,0,2,2,2,D,0,0,2,2,2,4",
-        "0,0,0,2,2,2,E,2,0,0,4,2,2",
-        "0,0,0,2,2,2,W,0,0,0,4,4,4",
+        "4,4,4,2,9,0,0,0,2,2,2,U,0,0,0,4,4,4",
+        "4,4,4,2,9,0,0,0,2,2,2,D,0,0,2,2,2,4",
+        "4,4,4,2,9,0,0,0,2,2,2,E,2,0,0,4,2,2",
+        "4,4,4,2,9,0,0,0,2,2,2,W,0,0,0,4,4,4",
+        "4,4,4,2,9,0,0,0,2,2,2,N,0,0,0,4,4,4",
+        "4,4,4,2,9,0,0,0,2,2,2,S,0,2,0,2,4,2",
+        //
+        "8,8,8,2,73,0,0,0,2,2,2,U,0,0,0,8,8,8",
+        "8,8,8,2,73,0,0,0,2,2,2,D,0,0,2,2,2,4",
+        "8,8,8,2,73,0,0,0,2,2,2,E,2,0,0,4,2,2",
     ])
-    void getNeighboar_chunk(int sx, int sy, int sz, int ex, int ey, int ez, String dir, int expectedSx, int expectedSy, int expectedSz, int expectedEx, int expectedEy, int expectedEz) {
-        def store = MapChunksStoreTest.createStore(tmp, "terrain_4_4_4_2_9", 2, 9)
+    void getNeighbor_chunk(int w, int h, int d, int c, int n, int sx, int sy, int sz, int ex, int ey, int ez, String dir, int expectedSx, int expectedSy, int expectedSz, int expectedEx, int expectedEy, int expectedEz) {
+        def store = MapChunksStoreTest.createStore(tmp, "terrain_${w}_${h}_${d}_${c}_${n}", c, n)
         def chunk = store.findChunk(new GameChunkPos(sx, sy, sz, ex, ey, ez))
         int ncid = chunk.orElseThrow().getNeighbor(NeighboringDir.valueOf(dir))
         def nchunk = store.getChunk(ncid)
