@@ -163,11 +163,10 @@ public class MapBlockBuffer {
         var block = new MapBlock();
         b.position(offset + index * SIZE);
         var bi = b.asIntBuffer();
+        var bl = b.asLongBuffer();
         var i = bi.get(INDEX_INT_INDEX);
         block.pos = new GameBlockPos(calcX(i, cw, sx), calcY(i, cw, sy), calcZ(i, cw, ch, sz));
         block.parent = bi.get(PARENT_INT_INDEX);
-        b.position(offset);
-        var bl = b.asLongBuffer();
         block.material = bl.get(MAT_LONG_INDEX);
         block.object = bl.get(OBJECT_LONG_INDEX);
         block.p = new PropertiesSet(bi.get(PROP_INT_INDEX));

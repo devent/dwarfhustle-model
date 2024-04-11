@@ -109,7 +109,6 @@ public class TerrainImageCreateMap {
             }
         }
         chunk.setChunks(chunks);
-        chunk.updateCenterExtent(gm.width, gm.height, gm.depth);
         putObjectToBackend(chunk);
     }
 

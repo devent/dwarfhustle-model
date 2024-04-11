@@ -77,9 +77,6 @@ public class MapBlock implements Serializable {
      */
     public PropertiesSet p = new PropertiesSet();
 
-    @ToString.Exclude
-    public CenterExtent centerExtent = new CenterExtent();
-
     public MapBlock() {
         this.pos = new GameBlockPos();
         this.p = new PropertiesSet();
@@ -88,15 +85,6 @@ public class MapBlock implements Serializable {
     public MapBlock(int parent, GameBlockPos pos) {
         this.parent = parent;
         this.pos = pos;
-    }
-
-    /**
-     * Updates the world coordinates center and extend of this chunk.
-     */
-    public void updateCenterExtent(float w, float h, float d) {
-        float tx = -w + 2f * pos.x + 1f;
-        float ty = h - 2f * pos.y - 1f;
-        this.centerExtent = new CenterExtent(tx, ty, 0, 1f, 1f, 1f);
     }
 
     /**

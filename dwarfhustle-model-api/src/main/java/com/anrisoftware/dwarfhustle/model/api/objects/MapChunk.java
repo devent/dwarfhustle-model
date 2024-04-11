@@ -94,11 +94,6 @@ public class MapChunk {
     public Optional<ByteBuffer> blocks = Optional.empty();
 
     /**
-     * The {@link CenterExtent} of the chunk.
-     */
-    public CenterExtent centerExtent;
-
-    /**
      * The {@link NeighboringDir} neighbors of this chunk.
      */
     public int[] neighbors = new int[NeighboringDir.values().length];
@@ -107,7 +102,6 @@ public class MapChunk {
 
     public MapChunk() {
         this.pos = new GameChunkPos();
-        this.centerExtent = new CenterExtent();
     }
 
     public MapChunk(int cid, int parent, int chunkSize, GameChunkPos pos) {
@@ -127,15 +121,6 @@ public class MapChunk {
      */
     public long getId() {
         return cid2Id(cid);
-    }
-
-    /**
-     * Updates the world coordinates center and extend of this chunk.
-     */
-    public void updateCenterExtent(float w, float h, float d) {
-        float tx = -w + 2f * pos.x + getPos().getSizeX();
-        float ty = h - 2f * pos.y - getPos().getSizeY();
-        this.centerExtent = new CenterExtent(tx, ty, 0, getPos().getSizeX(), getPos().getSizeY(), getPos().getSizeZ());
     }
 
     public boolean isRoot() {
