@@ -65,6 +65,7 @@ class TerrainImageCreateMapTest {
         args << of(TerrainImage.terrain_8_8_8_4)
         args << of(TerrainImage.terrain_32_32_32_4)
         args << of(TerrainImage.terrain_32_32_32_8)
+        //
         args << of(TerrainImage.terrain_128_128_128_16)
         args << of(TerrainImage.terrain_128_128_128_32)
         args << of(TerrainImage.terrain_256_256_128_16)
@@ -91,6 +92,6 @@ class TerrainImageCreateMapTest {
         def store = new MapChunksStore(Path.of(tmp.absolutePath, file), gm.chunkSize, gm.chunksCount);
         def createMap = injector.getInstance(TerrainImageCreateMapFactory).create(store)
         createMap.startImport(TerrainImageCreateMapTest.class.getResource(image.imageName), terrain, gm)
-        println "done"
+        println "$image done"
     }
 }

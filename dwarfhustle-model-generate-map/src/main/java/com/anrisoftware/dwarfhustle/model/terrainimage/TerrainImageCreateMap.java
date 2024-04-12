@@ -149,7 +149,7 @@ public class TerrainImageCreateMap {
         var pos = rootc.getPos();
         int xs = (pos.ep.x - pos.x) / 2;
         int ys = (pos.ep.y - pos.y) / 2;
-        int zs = (pos.ep.z - pos.z) / 2;
+        int zs = (pos.ep.z - pos.z) > gm.chunkSize ? (pos.ep.z - pos.z) / 2 : gm.chunkSize;
         Function<Integer, MapChunk> r = store::getChunk;
         for (int x = pos.x; x < pos.ep.x; x += xs) {
             for (int y = pos.y; y < pos.ep.y; y += ys) {
@@ -158,7 +158,7 @@ public class TerrainImageCreateMap {
                     assert chunkid != 0;
                     var chunk = store.getChunk(chunkid);
                     assert chunk != null;
-                    if (xs > gm.chunkSize && ys > gm.chunkSize && zs > gm.chunkSize) {
+                    if (xs > gm.chunkSize || ys > gm.chunkSize || zs > gm.chunkSize) {
                         createNeighbors(chunk);
                     }
                     int[] neighbors = new int[NeighboringDir.values().length];
