@@ -98,7 +98,15 @@ public class MapChunk {
      */
     public int[] neighbors = new int[NeighboringDir.values().length];
 
+    /**
+     * True if the chunk is a leaf with blocks.
+     */
     private boolean leaf;
+
+    /**
+     * Pre-calculated {@link CenterExtent} based on the chunks position.
+     */
+    private CenterExtent centerExtent;
 
     public MapChunk() {
         this.pos = new GameChunkPos();
@@ -114,6 +122,22 @@ public class MapChunk {
 
     private boolean calcLeaf() {
         return pos.getSizeX() <= chunkSize && pos.getSizeY() <= chunkSize && pos.getSizeZ() <= chunkSize;
+    }
+
+    /**
+     * Pre-calculates the {@link CenterExtent} of the chunk. It is used to calculate
+     * the bounding box around the chunk.
+     */
+    public void updateCenterExtent(float w, float h) {
+        float tx = -w + 2f * pos.x + pos.getSizeX();
+        float ty = h - 2f * pos.y - pos.getSizeY();
+        float centerx = tx;
+        float centery = ty;
+        float centerz = 0f;
+        float extentx = pos.getSizeX();
+        float extenty = pos.getSizeY();
+        float extentz = pos.getSizeZ();
+        this.centerExtent = new CenterExtent(centerx, centery, centerz, extentx, extenty, extentz);
     }
 
     /**
