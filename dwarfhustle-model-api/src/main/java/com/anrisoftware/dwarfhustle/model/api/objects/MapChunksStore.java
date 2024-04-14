@@ -23,19 +23,18 @@ import static java.nio.file.StandardOpenOption.SYNC;
 import static java.nio.file.StandardOpenOption.WRITE;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.nio.file.Path;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
+import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
 /**
@@ -59,20 +58,22 @@ public class MapChunksStore {
 
     private final FileChannel channel;
 
-    private final int chunksCount;
-
     private long indexSize;
 
     private MappedByteBuffer indexBuffer;
 
-    public MapChunksStore(Path file, int chunkSize, int chunksCount) throws IOException {
-        this.chunksCount = chunksCount;
+    private MutableIntObjectMap<MapChunk> chunksCache;
+
+    public MapChunksStore(Path file, int width, int height, int chunkSize, int chunksCount) throws IOException {
         this.channel = FileChannel.open(file, CREATE, READ, WRITE, SYNC);
         boolean newFile = channel.size() == 0;
         this.indexSize = MapChunksIndexBuffer.SIZE_MIN + (chunksCount + 1) * MapChunksIndexBuffer.SIZE_ENTRY;
         this.indexBuffer = channel.map(MapMode.READ_WRITE, 0, indexSize);
+        this.chunksCache = IntObjectMaps.mutable.ofInitialCapacity(chunksCount);
         if (newFile) {
             writeInitialIndex(chunksCount);
+        } else {
+            readChunks(chunksCount, width, height);
         }
     }
 
@@ -83,6 +84,18 @@ public class MapChunksStore {
         entries[0] = 0;
         entries[1] = MapChunksIndexBuffer.SIZE_MIN + chunksCount * MapChunksIndexBuffer.SIZE_ENTRY;
         MapChunksIndexBuffer.setEntries(indexBuffer, 0, chunksCount, entries);
+    }
+
+    private void readChunks(int chunksCount, int width, int height) throws IOException {
+        var entries = MapChunksIndexBuffer.getEntries(indexBuffer, 0, null);
+        for (int i = 1; i < entries.length / 2; i++) {
+            int pos = entries[i * 2 + 0];
+            int size = entries[i * 2 + 1];
+            var buffer = channel.map(MapMode.READ_WRITE, pos, size);
+            var chunk = MapChunkBuffer.readMapChunk(buffer, 0);
+            chunk.updateCenterExtent(width, height);
+            chunksCache.put(chunk.cid, chunk);
+        }
     }
 
     public void setChunks(Iterable<MapChunk> chunks) {
@@ -113,19 +126,14 @@ public class MapChunksStore {
         }
     }
 
-    @SneakyThrows
-    public synchronized MapChunk getChunk(int cid) {
-        int i = cid + 1;
-        int pos = MapChunksIndexBuffer.getPos(indexBuffer, 0, i);
-        int size = MapChunksIndexBuffer.getSize(indexBuffer, 0, i);
-        var buffer = channel.map(MapMode.READ_WRITE, pos, size);
-        return MapChunkBuffer.readMapChunk(buffer, 0);
+    public MapChunk getChunk(int cid) {
+        return chunksCache.get(cid);
     }
 
     /**
      * Finds the {@link MapChunk} with the {@link GameChunkPos}.
      */
-    public synchronized Optional<MapChunk> findChunk(GameChunkPos pos) {
+    public Optional<MapChunk> findChunk(GameChunkPos pos) {
         for (var chunk : getChunks()) {
             if (chunk.pos.equals(pos)) {
                 return Optional.of(chunk);
@@ -138,7 +146,7 @@ public class MapChunksStore {
      * Finds the {@link MapChunk} and {@link MapBlock} with the
      * {@link GameBlockPos}.
      */
-    public synchronized Optional<Pair<MapChunk, MapBlock>> findBlock(GameBlockPos pos) {
+    public Optional<Pair<MapChunk, MapBlock>> findBlock(GameBlockPos pos) {
         if (pos.isNegative()) {
             return Optional.empty();
         }
@@ -154,7 +162,7 @@ public class MapChunksStore {
      * Finds the {@link MapChunk} and {@link MapBlock} with the
      * {@link GameBlockPos}.
      */
-    public synchronized Optional<Pair<MapChunk, MapBlock>> findBlock(MapChunk chunk, GameBlockPos pos) {
+    public Optional<Pair<MapChunk, MapBlock>> findBlock(MapChunk chunk, GameBlockPos pos) {
         for (var chunks : chunk.getChunks().keyValuesView()) {
             if (chunks.getTwo().contains(pos)) {
                 return findBlock(getChunk(chunks.getOne()), pos);
@@ -163,66 +171,22 @@ public class MapChunksStore {
         return Optional.of(Tuples.pair(chunk, chunk.getBlock(pos)));
     }
 
-    @SneakyThrows
-    public synchronized ByteBuffer getBlocksBuffer(MapChunk chunk) {
-        int ppos = MapChunksIndexBuffer.getPos(indexBuffer, 0, chunk.cid);
-        int psize = MapChunksIndexBuffer.getSize(indexBuffer, 0, chunk.cid);
-        int pos = ppos + psize + MapChunkBuffer.SIZE_LEAF_MIN;
-        int size = MapBlockBuffer.calcMapBufferSize(chunk.pos.getSizeX(), chunk.pos.getSizeY(), chunk.pos.getSizeZ());
-        return channel.map(MapMode.READ_WRITE, pos, size);
-    }
-
     /**
      * Iterates over all {@link MapChunk}s in the storage. The order is not
      * necessarily the same as the order the chunks were set.
      */
-    @SneakyThrows
-    public synchronized void forEachValue(Consumer<MapChunk> consumer) {
-        if (channel.size() == 0) {
-            return;
-        }
-        var entries = MapChunksIndexBuffer.getEntries(indexBuffer, 0, null);
-        for (int i = 1; i < entries.length / 2; i++) {
-            int pos = entries[i * 2 + 0];
-            int size = entries[i * 2 + 1];
-            var buffer = channel.map(MapMode.READ_WRITE, pos, size);
-            var chunk = MapChunkBuffer.readMapChunk(buffer, 0);
-            consumer.accept(chunk);
-        }
+    public void forEachValue(Consumer<MapChunk> consumer) {
+        chunksCache.forEach(consumer);
     }
 
     /**
      * Returns an {@link Iterable} over all {@link MapChunk}.
      */
-    public synchronized Iterable<MapChunk> getChunks() {
-        return new Iterable<MapChunk>() {
-
-            @Override
-            public Iterator<MapChunk> iterator() {
-                return new Itr(MapChunksStore.this.chunksCount);
-            }
-        };
-
-    }
-
-    @RequiredArgsConstructor
-    private class Itr implements Iterator<MapChunk> {
-        final int size;
-        int i = 0;
-
-        @Override
-        public MapChunk next() {
-            return getChunk(i++);
-        }
-
-        @Override
-        public boolean hasNext() {
-            return i < size;
-        }
+    public Iterable<MapChunk> getChunks() {
+        return chunksCache.asLazy();
     }
 
     public void close() throws IOException {
-        System.out.println(channel.size()); // TODO
         channel.close();
     }
 
