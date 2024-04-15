@@ -211,7 +211,8 @@ public class ImporterMapImage2DbActor {
         try {
             var gm = getGameMap(og, m.mapid);
             var wm = getWorldMap(og, gm.world);
-            var store = new MapChunksStore(Path.of(root, format("%d.map", m.mapid)), gm.chunkSize, gm.chunksCount);
+            var store = new MapChunksStore(Path.of(root, format("%d.map", m.mapid)), gm.width, gm.height, gm.chunkSize,
+                    gm.chunksCount);
             terrainImageCreateMap.create(store).startImport(m.url, m.image, gm);
             store.close();
             dbActor.tell(new SaveObjectMessage<>(dbResponseAdapter, gm));

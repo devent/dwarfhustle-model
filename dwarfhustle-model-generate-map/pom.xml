@@ -84,24 +84,23 @@
         <dependency>
             <groupId>com.alexdupre</groupId>
             <artifactId>pngj</artifactId>
-            <version>2.1.2.1</version>
         </dependency>
 
         <!-- Own modules dependencies -->
         <dependency>
             <groupId>com.anrisoftware.dwarfhustle</groupId>
             <artifactId>dwarfhustle-model-actor</artifactId>
-            <version>0.0.2-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.anrisoftware.dwarfhustle</groupId>
             <artifactId>dwarfhustle-model-knowledge</artifactId>
-            <version>0.0.2-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.anrisoftware.dwarfhustle</groupId>
             <artifactId>dwarfhustle-model-db</artifactId>
-            <version>0.0.2-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
 	</dependencies>
 </project>

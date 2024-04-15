@@ -23,6 +23,7 @@ import static java.nio.file.StandardOpenOption.SYNC;
 import static java.nio.file.StandardOpenOption.WRITE;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
@@ -184,6 +185,20 @@ public class MapChunksStore {
      */
     public Iterable<MapChunk> getChunks() {
         return chunksCache.asLazy();
+    }
+
+    /**
+     * Returns the file mapped buffer for the blocks for the {@link MapChunk}. The
+     * method is used to create map chunks. A buffer is already mapped for already
+     * loaded map chunks.
+     */
+    @SneakyThrows
+    public synchronized ByteBuffer getBlocksBuffer(MapChunk chunk) {
+        int ppos = MapChunksIndexBuffer.getPos(indexBuffer, 0, chunk.cid);
+        int psize = MapChunksIndexBuffer.getSize(indexBuffer, 0, chunk.cid);
+        int pos = ppos + psize + MapChunkBuffer.SIZE_LEAF_MIN;
+        int size = MapBlockBuffer.calcMapBufferSize(chunk.pos.getSizeX(), chunk.pos.getSizeY(), chunk.pos.getSizeZ());
+        return channel.map(MapMode.READ_WRITE, pos, size);
     }
 
     public void close() throws IOException {

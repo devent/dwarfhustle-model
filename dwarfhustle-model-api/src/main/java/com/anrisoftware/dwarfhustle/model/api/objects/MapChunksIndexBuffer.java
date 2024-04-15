@@ -38,8 +38,6 @@ public class MapChunksIndexBuffer {
 
     private static final int SIZE_OFFSET = 8;
 
-    private static final int SIZE_INT_INDEX = 1;
-
     public static void setCount(ByteBuffer b, int offset, int c) {
         b.position(offset);
         var bi = b.asIntBuffer();
