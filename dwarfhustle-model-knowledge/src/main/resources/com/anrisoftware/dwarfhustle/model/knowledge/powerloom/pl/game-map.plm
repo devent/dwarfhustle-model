@@ -17,13 +17,16 @@
 (clear-module "DWARFHUSTLE-GAME-MAP")
 (reset-features)
 
-(defconcept TileType (?type)
+(defconcept BlockType (?type)
   :documentation "Tile type.")
 
-(assert (TileType tile-tile)) :documentation "Not mined out tile."
-(assert (TileType tile-mined)) :documentation "Mined out tile."
-(assert (TileType tile-ramp)) :documentation "Ramp tile."
-(assert (TileType tile-floor)) :documentation "Floor tile."
+(assert (BlockType block-filled)) :documentation "Filled with solid."
+(assert (BlockType block-empty)) :documentation "Filled with gas."
+(assert (BlockType block-liquid)) :documentation "Filled with liquid."
+(assert (BlockType block-ramp)) :documentation "Ramp block."
+(assert (BlockType block-floor)) :documentation "Floor block."
+(assert (BlockType block-visible)) :documentation "Block visible."
+(assert (BlockType block-hidden)) :documentation "Block hidden."
 
 (defconcept LightType (?type)
   :documentation "Light type.")
@@ -45,3 +48,21 @@
 (assert (FloorType floor-no)) :documentation "No Floor."
 (assert (FloorType floor-natural)) :documentation "Natural Floor."
 (assert (FloorType floor-constructured)) :documentation "Constructed Floor."
+
+(defconcept NeighborDir (?dir)
+  :documentation "Direction of the neighbor.")
+(assert (NeighborDir dir-n)) :documentation "North direction."
+(assert (NeighborDir dir-s)) :documentation "South direction."
+(assert (NeighborDir dir-e)) :documentation "East direction."
+(assert (NeighborDir dir-w)) :documentation "West direction."
+
+(deffunction neighbor ((?typea BlockType) (?dir NeighborDir) (?typeb BlockType)) :-> (?result BlockType)
+  :documentation "Sets the result block type based on the neighbor of the block in the specific direction.")
+(assert (= (neighbor block-filled dir-n block-filled) block-hidden))
+(assert (= (neighbor block-filled dir-n block-empty) block-visible))
+(assert (= (neighbor block-filled dir-s block-filled) block-hidden))
+(assert (= (neighbor block-filled dir-s block-empty) block-visible))
+(assert (= (neighbor block-filled dir-e block-filled) block-hidden))
+(assert (= (neighbor block-filled dir-e block-empty) block-visible))
+(assert (= (neighbor block-filled dir-w block-filled) block-hidden))
+(assert (= (neighbor block-filled dir-w block-empty) block-visible))
