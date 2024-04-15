@@ -87,6 +87,38 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
 
     public static final String WORKING_MODULE = "DWARFHUSTLE-WORKING";
 
+    /**
+     * Initialize the {@link PLI} and loads all {@code *.plm} files.
+     */
+    public static void loadPowerLoom() {
+        var resources = new ArrayList<InputStream>();
+        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials.plm"));
+        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("game-map.plm"));
+        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("game-map-objects.plm"));
+        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-special-stone-layer.plm"));
+        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-sedimentary-stones.plm"));
+        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-igneous-intrusive-stones.plm"));
+        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-igneous-extrusive-stones.plm"));
+        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-metamorphic-stones.plm"));
+        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-metals.plm"));
+        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-metals-ores.plm"));
+        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-metals-alloys.plm"));
+        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-clays.plm"));
+        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-sands.plm"));
+        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-seabeds.plm"));
+        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-topsoils.plm"));
+        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-gases.plm"));
+        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("working.plm"));
+        PLI.initialize();
+        for (InputStream res : resources) {
+            try {
+                PLI.loadStream(newInputStringStream(IOUtils.toString(res, UTF_8)), null);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     @RequiredArgsConstructor
     @ToString(callSuper = true)
     private static class InitialStateMessage extends Message {
@@ -135,32 +167,7 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
 
     private static CompletionStage<Boolean> loadKnowledgeBase0(Injector injector) {
         return CompletableFuture.supplyAsync(() -> {
-            var resources = new ArrayList<InputStream>();
-            resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials.plm"));
-            resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("game-map.plm"));
-            resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("game-map-objects.plm"));
-            resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-special-stone-layer.plm"));
-            resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-sedimentary-stones.plm"));
-            resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-igneous-intrusive-stones.plm"));
-            resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-igneous-extrusive-stones.plm"));
-            resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-metamorphic-stones.plm"));
-            resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-metals.plm"));
-            resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-metals-ores.plm"));
-            resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-metals-alloys.plm"));
-            resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-clays.plm"));
-            resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-sands.plm"));
-            resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-seabeds.plm"));
-            resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-topsoils.plm"));
-            resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-gases.plm"));
-            resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("working.plm"));
-            PLI.initialize();
-            for (InputStream res : resources) {
-                try {
-                    PLI.loadStream(newInputStringStream(IOUtils.toString(res, UTF_8)), null);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
+            loadPowerLoom();
             return true;
         });
     }

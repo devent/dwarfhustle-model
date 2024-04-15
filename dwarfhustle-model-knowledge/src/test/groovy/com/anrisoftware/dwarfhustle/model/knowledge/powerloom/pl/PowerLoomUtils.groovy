@@ -31,7 +31,7 @@ import edu.isi.powerloom.logic.TruthValue
  */
 class PowerLoomUtils {
 
-    static void printPowerLoomRetrieve(String query, String module, Environment env) {
+    static void printPowerLoomRetrieve(String query, String module, Environment env = null) {
         PlIterator answer = PLI.sRetrieve(query, module, env);
         printSeparator();
         println "Answers to query `$query`"
@@ -39,7 +39,7 @@ class PowerLoomUtils {
         printSeparator();
     }
 
-    static void printPowerLoomAsk(String query, String module, Environment env) {
+    static void printPowerLoomAsk(String query, String module, Environment env = null) {
         TruthValue answer = PLI.sAsk(query, module, env);
         printSeparator();
         println "Answers to query `$query`"
