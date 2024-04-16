@@ -131,7 +131,7 @@ public class TerrainImageCreateMap {
                             mb.setMaterialRid(898);
                         }
                         if (mb.getMaterialRid() == 898) {
-                            mb.setMined(true);
+                            mb.setEmpty(true);
                         }
                         chunk.setBlock(mb);
                     }

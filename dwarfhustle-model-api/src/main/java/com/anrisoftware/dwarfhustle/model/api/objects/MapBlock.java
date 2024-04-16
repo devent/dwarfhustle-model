@@ -34,13 +34,17 @@ import lombok.ToString;
 @Setter
 public class MapBlock implements Serializable {
 
-    private static final int MINED_POS = 0;
+    private static final int FILLED_POS = 0;
 
-    private static final int NATURAL_ROOF_POS = 1;
+    private static final int EMPTY_POS = 1;
 
-    private static final int NATURAL_FLOOR_POS = 2;
+    private static final int LIQUID_POS = 2;
 
     private static final int RAMP_POS = 3;
+
+    private static final int FLOOR_POS = 4;
+
+    private static final int ROOF_POS = 5;
 
     private static final long serialVersionUID = 1L;
 
@@ -68,12 +72,15 @@ public class MapBlock implements Serializable {
 
     /**
      * Bit field that defines the properties of the map block.
-     * <ul>
-     * <li>{@code 00000000 00000000 00000000 00000001} - mined
-     * <li>{@code 00000000 00000000 00000000 00000010} - natural roof
-     * <li>{@code 00000000 00000000 00000000 00000100} - natural floor
-     * <li>{@code 00000000 00000000 00000000 00001000} - ramp
-     * </ul>
+     * 
+     * <pre>
+     * 00000000 00000000 00000000 00000001} block-filled Filled with solid.
+     * 00000000 00000000 00000000 00000010} block-empty with gas.
+     * 00000000 00000000 00000000 00000100} block-liquid Filled with liquid.
+     * 00000000 00000000 00000000 00001000} block-ramp Ramp block.
+     * 00000000 00000000 00000000 00010000} block-floor Floor block.
+     * 00000000 00000000 00000000 00100000} block-roof Roof block.
+     * </pre>
      */
     public PropertiesSet p = new PropertiesSet();
 
@@ -115,40 +122,76 @@ public class MapBlock implements Serializable {
         return KnowledgeObject.id2Kid(object);
     }
 
-    public void setMined(boolean mined) {
-        p.set(MINED_POS);
+    public void setFilled(boolean flag) {
+        if (flag) {
+            p.set(FILLED_POS);
+        } else {
+            p.clear(FILLED_POS);
+        }
     }
 
-    public boolean isMined() {
-        return p.get(MINED_POS);
+    public boolean isFilled() {
+        return p.get(FILLED_POS);
     }
 
-    public boolean isSolid() {
-        return !p.get(MINED_POS);
+    public void setEmpty(boolean flag) {
+        if (flag) {
+            p.set(EMPTY_POS);
+        } else {
+            p.clear(EMPTY_POS);
+        }
     }
 
-    public void setNaturalRoof(boolean roof) {
-        p.set(roof, NATURAL_ROOF_POS);
+    public boolean isEmpty() {
+        return p.get(EMPTY_POS);
     }
 
-    public boolean isNaturalRoof() {
-        return p.get(NATURAL_ROOF_POS);
+    public void setLiquid(boolean flag) {
+        if (flag) {
+            p.set(LIQUID_POS);
+        } else {
+            p.clear(LIQUID_POS);
+        }
     }
 
-    public void setNaturalFloor(boolean floor) {
-        p.set(floor, NATURAL_FLOOR_POS);
+    public boolean isLiquid() {
+        return p.get(LIQUID_POS);
     }
 
-    public boolean isNaturalFloor() {
-        return p.get(NATURAL_FLOOR_POS);
-    }
-
-    public void setRamp(boolean ramp) {
-        p.set(ramp, RAMP_POS);
+    public void setRamp(boolean flag) {
+        if (flag) {
+            p.set(RAMP_POS);
+        } else {
+            p.clear(RAMP_POS);
+        }
     }
 
     public boolean isRamp() {
         return p.get(RAMP_POS);
+    }
+
+    public void setFloor(boolean flag) {
+        if (flag) {
+            p.set(FLOOR_POS);
+        } else {
+            p.clear(FLOOR_POS);
+        }
+    }
+
+    public boolean isFloor() {
+        return p.get(FLOOR_POS);
+    }
+
+    public void setRoof(boolean flag) {
+        if (flag) {
+            p.set(ROOF_POS);
+        } else {
+            p.clear(ROOF_POS);
+        }
+    }
+
+    public boolean isRoof() {
+        return p.get(ROOF_POS);
     }
 
     public MapBlock getNeighbor(NeighboringDir dir, MapChunk chunk, Function<Integer, MapChunk> retriever) {
