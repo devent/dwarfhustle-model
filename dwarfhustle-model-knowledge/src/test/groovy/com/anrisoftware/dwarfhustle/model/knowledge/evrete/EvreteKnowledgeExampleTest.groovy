@@ -9,7 +9,7 @@ import groovy.util.logging.Slf4j
 /**
  * <pre>
  * 
- [ruleset_declaration]    Fire    knowledge              Time   Average Median                       
+ [ruleset_declaration]   Fire    knowledge               Time   Average Median                       
  [ruleset_declaration]   Finish  fire    knowledge       840         
  [ruleset_declaration]   Fire    knowledge                       
  [ruleset_declaration]   Finish  fire    knowledge       485         
