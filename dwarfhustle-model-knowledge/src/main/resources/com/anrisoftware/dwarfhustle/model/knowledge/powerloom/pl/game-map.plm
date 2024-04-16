@@ -25,6 +25,7 @@
 (assert (BlockType block-liquid)) :documentation "Filled with liquid."
 (assert (BlockType block-ramp)) :documentation "Ramp block."
 (assert (BlockType block-floor)) :documentation "Floor block."
+(assert (BlockType block-roof)) :documentation "Roof block."
 (assert (BlockType block-visible)) :documentation "Block visible."
 (assert (BlockType block-hidden)) :documentation "Block hidden."
 

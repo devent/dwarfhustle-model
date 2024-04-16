@@ -1,0 +1,15 @@
+package com.anrisoftware.dwarfhustle.model.knowledge.drools;
+
+import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
+
+global com.anrisoftware.dwarfhustle.model.knowledge.drools.SuggestedRole suggestedRole;
+
+dialect "mvel"
+
+rule "Suggest Manager Role"
+    when
+        Applicant(experienceInYears > 10)
+        Applicant(currentSalary > 1000000 && currentSalary <= 2500000)
+    then
+        suggestedRole.setRole("Manager");
+end
