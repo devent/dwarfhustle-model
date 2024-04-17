@@ -57,12 +57,16 @@ public class TerrainCreateRules {
                     method = "object_set_neighbors_test", //
                     args = { "$block", "$neighbors" }) //
     })
-    public void object_set_neighbors(MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
-
+    public void block_set_ramp_on_neighbors_empty(MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
+        $block.setObjectRid(0);
     }
 
     public boolean object_set_neighbors_test(MapBlock block, MapBlock[] neighbors) {
-        return false;
+        boolean ramp = $neighbors[NeighboringDir.N].isFilled();
+        ramp |= $neighbors[NeighboringDir.E].isFilled();
+        ramp |= $neighbors[NeighboringDir.W].isFilled();
+        ramp |= $neighbors[NeighboringDir.S].isFilled();
+        return ramp;
     }
 
     public boolean material_gas_test(long mid) {
