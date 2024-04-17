@@ -15,15 +15,18 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api.materials;
+package com.anrisoftware.dwarfhustle.model.api.map;
+
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Special stone layer material.
+ * Block type.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
@@ -31,21 +34,28 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Getter
-public class SpecialStoneLayer extends StoneLayer {
+@Setter
+public class BlockType extends KnowledgeObject {
 
     private static final long serialVersionUID = 1L;
 
-    public static final String OBJECT_TYPE = SpecialStoneLayer.class.getSimpleName();
+    public static final String OBJECT_TYPE = BlockType.class.getSimpleName();
 
-    public static final String TYPE = "Special-Stone-Layer";
+    public static final String TYPE = "BlockType";
 
-    public SpecialStoneLayer(long id) {
+    private String name;
+
+    public BlockType(long id) {
         super(id);
     }
 
     @Override
     public String getObjectType() {
-        return SpecialStoneLayer.OBJECT_TYPE;
+        return BlockType.OBJECT_TYPE;
     }
 
+    @Override
+    public String getKnowledgeType() {
+        return BlockType.TYPE;
+    }
 }

@@ -17,26 +17,27 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
-import com.anrisoftware.dwarfhustle.model.api.materials.SpecialStoneLayer;
+import com.anrisoftware.dwarfhustle.model.api.materials.Liquid;
+import com.anrisoftware.dwarfhustle.model.api.materials.Stone;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.google.auto.service.AutoService;
 
 /**
- * SpecialStoneLayer stone material.
+ * Liquid material.
  *
- * @see SpecialStoneLayer
+ * @see Stone
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @AutoService(GameObjectKnowledge.class)
-public class SpecialStoneLayerStorage extends StoneLayerStorage {
+public class LiqiudStorage extends MaterialStorage {
 
     @Override
     public String getType() {
-        return SpecialStoneLayer.TYPE;
+        return Liquid.TYPE;
     }
 
     @Override
     public KnowledgeObject create() {
-        return new SpecialStoneLayer();
+        return new Liquid();
     }
 }

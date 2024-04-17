@@ -26,8 +26,6 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.stream.StreamSupport;
 
-import jakarta.inject.Singleton;
-
 import org.lable.oss.uniqueid.IDGenerator;
 
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractJcsCacheActor;
@@ -38,6 +36,8 @@ import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.GameObjec
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
+
+import jakarta.inject.Singleton;
 
 /**
  * @author Erwin Müller

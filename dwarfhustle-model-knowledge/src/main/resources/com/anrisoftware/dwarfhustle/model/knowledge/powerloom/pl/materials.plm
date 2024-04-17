@@ -107,12 +107,16 @@
 (defconcept Metamorphic (?stone Stone-Layer)
   :documentation "Metamorphic stone material.")
 
-(defconcept Special-Stone-Layer (?stone Stone-Layer)
-  :documentation "Special stone layer material.")
-
 ;; -------------------------
 ;; Gases
 ;; -------------------------
 
 (defconcept Gas (?material Material)
   :documentation "Gas material.")
+
+;; -------------------------
+;; Liuids
+;; -------------------------
+
+(defconcept Liquid (?material Material)
+  :documentation "Liquid material.")

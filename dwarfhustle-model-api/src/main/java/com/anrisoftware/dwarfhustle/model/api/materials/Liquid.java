@@ -15,18 +15,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api.map;
-
-import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
+package com.anrisoftware.dwarfhustle.model.api.materials;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Tile type.
+ * Liquid.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
@@ -34,28 +31,21 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Getter
-@Setter
-public class TileType extends KnowledgeObject {
+public class Liquid extends Material {
 
     private static final long serialVersionUID = 1L;
 
-    public static final String OBJECT_TYPE = TileType.class.getSimpleName();
+    public static final String OBJECT_TYPE = Liquid.class.getSimpleName();
 
-    public static final String TYPE = "TileType";
+    public static final String TYPE = "Liquid";
 
-    private String name;
-
-    public TileType(long id) {
+    public Liquid(long id) {
         super(id);
     }
 
     @Override
     public String getObjectType() {
-        return TileType.OBJECT_TYPE;
+        return Liquid.OBJECT_TYPE;
     }
 
-    @Override
-    public String getKnowledgeType() {
-        return TileType.TYPE;
-    }
 }

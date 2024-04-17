@@ -21,7 +21,5 @@
   :documentation "Object type.")
 
 (assert (ObjectType tile-block)) :documentation "Not mined out tile block."
-(assert (ObjectType tile-ramp-south)) :documentation "Not mined out ramp to the south."
-(assert (ObjectType tile-ramp-east)) :documentation "Not mined out ramp to the east."
-(assert (ObjectType tile-ramp-north)) :documentation "Not mined out ramp to the north."
-(assert (ObjectType tile-ramp-west)) :documentation "Not mined out ramp to the west."
+(assert (ObjectType tile-ramp-nesw)) :documentation "Not mined out ramp."
+(assert (ObjectType tile-ramp-edge)) :documentation "Not mined out ramp."

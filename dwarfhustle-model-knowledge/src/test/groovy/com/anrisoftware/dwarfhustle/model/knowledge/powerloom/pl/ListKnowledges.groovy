@@ -17,10 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl
 
+import static java.time.Duration.ofSeconds
 import static java.util.concurrent.CompletableFuture.supplyAsync
-import static org.mockito.Mockito.mock
-
-import java.time.Duration
 
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -30,22 +28,22 @@ import org.junit.jupiter.api.Timeout
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
 import com.anrisoftware.dwarfhustle.model.actor.DwarfhustleModelActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
+import com.anrisoftware.dwarfhustle.model.api.map.BlockType
 import com.anrisoftware.dwarfhustle.model.api.map.FloorType
 import com.anrisoftware.dwarfhustle.model.api.map.LightType
 import com.anrisoftware.dwarfhustle.model.api.map.ObjectType
 import com.anrisoftware.dwarfhustle.model.api.map.RoofType
-import com.anrisoftware.dwarfhustle.model.api.map.TileType
 import com.anrisoftware.dwarfhustle.model.api.materials.Clay
 import com.anrisoftware.dwarfhustle.model.api.materials.Gas
 import com.anrisoftware.dwarfhustle.model.api.materials.IgneousExtrusive
 import com.anrisoftware.dwarfhustle.model.api.materials.IgneousIntrusive
+import com.anrisoftware.dwarfhustle.model.api.materials.Liquid
 import com.anrisoftware.dwarfhustle.model.api.materials.Metamorphic
 import com.anrisoftware.dwarfhustle.model.api.materials.Sand
 import com.anrisoftware.dwarfhustle.model.api.materials.Seabed
 import com.anrisoftware.dwarfhustle.model.api.materials.Sedimentary
 import com.anrisoftware.dwarfhustle.model.api.materials.Soil
-import com.anrisoftware.dwarfhustle.model.api.materials.SpecialStoneLayer
-import com.anrisoftware.dwarfhustle.model.api.materials.StoneLayer
+import com.anrisoftware.dwarfhustle.model.api.materials.Stone
 import com.anrisoftware.dwarfhustle.model.api.materials.Topsoil
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseErrorMessage
@@ -76,12 +74,11 @@ class ListKnowledges {
     static void setupActor() {
         injector = Guice.createInjector(new DwarfhustleModelActorsModule(), new DwarfhustlePowerloomModule(), new DwarfhustleModelApiObjectsModule())
         actor = injector.getInstance(ActorSystemProvider.class)
-        def objectsCache = mock(ActorRef)
-        PowerLoomKnowledgeActor.create(injector, Duration.ofSeconds(1), supplyAsync({objectsCache})).whenComplete({ it, ex ->
-            knowledgeActor = it
-        } ).get()
-        KnowledgeJcsCacheActor.create(injector, Duration.ofSeconds(1), actor.getObjectGetterAsync(PowerLoomKnowledgeActor.ID)).whenComplete({ it, ex ->
+        KnowledgeJcsCacheActor.create(injector, ofSeconds(1), actor.getObjectGetterAsync(PowerLoomKnowledgeActor.ID)).whenComplete({ it, ex ->
             cacheActor = it
+        } ).get()
+        PowerLoomKnowledgeActor.create(injector, ofSeconds(1), supplyAsync({cacheActor})).whenComplete({ it, ex ->
+            knowledgeActor = it
         } ).get()
     }
 
@@ -128,11 +125,13 @@ class ListKnowledges {
         while (listKnowledge == null) {
             Thread.sleep(10)
         }
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, StoneLayer.class, StoneLayer.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Stone.class, Stone.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Soil.class, Soil.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Gas.class, Gas.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, TileType.class, TileType.TYPE))
-        while (ko.size() != 56) {
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Liquid.class, Liquid.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockType.class, BlockType.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ObjectType.class, ObjectType.TYPE))
+        while (ko.size() != 63) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
         }
@@ -177,14 +176,14 @@ class ListKnowledges {
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Sand.class, Sand.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Seabed.class, Seabed.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Sedimentary.class, Sedimentary.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, SpecialStoneLayer.class, SpecialStoneLayer.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Liquid.class, Liquid.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Topsoil.class, Topsoil.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, FloorType.class, FloorType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, LightType.class, LightType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, RoofType.class, RoofType.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, TileType.class, TileType.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockType.class, BlockType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ObjectType.class, ObjectType.TYPE))
-        while (ko.size() != 70) {
+        while (ko.size() != 72) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
         }

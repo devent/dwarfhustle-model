@@ -17,7 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
-import com.anrisoftware.dwarfhustle.model.api.map.TileType;
+import com.anrisoftware.dwarfhustle.model.api.map.BlockType;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.google.auto.service.AutoService;
 
@@ -25,7 +25,7 @@ import edu.isi.powerloom.logic.LogicObject;
 
 /**
  *
- * @see TileType
+ * @see BlockType
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @AutoService(GameObjectKnowledge.class)
@@ -33,13 +33,13 @@ public class TileTypeStorage implements GameObjectKnowledge {
 
     @Override
     public String getType() {
-        return TileType.TYPE;
+        return BlockType.TYPE;
     }
 
     @Override
     public KnowledgeObject retrieve(Object o, KnowledgeObject go) {
         var next = (LogicObject) o;
-        var ko = (TileType) go;
+        var ko = (BlockType) go;
         ko.setKid(next.surrogateValueInverse.symbolId);
         ko.setName(next.surrogateValueInverse.symbolName);
         return ko;
@@ -47,6 +47,6 @@ public class TileTypeStorage implements GameObjectKnowledge {
 
     @Override
     public KnowledgeObject create() {
-        return new TileType();
+        return new BlockType();
     }
 }
