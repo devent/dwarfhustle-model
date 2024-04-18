@@ -17,12 +17,18 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl;
 
+import static akka.actor.typed.javadsl.AskPattern.ask;
+
+import java.time.Duration;
+import java.util.concurrent.CompletionStage;
+
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseErrorMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseSuccessMessage;
 
 import akka.actor.typed.ActorRef;
+import akka.actor.typed.ActorSystem;
 import lombok.ToString;
 
 /**
@@ -34,6 +40,14 @@ import lombok.ToString;
  */
 @ToString(callSuper = true)
 public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> {
+
+    /**
+     * Asks the actor to retrieve knowledge.
+     */
+    public static CompletionStage<KnowledgeResponseMessage> askKnowledgeGet(ActorSystem<Message> a, Duration timeout,
+            Class<? extends GameObject> typeClass, String type) {
+        return ask(a, replyTo -> new KnowledgeGetMessage<>(replyTo, typeClass, type), timeout, a.scheduler());
+    }
 
     public final Class<? extends GameObject> typeClass;
 

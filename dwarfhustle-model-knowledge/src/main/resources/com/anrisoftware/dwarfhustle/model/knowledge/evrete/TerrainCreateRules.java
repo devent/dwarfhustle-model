@@ -1,16 +1,45 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.evrete;
 
+import java.util.List;
+
+import org.evrete.api.Environment;
 import org.evrete.api.RhsContext;
+import org.evrete.dsl.Phase;
 import org.evrete.dsl.annotation.*;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.*;
 
 public class TerrainCreateRules {
 
+    long materialOxygen;
+    
+    List<Long> solids;
+
+    List<Long> liquids;
+
+    List<Long> gases;
+
+    long block;
+    
+    long ramp_nesw;
+    
+    long ramp_edge;
+    
+    @PhaseListener(Phase.FIRE)
+    public void initResources(Environment env) {
+        this.materialOxygen = env.get(TerrainCreateKnowledge.MATERIAL_OXYGEN_NAME);
+        this.solids = env.get(TerrainCreateKnowledge.MATERIALS_SOLIDS_NAME);
+        this.liquids = env.get(TerrainCreateKnowledge.MATERIALS_LIQUIDS_NAME);
+        this.gases = env.get(TerrainCreateKnowledge.MATERIALS_GASES_NAME);
+        this.block = env.get(TerrainCreateKnowledge.OBJECT_BLOCK_NAME);
+        this.ramp_nesw = env.get(TerrainCreateKnowledge.OBJECT_RAMP_NESW_NAME);
+        this.ramp_edge = env.get(TerrainCreateKnowledge.OBJECT_RAMP_EDGE_NAME);
+    }
+
     @Rule(salience = 1)
     @Where("$mid == 0 && $block.material == -1")
     public void material_empty_set_oxygen(Long $mid, MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
-        $block.setMaterialRid(898);
+        $block.setMaterialRid(materialOxygen);
         ctx.update($block);
     }
 
@@ -58,95 +87,36 @@ public class TerrainCreateRules {
                     args = { "$block", "$neighbors" }) //
     })
     public void block_set_ramp_on_neighbors_empty(MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
-        $block.setObjectRid(0);
+        $block.setObjectRid(ramp_nesw);
     }
 
     public boolean object_set_neighbors_test(MapBlock block, MapBlock[] neighbors) {
-        boolean ramp = $neighbors[NeighboringDir.N].isFilled();
-        ramp |= $neighbors[NeighboringDir.E].isFilled();
-        ramp |= $neighbors[NeighboringDir.W].isFilled();
-        ramp |= $neighbors[NeighboringDir.S].isFilled();
+        boolean ramp = false;
+        if (neighbors[NeighboringDir.N.ordinal()] != null) {
+            ramp |= neighbors[NeighboringDir.N.ordinal()].isFilled();
+        }
+        if (neighbors[NeighboringDir.E.ordinal()] != null) {
+            ramp |= neighbors[NeighboringDir.E.ordinal()].isFilled();
+        }
+        if (neighbors[NeighboringDir.W.ordinal()] != null) {
+            ramp |= neighbors[NeighboringDir.W.ordinal()].isFilled();
+        }
+        if (neighbors[NeighboringDir.S.ordinal()] != null) {
+            ramp |= neighbors[NeighboringDir.S.ordinal()].isFilled();
+        }
         return ramp;
     }
 
     public boolean material_gas_test(long mid) {
-        int amid = (int) mid;
-        switch (amid) {
-        case 903:
-        case 902:
-        case 900:
-        case 898:
-        case 897:
-            return true;
-        default:
-            return false;
-        }
+        return gases.contains(mid);
     }
 
     public boolean material_liquid_test(long mid) {
-        int amid = (int) mid;
-        switch (amid) {
-        case 815:
-            return true;
-        default:
-            return false;
-        }
+        return liquids.contains(mid);
     }
 
     public boolean material_solid_test(long mid) {
-        int amid = (int) mid;
-        switch (amid) {
-        case 827:
-        case 826:
-        case 825:
-        case 824:
-        case 823:
-        case 822:
-        case 821:
-        case 820:
-        case 819:
-        case 818:
-        case 817:
-        case 831:
-        case 830:
-        case 829:
-        case 837:
-        case 836:
-        case 835:
-        case 834:
-        case 833:
-        case 844:
-        case 843:
-        case 842:
-        case 841:
-        case 840:
-        case 839:
-
-        case 895:
-        case 894:
-        case 893:
-        case 892:
-        case 891:
-        case 890:
-        case 889:
-        case 888:
-        case 885:
-        case 884:
-        case 883:
-        case 881:
-        case 880:
-        case 879:
-        case 878:
-        case 778:
-        case 875:
-        case 873:
-        case 871:
-        case 869:
-        case 779:
-            return true;
-        default:
-            return false;
-        }
+        return solids.contains(mid);
     }
 
 }
