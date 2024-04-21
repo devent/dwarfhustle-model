@@ -34,17 +34,19 @@ import lombok.ToString;
 @Setter
 public class MapBlock implements Serializable {
 
-    private static final int FILLED_POS = 0;
+    private static final int VISIBLE_POS = 0;
 
-    private static final int EMPTY_POS = 1;
+    private static final int FILLED_POS = 1;
 
-    private static final int LIQUID_POS = 2;
+    private static final int EMPTY_POS = 2;
 
-    private static final int RAMP_POS = 3;
+    private static final int LIQUID_POS = 3;
 
-    private static final int FLOOR_POS = 4;
+    private static final int RAMP_POS = 4;
 
-    private static final int ROOF_POS = 5;
+    private static final int FLOOR_POS = 5;
+
+    private static final int ROOF_POS = 6;
 
     private static final long serialVersionUID = 1L;
 
@@ -74,12 +76,14 @@ public class MapBlock implements Serializable {
      * Bit field that defines the properties of the map block.
      * 
      * <pre>
-     * 00000000 00000000 00000000 00000001} block-filled Filled with solid.
-     * 00000000 00000000 00000000 00000010} block-empty with gas.
-     * 00000000 00000000 00000000 00000100} block-liquid Filled with liquid.
-     * 00000000 00000000 00000000 00001000} block-ramp Ramp block.
-     * 00000000 00000000 00000000 00010000} block-floor Floor block.
-     * 00000000 00000000 00000000 00100000} block-roof Roof block.
+     * 00000000 00000000 00000000 00000000} Block is hidden.
+     * 00000000 00000000 00000000 00000001} Block is visible.
+     * 00000000 00000000 00000000 00000010} block-filled Filled with solid.
+     * 00000000 00000000 00000000 00000100} block-empty Filled with gas.
+     * 00000000 00000000 00000000 00001000} block-liquid Filled with liquid.
+     * 00000000 00000000 00000000 00010000} block-ramp Ramp block.
+     * 00000000 00000000 00000000 00100000} block-floor Floor block.
+     * 00000000 00000000 00000000 01000000} block-roof Roof block.
      * </pre>
      */
     public PropertiesSet p = new PropertiesSet();
@@ -120,6 +124,34 @@ public class MapBlock implements Serializable {
      */
     public long getObjectRid() {
         return KnowledgeObject.id2Kid(object);
+    }
+
+    public void setProperties(int p) {
+        this.p.bits = p;
+    }
+
+    public void setHidden(boolean flag) {
+        if (!flag) {
+            p.set(VISIBLE_POS);
+        } else {
+            p.clear(VISIBLE_POS);
+        }
+    }
+
+    public boolean isHidden() {
+        return !p.get(VISIBLE_POS);
+    }
+
+    public void setVisible(boolean flag) {
+        if (flag) {
+            p.set(VISIBLE_POS);
+        } else {
+            p.clear(VISIBLE_POS);
+        }
+    }
+
+    public boolean isVisible() {
+        return p.get(VISIBLE_POS);
     }
 
     public void setFilled(boolean flag) {
@@ -225,6 +257,87 @@ public class MapBlock implements Serializable {
 
     public MapBlock getNeighborUp(MapChunk chunk, Function<Integer, MapChunk> retriever) {
         return getNeighbor(NeighboringDir.U, chunk, retriever);
+    }
+
+    /**
+     * Returns true if all neighbors of this block are empty.
+     */
+    public boolean isNeighborsEmpty(MapBlock[] neighbors) {
+        for (var dir : NeighboringDir.DIRS_SAME_LEVEL) {
+            if (neighbors[dir.ordinal()] != null) {
+                if (!neighbors[dir.ordinal()].isEmpty()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns true if all neighbors of this block are filled.
+     */
+    public boolean isNeighborsFilled(MapBlock[] neighbors) {
+        for (var dir : NeighboringDir.DIRS_SAME_LEVEL) {
+            if (neighbors[dir.ordinal()] != null) {
+                if (!neighbors[dir.ordinal()].isFilled()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns true one of the N, E, S, W neighbors of this block is empty.
+     */
+    public boolean isOneNeighborPerpendicularEmpty(MapBlock[] neighbors) {
+        for (var dir : NeighboringDir.DIRS_PERPENDICULAR_SAME_LEVEL) {
+            if (neighbors[dir.ordinal()] != null) {
+                if (neighbors[dir.ordinal()].isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if one the edge NE, SE, SW, NW neighbors of this block is empty.
+     */
+    public boolean isOneNeighborEdgeEmpty(MapBlock[] neighbors) {
+        for (var dir : NeighboringDir.DIRS_EDGE_SAME_LEVEL) {
+            if (neighbors[dir.ordinal()] != null) {
+                if (neighbors[dir.ordinal()].isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if none the edge NE, SE, SW, NW neighbors of this block are
+     * empty.
+     */
+    public boolean isNeighborsEdgeNotEmpty(MapBlock[] neighbors) {
+        for (var dir : NeighboringDir.DIRS_EDGE_SAME_LEVEL) {
+            if (neighbors[dir.ordinal()] != null) {
+                if (neighbors[dir.ordinal()].isEmpty()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns true if the up U neighbors of this block is not empty.
+     */
+    public boolean isNeighborUpNotEmpty(MapBlock[] neighbors) {
+        if (neighbors[NeighboringDir.U.ordinal()] != null) {
+            return !neighbors[NeighboringDir.U.ordinal()].isEmpty();
+        }
+        return false;
     }
 
 }

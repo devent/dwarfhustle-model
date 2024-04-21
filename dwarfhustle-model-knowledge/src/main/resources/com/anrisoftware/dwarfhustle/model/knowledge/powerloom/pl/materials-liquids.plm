@@ -20,9 +20,17 @@
 (clear-module "DWARFHUSTLE-MATERIALS-LIQUIDS")
 (reset-features)
 
+(assert (DWARFHUSTLE-MATERIALS/Liquid Water)) :documentation "Clean H2O water."
+(assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Water) 0.00))
+(assert (= (DWARFHUSTLE-MATERIALS/boiling-point-material Water) 99.98))
+(assert (= (DWARFHUSTLE-MATERIALS/density-of-material Water) 2.25 ))
+(assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Water) 0.999))
+(assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Water) 0.6065))
+(assert (DWARFHUSTLE-MATERIALS/material-color Magma "blue"))
+
 (assert (DWARFHUSTLE-MATERIALS/Liquid Magma)) :documentation "Magma (from Ancient Greek μάγμα (mágma) 'thick unguent')[1] is the molten or semi-molten natural material from which all igneous rocks are formed."
 (assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Magma) 2300.00))
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Magma) 2.25 ))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Magma) 1.00))
 (assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Magma) 2.00))
-(assert (material-color Magma "red"))
+(assert (DWARFHUSTLE-MATERIALS/material-color Magma "red"))

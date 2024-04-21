@@ -77,31 +77,90 @@ class TerrainCreateKnowledgeTest {
         MapBlock[] neighbors
         def args = []
 
+        // block with material 0 is gas oxygen empty block
         block = new MapBlock(1, new GameBlockPos(10, 10, 0))
         neighbors = new MapBlock[NeighboringDir.values().length]
-        neighbors[NeighboringDir.N.ordinal()] = new MapBlock(1, new GameBlockPos(10, 9, 0))
-        args << of(0, block, neighbors, 3882650435585l, 2)
+        args << of(0, block, neighbors, 905, 819, 0b00000101)
 
+        // block with material oxygen is gas oxygen empty block
         block = new MapBlock(1, new GameBlockPos(10, 10, 0))
         neighbors = new MapBlock[NeighboringDir.values().length]
-        neighbors[NeighboringDir.N.ordinal()] = new MapBlock(1, new GameBlockPos(10, 9, 0))
-        args << of(843, block, neighbors, 3620657430529l, 1)
+        args << of(905, block, neighbors, 905, 819, 0b00000101)
 
+        // block with material oxygen is gas oxygen empty block
         block = new MapBlock(1, new GameBlockPos(10, 10, 0))
         neighbors = new MapBlock[NeighboringDir.values().length]
-        neighbors[NeighboringDir.N.ordinal()] = new MapBlock(1, new GameBlockPos(10, 9, 0))
-        args << of(904, block, neighbors, 3882650435585l, 2)
+        args << of(905, block, neighbors, 905, 819, 0b00000101)
+
+        // block with material stone is filled no neighbors ramp single
+        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
+        neighbors = new MapBlock[NeighboringDir.values().length]
+        args << of(844, block, neighbors, 844, 820, 0b00000011)
+
+        // block with material stone is filled all neighbors hidden block
+        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
+        neighbors = new MapBlock[NeighboringDir.values().length]
+        NeighboringDir.values().each {
+            neighbors[it.ordinal()] = createBlock(1, block.pos.add(it.pos), 844, 0b10)
+        }
+        args << of(844, block, neighbors, 844, 819, 0b00000010)
+
+        // block with material stone is filled all neighbors except UP visible block
+        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
+        neighbors = new MapBlock[NeighboringDir.values().length]
+        NeighboringDir.values().each {
+            if (it != NeighboringDir.U) {
+                neighbors[it.ordinal()] = createBlock(1, block.pos.add(it.pos), 844, 0b10)
+            }
+        }
+        args << of(844, block, neighbors, 844, 819, 0b00000011)
+
+        // block with material stone is filled one perpendicular neighbor empty is visible ramp-nesw
+        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
+        neighbors = new MapBlock[NeighboringDir.values().length]
+        NeighboringDir.DIRS_SAME_LEVEL.each {
+            neighbors[it.ordinal()] = createBlock(1, block.pos.add(it.pos), 844, 0b10)
+        }
+        neighbors[NeighboringDir.N.ordinal()] = createBlock(1, block.pos.add(NeighboringDir.N.pos), 905, 0b100)
+        args << of(844, block, neighbors, 844, 821, 0b00000011)
+
+        // block with material stone is filled one edge neighbor empty is visible ramp-edge
+        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
+        neighbors = new MapBlock[NeighboringDir.values().length]
+        NeighboringDir.DIRS_SAME_LEVEL.each {
+            neighbors[it.ordinal()] = createBlock(1, block.pos.add(it.pos), 844, 0b10)
+        }
+        neighbors[NeighboringDir.NE.ordinal()] = createBlock(1, block.pos.add(NeighboringDir.N.pos), 905, 0b100)
+        args << of(844, block, neighbors, 844, 822, 0b00000011)
+
+        // block with material stone is filled one edge and one perpendicular neighbor empty is visible ramp-edge
+        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
+        neighbors = new MapBlock[NeighboringDir.values().length]
+        NeighboringDir.DIRS_SAME_LEVEL.each {
+            neighbors[it.ordinal()] = createBlock(1, block.pos.add(it.pos), 844, 0b10)
+        }
+        neighbors[NeighboringDir.N.ordinal()] = createBlock(1, block.pos.add(NeighboringDir.N.pos), 905, 0b100)
+        neighbors[NeighboringDir.NE.ordinal()] = createBlock(1, block.pos.add(NeighboringDir.N.pos), 905, 0b100)
+        args << of(844, block, neighbors, 844, 822, 0b00000011)
 
         Stream.of(args as Object[])
     }
 
+    static MapBlock createBlock(int cid, GameBlockPos pos, long mid, int p) {
+        def block = new MapBlock(cid, pos)
+        block.setMaterialRid(mid)
+        block.setProperties(p)
+        return block
+    }
+
     @ParameterizedTest
     @MethodSource
-    void ruleset_declaration(long mid, MapBlock block, MapBlock[] neighbors, long eM, int eP) {
+    void ruleset_declaration(long mid, MapBlock block, MapBlock[] neighbors, long eM, long eO, int eP) {
         def session = knowledge.createSession()
         session.insertAndFire(mid, block, neighbors)
         println block
-        assert block.material == eM
+        assert block.materialRid == eM
+        assert block.objectRid == eO
         assert block.p.bits == eP
     }
 }

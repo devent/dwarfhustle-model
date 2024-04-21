@@ -27,135 +27,152 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum NeighboringDir {
 
-	/**
-	 * Up.
-	 */
+    /**
+     * Up.
+     */
     U(new GameBlockPos(0, 0, -1)),
 
-	/**
-	 * Down.
-	 */
+    /**
+     * Down.
+     */
     D(new GameBlockPos(0, 0, 1)),
 
-	/**
-	 * North.
-	 */
+    /**
+     * North.
+     */
     N(new GameBlockPos(0, -1, 0)),
 
-	/**
-	 * North east.
-	 */
+    /**
+     * North east.
+     */
     NE(new GameBlockPos(1, -1, 0)),
 
-	/**
-	 * East.
-	 */
+    /**
+     * East.
+     */
     E(new GameBlockPos(1, 0, 0)),
 
-	/**
-	 * South east.
-	 */
+    /**
+     * South east.
+     */
     SE(new GameBlockPos(1, 1, 0)),
 
-	/**
-	 * South.
-	 */
+    /**
+     * South.
+     */
     S(new GameBlockPos(0, 1, 0)),
 
-	/**
-	 * South west.
-	 */
+    /**
+     * South west.
+     */
     SW(new GameBlockPos(-1, 1, 0)),
 
-	/**
-	 * West.
-	 */
+    /**
+     * West.
+     */
     W(new GameBlockPos(-1, 0, 0)),
 
-	/**
-	 * North west.
-	 */
+    /**
+     * North west.
+     */
     NW(new GameBlockPos(-1, -1, 0)),
 
-	/**
-	 * Up north.
-	 */
+    /**
+     * Up north.
+     */
     UN(new GameBlockPos(0, -1, -1)),
 
-	/**
-	 * Up north east.
-	 */
+    /**
+     * Up north east.
+     */
     UNE(new GameBlockPos(1, -1, -1)),
 
-	/**
-	 * Up east.
-	 */
+    /**
+     * Up east.
+     */
     UE(new GameBlockPos(1, 0, -1)),
 
-	/**
-	 * Up south east.
-	 */
+    /**
+     * Up south east.
+     */
     USE(new GameBlockPos(1, 1, -1)),
 
-	/**
-	 * Up south.
-	 */
+    /**
+     * Up south.
+     */
     US(new GameBlockPos(0, 1, -1)),
 
-	/**
-	 * Up south west.
-	 */
+    /**
+     * Up south west.
+     */
     USW(new GameBlockPos(-1, 1, -1)),
 
-	/**
-	 * Up west.
-	 */
+    /**
+     * Up west.
+     */
     UW(new GameBlockPos(-1, 0, -1)),
 
-	/**
-	 * Up north west.
-	 */
+    /**
+     * Up north west.
+     */
     UNW(new GameBlockPos(-1, -1, -1)),
 
-	/**
-	 * Down north.
-	 */
+    /**
+     * Down north.
+     */
     DN(new GameBlockPos(0, -1, 1)),
 
-	/**
-	 * Down north east.
-	 */
+    /**
+     * Down north east.
+     */
     DNE(new GameBlockPos(1, -1, 1)),
 
-	/**
-	 * Down east.
-	 */
+    /**
+     * Down east.
+     */
     DE(new GameBlockPos(1, 0, 1)),
 
-	/**
-	 * Down south east.
-	 */
+    /**
+     * Down south east.
+     */
     DSE(new GameBlockPos(1, 1, 1)),
 
-	/**
-	 * Down south.
-	 */
+    /**
+     * Down south.
+     */
     DS(new GameBlockPos(0, 1, 1)),
 
-	/**
-	 * Down south west.
-	 */
+    /**
+     * Down south west.
+     */
     DSW(new GameBlockPos(-1, 1, 1)),
 
-	/**
-	 * Down west.
-	 */
+    /**
+     * Down west.
+     */
     DW(new GameBlockPos(-1, 0, 1)),
 
-	/**
-	 * Down north west.
-	 */
+    /**
+     * Down north west.
+     */
     DNW(new GameBlockPos(-1, -1, 1));
 
     public final GameBlockPos pos;
+
+    /**
+     * Contains the neighboring directions only on the same level.
+     */
+    public static final NeighboringDir[] DIRS_SAME_LEVEL = { N, NE, E, SE, S, SW, E, NW };
+
+    /**
+     * Contains the neighboring perpendicular N, E, S, W directions only on the same
+     * level.
+     */
+    public static final NeighboringDir[] DIRS_PERPENDICULAR_SAME_LEVEL = { N, E, S, W };
+
+    /**
+     * Contains the neighboring edge NE, SE, SW, NW directions only on the same
+     * level.
+     */
+    public static final NeighboringDir[] DIRS_EDGE_SAME_LEVEL = { NE, SE, SW, NW };
 }

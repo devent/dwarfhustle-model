@@ -12,7 +12,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.*;
 public class TerrainCreateRules {
 
     long materialOxygen;
-    
+
     List<Long> solids;
 
     List<Long> liquids;
@@ -20,91 +20,129 @@ public class TerrainCreateRules {
     List<Long> gases;
 
     long block;
-    
+
+    long ramp_single;
+
     long ramp_nesw;
-    
+
     long ramp_edge;
-    
-    @PhaseListener(Phase.FIRE)
+
+    @PhaseListener(Phase.CREATE)
     public void initResources(Environment env) {
         this.materialOxygen = env.get(TerrainCreateKnowledge.MATERIAL_OXYGEN_NAME);
         this.solids = env.get(TerrainCreateKnowledge.MATERIALS_SOLIDS_NAME);
         this.liquids = env.get(TerrainCreateKnowledge.MATERIALS_LIQUIDS_NAME);
         this.gases = env.get(TerrainCreateKnowledge.MATERIALS_GASES_NAME);
         this.block = env.get(TerrainCreateKnowledge.OBJECT_BLOCK_NAME);
+        this.ramp_single = env.get(TerrainCreateKnowledge.OBJECT_RAMP_SINGLE_NAME);
         this.ramp_nesw = env.get(TerrainCreateKnowledge.OBJECT_RAMP_NESW_NAME);
         this.ramp_edge = env.get(TerrainCreateKnowledge.OBJECT_RAMP_EDGE_NAME);
     }
 
-    @Rule(salience = 1)
+    //
+    // Set block material.
+    //
+
+    @Rule(salience = 1000)
     @Where("$mid == 0 && $block.material == -1")
     public void material_empty_set_oxygen(Long $mid, MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
         $block.setMaterialRid(materialOxygen);
         ctx.update($block);
     }
 
-    @Rule(salience = 2)
+    @Rule(salience = 1000)
     @Where("$mid > 0 && $block.material == -1")
     public void material_set_rid(long $mid, MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
         $block.setMaterialRid($mid);
         ctx.update($block);
     }
 
-    @Rule(salience = 3)
-    @Where(methods = { //
-            @MethodPredicate( //
-                    method = "material_gas_test", //
-                    args = { "$block.materialRid" }) //
-    })
+    //
+    // Set block properties.
+    //
+
+    @Rule(salience = 100)
+    @Where(value = "$block.p.bits == 0", //
+            methods = { //
+                    @MethodPredicate( //
+                            method = "material_gas_test", //
+                            args = { "$block.materialRid" }) //
+            })
     public void material_gases_set_empty(MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
+        $block.setVisible(true);
         $block.setEmpty(true);
+        ctx.update($block);
     }
 
-    @Rule(salience = 4)
-    @Where(methods = { //
-            @MethodPredicate( //
-                    method = "material_solid_test", //
-                    args = { "$block.materialRid" }) //
-    })
+    @Rule(salience = 100)
+    @Where(value = "$block.p.bits == 0", //
+            methods = { //
+                    @MethodPredicate( //
+                            method = "material_solid_test", //
+                            args = { "$block.materialRid" }) //
+            })
     public void material_solids_set_filled(long $mid, MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
+        $block.setVisible(true);
         $block.setFilled(true);
+        ctx.update($block);
     }
 
-    @Rule(salience = 4)
-    @Where(methods = { //
-            @MethodPredicate( //
-                    method = "material_solid_test", //
-                    args = { "$block.materialRid" }) //
-    })
-    public void material_liquid_test(long $mid, MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
-        $block.setFilled(true);
+    @Rule(salience = 100)
+    @Where(value = "$block.p.bits == 0", //
+            methods = { //
+                    @MethodPredicate( //
+                            method = "material_liquid_test", //
+                            args = { "$block.materialRid" }) //
+            })
+    public void material_liquids_set_liquid(long $mid, MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
+        $block.setVisible(true);
+        $block.setLiquid(true);
+        ctx.update($block);
+    }
+
+    //
+    // Block hidden or visible based on neighbors.
+    //
+
+    @Rule(salience = 10)
+    @Where(value = { "$block.isNeighborUpNotEmpty($neighbors)" })
+    public void block_is_hidden(MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
+        $block.setHidden(true);
+    }
+
+    //
+    // Object type based on block status and neighbors.
+    //
+
+    @Rule(salience = 10)
+    @Where(value = { "$block.empty || $block.liquid" })
+    public void object_set_block_on_empty_liquid(MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
+        $block.setObjectRid(block);
     }
 
     @Rule(salience = 10)
-    @Where(methods = { //
-            @MethodPredicate( //
-                    method = "object_set_neighbors_test", //
-                    args = { "$block", "$neighbors" }) //
-    })
-    public void block_set_ramp_on_neighbors_empty(MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
+    @Where(value = { "$block.filled", "$block.isNeighborsEmpty($neighbors)" })
+    public void object_set_ramp_single_on_neighbors_empty(MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
+        $block.setObjectRid(ramp_single);
+    }
+
+    @Rule(salience = 10)
+    @Where(value = { "!$block.empty", "$block.isNeighborsFilled($neighbors)" })
+    public void block_set_block_on_neighbors_filled(MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
+        $block.setObjectRid(block);
+    }
+
+    @Rule(salience = 10)
+    @Where(value = { "!$block.empty", "$block.isOneNeighborPerpendicularEmpty($neighbors)",
+            "$block.isNeighborsEdgeNotEmpty($neighbors)" })
+    public void block_set_ramp_nesw_on_neighbors_empty(MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
         $block.setObjectRid(ramp_nesw);
     }
 
-    public boolean object_set_neighbors_test(MapBlock block, MapBlock[] neighbors) {
-        boolean ramp = false;
-        if (neighbors[NeighboringDir.N.ordinal()] != null) {
-            ramp |= neighbors[NeighboringDir.N.ordinal()].isFilled();
-        }
-        if (neighbors[NeighboringDir.E.ordinal()] != null) {
-            ramp |= neighbors[NeighboringDir.E.ordinal()].isFilled();
-        }
-        if (neighbors[NeighboringDir.W.ordinal()] != null) {
-            ramp |= neighbors[NeighboringDir.W.ordinal()].isFilled();
-        }
-        if (neighbors[NeighboringDir.S.ordinal()] != null) {
-            ramp |= neighbors[NeighboringDir.S.ordinal()].isFilled();
-        }
-        return ramp;
+    @Rule(salience = 10)
+    @Where(value = { "!$block.empty", "$block.isOneNeighborEdgeEmpty($neighbors)" })
+    public void block_set_ramp_edge_on_neighbors_empty(MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
+        $block.setObjectRid(ramp_edge);
     }
 
     public boolean material_gas_test(long mid) {

@@ -70,6 +70,8 @@ public class TerrainCreateKnowledge {
 
     public static final String OBJECT_BLOCK_NAME = "object-block";
 
+    public static final String OBJECT_RAMP_SINGLE_NAME = "object-ramp-single";
+
     public static final String OBJECT_RAMP_NESW_NAME = "object-ramp-nesw";
 
     public static final String OBJECT_RAMP_EDGE_NAME = "object-ramp-edge";
@@ -88,6 +90,14 @@ public class TerrainCreateKnowledge {
         assert rulesetUrl != null;
         try {
             this.knowledge = service.newKnowledge("JAVA-SOURCE", rulesetUrl);
+            knowledge.set(MATERIALS_SOLIDS_NAME, materials.get(MATERIALS_SOLIDS_NAME));
+            knowledge.set(MATERIALS_LIQUIDS_NAME, materials.get(MATERIALS_LIQUIDS_NAME));
+            knowledge.set(MATERIALS_GASES_NAME, materials.get(MATERIALS_GASES_NAME));
+            knowledge.set(MATERIAL_OXYGEN_NAME, materials.get(MATERIAL_OXYGEN_NAME).get(0));
+            knowledge.set(OBJECT_BLOCK_NAME, materials.get(OBJECT_BLOCK_NAME).get(0));
+            knowledge.set(OBJECT_RAMP_SINGLE_NAME, materials.get(OBJECT_RAMP_SINGLE_NAME).get(0));
+            knowledge.set(OBJECT_RAMP_NESW_NAME, materials.get(OBJECT_RAMP_NESW_NAME).get(0));
+            knowledge.set(OBJECT_RAMP_EDGE_NAME, materials.get(OBJECT_RAMP_EDGE_NAME).get(0));
         } catch (IllegalStateException e) {
             if (e.getCause() instanceof CompilationException ce) {
                 ce.getErrorSources().forEach((c) -> {
@@ -105,6 +115,7 @@ public class TerrainCreateKnowledge {
         List<Long> gases = new ArrayList<>(100);
         List<Long> oxygen = new ArrayList<>(1);
         List<Long> block = new ArrayList<>(1);
+        List<Long> ramp_single = new ArrayList<>(1);
         List<Long> ramp_nesw = new ArrayList<>(1);
         List<Long> ramp_edge = new ArrayList<>(1);
         materials.put(MATERIALS_SOLIDS_NAME, solids);
@@ -112,6 +123,7 @@ public class TerrainCreateKnowledge {
         materials.put(MATERIALS_GASES_NAME, gases);
         materials.put(MATERIAL_OXYGEN_NAME, oxygen);
         materials.put(OBJECT_BLOCK_NAME, block);
+        materials.put(OBJECT_RAMP_SINGLE_NAME, ramp_single);
         materials.put(OBJECT_RAMP_NESW_NAME, ramp_nesw);
         materials.put(OBJECT_RAMP_EDGE_NAME, ramp_edge);
         allOf(askKnowledgeGet(a, solids, Stone.class, Stone.TYPE, nop()).toCompletableFuture(),
@@ -126,6 +138,8 @@ public class TerrainCreateKnowledge {
                     var ot = (ObjectType) o;
                     if (ot.getName().equalsIgnoreCase("tile-block")) {
                         block.add(o.getKid());
+                    } else if (ot.getName().equalsIgnoreCase("tile-ramp-single")) {
+                        ramp_single.add(o.getKid());
                     } else if (ot.getName().equalsIgnoreCase("tile-ramp-nesw")) {
                         ramp_nesw.add(o.getKid());
                     } else if (ot.getName().equalsIgnoreCase("tile-ramp-edge")) {
@@ -155,13 +169,6 @@ public class TerrainCreateKnowledge {
 
     public StatefulSession createSession() {
         var session = knowledge.newStatefulSession();
-        session.set(MATERIALS_SOLIDS_NAME, materials.get(MATERIALS_SOLIDS_NAME));
-        session.set(MATERIALS_LIQUIDS_NAME, materials.get(MATERIALS_LIQUIDS_NAME));
-        session.set(MATERIALS_GASES_NAME, materials.get(MATERIALS_GASES_NAME));
-        session.set(MATERIAL_OXYGEN_NAME, materials.get(MATERIAL_OXYGEN_NAME).get(0));
-        session.set(OBJECT_BLOCK_NAME, materials.get(OBJECT_BLOCK_NAME).get(0));
-        session.set(OBJECT_RAMP_NESW_NAME, materials.get(OBJECT_RAMP_NESW_NAME).get(0));
-        session.set(OBJECT_RAMP_EDGE_NAME, materials.get(OBJECT_RAMP_EDGE_NAME).get(0));
         return session;
     }
 }
