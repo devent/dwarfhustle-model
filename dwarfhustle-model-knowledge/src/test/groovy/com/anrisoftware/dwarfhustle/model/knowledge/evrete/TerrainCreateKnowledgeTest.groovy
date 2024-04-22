@@ -23,6 +23,7 @@ import static org.junit.jupiter.params.provider.Arguments.of
 
 import java.util.stream.Stream
 
+import org.evrete.api.RuleSession
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -59,6 +60,8 @@ class TerrainCreateKnowledgeTest {
 
     static TerrainCreateKnowledge knowledge
 
+    static RuleSession session
+
     @BeforeAll
     static void setUp() {
         injector = Guice.createInjector(new DwarfhustleModelActorsModule(), new DwarfhustlePowerloomModule(), new DwarfhustleModelApiObjectsModule())
@@ -70,6 +73,7 @@ class TerrainCreateKnowledgeTest {
             knowledgeActor = it
         } ).get()
         this.knowledge = new TerrainCreateKnowledge(actor.actorSystem)
+        this.session = knowledge.createSession()
     }
 
     static Stream ruleset_declaration() {
@@ -92,7 +96,7 @@ class TerrainCreateKnowledgeTest {
         neighbors = new MapBlock[NeighboringDir.values().length]
         args << of(905, block, neighbors, 905, 819, 0b00000101)
 
-        // block with material stone is filled no neighbors ramp single
+        // block with material stone is filled no neighbors visible block
         block = new MapBlock(1, new GameBlockPos(10, 10, 0))
         neighbors = new MapBlock[NeighboringDir.values().length]
         args << of(844, block, neighbors, 844, 820, 0b00000011)
@@ -156,9 +160,9 @@ class TerrainCreateKnowledgeTest {
     @ParameterizedTest
     @MethodSource
     void ruleset_declaration(long mid, MapBlock block, MapBlock[] neighbors, long eM, long eO, int eP) {
-        def session = knowledge.createSession()
-        session.insertAndFire(mid, block, neighbors)
-        println block
+        log.debug "[ruleset_declaration] insert"
+        session.insertAndFire(new TerrainFact(mid, block, neighbors))
+        log.debug "[ruleset_declaration] done {}", block
         assert block.materialRid == eM
         assert block.objectRid == eO
         assert block.p.bits == eP

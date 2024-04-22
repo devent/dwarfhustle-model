@@ -44,17 +44,17 @@ public class TerrainCreateRules {
     //
 
     @Rule(salience = 1000)
-    @Where("$mid == 0 && $block.material == -1")
-    public void material_empty_set_oxygen(Long $mid, MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
-        $block.setMaterialRid(materialOxygen);
-        ctx.update($block);
+    @Where("$f.mid == 0 && $f.block.material == -1")
+    public void material_empty_set_oxygen(TerrainFact $f, RhsContext ctx) {
+        $f.block.setMaterialRid(materialOxygen);
+        ctx.update($f);
     }
 
     @Rule(salience = 1000)
-    @Where("$mid > 0 && $block.material == -1")
-    public void material_set_rid(long $mid, MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
-        $block.setMaterialRid($mid);
-        ctx.update($block);
+    @Where("$f.mid > 0 && $f.block.material == -1")
+    public void material_set_rid(TerrainFact $f, RhsContext ctx) {
+        $f.block.setMaterialRid($f.mid);
+        ctx.update($f);
     }
 
     //
@@ -62,42 +62,42 @@ public class TerrainCreateRules {
     //
 
     @Rule(salience = 100)
-    @Where(value = "$block.p.bits == 0", //
+    @Where(value = "$f.block.p.bits == 0", //
             methods = { //
                     @MethodPredicate( //
                             method = "material_gas_test", //
-                            args = { "$block.materialRid" }) //
+                            args = { "$f.block.materialRid" }) //
             })
-    public void material_gases_set_empty(MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
-        $block.setVisible(true);
-        $block.setEmpty(true);
-        ctx.update($block);
+    public void material_gases_set_empty(TerrainFact $f, RhsContext ctx) {
+        $f.block.setVisible(true);
+        $f.block.setEmpty(true);
+        ctx.update($f);
     }
 
     @Rule(salience = 100)
-    @Where(value = "$block.p.bits == 0", //
+    @Where(value = "$f.block.p.bits == 0", //
             methods = { //
                     @MethodPredicate( //
                             method = "material_solid_test", //
-                            args = { "$block.materialRid" }) //
+                            args = { "$f.block.materialRid" }) //
             })
-    public void material_solids_set_filled(long $mid, MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
-        $block.setVisible(true);
-        $block.setFilled(true);
-        ctx.update($block);
+    public void material_solids_set_filled(TerrainFact $f, RhsContext ctx) {
+        $f.block.setVisible(true);
+        $f.block.setFilled(true);
+        ctx.update($f);
     }
 
     @Rule(salience = 100)
-    @Where(value = "$block.p.bits == 0", //
+    @Where(value = "$f.block.p.bits == 0", //
             methods = { //
                     @MethodPredicate( //
                             method = "material_liquid_test", //
-                            args = { "$block.materialRid" }) //
+                            args = { "$f.block.materialRid" }) //
             })
-    public void material_liquids_set_liquid(long $mid, MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
-        $block.setVisible(true);
-        $block.setLiquid(true);
-        ctx.update($block);
+    public void material_liquids_set_liquid(TerrainFact $f, RhsContext ctx) {
+        $f.block.setVisible(true);
+        $f.block.setLiquid(true);
+        ctx.update($f);
     }
 
     //
@@ -105,9 +105,9 @@ public class TerrainCreateRules {
     //
 
     @Rule(salience = 10)
-    @Where(value = { "$block.isNeighborUpNotEmpty($neighbors)" })
-    public void block_is_hidden(MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
-        $block.setHidden(true);
+    @Where(value = { "$f.block.isNeighborUpNotEmpty($f.neighbors)" })
+    public void block_is_hidden(TerrainFact $f, RhsContext ctx) {
+        $f.block.setHidden(true);
     }
 
     //
@@ -115,34 +115,34 @@ public class TerrainCreateRules {
     //
 
     @Rule(salience = 10)
-    @Where(value = { "$block.empty || $block.liquid" })
-    public void object_set_block_on_empty_liquid(MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
-        $block.setObjectRid(block);
+    @Where(value = { "$f.block.empty || $f.block.liquid" })
+    public void object_set_block_on_empty_liquid(TerrainFact $f, RhsContext ctx) {
+        $f.block.setObjectRid(block);
     }
 
     @Rule(salience = 10)
-    @Where(value = { "$block.filled", "$block.isNeighborsEmpty($neighbors)" })
-    public void object_set_ramp_single_on_neighbors_empty(MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
-        $block.setObjectRid(ramp_single);
+    @Where(value = { "$f.block.filled", "$f.block.isNeighborsEmpty($f.neighbors)" })
+    public void object_set_ramp_single_on_neighbors_empty(TerrainFact $f, RhsContext ctx) {
+        $f.block.setObjectRid(ramp_single);
     }
 
     @Rule(salience = 10)
-    @Where(value = { "!$block.empty", "$block.isNeighborsFilled($neighbors)" })
-    public void block_set_block_on_neighbors_filled(MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
-        $block.setObjectRid(block);
+    @Where(value = { "!$f.block.empty", "$f.block.isNeighborsFilled($f.neighbors)" })
+    public void block_set_block_on_neighbors_filled(TerrainFact $f, RhsContext ctx) {
+        $f.block.setObjectRid(block);
     }
 
     @Rule(salience = 10)
-    @Where(value = { "!$block.empty", "$block.isOneNeighborPerpendicularEmpty($neighbors)",
-            "$block.isNeighborsEdgeNotEmpty($neighbors)" })
-    public void block_set_ramp_nesw_on_neighbors_empty(MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
-        $block.setObjectRid(ramp_nesw);
+    @Where(value = { "!$f.block.empty", "$f.block.isOneNeighborPerpendicularEmpty($f.neighbors)",
+            "$f.block.isNeighborsEdgeNotEmpty($f.neighbors)" })
+    public void block_set_ramp_nesw_on_neighbors_empty(TerrainFact $f, RhsContext ctx) {
+        $f.block.setObjectRid(ramp_nesw);
     }
 
     @Rule(salience = 10)
-    @Where(value = { "!$block.empty", "$block.isOneNeighborEdgeEmpty($neighbors)" })
-    public void block_set_ramp_edge_on_neighbors_empty(MapBlock $block, MapBlock[] $neighbors, RhsContext ctx) {
-        $block.setObjectRid(ramp_edge);
+    @Where(value = { "!$f.block.empty", "$f.block.isOneNeighborEdgeEmpty($f.neighbors)" })
+    public void block_set_ramp_edge_on_neighbors_empty(TerrainFact $f, RhsContext ctx) {
+        $f.block.setObjectRid(ramp_edge);
     }
 
     public boolean material_gas_test(long mid) {
