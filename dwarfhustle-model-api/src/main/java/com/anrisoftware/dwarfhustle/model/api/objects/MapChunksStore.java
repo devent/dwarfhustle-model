@@ -59,11 +59,15 @@ public class MapChunksStore {
 
     private final FileChannel channel;
 
-    private long indexSize;
+    private final long indexSize;
 
-    private MappedByteBuffer indexBuffer;
+    private final MappedByteBuffer indexBuffer;
 
-    private MutableIntObjectMap<MapChunk> chunksCache;
+    private final MutableIntObjectMap<MapChunk> chunksCache;
+
+    private final int width;
+
+    private final int height;
 
     public MapChunksStore(Path file, int width, int height, int chunkSize, int chunksCount) throws IOException {
         this.channel = FileChannel.open(file, CREATE, READ, WRITE, SYNC);
@@ -71,6 +75,8 @@ public class MapChunksStore {
         this.indexSize = MapChunksIndexBuffer.SIZE_MIN + (chunksCount + 1) * MapChunksIndexBuffer.SIZE_ENTRY;
         this.indexBuffer = channel.map(MapMode.READ_WRITE, 0, indexSize);
         this.chunksCache = IntObjectMaps.mutable.ofInitialCapacity(chunksCount);
+        this.width = width;
+        this.height = height;
         if (newFile) {
             writeInitialIndex(chunksCount);
         } else {
@@ -115,6 +121,8 @@ public class MapChunksStore {
         var buffer = channel.map(MapMode.READ_WRITE, pos, size);
         MapChunkBuffer.writeMapChunk(buffer, 0, chunk);
         MapChunksIndexBuffer.setEntry(indexBuffer, 0, chunk.cid + 1, pos, size);
+        chunk.updateCenterExtent(width, height);
+        chunksCache.put(chunk.cid, chunk);
     }
 
     private int getChunkSize(MapChunk chunk) {
