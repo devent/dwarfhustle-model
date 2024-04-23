@@ -24,11 +24,13 @@ import java.util.concurrent.CompletionStage;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseErrorMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseSuccessMessage;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.ActorSystem;
+import lombok.SneakyThrows;
 import lombok.ToString;
 
 /**
@@ -47,6 +49,26 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
     public static CompletionStage<KnowledgeResponseMessage> askKnowledgeGet(ActorSystem<Message> a, Duration timeout,
             Class<? extends GameObject> typeClass, String type) {
         return ask(a, replyTo -> new KnowledgeGetMessage<>(replyTo, typeClass, type), timeout, a.scheduler());
+    }
+
+    /**
+     * Asks the actor to retrieve {@link KnowledgeObject}s.
+     */
+    @SneakyThrows
+    public static CompletionStage<Iterable<KnowledgeObject>> askKnowledgeObjects(ActorSystem<Message> a,
+            Duration timeout, Class<? extends GameObject> typeClass, String type) {
+        return KnowledgeGetMessage.askKnowledgeGet(a, timeout, typeClass, type).handle((res, ex) -> {
+            if (ex != null) {
+                throw new RuntimeException(ex);
+            } else {
+                if (res instanceof KnowledgeResponseSuccessMessage rm) {
+                    return rm.go.objects;
+                } else if (res instanceof KnowledgeResponseErrorMessage rm) {
+                    throw new RuntimeException(rm.error);
+                }
+            }
+            return null;
+        });
     }
 
     public final Class<? extends GameObject> typeClass;

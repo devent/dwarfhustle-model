@@ -25,7 +25,6 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -36,21 +35,14 @@ import org.evrete.api.Knowledge;
 import org.evrete.api.StatefulSession;
 import org.evrete.util.CompilationException;
 
-import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.map.ObjectType;
 import com.anrisoftware.dwarfhustle.model.api.materials.Gas;
 import com.anrisoftware.dwarfhustle.model.api.materials.Liquid;
 import com.anrisoftware.dwarfhustle.model.api.materials.Material;
 import com.anrisoftware.dwarfhustle.model.api.materials.Soil;
 import com.anrisoftware.dwarfhustle.model.api.materials.Stone;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeGetMessage;
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage;
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseErrorMessage;
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseSuccessMessage;
 
-import akka.actor.typed.ActorSystem;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -80,11 +72,11 @@ public class TerrainCreateKnowledge {
 
     private Knowledge knowledge;
 
-    private MutableMap<String, List<Long>> materials;
+    private final MutableMap<String, List<Long>> materials;
 
-    public TerrainCreateKnowledge(ActorSystem<Message> a) throws IOException {
+    public TerrainCreateKnowledge(AskKnowledge askKnowledge) throws IOException {
         this.materials = Maps.mutable.empty();
-        loadKnowledges(a, materials);
+        loadKnowledges(askKnowledge, materials);
         var service = new KnowledgeService();
         var rulesetUrl = TerrainCreateKnowledge.class.getResource("TerrainCreateRules.java");
         assert rulesetUrl != null;
@@ -101,18 +93,18 @@ public class TerrainCreateKnowledge {
         } catch (IllegalStateException e) {
             if (e.getCause() instanceof CompilationException ce) {
                 ce.getErrorSources().forEach((c) -> {
-                    System.out.println(c); // TODO
-                    System.out.println(ce.getErrorMessage(c)); // TODO
+                    log.error("{} - {}", c, ce.getErrorMessage(c));
                 });
             }
         }
     }
 
     @SneakyThrows
-    private void loadKnowledges(ActorSystem<Message> a, MutableMap<String, List<Long>> materials) {
+    private void loadKnowledges(AskKnowledge ask, MutableMap<String, List<Long>> materials) {
         List<Long> solids = new ArrayList<>(100);
         List<Long> liquids = new ArrayList<>(100);
         List<Long> gases = new ArrayList<>(100);
+        List<Long> objects = new ArrayList<>(100);
         List<Long> oxygen = new ArrayList<>(1);
         List<Long> block = new ArrayList<>(1);
         List<Long> ramp_single = new ArrayList<>(1);
@@ -126,45 +118,47 @@ public class TerrainCreateKnowledge {
         materials.put(OBJECT_RAMP_SINGLE_NAME, ramp_single);
         materials.put(OBJECT_RAMP_NESW_NAME, ramp_nesw);
         materials.put(OBJECT_RAMP_EDGE_NAME, ramp_edge);
-        allOf(askKnowledgeGet(a, solids, Stone.class, Stone.TYPE, nop()).toCompletableFuture(),
-                askKnowledgeGet(a, solids, Soil.class, Soil.TYPE, nop()).toCompletableFuture(),
-                askKnowledgeGet(a, liquids, Liquid.class, Liquid.TYPE, nop()).toCompletableFuture(),
-                askKnowledgeGet(a, gases, Gas.class, Gas.TYPE, (o) -> {
-                    var mo = (Material) o;
-                    if (mo.getName().equalsIgnoreCase("oxygen")) {
-                        oxygen.add(o.getKid());
-                    }
-                }).toCompletableFuture(), askKnowledgeGet(a, solids, ObjectType.class, ObjectType.TYPE, (o) -> {
-                    var ot = (ObjectType) o;
-                    if (ot.getName().equalsIgnoreCase("tile-block")) {
-                        block.add(o.getKid());
-                    } else if (ot.getName().equalsIgnoreCase("tile-ramp-single")) {
-                        ramp_single.add(o.getKid());
-                    } else if (ot.getName().equalsIgnoreCase("tile-ramp-nesw")) {
-                        ramp_nesw.add(o.getKid());
-                    } else if (ot.getName().equalsIgnoreCase("tile-ramp-edge")) {
-                        ramp_edge.add(o.getKid());
-                    }
-                }).toCompletableFuture())//
+        allOf( //
+                ask.doAskAsync(ASK_TIMEOUT, Stone.class, Stone.TYPE).whenComplete((res, ex) -> {
+                    knowledgeGet(res, solids, nop());
+                }).toCompletableFuture(), //
+                ask.doAskAsync(ASK_TIMEOUT, Soil.class, Soil.TYPE).whenComplete((res, ex) -> {
+                    knowledgeGet(res, solids, nop());
+                }).toCompletableFuture(), //
+                ask.doAskAsync(ASK_TIMEOUT, Liquid.class, Liquid.TYPE).whenComplete((res, ex) -> {
+                    knowledgeGet(res, liquids, nop());
+                }).toCompletableFuture(), //
+                ask.doAskAsync(ASK_TIMEOUT, Gas.class, Gas.TYPE).whenComplete((res, ex) -> {
+                    knowledgeGet(res, gases, (o) -> {
+                        var mo = (Material) o;
+                        if (mo.getName().equalsIgnoreCase("oxygen")) {
+                            oxygen.add(o.getKid());
+                        }
+                    });
+                }).toCompletableFuture(), //
+                ask.doAskAsync(ASK_TIMEOUT, ObjectType.class, ObjectType.TYPE).whenComplete((res, ex) -> {
+                    knowledgeGet(res, objects, (o) -> {
+                        var ot = (ObjectType) o;
+                        if (ot.getName().equalsIgnoreCase("tile-block")) {
+                            block.add(o.getKid());
+                        } else if (ot.getName().equalsIgnoreCase("tile-ramp-single")) {
+                            ramp_single.add(o.getKid());
+                        } else if (ot.getName().equalsIgnoreCase("tile-ramp-nesw")) {
+                            ramp_nesw.add(o.getKid());
+                        } else if (ot.getName().equalsIgnoreCase("tile-ramp-edge")) {
+                            ramp_edge.add(o.getKid());
+                        }
+                    });
+                }).toCompletableFuture() //
+        ) //
                 .get(30, TimeUnit.SECONDS);
     }
 
-    private CompletionStage<KnowledgeResponseMessage> askKnowledgeGet(ActorSystem<Message> a, List<Long> list,
-            Class<? extends GameObject> typeClass, String type, Consumer<KnowledgeObject> consume) {
-        return KnowledgeGetMessage.askKnowledgeGet(a, ASK_TIMEOUT, typeClass, type).whenComplete((res, ex) -> {
-            if (ex != null) {
-                log.error("loadKnowledges", ex);
-            } else {
-                if (res instanceof KnowledgeResponseSuccessMessage rm) {
-                    for (var o : rm.go.objects) {
-                        list.add(o.getKid());
-                        consume.accept(o);
-                    }
-                } else if (res instanceof KnowledgeResponseErrorMessage rm) {
-                    log.error("loadKnowledges", rm.error);
-                }
-            }
-        });
+    private void knowledgeGet(Iterable<KnowledgeObject> res, List<Long> list, Consumer<KnowledgeObject> consume) {
+        for (var o : res) {
+            list.add(o.getKid());
+            consume.accept(o);
+        }
     }
 
     public StatefulSession createSession() {

@@ -17,6 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.evrete
 
+import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeGetMessage.askKnowledgeObjects
 import static java.time.Duration.ofSeconds
 import static java.util.concurrent.CompletableFuture.supplyAsync
 import static org.junit.jupiter.params.provider.Arguments.of
@@ -25,6 +26,7 @@ import java.util.stream.Stream
 
 import org.evrete.api.RuleSession
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 
@@ -72,7 +74,7 @@ class TerrainCreateKnowledgeTest {
         PowerLoomKnowledgeActor.create(injector, ofSeconds(1), supplyAsync({cacheActor})).whenComplete({ it, ex ->
             knowledgeActor = it
         } ).get()
-        this.knowledge = new TerrainCreateKnowledge(actor.actorSystem)
+        this.knowledge = new TerrainCreateKnowledge({ timeout, typeClass, type -> askKnowledgeObjects(actor.actorSystem, timeout, typeClass, type) })
         this.session = knowledge.createSession()
     }
 
@@ -166,5 +168,17 @@ class TerrainCreateKnowledgeTest {
         assert block.materialRid == eM
         assert block.objectRid == eO
         assert block.p.bits == eP
+    }
+
+    @Test
+    void insert_facts_ruleset_declaration() {
+        log.debug "[insert_facts_ruleset_declaration] insert"
+        for (def args : ruleset_declaration()) {
+            def a = args.get()
+            session.insert(new TerrainFact(a[0], a[1], a[2]))
+        }
+        session.fire()
+        log.debug "[insert_facts_ruleset_declaration] done"
+        session.forEachFact(TerrainFact, { f -> println f })
     }
 }
