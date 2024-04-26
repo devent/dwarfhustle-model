@@ -65,11 +65,13 @@ public class MapBlock implements Serializable {
     /**
      * ID of the material.
      */
+    @ToString.Exclude
     public long material = -1;
 
     /**
      * ID of the object.
      */
+    @ToString.Exclude
     public long object = -1;
 
     /**
@@ -108,6 +110,7 @@ public class MapBlock implements Serializable {
     /**
      * Returns the material RID.
      */
+    @ToString.Include
     public long getMaterialRid() {
         return KnowledgeObject.id2Kid(material);
     }
@@ -122,6 +125,7 @@ public class MapBlock implements Serializable {
     /**
      * Returns the object RID.
      */
+    @ToString.Include
     public long getObjectRid() {
         return KnowledgeObject.id2Kid(object);
     }

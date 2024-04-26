@@ -98,10 +98,10 @@ class TerrainCreateKnowledgeTest {
         neighbors = new MapBlock[NeighboringDir.values().length]
         args << of(905, block, neighbors, 905, 819, 0b00000101)
 
-        // block with material stone is filled no neighbors visible block
+        // block with material stone is filled no neighbors visible ramp-single
         block = new MapBlock(1, new GameBlockPos(10, 10, 0))
         neighbors = new MapBlock[NeighboringDir.values().length]
-        args << of(844, block, neighbors, 844, 820, 0b00000011)
+        args << of(828, block, neighbors, 828, 820, 0b00000011)
 
         // block with material stone is filled all neighbors hidden block
         block = new MapBlock(1, new GameBlockPos(10, 10, 0))
@@ -148,6 +148,14 @@ class TerrainCreateKnowledgeTest {
         neighbors[NeighboringDir.N.ordinal()] = createBlock(1, block.pos.add(NeighboringDir.N.pos), 905, 0b100)
         neighbors[NeighboringDir.NE.ordinal()] = createBlock(1, block.pos.add(NeighboringDir.N.pos), 905, 0b100)
         args << of(844, block, neighbors, 844, 822, 0b00000011)
+
+        // block with material stone is filled all neighbors empty is visible ramp-single
+        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
+        neighbors = new MapBlock[NeighboringDir.values().length]
+        NeighboringDir.DIRS_SAME_LEVEL.each {
+            neighbors[it.ordinal()] = createBlock(1, block.pos.add(it.pos), 844, 0b00000101)
+        }
+        args << of(844, block, neighbors, 844, 820, 0b00000011)
 
         Stream.of(args as Object[])
     }

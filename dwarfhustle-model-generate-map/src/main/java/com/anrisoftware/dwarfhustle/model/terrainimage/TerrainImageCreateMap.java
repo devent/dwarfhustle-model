@@ -24,6 +24,7 @@ import java.util.function.Function;
 
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
+import org.evrete.api.StatefulSession;
 import org.lable.oss.uniqueid.GeneratorException;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
@@ -33,6 +34,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunksStore;
 import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
+import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainFact;
 import com.google.inject.assistedinject.Assisted;
 
 import jakarta.inject.Inject;
@@ -74,10 +76,14 @@ public class TerrainImageCreateMap {
 
     private int chunkSize;
 
-    public void startImport(URL url, TerrainLoadImage image, GameMap gm) throws IOException, GeneratorException {
+    private StatefulSession knowledge;
+
+    public void startImport(URL url, TerrainLoadImage image, GameMap gm, StatefulSession knowledge)
+            throws IOException, GeneratorException {
         this.cidCounter = new AtomicInteger(0);
         this.terrain = image.load(url);
         this.chunkSize = image.chunkSize;
+        this.knowledge = knowledge;
         this.mcRoot = new MapChunk(nextCid(), 0, chunkSize, new GameChunkPos(0, 0, 0, gm.width, gm.height, gm.depth));
         putObjectToBackend(mcRoot);
         this.gm = gm;
@@ -86,9 +92,35 @@ public class TerrainImageCreateMap {
         chunksCount++;
         createMap(mcRoot, 0, 0, 0, gm.width, gm.height, gm.depth);
         createNeighbors(mcRoot);
+        updateBlocks();
         log.debug("startImport chunks {} blocks {}", chunksCount, blocksCount);
         gm.chunksCount = chunksCount;
         gm.blocksCount = blocksCount;
+    }
+
+    private void updateBlocks() {
+        Function<Integer, MapChunk> retriever = store::getChunk;
+        store.forEachValue((c) -> {
+            if (c.isBlocksNotEmpty()) {
+                updateBlocks(c, retriever);
+            }
+        });
+    }
+
+    private void updateBlocks(MapChunk chunk, Function<Integer, MapChunk> retriever) {
+        chunk.forEachBlocks((b) -> {
+            var n = new MapBlock[NeighboringDir.values().length];
+            for (var dir : NeighboringDir.values()) {
+                n[dir.ordinal()] = b.getNeighbor(dir, chunk, retriever);
+            }
+            var fact = new TerrainFact(terrain[b.pos.z][b.pos.y][b.pos.x], b, n);
+            knowledge.insert(fact);
+        });
+        knowledge.fire();
+        knowledge.forEachFact(TerrainFact.class, (fact) -> {
+            chunk.setBlock(fact.block);
+        });
+        knowledge.clear();
     }
 
     private int nextCid() {
@@ -104,7 +136,7 @@ public class TerrainImageCreateMap {
         for (int xx = sx; xx < ex; xx += cx) {
             for (int yy = sy; yy < ey; yy += cy) {
                 for (int zz = sz; zz < ez; zz += cz) {
-                    createChunk(terrain, chunk, chunks, xx, yy, zz, xx + cx, yy + cy, zz + cz);
+                    createChunk(chunk, chunks, xx, yy, zz, xx + cx, yy + cy, zz + cz);
                 }
             }
         }
@@ -113,8 +145,8 @@ public class TerrainImageCreateMap {
     }
 
     @SneakyThrows
-    private void createChunk(long[][][] terrain, MapChunk parent, MutableIntObjectMap<GameChunkPos> chunks, int x,
-            int y, int z, int ex, int ey, int ez) throws GeneratorException {
+    private void createChunk(MapChunk parent, MutableIntObjectMap<GameChunkPos> chunks, int x, int y, int z, int ex,
+            int ey, int ez) throws GeneratorException {
         var chunk = new MapChunk(nextCid(), parent.cid, chunkSize, new GameChunkPos(x, y, z, ex, ey, ez));
         chunksCount++;
         if (chunk.isLeaf()) {
@@ -125,18 +157,26 @@ public class TerrainImageCreateMap {
                     for (int zz = z; zz < ez; zz++) {
                         blocksCount++;
                         var mb = new MapBlock(chunk.cid, new GameBlockPos(xx, yy, zz));
-                        mb.setMaterialRid(terrain[zz][yy][xx]);
-                        mb.setObjectRid(809);
-                        if (mb.getMaterialRid() == 0) {
-                            mb.setMaterialRid(898);
-                        }
-                        if (mb.getMaterialRid() == 898) {
-                            mb.setEmpty(true);
-                        }
-                        chunk.setBlock(mb);
+                        var n = new MapBlock[NeighboringDir.values().length];
+                        var fact = new TerrainFact(terrain[mb.pos.z][mb.pos.y][mb.pos.x], mb, n);
+                        knowledge.insert(fact);
+                        //
+                        // mb.setMaterialRid(terrain[zz][yy][xx]);
+                        // mb.setObjectRid(809);
+                        // if (mb.getMaterialRid() == 0) {
+                        // mb.setMaterialRid(898);
+                        // }
+                        // if (mb.getMaterialRid() == 898) {
+                        // mb.setEmpty(true);
+                        // }
                     }
                 }
             }
+            knowledge.fire();
+            knowledge.forEachFact(TerrainFact.class, (fact) -> {
+                chunk.setBlock(fact.block);
+            });
+            knowledge.clear();
         } else {
             putObjectToBackend(chunk);
             createMap(chunk, x, y, z, ex, ey, ez);
