@@ -18,6 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl
 
 import static java.time.Duration.ofSeconds
+import static java.util.Locale.ENGLISH
 import static java.util.concurrent.CompletableFuture.supplyAsync
 
 import org.junit.jupiter.api.AfterAll
@@ -131,9 +132,103 @@ class ListKnowledges {
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Liquid.class, Liquid.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockType.class, BlockType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ObjectType.class, ObjectType.TYPE))
-        while (ko.size() != 65) {
+        while (ko.size() != 68) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
+        }
+    }
+
+    @Test
+    @Timeout(20l)
+    void "print model-map"() {
+        def ko = []
+        def knowledgeResponseAdapter
+        def listKnowledge = actor.spawn(Behaviors.setup({ context ->
+            knowledgeResponseAdapter = context.messageAdapter(KnowledgeResponseMessage.class, { new WrappedKnowledgeResponse(it) });
+            return Behaviors.receive(Message.class)//
+                    .onMessage(WrappedKnowledgeResponse.class, {
+                        switch (it.response) {
+                            case KnowledgeResponseSuccessMessage:
+                                println "rid = [:]"
+                                println "\n// ${it.response.go.type}"
+                                it.response.go.objects.each {
+                                    println "rid[\"${it.name}\"] = ${it.kid}"
+                                    ko << it
+                                }
+                                println "\nm = new ModelMap()\n"
+                                it.response.go.objects.each { o ->
+                                    println "m[rid[\"${o.name}\"]] = [model: \"Models/${o.name.toLowerCase(ENGLISH)}/${o.name.toLowerCase(ENGLISH)}.j3o\"]"
+                                }
+                                println "\nm"
+                                break
+                            case KnowledgeResponseErrorMessage:
+                                log.error("KnowledgeResponseErrorMessage", it.response.error)
+                                break
+                        }
+                        Behaviors.same()
+                    })//
+                    .build()
+        }), "listKnowledge")
+        while (knowledgeResponseAdapter == null) {
+            Thread.sleep(10)
+        }
+        while (listKnowledge == null) {
+            Thread.sleep(10)
+        }
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ObjectType.class, ObjectType.TYPE))
+        while (ko.size() != 7) {
+            log.info("Knowledge objects loaded {}", ko.size())
+            Thread.sleep(500)
+        }
+    }
+
+    @Test
+    @Timeout(20l)
+    void "print texture-map"() {
+        def ko = [:]
+        def knowledgeResponseAdapter
+        println "rid = [:]"
+        def listKnowledge = actor.spawn(Behaviors.setup({ context ->
+            knowledgeResponseAdapter = context.messageAdapter(KnowledgeResponseMessage.class, { new WrappedKnowledgeResponse(it) });
+            return Behaviors.receive(Message.class)//
+                    .onMessage(WrappedKnowledgeResponse.class, {
+                        switch (it.response) {
+                            case KnowledgeResponseSuccessMessage:
+                                ko["${it.response.go.type}"] = it.response.go.objects
+                                break
+                            case KnowledgeResponseErrorMessage:
+                                log.error("KnowledgeResponseErrorMessage", it.response.error)
+                                break
+                        }
+                        Behaviors.same()
+                    })//
+                    .build()
+        }), "listKnowledge")
+        while (knowledgeResponseAdapter == null) {
+            Thread.sleep(10)
+        }
+        while (listKnowledge == null) {
+            Thread.sleep(10)
+        }
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Clay.class, Clay.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Gas.class, Gas.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, IgneousExtrusive.class, IgneousExtrusive.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, IgneousIntrusive.class, IgneousIntrusive.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Metamorphic.class, Metamorphic.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Sand.class, Sand.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Seabed.class, Seabed.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Sedimentary.class, Sedimentary.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Liquid.class, Liquid.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Topsoil.class, Topsoil.TYPE))
+        while (ko.size() != 10) {
+            log.info("Knowledge objects loaded {}", ko.size())
+            Thread.sleep(500)
+        }
+        ko.each { type, objects ->
+            println "\n// ${type}"
+            objects.each {
+                println "rid[\"${it.name}\"] = ${it.kid}"
+            }
         }
     }
 
@@ -183,7 +278,7 @@ class ListKnowledges {
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, RoofType.class, RoofType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockType.class, BlockType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ObjectType.class, ObjectType.TYPE))
-        while (ko.size() != 74) {
+        while (ko.size() != 77) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
         }
