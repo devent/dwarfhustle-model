@@ -34,6 +34,8 @@ import lombok.ToString;
 @Setter
 public class MapBlock implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     private static final int VISIBLE_POS = 0;
 
     private static final int FILLED_POS = 1;
@@ -48,7 +50,21 @@ public class MapBlock implements Serializable {
 
     private static final int ROOF_POS = 6;
 
-    private static final long serialVersionUID = 1L;
+    public static final int HIDDEN = 0b00000000;
+
+    public static final int VISIBLE = 0b00000001;
+
+    public static final int FILLED = 0b00000010;
+
+    public static final int EMPTY = 0b00000100;
+
+    public static final int LIQUID = 0b00001000;
+
+    public static final int RAMP = 0b00010000;
+
+    public static final int FLOOR = 0b00100000;
+
+    public static final int ROOF = 0b01000000;
 
     public static final String OBJECT_TYPE = MapBlock.class.getSimpleName();
 
@@ -335,11 +351,11 @@ public class MapBlock implements Serializable {
     }
 
     /**
-     * Returns true if the up U neighbors of this block is not empty.
+     * Returns true if the U neighbor of this block is filled.
      */
-    public boolean isNeighborUpNotEmpty(MapBlock[] neighbors) {
+    public boolean isNeighborUpFilled(MapBlock[] neighbors) {
         if (neighbors[NeighboringDir.U.ordinal()] != null) {
-            return !neighbors[NeighboringDir.U.ordinal()].isEmpty();
+            return neighbors[NeighboringDir.U.ordinal()].isFilled();
         }
         return false;
     }
