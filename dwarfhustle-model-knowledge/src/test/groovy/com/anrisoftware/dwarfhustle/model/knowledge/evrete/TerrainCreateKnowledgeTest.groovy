@@ -18,6 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.evrete
 
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlock.*
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.*
 import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeGetMessage.askKnowledgeObjects
 import static java.time.Duration.ofSeconds
 import static java.util.concurrent.CompletableFuture.supplyAsync
@@ -65,19 +66,34 @@ class TerrainCreateKnowledgeTest {
 
     static RuleSession session
 
-    static long OXYGEN_ID = 908
+    static long OXYGEN_ID = 923
 
-    static long STONE_ID = 837
+    static long STONE_ID = 852
 
-    static long LIQUID_ID = 915
+    static long LIQUID_ID = 930
 
-    static TILE_RAMP_TRI = 825
-    static TILE_RAMP_SINGLE =  824
-    static TILE_RAMP_PERP = 823
-    static TILE_RAMP_EDGE_OUT = 822
-    static TILE_RAMP_EDGE_IN =  821
-    static TILE_RAMP_CORNER  =  820
-    static TILE_BLOCK = 819
+    static long TILE_RAMP_TRI_S = 840
+    static long TILE_RAMP_TRI_W = 839
+    static long TILE_RAMP_TRI_E = 838
+    static long TILE_RAMP_TRI_N = 837
+    static long TILE_RAMP_SINGLE    = 836
+    static long TILE_RAMP_PERP_W    = 835
+    static long TILE_RAMP_PERP_S    = 834
+    static long TILE_RAMP_PERP_E    = 833
+    static long TILE_RAMP_PERP_N    = 832
+    static long TILE_RAMP_EDGE_OUT_SW = 831
+    static long TILE_RAMP_EDGE_OUT_SE = 830
+    static long TILE_RAMP_EDGE_OUT_NW = 829
+    static long TILE_RAMP_EDGE_OUT_NE = 828
+    static long TILE_RAMP_EDGE_IN_SW = 827
+    static long TILE_RAMP_EDGE_IN_SE = 826
+    static long TILE_RAMP_EDGE_IN_NW = 825
+    static long TILE_RAMP_EDGE_IN_NE = 824
+    static long TILE_RAMP_CORNER_SW = 823
+    static long TILE_RAMP_CORNER_SE = 822
+    static long TILE_RAMP_CORNER_NW = 821
+    static long TILE_RAMP_CORNER_NE = 820
+    static long TILE_BLOCK  = 819
 
     @BeforeAll
     static void setUp() {
@@ -100,94 +116,168 @@ class TerrainCreateKnowledgeTest {
 
         // block with material 0 is gas oxygen empty block
         block = new MapBlock(1, new GameBlockPos(10, 10, 0))
-        neighbors = new MapBlock[NeighboringDir.values().length]
+        neighbors = createNeighbors(block)
         args << of(0, block, neighbors, OXYGEN_ID, TILE_BLOCK, VISIBLE | EMPTY)
 
         // block with material oxygen is gas oxygen empty block
         block = new MapBlock(1, new GameBlockPos(10, 10, 0))
-        neighbors = new MapBlock[NeighboringDir.values().length]
+        neighbors = createNeighbors(block)
         args << of(OXYGEN_ID, block, neighbors, OXYGEN_ID, TILE_BLOCK, VISIBLE | EMPTY)
 
         // block with material water no neighbors is visible block liquid
         block = new MapBlock(1, new GameBlockPos(10, 10, 0))
-        neighbors = new MapBlock[NeighboringDir.values().length]
+        neighbors = createNeighbors(block)
         args << of(LIQUID_ID, block, neighbors, LIQUID_ID, TILE_BLOCK, VISIBLE | LIQUID)
 
         // block with material stone no neighbors is filled visible ramp-single
         block = new MapBlock(1, new GameBlockPos(10, 10, 0))
-        neighbors = new MapBlock[NeighboringDir.values().length]
+        neighbors = createNeighbors(block)
         args << of(STONE_ID, block, neighbors, STONE_ID, TILE_RAMP_SINGLE, VISIBLE | FILLED | RAMP)
 
-        // block with material stone with all neighbors is filled visible block
+        // 5. block with material stone with all neighbors is filled visible block
         block = new MapBlock(1, new GameBlockPos(10, 10, 0))
-        neighbors = new MapBlock[NeighboringDir.values().length]
-        NeighboringDir.DIRS_SAME_LEVEL.each {
-            neighbors[it.ordinal()] = createBlock(1, block.pos.add(it.pos), STONE_ID, VISIBLE | FILLED)
-        }
+        neighbors = createNeighbors(block, DIRS_SAME_LEVEL)
         args << of(STONE_ID, block, neighbors, STONE_ID, TILE_BLOCK, VISIBLE | FILLED)
 
         // block with material stone with filled U neighbor is hidden block
         block = new MapBlock(1, new GameBlockPos(10, 10, 0))
-        neighbors = new MapBlock[NeighboringDir.values().length]
-        NeighboringDir.DIRS_SAME_LEVEL.each {
-            neighbors[it.ordinal()] = createBlock(1, block.pos.add(it.pos), STONE_ID, VISIBLE | FILLED)
-        }
-        neighbors[NeighboringDir.U.ordinal()] = createBlock(1, block.pos.add(NeighboringDir.U.pos), STONE_ID, FILLED)
+        neighbors = createNeighbors(block, DIRS_SAME_LEVEL)
+        neighbors[U.ordinal()] = createBlock(1, block.pos.add(U.pos), STONE_ID, FILLED)
         args << of(STONE_ID, block, neighbors, STONE_ID, TILE_BLOCK, HIDDEN | FILLED)
 
         // block with material stone with empty U neighbor is visible block
         block = new MapBlock(1, new GameBlockPos(10, 10, 0))
-        neighbors = new MapBlock[NeighboringDir.values().length]
-        NeighboringDir.DIRS_SAME_LEVEL.each {
-            neighbors[it.ordinal()] = createBlock(1, block.pos.add(it.pos), STONE_ID, VISIBLE | FILLED)
-        }
-        neighbors[NeighboringDir.U.ordinal()] = createBlock(1, block.pos.add(NeighboringDir.U.pos), OXYGEN_ID, EMPTY)
+        neighbors = createNeighbors(block, DIRS_SAME_LEVEL)
+        neighbors[U.ordinal()] = createBlock(1, block.pos.add(U.pos), OXYGEN_ID, EMPTY)
         args << of(STONE_ID, block, neighbors, STONE_ID, TILE_BLOCK, VISIBLE | FILLED)
 
         // block with material stone with liquid U neighbor is visible block
         block = new MapBlock(1, new GameBlockPos(10, 10, 0))
-        neighbors = new MapBlock[NeighboringDir.values().length]
-        NeighboringDir.DIRS_SAME_LEVEL.each {
-            neighbors[it.ordinal()] = createBlock(1, block.pos.add(it.pos), STONE_ID, VISIBLE | FILLED)
-        }
-        neighbors[NeighboringDir.U.ordinal()] = createBlock(1, block.pos.add(NeighboringDir.U.pos), LIQUID_ID, LIQUID)
+        neighbors = createNeighbors(block, DIRS_SAME_LEVEL)
+        neighbors[U.ordinal()] = createBlock(1, block.pos.add(U.pos), LIQUID_ID, LIQUID)
         args << of(STONE_ID, block, neighbors, STONE_ID, TILE_BLOCK, VISIBLE | FILLED)
 
-        // block with material stone is filled one perpendicular neighbor empty is visible ramp-nesw
-        //        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
-        //        neighbors = new MapBlock[NeighboringDir.values().length]
-        //        NeighboringDir.DIRS_SAME_LEVEL.each {
-        //            neighbors[it.ordinal()] = createBlock(1, block.pos.add(it.pos), 844, 0b10)
-        //        }
-        //        neighbors[NeighboringDir.N.ordinal()] = createBlock(1, block.pos.add(NeighboringDir.N.pos), 905, 0b100)
-        //        args << of(844, block, neighbors, 844, 821, 0b00000011)
-        //
-        //        // block with material stone is filled one edge neighbor empty is visible ramp-edge
-        //        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
-        //        neighbors = new MapBlock[NeighboringDir.values().length]
-        //        NeighboringDir.DIRS_SAME_LEVEL.each {
-        //            neighbors[it.ordinal()] = createBlock(1, block.pos.add(it.pos), 844, 0b10)
-        //        }
-        //        neighbors[NeighboringDir.NE.ordinal()] = createBlock(1, block.pos.add(NeighboringDir.N.pos), 905, 0b100)
-        //        args << of(844, block, neighbors, 844, 822, 0b00000011)
-        //
-        //        // block with material stone is filled one edge and one perpendicular neighbor empty is visible ramp-edge
-        //        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
-        //        neighbors = new MapBlock[NeighboringDir.values().length]
-        //        NeighboringDir.DIRS_SAME_LEVEL.each {
-        //            neighbors[it.ordinal()] = createBlock(1, block.pos.add(it.pos), 844, 0b10)
-        //        }
-        //        neighbors[NeighboringDir.N.ordinal()] = createBlock(1, block.pos.add(NeighboringDir.N.pos), 905, 0b100)
-        //        neighbors[NeighboringDir.NE.ordinal()] = createBlock(1, block.pos.add(NeighboringDir.N.pos), 905, 0b100)
-        //        args << of(844, block, neighbors, 844, 822, 0b00000011)
-        //
-        //        // block with material stone is filled all neighbors empty is visible ramp-single
-        //        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
-        //        neighbors = new MapBlock[NeighboringDir.values().length]
-        //        NeighboringDir.DIRS_SAME_LEVEL.each {
-        //            neighbors[it.ordinal()] = createBlock(1, block.pos.add(it.pos), 844, 0b00000101)
-        //        }
-        //        args << of(844, block, neighbors, 844, 820, 0b00000011)
+        // block with material stone with empty E,S,W neighbor and filled N neighbor is visible ramp-tri-s
+        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
+        neighbors = createNeighbors(block)
+        createBlockNeighbor(block, neighbors, 1, E, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, S, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, W, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, N, STONE_ID, VISIBLE | FILLED)
+        args << of(STONE_ID, block, neighbors, STONE_ID, TILE_RAMP_TRI_S, VISIBLE | FILLED | RAMP)
+
+        // 10. block with material stone with empty N,S,W neighbor and filled E neighbor is visible ramp-tri-w
+        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
+        neighbors = createNeighbors(block)
+        createBlockNeighbor(block, neighbors, 1, N, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, S, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, W, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, E, STONE_ID, VISIBLE | FILLED)
+        args << of(STONE_ID, block, neighbors, STONE_ID, TILE_RAMP_TRI_W, VISIBLE | FILLED | RAMP)
+
+        // block with material stone with empty N,E,W neighbor and filled S neighbor is visible ramp-tri-n
+        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
+        neighbors = createNeighbors(block)
+        createBlockNeighbor(block, neighbors, 1, N, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, E, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, W, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, S, STONE_ID, VISIBLE | FILLED)
+        args << of(STONE_ID, block, neighbors, STONE_ID, TILE_RAMP_TRI_N, VISIBLE | FILLED | RAMP)
+
+        // block with material stone with empty N,E,S neighbor and filled W neighbor is visible ramp-tri-e
+        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
+        neighbors = createNeighbors(block)
+        createBlockNeighbor(block, neighbors, 1, N, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, E, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, S, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, W, STONE_ID, VISIBLE | FILLED)
+        args << of(STONE_ID, block, neighbors, STONE_ID, TILE_RAMP_TRI_E, VISIBLE | FILLED | RAMP)
+
+        // block with material stone with empty N,SE,W neighbor and filled E,S neighbor is visible ramp-corner-nw
+        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
+        neighbors = createNeighbors(block)
+        createBlockNeighbor(block, neighbors, 1, N, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, SE, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, W, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, E, STONE_ID, VISIBLE | FILLED)
+        createBlockNeighbor(block, neighbors, 1, S, STONE_ID, VISIBLE | FILLED)
+        args << of(STONE_ID, block, neighbors, STONE_ID, TILE_RAMP_CORNER_NW, VISIBLE | FILLED | RAMP)
+
+        // block with material stone with empty S neighbor and filled N neighbor and ramp E,W is visible ramp-perp-s
+        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
+        neighbors = createNeighbors(block)
+        createBlockNeighbor(block, neighbors, 1, S, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, N, STONE_ID, VISIBLE | FILLED)
+        createBlockNeighbor(block, neighbors, 1, E, STONE_ID, VISIBLE | FILLED | RAMP)
+        createBlockNeighbor(block, neighbors, 1, W, STONE_ID, VISIBLE | FILLED | RAMP)
+        args << of(STONE_ID, block, neighbors, STONE_ID, TILE_RAMP_PERP_S, VISIBLE | FILLED | RAMP)
+
+        // 15. block with material stone with empty E neighbor and filled W neighbor and ramp N,S is visible ramp-perp-e
+        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
+        neighbors = createNeighbors(block)
+        createBlockNeighbor(block, neighbors, 1, E, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, W, STONE_ID, VISIBLE | FILLED)
+        createBlockNeighbor(block, neighbors, 1, N, STONE_ID, VISIBLE | FILLED | RAMP)
+        createBlockNeighbor(block, neighbors, 1, S, STONE_ID, VISIBLE | FILLED | RAMP)
+        args << of(STONE_ID, block, neighbors, STONE_ID, TILE_RAMP_PERP_E, VISIBLE | FILLED | RAMP)
+
+        // block with material stone with empty N neighbor and filled S neighbor and ramp E,W is visible ramp-perp-s
+        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
+        neighbors = createNeighbors(block)
+        createBlockNeighbor(block, neighbors, 1, N, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, S, STONE_ID, VISIBLE | FILLED)
+        createBlockNeighbor(block, neighbors, 1, E, STONE_ID, VISIBLE | FILLED | RAMP)
+        createBlockNeighbor(block, neighbors, 1, W, STONE_ID, VISIBLE | FILLED | RAMP)
+        args << of(STONE_ID, block, neighbors, STONE_ID, TILE_RAMP_PERP_N, VISIBLE | FILLED | RAMP)
+
+        // block with material stone with empty W neighbor and filled E neighbor and ramp N,S is visible ramp-perp-w
+        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
+        neighbors = createNeighbors(block)
+        createBlockNeighbor(block, neighbors, 1, W, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, E, STONE_ID, VISIBLE | FILLED)
+        createBlockNeighbor(block, neighbors, 1, N, STONE_ID, VISIBLE | FILLED | RAMP)
+        createBlockNeighbor(block, neighbors, 1, S, STONE_ID, VISIBLE | FILLED | RAMP)
+        args << of(STONE_ID, block, neighbors, STONE_ID, TILE_RAMP_PERP_W, VISIBLE | FILLED | RAMP)
+
+        // block with material stone with empty E,S neighbor and filled NW neighbor and ramp N,W is visible ramp-edge-out-se
+        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
+        neighbors = createNeighbors(block)
+        createBlockNeighbor(block, neighbors, 1, E, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, S, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, NW, STONE_ID, VISIBLE | FILLED)
+        createBlockNeighbor(block, neighbors, 1, N, STONE_ID, VISIBLE | FILLED | RAMP)
+        createBlockNeighbor(block, neighbors, 1, W, STONE_ID, VISIBLE | FILLED | RAMP)
+        args << of(STONE_ID, block, neighbors, STONE_ID, TILE_RAMP_EDGE_OUT_SE, VISIBLE | FILLED | RAMP)
+
+        // block with material stone with empty N,W neighbor and filled SE neighbor and ramp E,S is visible ramp-edge-out-nw
+        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
+        neighbors = createNeighbors(block)
+        createBlockNeighbor(block, neighbors, 1, N, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, W, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, SE, STONE_ID, VISIBLE | FILLED)
+        createBlockNeighbor(block, neighbors, 1, E, STONE_ID, VISIBLE | FILLED | RAMP)
+        createBlockNeighbor(block, neighbors, 1, S, STONE_ID, VISIBLE | FILLED | RAMP)
+        args << of(STONE_ID, block, neighbors, STONE_ID, TILE_RAMP_EDGE_OUT_NW, VISIBLE | FILLED | RAMP)
+
+        // block with material stone with empty S,W neighbor and filled NE neighbor and ramp N,E is visible ramp-edge-out-sw
+        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
+        neighbors = createNeighbors(block)
+        createBlockNeighbor(block, neighbors, 1, S, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, W, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, NE, STONE_ID, VISIBLE | FILLED)
+        createBlockNeighbor(block, neighbors, 1, N, STONE_ID, VISIBLE | FILLED | RAMP)
+        createBlockNeighbor(block, neighbors, 1, E, STONE_ID, VISIBLE | FILLED | RAMP)
+        args << of(STONE_ID, block, neighbors, STONE_ID, TILE_RAMP_EDGE_OUT_SW, VISIBLE | FILLED | RAMP)
+
+        // block with material stone with empty N,E neighbor and filled SW neighbor and ramp S,W is visible ramp-edge-out-ne
+        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
+        neighbors = createNeighbors(block)
+        createBlockNeighbor(block, neighbors, 1, N, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, E, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, SW, STONE_ID, VISIBLE | FILLED)
+        createBlockNeighbor(block, neighbors, 1, S, STONE_ID, VISIBLE | FILLED | RAMP)
+        createBlockNeighbor(block, neighbors, 1, W, STONE_ID, VISIBLE | FILLED | RAMP)
+        args << of(STONE_ID, block, neighbors, STONE_ID, TILE_RAMP_EDGE_OUT_NE, VISIBLE | FILLED | RAMP)
 
         Stream.of(args as Object[])
     }
@@ -197,6 +287,22 @@ class TerrainCreateKnowledgeTest {
         block.setMaterialRid(mid)
         block.setProperties(p)
         return block
+    }
+
+    static createNeighbors(MapBlock block, NeighboringDir[] dirs = []) {
+        def neighbors = new MapBlock[NeighboringDir.values().length]
+        NeighboringDir.values().each {
+            neighbors[it.ordinal()] = createBlock(1, block.pos.add(it.pos), OXYGEN_ID, VISIBLE | EMPTY)
+        }
+        dirs.each {
+            neighbors[it.ordinal()] = createBlock(1, block.pos.add(it.pos), STONE_ID, VISIBLE | FILLED)
+        }
+        return neighbors
+    }
+
+    static def createBlockNeighbor(MapBlock block, MapBlock[] neighbors, int cid, NeighboringDir dir, long mid, int p) {
+        neighbors[dir.ordinal()] = createBlock(cid, block.pos.add(dir.pos), mid, p)
+        return neighbors
     }
 
     @ParameterizedTest

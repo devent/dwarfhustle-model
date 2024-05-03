@@ -21,6 +21,35 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * Neighboring direction.
+ * 
+ * <pre>
+ * U 0
+ * D 1
+ * N 2
+ * NE 3
+ * E 4
+ * SE 5
+ * S 6
+ * SW 7
+ * W 8
+ * NW 9
+ * UN 10
+ * UNE 11
+ * UE 12
+ * USE 13
+ * US 14
+ * USW 15
+ * UW 16
+ * UNW 17
+ * DN 18
+ * DNE 19
+ * DE 20
+ * DSE 21
+ * DS 22
+ * DSW 23
+ * DW 24
+ * DNW 25
+ * </pre>
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */

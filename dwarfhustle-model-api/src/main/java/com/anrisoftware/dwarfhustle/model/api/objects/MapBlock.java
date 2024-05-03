@@ -280,9 +280,10 @@ public class MapBlock implements Serializable {
     }
 
     /**
-     * Returns true if all neighbors of this block are empty.
+     * Returns true if the neighbors on the same level (NESW) of this block are
+     * empty.
      */
-    public boolean isNeighborsEmpty(MapBlock[] neighbors) {
+    public boolean isNeighborsSameLevelEmpty(MapBlock[] neighbors) {
         for (var dir : NeighboringDir.DIRS_SAME_LEVEL) {
             if (neighbors[dir.ordinal()] != null) {
                 if (!neighbors[dir.ordinal()].isEmpty()) {
@@ -294,9 +295,10 @@ public class MapBlock implements Serializable {
     }
 
     /**
-     * Returns true if all neighbors of this block are filled.
+     * Returns true if the neighbors on the same level (NESW) of this block are
+     * filled.
      */
-    public boolean isNeighborsFilled(MapBlock[] neighbors) {
+    public boolean isNeighborsSameLevelFilled(MapBlock[] neighbors) {
         for (var dir : NeighboringDir.DIRS_SAME_LEVEL) {
             if (neighbors[dir.ordinal()] != null) {
                 if (!neighbors[dir.ordinal()].isFilled()) {
@@ -360,4 +362,69 @@ public class MapBlock implements Serializable {
         return false;
     }
 
+    public boolean isNeighborsEmpty(MapBlock[] neighbors, NeighboringDir... dirs) {
+        for (var dir : dirs) {
+            if (neighbors[dir.ordinal()] != null) {
+                if (!neighbors[dir.ordinal()].isEmpty()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean isNeighborsEmpty(MapBlock[] neighbors, int... dirs) {
+        for (var dir : dirs) {
+            if (neighbors[dir] != null) {
+                if (!neighbors[dir].isEmpty()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean isNeighborsFilled(MapBlock[] neighbors, NeighboringDir... dirs) {
+        for (var dir : dirs) {
+            if (neighbors[dir.ordinal()] != null) {
+                if (!neighbors[dir.ordinal()].isFilled()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean isNeighborsFilled(MapBlock[] neighbors, int... dirs) {
+        for (var dir : dirs) {
+            if (neighbors[dir] != null) {
+                if (!neighbors[dir].isFilled()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean isNeighborsRamp(MapBlock[] neighbors, NeighboringDir... dirs) {
+        for (var dir : dirs) {
+            if (neighbors[dir.ordinal()] != null) {
+                if (!neighbors[dir.ordinal()].isRamp()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean isNeighborsRamp(MapBlock[] neighbors, int... dirs) {
+        for (var dir : dirs) {
+            if (neighbors[dir] != null) {
+                if (!neighbors[dir].isRamp()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 }

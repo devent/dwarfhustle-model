@@ -32,6 +32,7 @@ import org.eclipse.collections.api.factory.primitive.LongLists;
 import org.eclipse.collections.api.list.primitive.MutableLongList;
 import org.eclipse.collections.api.map.primitive.MutableIntLongMap;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
+import org.evrete.Configuration;
 import org.evrete.KnowledgeService;
 import org.evrete.api.Knowledge;
 import org.evrete.api.StatefulSession;
@@ -44,6 +45,7 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Material;
 import com.anrisoftware.dwarfhustle.model.api.materials.Soil;
 import com.anrisoftware.dwarfhustle.model.api.materials.Stone;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -70,15 +72,45 @@ public class TerrainCreateKnowledge {
 
     public static final int OBJECT_RAMP_SINGLE_NAME = "object-ramp-single".hashCode();
 
-    public static final int OBJECT_RAMP_TRI_NAME = "object-ramp-tri".hashCode();
+    public static final int OBJECT_RAMP_TRI_N_NAME = "object-ramp-tri-n".hashCode();
 
-    public static final int OBJECT_RAMP_EDGE_IN_NAME = "object-ramp-edge-in".hashCode();
+    public static final int OBJECT_RAMP_TRI_E_NAME = "object-ramp-tri-e".hashCode();
 
-    public static final int OBJECT_RAMP_EDGE_OUT_NAME = "object-ramp-edge-out".hashCode();
+    public static final int OBJECT_RAMP_TRI_S_NAME = "object-ramp-tri-s".hashCode();
 
-    public static final int OBJECT_RAMP_PERP_NAME = "object-ramp-perp".hashCode();
+    public static final int OBJECT_RAMP_TRI_W_NAME = "object-ramp-tri-w".hashCode();
 
-    public static final int OBJECT_RAMP_CORNER_NAME = "object-ramp-corner".hashCode();
+    public static final int OBJECT_RAMP_EDGE_IN_NE_NAME = "object-ramp-edge-in-ne".hashCode();
+
+    public static final int OBJECT_RAMP_EDGE_IN_NW_NAME = "object-ramp-edge-in-nw".hashCode();
+
+    public static final int OBJECT_RAMP_EDGE_IN_SE_NAME = "object-ramp-edge-in-se".hashCode();
+
+    public static final int OBJECT_RAMP_EDGE_IN_SW_NAME = "object-ramp-edge-in-sw".hashCode();
+
+    public static final int OBJECT_RAMP_EDGE_OUT_NE_NAME = "object-ramp-edge-out-ne".hashCode();
+
+    public static final int OBJECT_RAMP_EDGE_OUT_NW_NAME = "object-ramp-edge-out-nw".hashCode();
+
+    public static final int OBJECT_RAMP_EDGE_OUT_SE_NAME = "object-ramp-edge-out-se".hashCode();
+
+    public static final int OBJECT_RAMP_EDGE_OUT_SW_NAME = "object-ramp-edge-out-sw".hashCode();
+
+    public static final int OBJECT_RAMP_PERP_N_NAME = "object-ramp-perp-n".hashCode();
+
+    public static final int OBJECT_RAMP_PERP_E_NAME = "object-ramp-perp-e".hashCode();
+
+    public static final int OBJECT_RAMP_PERP_S_NAME = "object-ramp-perp-s".hashCode();
+
+    public static final int OBJECT_RAMP_PERP_W_NAME = "object-ramp-perp-w".hashCode();
+
+    public static final int OBJECT_RAMP_CORNER_NE_NAME = "object-ramp-corner-ne".hashCode();
+
+    public static final int OBJECT_RAMP_CORNER_NW_NAME = "object-ramp-corner-nw".hashCode();
+
+    public static final int OBJECT_RAMP_CORNER_SE_NAME = "object-ramp-corner-se".hashCode();
+
+    public static final int OBJECT_RAMP_CORNER_SW_NAME = "object-ramp-corner-sw".hashCode();
 
     private static final Duration ASK_TIMEOUT = Duration.of(10, ChronoUnit.SECONDS);
 
@@ -92,7 +124,12 @@ public class TerrainCreateKnowledge {
         this.materials = IntObjectMaps.mutable.empty();
         this.objects = IntLongMaps.mutable.ofInitialCapacity(100);
         loadKnowledges(askKnowledge);
-        var service = new KnowledgeService();
+        var conf = new Configuration();
+        conf.addImport(NeighboringDir.class);
+        for (var d : NeighboringDir.values()) {
+            conf.addImport(String.format("static %s.%s", NeighboringDir.class.getName(), d.name()));
+        }
+        var service = new KnowledgeService(conf);
         var rulesetUrl = TerrainCreateKnowledge.class.getResource("TerrainCreateRules.java");
         assert rulesetUrl != null;
         try {
@@ -140,23 +177,68 @@ public class TerrainCreateKnowledge {
                     knowledgeGet(res, LongLists.mutable.empty(), (o) -> {
                         var ot = (ObjectType) o;
                         switch (ot.getName()) {
-                        case "TILE-RAMP-TRI":
-                            objects.put(OBJECT_RAMP_TRI_NAME, o.getKid());
+                        case "TILE-RAMP-TRI-N":
+                            objects.put(OBJECT_RAMP_TRI_N_NAME, o.getKid());
+                            break;
+                        case "TILE-RAMP-TRI-S":
+                            objects.put(OBJECT_RAMP_TRI_S_NAME, o.getKid());
+                            break;
+                        case "TILE-RAMP-TRI-E":
+                            objects.put(OBJECT_RAMP_TRI_E_NAME, o.getKid());
+                            break;
+                        case "TILE-RAMP-TRI-W":
+                            objects.put(OBJECT_RAMP_TRI_W_NAME, o.getKid());
                             break;
                         case "TILE-RAMP-SINGLE":
                             objects.put(OBJECT_RAMP_SINGLE_NAME, o.getKid());
                             break;
-                        case "TILE-RAMP-PERP":
-                            objects.put(OBJECT_RAMP_PERP_NAME, o.getKid());
+                        case "TILE-RAMP-PERP-N":
+                            objects.put(OBJECT_RAMP_PERP_N_NAME, o.getKid());
                             break;
-                        case "TILE-RAMP-EDGE-OUT":
-                            objects.put(OBJECT_RAMP_EDGE_OUT_NAME, o.getKid());
+                        case "TILE-RAMP-PERP-E":
+                            objects.put(OBJECT_RAMP_PERP_E_NAME, o.getKid());
                             break;
-                        case "TILE-RAMP-EDGE-IN":
-                            objects.put(OBJECT_RAMP_EDGE_IN_NAME, o.getKid());
+                        case "TILE-RAMP-PERP-S":
+                            objects.put(OBJECT_RAMP_PERP_S_NAME, o.getKid());
                             break;
-                        case "TILE-RAMP-CORNER":
-                            objects.put(OBJECT_RAMP_CORNER_NAME, o.getKid());
+                        case "TILE-RAMP-PERP-W":
+                            objects.put(OBJECT_RAMP_PERP_W_NAME, o.getKid());
+                            break;
+                        case "TILE-RAMP-EDGE-OUT-NE":
+                            objects.put(OBJECT_RAMP_EDGE_OUT_NE_NAME, o.getKid());
+                            break;
+                        case "TILE-RAMP-EDGE-OUT-NW":
+                            objects.put(OBJECT_RAMP_EDGE_OUT_NW_NAME, o.getKid());
+                            break;
+                        case "TILE-RAMP-EDGE-OUT-SE":
+                            objects.put(OBJECT_RAMP_EDGE_OUT_SE_NAME, o.getKid());
+                            break;
+                        case "TILE-RAMP-EDGE-OUT-SW":
+                            objects.put(OBJECT_RAMP_EDGE_OUT_SW_NAME, o.getKid());
+                            break;
+                        case "TILE-RAMP-EDGE-IN-NE":
+                            objects.put(OBJECT_RAMP_EDGE_IN_NE_NAME, o.getKid());
+                            break;
+                        case "TILE-RAMP-EDGE-IN-NW":
+                            objects.put(OBJECT_RAMP_EDGE_IN_NW_NAME, o.getKid());
+                            break;
+                        case "TILE-RAMP-EDGE-IN-SE":
+                            objects.put(OBJECT_RAMP_EDGE_IN_SE_NAME, o.getKid());
+                            break;
+                        case "TILE-RAMP-EDGE-IN-SW":
+                            objects.put(OBJECT_RAMP_EDGE_IN_SW_NAME, o.getKid());
+                            break;
+                        case "TILE-RAMP-CORNER-NE":
+                            objects.put(OBJECT_RAMP_CORNER_NE_NAME, o.getKid());
+                            break;
+                        case "TILE-RAMP-CORNER-NW":
+                            objects.put(OBJECT_RAMP_CORNER_NW_NAME, o.getKid());
+                            break;
+                        case "TILE-RAMP-CORNER-SE":
+                            objects.put(OBJECT_RAMP_CORNER_SE_NAME, o.getKid());
+                            break;
+                        case "TILE-RAMP-CORNER-SW":
+                            objects.put(OBJECT_RAMP_CORNER_SW_NAME, o.getKid());
                             break;
                         case "TILE-BLOCK":
                             objects.put(OBJECT_BLOCK_NAME, o.getKid());
