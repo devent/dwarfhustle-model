@@ -259,7 +259,7 @@ class TerrainCreateKnowledgeTest {
         createBlockNeighbor(block, neighbors, 1, S, STONE_ID, VISIBLE | FILLED | RAMP)
         args << of(STONE_ID, block, neighbors, STONE_ID, TILE_RAMP_EDGE_OUT_NW, VISIBLE | FILLED | RAMP)
 
-        // block with material stone with empty S,W neighbor and filled NE neighbor and ramp N,E is visible ramp-edge-out-sw
+        // 20. block with material stone with empty S,W neighbor and filled NE neighbor and ramp N,E is visible ramp-edge-out-sw
         block = new MapBlock(1, new GameBlockPos(10, 10, 0))
         neighbors = createNeighbors(block)
         createBlockNeighbor(block, neighbors, 1, S, OXYGEN_ID, VISIBLE | EMPTY)
@@ -278,6 +278,50 @@ class TerrainCreateKnowledgeTest {
         createBlockNeighbor(block, neighbors, 1, S, STONE_ID, VISIBLE | FILLED | RAMP)
         createBlockNeighbor(block, neighbors, 1, W, STONE_ID, VISIBLE | FILLED | RAMP)
         args << of(STONE_ID, block, neighbors, STONE_ID, TILE_RAMP_EDGE_OUT_NE, VISIBLE | FILLED | RAMP)
+
+        // block with material stone with empty E neighbor and filled N,W,NW neighbor and ramp S,SW is visible tile-ramp-edge-in-se
+        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
+        neighbors = createNeighbors(block)
+        createBlockNeighbor(block, neighbors, 1, E, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, N, STONE_ID, VISIBLE | FILLED)
+        createBlockNeighbor(block, neighbors, 1, W, STONE_ID, VISIBLE | FILLED)
+        createBlockNeighbor(block, neighbors, 1, NW, STONE_ID, VISIBLE | FILLED)
+        createBlockNeighbor(block, neighbors, 1, S, STONE_ID, VISIBLE | FILLED | RAMP)
+        createBlockNeighbor(block, neighbors, 1, SW, STONE_ID, VISIBLE | FILLED | RAMP)
+        args << of(STONE_ID, block, neighbors, STONE_ID, TILE_RAMP_EDGE_IN_SE, VISIBLE | FILLED | RAMP)
+
+        // block with material stone with empty W neighbor and filled E,SE,S neighbor and ramp N,NE is visible tile-ramp-edge-in-nw
+        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
+        neighbors = createNeighbors(block)
+        createBlockNeighbor(block, neighbors, 1, W, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, E, STONE_ID, VISIBLE | FILLED)
+        createBlockNeighbor(block, neighbors, 1, SE, STONE_ID, VISIBLE | FILLED)
+        createBlockNeighbor(block, neighbors, 1, S, STONE_ID, VISIBLE | FILLED)
+        createBlockNeighbor(block, neighbors, 1, N, STONE_ID, VISIBLE | FILLED | RAMP)
+        createBlockNeighbor(block, neighbors, 1, NE, STONE_ID, VISIBLE | FILLED | RAMP)
+        args << of(STONE_ID, block, neighbors, STONE_ID, TILE_RAMP_EDGE_IN_NW, VISIBLE | FILLED | RAMP)
+
+        // block with material stone with empty S neighbor and filled N,NE,E neighbor and ramp W,NW is visible tile-ramp-edge-in-sw
+        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
+        neighbors = createNeighbors(block)
+        createBlockNeighbor(block, neighbors, 1, S, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, N, STONE_ID, VISIBLE | FILLED)
+        createBlockNeighbor(block, neighbors, 1, NE, STONE_ID, VISIBLE | FILLED)
+        createBlockNeighbor(block, neighbors, 1, E, STONE_ID, VISIBLE | FILLED)
+        createBlockNeighbor(block, neighbors, 1, W, STONE_ID, VISIBLE | FILLED | RAMP)
+        createBlockNeighbor(block, neighbors, 1, NW, STONE_ID, VISIBLE | FILLED | RAMP)
+        args << of(STONE_ID, block, neighbors, STONE_ID, TILE_RAMP_EDGE_IN_SW, VISIBLE | FILLED | RAMP)
+
+        // 25. block with material stone with empty E neighbor and filled S,SW,W neighbor and ramp NW,N is visible tile-ramp-edge-in-ne
+        block = new MapBlock(1, new GameBlockPos(10, 10, 0))
+        neighbors = createNeighbors(block)
+        createBlockNeighbor(block, neighbors, 1, E, OXYGEN_ID, VISIBLE | EMPTY)
+        createBlockNeighbor(block, neighbors, 1, S, STONE_ID, VISIBLE | FILLED)
+        createBlockNeighbor(block, neighbors, 1, SW, STONE_ID, VISIBLE | FILLED)
+        createBlockNeighbor(block, neighbors, 1, W, STONE_ID, VISIBLE | FILLED)
+        createBlockNeighbor(block, neighbors, 1, NW, STONE_ID, VISIBLE | FILLED | RAMP)
+        createBlockNeighbor(block, neighbors, 1, N, STONE_ID, VISIBLE | FILLED | RAMP)
+        args << of(STONE_ID, block, neighbors, STONE_ID, TILE_RAMP_EDGE_IN_NE, VISIBLE | FILLED | RAMP)
 
         Stream.of(args as Object[])
     }

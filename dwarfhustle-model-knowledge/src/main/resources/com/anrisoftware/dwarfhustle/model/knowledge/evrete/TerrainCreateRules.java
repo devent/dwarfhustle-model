@@ -320,6 +320,38 @@ public class TerrainCreateRules {
         $f.block.setRamp(true);
     }
 
+    @Rule(salience = 10)
+    @Where(value = { "$f.block.filled", "$f.block.isNeighborsEmpty($f.neighbors, E)",
+            "$f.block.isNeighborsFilled($f.neighbors, N, W, NW)", "$f.block.isNeighborsRamp($f.neighbors, S, SW)" })
+    public void ramp_edge_in_se(TerrainFact $f, RhsContext ctx) {
+        $f.block.setObjectRid(ramp_edge_in_se);
+        $f.block.setRamp(true);
+    }
+
+    @Rule(salience = 10)
+    @Where(value = { "$f.block.filled", "$f.block.isNeighborsEmpty($f.neighbors, W)",
+            "$f.block.isNeighborsFilled($f.neighbors, E, SE, S)", "$f.block.isNeighborsRamp($f.neighbors, N, NE)" })
+    public void ramp_edge_in_nw(TerrainFact $f, RhsContext ctx) {
+        $f.block.setObjectRid(ramp_edge_in_nw);
+        $f.block.setRamp(true);
+    }
+
+    @Rule(salience = 10)
+    @Where(value = { "$f.block.filled", "$f.block.isNeighborsEmpty($f.neighbors, S)",
+            "$f.block.isNeighborsFilled($f.neighbors, N, NE, E)", "$f.block.isNeighborsRamp($f.neighbors, W, NW)" })
+    public void ramp_edge_in_sw(TerrainFact $f, RhsContext ctx) {
+        $f.block.setObjectRid(ramp_edge_in_sw);
+        $f.block.setRamp(true);
+    }
+
+    @Rule(salience = 10)
+    @Where(value = { "$f.block.filled", "$f.block.isNeighborsEmpty($f.neighbors, E)",
+            "$f.block.isNeighborsFilled($f.neighbors, S, SW, W)", "$f.block.isNeighborsRamp($f.neighbors, N, NW)" })
+    public void ramp_edge_in_ne(TerrainFact $f, RhsContext ctx) {
+        $f.block.setObjectRid(ramp_edge_in_ne);
+        $f.block.setRamp(true);
+    }
+
     public boolean material_gas_test(long mid) {
         return gases.contains(mid);
     }
