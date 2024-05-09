@@ -41,12 +41,12 @@ class MapChunksStoreTest {
     @TempDir
     static Path tmp
 
-    static MapChunksStore createStore(Path tmp, def name, int chunkSize, int chunksCount) {
+    static MapChunksStore createStore(Path tmp, def name, int width, int height, int chunkSize, int chunksCount) {
         def fileName = "${name}.map.txt"
         def stream = MapChunksStoreTest.class.getResourceAsStream(fileName)
         def file = tmp.resolve("${name}.map")
         IOUtils.copy(MapChunksStoreTest.class.getResource(fileName), file.toFile())
-        return new MapChunksStore(file, chunkSize, chunksCount)
+        return new MapChunksStore(file, width, height, chunkSize, chunksCount)
     }
 
     static Stream load_map_chunks_from_file() {
@@ -63,7 +63,7 @@ class MapChunksStoreTest {
     @MethodSource
     void load_map_chunks_from_file(int w, int h, int d, int chunkSize, int chunksCount) {
         def out = new StringBuilder()
-        def store = createStore(tmp, "terrain_${w}_${h}_${d}_${chunkSize}_${chunksCount}", chunkSize, chunksCount)
+        def store = createStore(tmp, "terrain_${w}_${h}_${d}_${chunkSize}_${chunksCount}", w, h, chunkSize, chunksCount)
         def chunksList = []
         def blocksList = []
         store.forEachValue { MapChunk chunk ->

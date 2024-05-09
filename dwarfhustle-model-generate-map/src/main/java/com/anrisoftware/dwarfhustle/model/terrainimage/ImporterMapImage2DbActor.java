@@ -21,6 +21,7 @@ import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.create
 import static com.anrisoftware.dwarfhustle.model.api.objects.GameMap.getGameMap;
 import static com.anrisoftware.dwarfhustle.model.api.objects.WorldMap.getWorldMap;
 import static com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StopEmbeddedServerMessage.askStopEmbeddedServer;
+import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeGetMessage.askKnowledgeObjects;
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -56,6 +57,7 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StartEmbeddedServerM
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StartEmbeddedServerMessage.StartEmbeddedServerSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StopEmbeddedServerMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StopEmbeddedServerMessage.StopEmbeddedServerSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainCreateKnowledge;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.ImportImageErrorMessage;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.ImportImageSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImporterStartEmbeddedServerMessage.ImporterStartEmbeddedServerSuccessMessage;
@@ -213,7 +215,10 @@ public class ImporterMapImage2DbActor {
             var wm = getWorldMap(og, gm.world);
             var store = new MapChunksStore(Path.of(root, format("%d.map", m.mapid)), gm.width, gm.height, gm.chunkSize,
                     gm.chunksCount);
-            terrainImageCreateMap.create(store).startImport(m.url, m.image, gm);
+            var knowledge = new TerrainCreateKnowledge((timeout, typeClass,
+                    type) -> askKnowledgeObjects(actor.getActorSystem(), timeout, typeClass, type));
+            var session = knowledge.createSession();
+            terrainImageCreateMap.create(store).startImport(m.url, m.image, gm, session);
             store.close();
             dbActor.tell(new SaveObjectMessage<>(dbResponseAdapter, gm));
             dbActor.tell(new SaveObjectMessage<>(dbResponseAdapter, wm));

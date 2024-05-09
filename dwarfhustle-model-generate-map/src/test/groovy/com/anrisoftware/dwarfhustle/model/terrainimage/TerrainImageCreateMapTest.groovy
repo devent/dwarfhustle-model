@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit
 import java.util.stream.Stream
 
 import org.evrete.api.RuleSession
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.io.TempDir
@@ -93,22 +94,27 @@ class TerrainImageCreateMapTest {
         this.session = knowledge.createSession()
     }
 
+    @AfterAll
+    static void testsFinished() {
+        println tmp
+    }
+
     static Stream test_start_import_terrain() {
         def args = []
         args << of(TerrainImage.terrain_4_4_4_2)
         //        args << of(TerrainImage.terrain_8_8_8_2)
         //        args << of(TerrainImage.terrain_8_8_8_4)
-        //args << of(TerrainImage.terrain_32_32_32_4)
+        //        args << of(TerrainImage.terrain_32_32_32_4)
         //        args << of(TerrainImage.terrain_32_32_32_8)
         //        //
         //        args << of(TerrainImage.terrain_128_128_128_16)
         //        args << of(TerrainImage.terrain_128_128_128_32)
         //        args << of(TerrainImage.terrain_256_256_128_16)
         //        args << of(TerrainImage.terrain_256_256_128_32)
-        //args << of(TerrainImage.terrain_256_256_128_64)
-        //args << of(TerrainImage.terrain_512_512_128_16)
-        //args << of(TerrainImage.terrain_512_512_128_32)
-        //args << of(TerrainImage.terrain_512_512_128_64)
+        //        args << of(TerrainImage.terrain_256_256_128_64)
+        //        args << of(TerrainImage.terrain_512_512_128_16)
+        //        args << of(TerrainImage.terrain_512_512_128_32)
+        //        args << of(TerrainImage.terrain_512_512_128_64)
         Stream.of(args as Object[])
     }
 

@@ -21,6 +21,7 @@ import static java.time.Duration.ofSeconds
 import static java.util.Locale.ENGLISH
 import static java.util.concurrent.CompletableFuture.supplyAsync
 
+import org.apache.commons.lang3.RegExUtils
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -157,7 +158,17 @@ class ListKnowledges {
                                 }
                                 println "\nm = new ModelMap()\n"
                                 it.response.go.objects.each { o ->
-                                    println "m[rid[\"${o.name}\"]] = [model: \"Models/${o.name.toLowerCase(ENGLISH)}/${o.name.toLowerCase(ENGLISH)}.j3o\"]"
+                                    def name = o.name.toLowerCase(ENGLISH)
+                                    name = RegExUtils.removeAll(name, /-n$/)
+                                    name = RegExUtils.removeAll(name, /-e$/)
+                                    name = RegExUtils.removeAll(name, /-s$/)
+                                    name = RegExUtils.removeAll(name, /-w$/)
+                                    name = RegExUtils.removeAll(name, /-ne$/)
+                                    name = RegExUtils.removeAll(name, /-nw$/)
+                                    name = RegExUtils.removeAll(name, /-se$/)
+                                    name = RegExUtils.removeAll(name, /-sw$/)
+                                    name = RegExUtils.replaceAll(name, /tile-(?!block)/, "block-")
+                                    println "m[rid[\"${o.name}\"]] = [model: \"Models/${name}/${name}.j3o\"]"
                                 }
                                 println "\nm"
                                 break
