@@ -280,6 +280,25 @@ public class MapBlock implements Serializable {
     }
 
     /**
+     * Returns true if the neighbors exist.
+     */
+    public boolean isNeighborsExist(MapBlock[] neighbors, NeighboringDir... dirs) {
+        for (var dir : dirs) {
+            if (neighbors[dir.ordinal()] == null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns true if the neighbors on the same level (N,E,S,W) exist.
+     */
+    public boolean isNeighborsSameLevelExist(MapBlock[] neighbors) {
+        return isNeighborsExist(neighbors, NeighboringDir.DIRS_SAME_LEVEL);
+    }
+
+    /**
      * Returns true if the neighbors on the same level (NESW) of this block are
      * empty.
      */
