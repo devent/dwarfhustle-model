@@ -296,13 +296,19 @@ public class MapBlock implements Serializable {
         return getNeighbor(NeighboringDir.U, chunk, retriever);
     }
 
-    public boolean isNeighborsUpEmptyContinuously(MapBlock[] upBlocks) {
-        for (MapBlock block : upBlocks) {
-            if (block != null) {
-                if (!block.isEmpty()) {
-                    return false;
-                }
+    public boolean isNeighborsUpEmptyContinuously(MapChunk chunk, Function<Integer, MapChunk> retriever) {
+        if (pos.z == 32) {
+            // System.out.println(); // TODO
+        }
+        MapBlock up = getNeighbor(NeighboringDir.U, chunk, retriever);
+        while (up != null) {
+            if (!up.isEmpty()) {
+                return false;
             }
+            if (parent != up.parent) {
+                chunk = retriever.apply(up.parent);
+            }
+            up = up.getNeighbor(NeighboringDir.U, chunk, retriever);
         }
         return true;
     }

@@ -372,12 +372,6 @@ public class TerrainCreateRules {
         $f.block.setRamp(true);
     }
 
-    @Rule(salience = 10)
-    @Where(value = { "$f.block.isNeighborsUpEmptyContinuously($f.upBlocks)" })
-    public void up_empty_continuously_discovered(TerrainFact $f, RhsContext ctx) {
-        $f.block.setDiscovered(true);
-    }
-
     public boolean material_gas_test(long mid) {
         return gases.contains(mid);
     }

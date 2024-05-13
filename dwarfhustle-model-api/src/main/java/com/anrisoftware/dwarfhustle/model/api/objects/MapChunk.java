@@ -86,7 +86,7 @@ public class MapChunk {
     /**
      * The {@link GameChunkPos} and CIDs of the children chunks.
      */
-    private MutableIntObjectMap<GameChunkPos> chunks = IntObjectMaps.mutable.empty();
+    private final MutableIntObjectMap<GameChunkPos> chunks = IntObjectMaps.mutable.empty();
 
     /**
      * Optionally, the {@link MapBlock}s in the chunk if the chunk is a leaf.
@@ -101,12 +101,15 @@ public class MapChunk {
     /**
      * True if the chunk is a leaf with blocks.
      */
+    @ToString.Include
     private boolean leaf;
 
     /**
      * Pre-calculated {@link CenterExtent} based on the chunks position.
      */
     private CenterExtent centerExtent;
+
+    public boolean changed = false;
 
     public MapChunk() {
         this.pos = new GameChunkPos();
@@ -185,13 +188,7 @@ public class MapChunk {
         int sz = pos.z;
         var b = blocks.orElseThrow();
 
-        return new Iterable<MapBlock>() {
-
-            @Override
-            public Iterator<MapBlock> iterator() {
-                return new Itr(cw, ch, sx, sy, sz, b, b.capacity() / MapBlockBuffer.SIZE);
-            }
-        };
+        return () -> new Itr(cw, ch, sx, sy, sz, b, b.capacity() / MapBlockBuffer.SIZE);
 
     }
 
@@ -308,6 +305,10 @@ public class MapChunk {
 
     public MapBlock findBlock(GameBlockPos pos, Function<Integer, MapChunk> retriever) {
         if (blocks.isEmpty()) {
+            if (!isInside(pos)) {
+                var parent = retriever.apply(this.parent);
+                return parent.findBlock(pos, retriever);
+            }
             for (var view : chunks.keyValuesView()) {
                 var b = view.getTwo();
                 if (b.contains(pos)) {

@@ -1,10 +1,14 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.evrete
 
-import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlock.*
+import java.nio.file.Path
 
+import org.apache.commons.io.IOUtils
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+
+import com.anrisoftware.dwarfhustle.model.api.objects.MapChunksStore
 
 /**
  * @see BlockArray
@@ -21,61 +25,41 @@ class BlockArrayTest {
 
     static BlockArrayRules rules
 
+    @TempDir
+    static Path tmp
+
+    static path = "/home/devent/Projects/dwarf-hustle/docu/terrain-maps"
+
+    static MapChunksStore createStore(Path tmp, int w, int h, int d, int chunkSize, int chunksCount) {
+        def name = "terrain_${w}_${h}_${d}_${chunkSize}_${chunksCount}"
+        def fileName = "${path}/${name}.map"
+        def stream = BlockArrayTest.class.getResourceAsStream(fileName)
+        def file = tmp.resolve("${name}.map")
+        IOUtils.copy(new FileInputStream(fileName), new FileOutputStream(file.toFile()))
+        return new MapChunksStore(file, w, h, chunkSize, chunksCount)
+    }
+
     @BeforeAll
     static void setupRules() {
         this.rules = new BlockArrayRules()
-        rules.setupRulesInit()
         rules.setupRulesMap()
     }
 
-    int w = 512, h = 512, d = 128
-
-    BlockArray array
+    MapChunksStore store
 
     @BeforeEach
     void setupBlocks() {
-        this.array = new BlockArray(w, h, d)
-        loadBlockArray()
-    }
-
-    void loadBlockArray() {
-        def fc = new FileInputStream(blocksArrayFile).getChannel();
-        array.blocks.position(0);
-        fc.read(array.blocks);
-        fc.close();
-    }
-
-    void initBlockArray() {
-        for (int z = 0; z < d; z++) {
-            def session = rules.initialKn.newStatelessSession()
-            for (int y = 0; y < h; y++) {
-                for (int x = 0; x < w; x++) {
-                    session.insert(new BlockFact(array, x, y, z))
-                }
-            }
-            session.fire()
-        }
-        def fc = new FileOutputStream(blocksArrayFile).getChannel();
-        array.blocks.position(0);
-        fc.write(array.blocks);
-        fc.close();
+        int w = 512
+        int h = 512
+        int d = 128
+        int chunkSize = 32
+        int chunksCount = 1353
+        this.store = createStore(tmp, w, h, d, chunkSize, chunksCount)
     }
 
     @Test
     void up_natural_light() {
-        for (int z = 0; z < d; z++) {
-            def session = rules.mapKn.newStatelessSession()
-            for (int y = 0; y < h; y++) {
-                for (int x = 0; x < w; x++) {
-                    session.insert(new BlockFact(array, x, y, z))
-                }
-            }
-            session.fire()
-        }
-        for (int z = 0; z < d; z++) {
-            if (array.isProp(0, 0, z, EMPTY)) {
-                array.setLux(0, 0, z, 65536)
-            }
-        }
+        def worker = new BlockArrayWorker(store, rules)
+        worker.runRules()
     }
 }
