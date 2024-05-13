@@ -15,4 +15,6 @@ public class TerrainFact {
     public final MapBlock block;
 
     public final MapBlock[] neighbors;
+
+    public final MapBlock[] upBlocks;
 }

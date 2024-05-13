@@ -50,6 +50,8 @@ public class MapBlock implements Serializable {
 
     private static final int ROOF_POS = 6;
 
+    private static final int DISCOVERED_POS = 7;
+
     public static final int HIDDEN = 0b00000000;
 
     public static final int VISIBLE = 0b00000001;
@@ -65,6 +67,8 @@ public class MapBlock implements Serializable {
     public static final int FLOOR = 0b00100000;
 
     public static final int ROOF = 0b01000000;
+
+    public static final int DISCOVERED = 0b10000000;
 
     public static final String OBJECT_TYPE = MapBlock.class.getSimpleName();
 
@@ -102,6 +106,7 @@ public class MapBlock implements Serializable {
      * 00000000 00000000 00000000 00010000} block-ramp Ramp block.
      * 00000000 00000000 00000000 00100000} block-floor Floor block.
      * 00000000 00000000 00000000 01000000} block-roof Roof block.
+     * 00000000 00000000 00000000 10000000} block-discovered
      * </pre>
      */
     public PropertiesSet p = new PropertiesSet();
@@ -246,6 +251,18 @@ public class MapBlock implements Serializable {
         return p.get(ROOF_POS);
     }
 
+    public void setDiscovered(boolean flag) {
+        if (flag) {
+            p.set(DISCOVERED_POS);
+        } else {
+            p.clear(DISCOVERED_POS);
+        }
+    }
+
+    public boolean isDiscovered() {
+        return p.get(DISCOVERED_POS);
+    }
+
     public MapBlock getNeighbor(NeighboringDir dir, MapChunk chunk, Function<Integer, MapChunk> retriever) {
         var dirpos = this.pos.add(dir.pos);
         if (dirpos.isNegative()) {
@@ -277,6 +294,17 @@ public class MapBlock implements Serializable {
 
     public MapBlock getNeighborUp(MapChunk chunk, Function<Integer, MapChunk> retriever) {
         return getNeighbor(NeighboringDir.U, chunk, retriever);
+    }
+
+    public boolean isNeighborsUpEmptyContinuously(MapBlock[] upBlocks) {
+        for (MapBlock block : upBlocks) {
+            if (block != null) {
+                if (!block.isEmpty()) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**

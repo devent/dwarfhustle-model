@@ -103,14 +103,14 @@ public class TerrainCreateRules {
     // Set block material.
     //
 
-    @Rule(salience = 1000)
+    @Rule(salience = 1000000)
     @Where("$f.mid == 0 && $f.block.material == -1")
     public void material_empty_set_oxygen(TerrainFact $f, RhsContext ctx) {
         $f.block.setMaterialRid(materialOxygen);
         ctx.update($f);
     }
 
-    @Rule(salience = 1000)
+    @Rule(salience = 1000000)
     @Where("$f.mid > 0 && $f.block.material == -1")
     public void material_set_rid(TerrainFact $f, RhsContext ctx) {
         $f.block.setMaterialRid($f.mid);
@@ -121,7 +121,7 @@ public class TerrainCreateRules {
     // Set block properties.
     //
 
-    @Rule(salience = 100)
+    @Rule(salience = 10000)
     @Where(value = "$f.block.p.bits == 0", //
             methods = { //
                     @MethodPredicate( //
@@ -134,7 +134,7 @@ public class TerrainCreateRules {
         ctx.update($f);
     }
 
-    @Rule(salience = 100)
+    @Rule(salience = 10000)
     @Where(value = "$f.block.p.bits == 0", //
             methods = { //
                     @MethodPredicate( //
@@ -147,7 +147,7 @@ public class TerrainCreateRules {
         ctx.update($f);
     }
 
-    @Rule(salience = 100)
+    @Rule(salience = 10000)
     @Where(value = "$f.block.p.bits == 0", //
             methods = { //
                     @MethodPredicate( //
@@ -164,7 +164,7 @@ public class TerrainCreateRules {
     // Block hidden or visible based on neighbors.
     //
 
-    @Rule(salience = 10)
+    @Rule(salience = 100)
     @Where(value = { "$f.block.isNeighborsFilled($f.neighbors, U)" })
     public void block_is_hidden(TerrainFact $f, RhsContext ctx) {
         $f.block.setHidden(true);
@@ -174,19 +174,19 @@ public class TerrainCreateRules {
     // Object type based on block status and neighbors.
     //
 
-    @Rule(salience = 10)
+    @Rule(salience = 100)
     @Where(value = { "$f.block.empty || $f.block.liquid" })
     public void object_set_block_on_empty_liquid(TerrainFact $f, RhsContext ctx) {
         $f.block.setObjectRid(block);
     }
 
-    @Rule(salience = 10)
+    @Rule(salience = 100)
     @Where(value = { "$f.block.filled", "!$f.block.isNeighborsSameLevelExist($f.neighbors)" })
     public void object_set_block_on_map_edge(TerrainFact $f, RhsContext ctx) {
         $f.block.setObjectRid(block);
     }
 
-    @Rule(salience = 10)
+    @Rule(salience = 100)
     @Where(value = { "$f.block.filled", "$f.block.isNeighborsSameLevelExist($f.neighbors)",
             "$f.block.isNeighborsSameLevelEmpty($f.neighbors)" })
     public void object_set_ramp_single_on_neighbors_same_level_empty(TerrainFact $f, RhsContext ctx) {
@@ -194,13 +194,13 @@ public class TerrainCreateRules {
         $f.block.setRamp(true);
     }
 
-    @Rule(salience = 10)
+    @Rule(salience = 100)
     @Where(value = { "!$f.block.empty", "$f.block.isNeighborsSameLevelFilled($f.neighbors)" })
     public void block_set_block_on_neighbors_same_level_filled(TerrainFact $f, RhsContext ctx) {
         $f.block.setObjectRid(block);
     }
 
-    @Rule(salience = 10)
+    @Rule(salience = 100)
     @Where(value = { "$f.block.filled", "$f.block.isNeighborsExist($f.neighbors, N, E, S, W)",
             "$f.block.isNeighborsEmpty($f.neighbors, E, S, W)", "$f.block.isNeighborsFilled($f.neighbors, N)" })
     public void ramp_tri_s(TerrainFact $f, RhsContext ctx) {
@@ -208,7 +208,7 @@ public class TerrainCreateRules {
         $f.block.setRamp(true);
     }
 
-    @Rule(salience = 10)
+    @Rule(salience = 100)
     @Where(value = { "$f.block.filled", "$f.block.isNeighborsExist($f.neighbors, N, E, S, W)",
             "$f.block.isNeighborsEmpty($f.neighbors, N, S, W)", "$f.block.isNeighborsFilled($f.neighbors, E)" })
     public void ramp_tri_w(TerrainFact $f, RhsContext ctx) {
@@ -216,7 +216,7 @@ public class TerrainCreateRules {
         $f.block.setRamp(true);
     }
 
-    @Rule(salience = 10)
+    @Rule(salience = 100)
     @Where(value = { "$f.block.filled", "$f.block.isNeighborsExist($f.neighbors, N, E, S, W)",
             "$f.block.isNeighborsEmpty($f.neighbors, N, E, W)", "$f.block.isNeighborsFilled($f.neighbors, S)" })
     public void ramp_tri_n(TerrainFact $f, RhsContext ctx) {
@@ -224,7 +224,7 @@ public class TerrainCreateRules {
         $f.block.setRamp(true);
     }
 
-    @Rule(salience = 10)
+    @Rule(salience = 100)
     @Where(value = { "$f.block.filled", "$f.block.isNeighborsExist($f.neighbors, N, E, S, W)",
             "$f.block.isNeighborsEmpty($f.neighbors, N, E, S)", "$f.block.isNeighborsFilled($f.neighbors, W)" })
     public void ramp_tri_e(TerrainFact $f, RhsContext ctx) {
@@ -232,7 +232,7 @@ public class TerrainCreateRules {
         $f.block.setRamp(true);
     }
 
-    @Rule(salience = 10)
+    @Rule(salience = 100)
     @Where(value = { "$f.block.filled", "$f.block.isNeighborsExist($f.neighbors, N, SE, W, E, S)",
             "$f.block.isNeighborsEmpty($f.neighbors, N, SE, W)", "$f.block.isNeighborsFilled($f.neighbors, E, S)" })
     public void ramp_corner_nw(TerrainFact $f, RhsContext ctx) {
@@ -240,7 +240,7 @@ public class TerrainCreateRules {
         $f.block.setRamp(true);
     }
 
-    @Rule(salience = 10)
+    @Rule(salience = 100)
     @Where(value = { "$f.block.filled", "$f.block.isNeighborsExist($f.neighbors, N, E, SW, W, S)",
             "$f.block.isNeighborsEmpty($f.neighbors, N, E, SW)", "$f.block.isNeighborsFilled($f.neighbors, W, S)" })
     public void ramp_corner_ne(TerrainFact $f, RhsContext ctx) {
@@ -248,7 +248,7 @@ public class TerrainCreateRules {
         $f.block.setRamp(true);
     }
 
-    @Rule(salience = 10)
+    @Rule(salience = 100)
     @Where(value = { "$f.block.filled", "$f.block.isNeighborsExist($f.neighbors, NE, S, W, N, E)",
             "$f.block.isNeighborsEmpty($f.neighbors, NE, S, W)", "$f.block.isNeighborsFilled($f.neighbors, N, E)" })
     public void ramp_corner_sw(TerrainFact $f, RhsContext ctx) {
@@ -256,7 +256,7 @@ public class TerrainCreateRules {
         $f.block.setRamp(true);
     }
 
-    @Rule(salience = 10)
+    @Rule(salience = 100)
     @Where(value = { "$f.block.filled", "$f.block.isNeighborsExist($f.neighbors, S, NW, E, W)",
             "$f.block.isNeighborsEmpty($f.neighbors, S, NW, E)", "$f.block.isNeighborsFilled($f.neighbors, N, W)" })
     public void ramp_corner_se(TerrainFact $f, RhsContext ctx) {
@@ -264,7 +264,7 @@ public class TerrainCreateRules {
         $f.block.setRamp(true);
     }
 
-    @Rule(salience = 10)
+    @Rule(salience = 100)
     @Where(value = { "$f.block.filled", "$f.block.isNeighborsExist($f.neighbors, S, N, E, W)",
             "$f.block.isNeighborsEmpty($f.neighbors, S)", "$f.block.isNeighborsFilled($f.neighbors, N)",
             "$f.block.isNeighborsRamp($f.neighbors, E, W)" })
@@ -273,7 +273,7 @@ public class TerrainCreateRules {
         $f.block.setRamp(true);
     }
 
-    @Rule(salience = 10)
+    @Rule(salience = 100)
     @Where(value = { "$f.block.filled", "$f.block.isNeighborsExist($f.neighbors, E, W, N, S)",
             "$f.block.isNeighborsEmpty($f.neighbors, E)", "$f.block.isNeighborsFilled($f.neighbors, W)",
             "$f.block.isNeighborsRamp($f.neighbors, N, S)" })
@@ -282,7 +282,7 @@ public class TerrainCreateRules {
         $f.block.setRamp(true);
     }
 
-    @Rule(salience = 10)
+    @Rule(salience = 100)
     @Where(value = { "$f.block.filled", "$f.block.isNeighborsExist($f.neighbors, N, S, E, W)",
             "$f.block.isNeighborsEmpty($f.neighbors, N)", "$f.block.isNeighborsFilled($f.neighbors, S)",
             "$f.block.isNeighborsRamp($f.neighbors, E, W)" })
@@ -291,7 +291,7 @@ public class TerrainCreateRules {
         $f.block.setRamp(true);
     }
 
-    @Rule(salience = 10)
+    @Rule(salience = 100)
     @Where(value = { "$f.block.filled", "$f.block.isNeighborsExist($f.neighbors, W, E, N, S)",
             "$f.block.isNeighborsEmpty($f.neighbors, W)", "$f.block.isNeighborsFilled($f.neighbors, E)",
             "$f.block.isNeighborsRamp($f.neighbors, N, S)" })
@@ -300,7 +300,7 @@ public class TerrainCreateRules {
         $f.block.setRamp(true);
     }
 
-    @Rule(salience = 10)
+    @Rule(salience = 100)
     @Where(value = { "$f.block.filled", "$f.block.isNeighborsExist($f.neighbors, E, S, NW, N, W)",
             "$f.block.isNeighborsEmpty($f.neighbors, E, S)", "$f.block.isNeighborsFilled($f.neighbors, NW)",
             "$f.block.isNeighborsRamp($f.neighbors, N, W)" })
@@ -309,7 +309,7 @@ public class TerrainCreateRules {
         $f.block.setRamp(true);
     }
 
-    @Rule(salience = 10)
+    @Rule(salience = 100)
     @Where(value = { "$f.block.filled", "$f.block.isNeighborsExist($f.neighbors, N, W, SE, E, S)",
             "$f.block.isNeighborsEmpty($f.neighbors, N, W)", "$f.block.isNeighborsFilled($f.neighbors, SE)",
             "$f.block.isNeighborsRamp($f.neighbors, E, S)" })
@@ -318,7 +318,7 @@ public class TerrainCreateRules {
         $f.block.setRamp(true);
     }
 
-    @Rule(salience = 10)
+    @Rule(salience = 100)
     @Where(value = { "$f.block.filled", "$f.block.isNeighborsExist($f.neighbors, S, W, NE, N, E)",
             "$f.block.isNeighborsEmpty($f.neighbors, S, W)", "$f.block.isNeighborsFilled($f.neighbors, NE)",
             "$f.block.isNeighborsRamp($f.neighbors, N, E)" })
@@ -327,7 +327,7 @@ public class TerrainCreateRules {
         $f.block.setRamp(true);
     }
 
-    @Rule(salience = 10)
+    @Rule(salience = 100)
     @Where(value = { "$f.block.filled", "$f.block.isNeighborsExist($f.neighbors, N, E, SW, S, W)",
             "$f.block.isNeighborsEmpty($f.neighbors, N, E)", "$f.block.isNeighborsFilled($f.neighbors, SW)",
             "$f.block.isNeighborsRamp($f.neighbors, S, W)" })
@@ -336,7 +336,7 @@ public class TerrainCreateRules {
         $f.block.setRamp(true);
     }
 
-    @Rule(salience = 10)
+    @Rule(salience = 100)
     @Where(value = { "$f.block.filled", "$f.block.isNeighborsExist($f.neighbors, E, N, W, NW, SW)",
             "$f.block.isNeighborsEmpty($f.neighbors, E)", "$f.block.isNeighborsFilled($f.neighbors, N, W, NW)",
             "$f.block.isNeighborsRamp($f.neighbors, S, SW)" })
@@ -345,7 +345,7 @@ public class TerrainCreateRules {
         $f.block.setRamp(true);
     }
 
-    @Rule(salience = 10)
+    @Rule(salience = 100)
     @Where(value = { "$f.block.filled", "$f.block.isNeighborsExist($f.neighbors, W, E, SE, S, N, NE)",
             "$f.block.isNeighborsEmpty($f.neighbors, W)", "$f.block.isNeighborsFilled($f.neighbors, E, SE, S)",
             "$f.block.isNeighborsRamp($f.neighbors, N, NE)" })
@@ -354,7 +354,7 @@ public class TerrainCreateRules {
         $f.block.setRamp(true);
     }
 
-    @Rule(salience = 10)
+    @Rule(salience = 100)
     @Where(value = { "$f.block.filled", "$f.block.isNeighborsExist($f.neighbors, S, N, NE, E, W, NW)",
             "$f.block.isNeighborsEmpty($f.neighbors, S)", "$f.block.isNeighborsFilled($f.neighbors, N, NE, E)",
             "$f.block.isNeighborsRamp($f.neighbors, W, NW)" })
@@ -363,13 +363,19 @@ public class TerrainCreateRules {
         $f.block.setRamp(true);
     }
 
-    @Rule(salience = 10)
+    @Rule(salience = 100)
     @Where(value = { "$f.block.filled", "$f.block.isNeighborsExist($f.neighbors, E, S, SW, W, N, NW)",
             "$f.block.isNeighborsEmpty($f.neighbors, E)", "$f.block.isNeighborsFilled($f.neighbors, S, SW, W)",
             "$f.block.isNeighborsRamp($f.neighbors, N, NW)" })
     public void ramp_edge_in_ne(TerrainFact $f, RhsContext ctx) {
         $f.block.setObjectRid(ramp_edge_in_ne);
         $f.block.setRamp(true);
+    }
+
+    @Rule(salience = 10)
+    @Where(value = { "$f.block.isNeighborsUpEmptyContinuously($f.upBlocks)" })
+    public void up_empty_continuously_discovered(TerrainFact $f, RhsContext ctx) {
+        $f.block.setDiscovered(true);
     }
 
     public boolean material_gas_test(long mid) {
