@@ -41,8 +41,8 @@ public class Sand extends Soil {
 
     public static final String TYPE = "Sand";
 
-    public Sand(long id) {
-        super(id);
+    public Sand(int kid) {
+        super(kid);
     }
 
     @Override

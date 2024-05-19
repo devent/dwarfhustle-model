@@ -39,8 +39,8 @@ public class Soil extends Material {
 
     public static final String TYPE = "Soil";
 
-    public Soil(long id) {
-        super(id);
+    public Soil(int kid) {
+        super(kid);
     }
 
     @Override

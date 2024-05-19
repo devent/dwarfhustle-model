@@ -18,23 +18,25 @@
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 
 /**
  * Writes and reads {@link MapBlock} in a byte buffer.
  * 
  * <ul>
- * <li>@{code m} material ID;
- * <li>@{code o} object ID;
- * <li>@{code P} parent chunk CID;
- * <li>@{code i} map block position index;
  * <li>@{code p} tile properties;
+ * <li>@{code P} parent chunk CID;
+ * <li>@{code m} material KID;
+ * <li>@{code o} object KID;
+ * <li>@{code t} temperature;
+ * <li>@{code t} light lux;
  * </ul>
  * 
  * <pre>
- * long 0         1         2         3
- * int  0    1    2    3    4    5    6
- * byte 0    4    8    12   16   20   24
- *      mmmm mmmm oooo oooo PPPP iiii pppp
+ * int   0         1         2         3
+ * short 0    1    2    3    4    5    6
+ *       pppp pppp PPPP mmmm oooo tttt llll
  * </pre>
  */
 public class MapBlockBuffer {
@@ -42,17 +44,19 @@ public class MapBlockBuffer {
     /**
      * Size in bytes.
      */
-    public static final int SIZE = 8 + 8 + 4 + 4 + 4;
+    public static final int SIZE = 4 + 2 + 2 + 2 + 2 + 2;
 
-    private static final int INDEX_INT_INDEX = 5;
+    private static final int PARENT_SHORT_INDEX = 2;
 
-    private static final int PARENT_INT_INDEX = 4;
+    private static final int MATERIAL_SHORT_INDEX = 3;
 
-    private static final int MAT_LONG_INDEX = 0;
+    private static final int OBJECT_SHORT_INDEX = 4;
 
-    private static final int OBJECT_LONG_INDEX = 1;
+    private static final int PROP_INT_INDEX = 0;
 
-    private static final int PROP_INT_INDEX = 6;
+    private static final int TEMP_SHORT_INDEX = 5;
+
+    private static final int LUX_SHORT_INDEX = 6;
 
     /**
      * Returns the index from the x/y/z position.
@@ -82,58 +86,60 @@ public class MapBlockBuffer {
         return (int) Math.floor(i / w / h) + sz;
     }
 
-    public static int calcMapBufferSize(int cw, int ch, int cd) {
-        return SIZE * cw * ch * cd;
+    /**
+     * Returns the size of the {@link MapBlock}'s buffer for the chunk width, height
+     * and depth.
+     */
+    public static int calcMapBufferSize(int w, int h, int d) {
+        return SIZE * w * h * d;
     }
 
-    public static void setIndex(ByteBuffer b, int offset, int i) {
-        b.position(offset);
-        var buffer = b.asIntBuffer();
-        buffer.put(INDEX_INT_INDEX, i);
+    public static void setParent(ShortBuffer b, int off, int p) {
+        b.put(PARENT_SHORT_INDEX + off, (short) p);
     }
 
-    public static int getIndex(ByteBuffer b, int offset) {
-        return b.asIntBuffer().get(INDEX_INT_INDEX);
+    public static int getParent(ShortBuffer b, int off) {
+        return b.get(PARENT_SHORT_INDEX + off);
     }
 
-    public static void setProp(ByteBuffer b, int offset, int p) {
-        b.position(offset);
-        var buffer = b.asIntBuffer();
-        buffer.put(PROP_INT_INDEX, p);
+    public static void setMaterial(ShortBuffer b, int off, int m) {
+        b.put(MATERIAL_SHORT_INDEX + off, (short) m);
     }
 
-    public static int getProp(ByteBuffer b, int offset) {
-        return b.asIntBuffer().get(PROP_INT_INDEX);
+    public static int getMaterial(ShortBuffer b, int off) {
+        return b.get(MATERIAL_SHORT_INDEX + off);
     }
 
-    public static void setParent(ByteBuffer b, int offset, int p) {
-        b.position(offset);
-        var buffer = b.asIntBuffer();
-        buffer.put(PARENT_INT_INDEX, p);
+    public static void setObject(ShortBuffer b, int off, int o) {
+        b.put(OBJECT_SHORT_INDEX + off, (short) o);
     }
 
-    public static int getParent(ByteBuffer b, int offset) {
-        return b.asIntBuffer().get(PARENT_INT_INDEX);
+    public static int getObject(ShortBuffer b, int off) {
+        return b.get(OBJECT_SHORT_INDEX + off);
     }
 
-    public static void setMaterial(ByteBuffer b, int offset, long m) {
-        b.position(offset);
-        var buffer = b.asLongBuffer();
-        buffer.put(MAT_LONG_INDEX, m);
+    public static void setProp(IntBuffer b, int off, int p) {
+        b.put(PROP_INT_INDEX + off, p);
     }
 
-    public static long getMaterial(ByteBuffer b, int offset) {
-        return b.asLongBuffer().get(MAT_LONG_INDEX);
+    public static int getProp(IntBuffer b, int off) {
+        return b.get(PROP_INT_INDEX + off);
     }
 
-    public static void setObject(ByteBuffer b, int offset, long o) {
-        b.position(offset);
-        var buffer = b.asLongBuffer();
-        buffer.put(OBJECT_LONG_INDEX, o);
+    public static void setTemp(ShortBuffer b, int off, int t) {
+        b.put(TEMP_SHORT_INDEX + off, (short) (t - 32_769));
     }
 
-    public static long getObject(ByteBuffer b, int offset) {
-        return b.asLongBuffer().get(OBJECT_LONG_INDEX);
+    public static int getTemp(ShortBuffer b, int off) {
+        return b.get(TEMP_SHORT_INDEX + off) + 32_769;
+    }
+
+    public static void setLux(ShortBuffer b, int off, int l) {
+        b.put(LUX_SHORT_INDEX + off, (short) (l - 32_769));
+    }
+
+    public static int getLux(ShortBuffer b, int off) {
+        return b.get(LUX_SHORT_INDEX + off) + 32_769;
     }
 
     /**
@@ -153,13 +159,14 @@ public class MapBlockBuffer {
             int sy, int sz) {
         int index = calcIndex(cw, ch, cd, sx, sy, sz, block.pos.x, block.pos.y, block.pos.z);
         b.position(offset + index * SIZE);
+        var bs = b.asShortBuffer();
         var bi = b.asIntBuffer();
-        var bl = b.asLongBuffer();
-        bi.put(INDEX_INT_INDEX, index);
-        bi.put(PARENT_INT_INDEX, block.parent);
-        bl.put(MAT_LONG_INDEX, block.material);
-        bl.put(OBJECT_LONG_INDEX, block.object);
         bi.put(PROP_INT_INDEX, block.p.bits);
+        bs.put(PARENT_SHORT_INDEX, (short) block.parent);
+        bs.put(MATERIAL_SHORT_INDEX, (short) block.material);
+        bs.put(OBJECT_SHORT_INDEX, (short) block.object);
+        bs.put(TEMP_SHORT_INDEX, (short) (block.temp - 32_768));
+        bs.put(LUX_SHORT_INDEX, (short) (block.lux - 32_768));
     }
 
     /**
@@ -167,7 +174,7 @@ public class MapBlockBuffer {
      * 
      * @param b      the source {@link ByteBuffer}.
      * @param offset the offset of the source buffer to read from.
-     * @param index  the index of the block in the buffer.
+     * @param i      the index of the block in the buffer.
      * @param cw     the chunk width.
      * @param ch     the chunk height.
      * @param sx     the {@link MapChunk} position start X.
@@ -175,18 +182,18 @@ public class MapBlockBuffer {
      * @param sz     the {@link MapChunk} position start Z.
      * @return the {@link MapBlock}.
      */
-    public static MapBlock readMapBlockIndex(ByteBuffer b, int offset, int index, int cw, int ch, int sx, int sy,
-            int sz) {
+    public static MapBlock readMapBlockIndex(ByteBuffer b, int offset, int i, int cw, int ch, int sx, int sy, int sz) {
         var block = new MapBlock();
-        b.position(offset + index * SIZE);
+        b.position(offset + i * SIZE);
+        var bs = b.asShortBuffer();
         var bi = b.asIntBuffer();
-        var bl = b.asLongBuffer();
-        var i = bi.get(INDEX_INT_INDEX);
         block.pos = new GameBlockPos(calcX(i, cw, sx), calcY(i, cw, sy), calcZ(i, cw, ch, sz));
-        block.parent = bi.get(PARENT_INT_INDEX);
-        block.material = bl.get(MAT_LONG_INDEX);
-        block.object = bl.get(OBJECT_LONG_INDEX);
         block.p = new PropertiesSet(bi.get(PROP_INT_INDEX));
+        block.parent = bs.get(PARENT_SHORT_INDEX);
+        block.material = bs.get(MATERIAL_SHORT_INDEX);
+        block.object = bs.get(OBJECT_SHORT_INDEX);
+        block.temp = bs.get(TEMP_SHORT_INDEX) + 32_768;
+        block.lux = bs.get(LUX_SHORT_INDEX) + 32_768;
         return block;
     }
 

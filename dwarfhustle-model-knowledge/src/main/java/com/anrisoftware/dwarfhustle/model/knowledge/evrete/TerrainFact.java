@@ -10,7 +10,7 @@ import lombok.Data;
 @Data
 public class TerrainFact {
 
-    public final long mid;
+    public final int mid;
 
     public final MapBlock block;
 

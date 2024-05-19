@@ -45,8 +45,8 @@ public class RoofType extends KnowledgeObject {
 
     private String name;
 
-    public RoofType(long id) {
-        super(id);
+    public RoofType(int kid) {
+        super(kid);
     }
 
     @Override

@@ -17,6 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects
 
+import static org.apache.commons.lang3.StringUtils.replace
 import static org.junit.jupiter.params.provider.Arguments.of
 
 import java.nio.ByteBuffer
@@ -35,33 +36,21 @@ class GameBlockPosBufferTest {
     static Stream set_get_x_y_z() {
         def b = ByteBuffer.allocate(GameBlockPosBuffer.SIZE)
         Stream.of(
-                of(b, 1, 2, 3, [
-                    0,
-                    0,
-                    0,
-                    1,
-                    0,
-                    0,
-                    0,
-                    2,
-                    0,
-                    0,
-                    0,
-                    3
-                ]),
+                of(b, 0, 1, 2, 3, "00010002 0003"),
                 )
     }
 
     @ParameterizedTest
     @MethodSource()
-    void set_get_x_y_z(ByteBuffer b, int x, int y, int z, def expected) {
-        GameBlockPosBuffer.setX(b, 0, x)
-        GameBlockPosBuffer.setY(b, 0, y)
-        GameBlockPosBuffer.setZ(b, 0, z)
+    void set_get_x_y_z(ByteBuffer b, int offset, int x, int y, int z, def expected) {
+        def bs = b.asShortBuffer()
+        GameBlockPosBuffer.setX(bs, offset, x)
+        GameBlockPosBuffer.setY(bs, offset, y)
+        GameBlockPosBuffer.setZ(bs, offset, z)
         b.rewind()
-        assert b.array() == expected
-        assert GameBlockPosBuffer.getX(b, 0) == x
-        assert GameBlockPosBuffer.getY(b, 0) == y
-        assert GameBlockPosBuffer.getZ(b, 0) == z
+        assert HexFormat.of().formatHex(b.array()) == replace(expected, " ", "")
+        assert GameBlockPosBuffer.getX(bs, offset) == x
+        assert GameBlockPosBuffer.getY(bs, offset) == y
+        assert GameBlockPosBuffer.getZ(bs, offset) == z
     }
 }

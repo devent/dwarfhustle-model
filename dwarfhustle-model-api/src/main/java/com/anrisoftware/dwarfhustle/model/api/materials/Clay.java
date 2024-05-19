@@ -37,10 +37,10 @@ public class Clay extends Soil {
 
     public static final String OBJECT_TYPE = Clay.class.getSimpleName();
 
-	public static final String TYPE = "Clay";
+    public static final String TYPE = "Clay";
 
-    public Clay(long id) {
-        super(id);
+    public Clay(int kid) {
+        super(kid);
     }
 
     @Override

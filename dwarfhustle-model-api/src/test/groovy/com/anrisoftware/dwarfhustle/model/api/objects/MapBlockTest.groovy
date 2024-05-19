@@ -72,8 +72,8 @@ class MapBlockTest {
         "8,8,8,2,73,0,0,0,D,true,0,0,1",
         "8,8,8,2,73,0,0,0,E,true,1,0,0",
     ])
-    void getNeighbor_block(int w, int h, int d, int c, int n, int x, int y, int z, String dir, boolean found, int expectedX, int expectedY, int expectedZ) {
-        def store = MapChunksStoreTest.createStore(tmp, "terrain_${w}_${h}_${d}_${c}_${n}", c, n)
+    void getNeighbor_block(int w, int h, int d, int chunkSize, int chunksCount, int x, int y, int z, String dir, boolean found, int expectedX, int expectedY, int expectedZ) {
+        def store = MapChunksStoreTest.createStore(tmp, "terrain_${w}_${h}_${d}_${chunkSize}_${chunksCount}", w, h, chunkSize, chunksCount)
         def chunkBlock = store.findBlock(new GameBlockPos(x, y, z))
         def nblock = chunkBlock.orElseThrow().two.getNeighbor(NeighboringDir.valueOf(dir), chunkBlock.orElseThrow().one, { store.getChunk(it) })
         if (found) {
@@ -85,8 +85,8 @@ class MapBlockTest {
 
     @Test
     void getNeighbor_block_benchmark() {
-        int w = 32, h = 32, d = 32, c = 8, n = 73;
-        def store = MapChunksStoreTest.createStore(tmp, "terrain_${w}_${h}_${d}_${c}_${n}", c, n)
+        int w = 32, h = 32, d = 32, chunkSize = 8, chunksCount = 73;
+        def store = MapChunksStoreTest.createStore(tmp, "terrain_${w}_${h}_${d}_${chunkSize}_${chunksCount}", w, h, chunkSize, chunksCount)
         def retriever = { store.getChunk(it) }
         for (int x = 0; x < w; x++) {
             for (int y = 0; y < h; y++) {

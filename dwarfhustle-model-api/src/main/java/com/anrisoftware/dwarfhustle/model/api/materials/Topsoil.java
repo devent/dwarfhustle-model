@@ -39,10 +39,10 @@ public class Topsoil extends Soil {
 
     public static final String OBJECT_TYPE = Topsoil.class.getSimpleName();
 
-	public static final String TYPE = "Topsoil";
+    public static final String TYPE = "Topsoil";
 
-    public Topsoil(long id) {
-        super(id);
+    public Topsoil(int kid) {
+        super(kid);
     }
 
     @Override

@@ -33,14 +33,14 @@ import lombok.ToString;
 @Getter
 public class Gas extends Material {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
     public static final String OBJECT_TYPE = Gas.class.getSimpleName();
 
     public static final String TYPE = "Gas";
 
-    public Gas(long id) {
-        super(id);
+    public Gas(int kid) {
+        super(kid);
     }
 
     @Override

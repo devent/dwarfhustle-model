@@ -39,8 +39,8 @@ public class Liquid extends Material {
 
     public static final String TYPE = "Liquid";
 
-    public Liquid(long id) {
-        super(id);
+    public Liquid(int kid) {
+        super(kid);
     }
 
     @Override

@@ -41,7 +41,7 @@ public class Material extends KnowledgeObject {
 
     public static final String OBJECT_TYPE = Material.class.getSimpleName();
 
-	public static final String TYPE = "Material";
+    public static final String TYPE = "Material";
 
     private String name;
 
@@ -53,8 +53,8 @@ public class Material extends KnowledgeObject {
 
     private float thermalConductivity;
 
-    public Material(long id) {
-        super(id);
+    public Material(int kid) {
+        super(kid);
     }
 
     @Override

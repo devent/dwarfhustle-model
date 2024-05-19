@@ -26,11 +26,11 @@ import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import org.eclipse.collections.api.factory.primitive.IntLongMaps;
+import org.eclipse.collections.api.factory.primitive.IntIntMaps;
+import org.eclipse.collections.api.factory.primitive.IntLists;
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
-import org.eclipse.collections.api.factory.primitive.LongLists;
-import org.eclipse.collections.api.list.primitive.MutableLongList;
-import org.eclipse.collections.api.map.primitive.MutableIntLongMap;
+import org.eclipse.collections.api.list.primitive.MutableIntList;
+import org.eclipse.collections.api.map.primitive.MutableIntIntMap;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.evrete.Configuration;
 import org.evrete.KnowledgeService;
@@ -116,13 +116,13 @@ public class TerrainCreateKnowledge {
 
     private Knowledge knowledge;
 
-    private final MutableIntObjectMap<MutableLongList> materials;
+    private final MutableIntObjectMap<MutableIntList> materials;
 
-    private final MutableIntLongMap objects;
+    private final MutableIntIntMap objects;
 
     public TerrainCreateKnowledge(AskKnowledge askKnowledge) throws IOException {
         this.materials = IntObjectMaps.mutable.empty();
-        this.objects = IntLongMaps.mutable.ofInitialCapacity(100);
+        this.objects = IntIntMaps.mutable.ofInitialCapacity(100);
         loadKnowledges(askKnowledge);
         var conf = new Configuration();
         conf.addImport(NeighboringDir.class);
@@ -147,10 +147,10 @@ public class TerrainCreateKnowledge {
 
     @SneakyThrows
     private void loadKnowledges(AskKnowledge ask) {
-        MutableLongList solids = LongLists.mutable.withInitialCapacity(100);
-        MutableLongList liquids = LongLists.mutable.withInitialCapacity(100);
-        MutableLongList gases = LongLists.mutable.withInitialCapacity(100);
-        MutableLongList oxygen = LongLists.mutable.withInitialCapacity(1);
+        MutableIntList solids = IntLists.mutable.withInitialCapacity(100);
+        MutableIntList liquids = IntLists.mutable.withInitialCapacity(100);
+        MutableIntList gases = IntLists.mutable.withInitialCapacity(100);
+        MutableIntList oxygen = IntLists.mutable.withInitialCapacity(1);
         materials.put(MATERIALS_SOLIDS_NAME, solids);
         materials.put(MATERIALS_LIQUIDS_NAME, liquids);
         materials.put(MATERIALS_GASES_NAME, gases);
@@ -174,7 +174,7 @@ public class TerrainCreateKnowledge {
                     });
                 }).toCompletableFuture(), //
                 ask.doAskAsync(ASK_TIMEOUT, ObjectType.class, ObjectType.TYPE).whenComplete((res, ex) -> {
-                    knowledgeGet(res, LongLists.mutable.empty(), (o) -> {
+                    knowledgeGet(res, IntLists.mutable.empty(), (o) -> {
                         var ot = (ObjectType) o;
                         switch (ot.getName()) {
                         case "TILE-RAMP-TRI-N":
@@ -250,7 +250,7 @@ public class TerrainCreateKnowledge {
                 .get(30, TimeUnit.SECONDS);
     }
 
-    private void knowledgeGet(Iterable<KnowledgeObject> res, MutableLongList dest, Consumer<KnowledgeObject> consume) {
+    private void knowledgeGet(Iterable<KnowledgeObject> res, MutableIntList dest, Consumer<KnowledgeObject> consume) {
         for (var o : res) {
             dest.add(o.getKid());
             consume.accept(o);

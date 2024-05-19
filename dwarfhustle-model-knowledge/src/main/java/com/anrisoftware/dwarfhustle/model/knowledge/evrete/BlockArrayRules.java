@@ -1,5 +1,7 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.evrete;
 
+import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlock.DISCOVERED;
+
 import org.evrete.KnowledgeService;
 import org.evrete.api.Knowledge;
 
@@ -24,27 +26,20 @@ public class BlockArrayRules {
                 .newRule() //
                 .salience(1000) //
                 .forEach("$fact", BlockFact.class) //
-                .where("$fact.chunk.changed && $fact.block.pos.z == 0") //
+                .where("$fact.z == 0") //
                 .execute(context -> {
                     BlockFact fact = context.get("$fact");
-                    fact.block.setDiscovered(true);
+                    int p = fact.array.getProp(fact.chunk, fact.x, fact.y, fact.z);
+                    fact.array.setProp(fact.chunk, fact.x, fact.y, fact.z, p | DISCOVERED);
                 }) //
                 .newRule() //
                 .salience(1000) //
                 .forEach("$fact", BlockFact.class) //
-                .where("$fact.chunk.changed && $fact.block.pos.z > 0 && $fact.block.getNeighborUp($fact.chunk, $fact.retriever).isEmpty() && $fact.block.isNeighborsUpEmptyContinuously($fact.chunk, $fact.retriever)") //
+                .where("$fact.z > 0") //
                 .execute(context -> {
                     BlockFact fact = context.get("$fact");
-                    fact.block.setDiscovered(true);
-                    // System.out.println(fact.block); // TODO
-                }) //
-                .newRule() //
-                .salience(1) //
-                .forEach("$fact", BlockFact.class) //
-                .where("$fact.chunk.changed") //
-                .execute(context -> {
-                    BlockFact fact = context.get("$fact");
-                    fact.chunk.changed = false;
+                    int p = fact.array.getProp(fact.chunk, fact.x, fact.y, fact.z);
+                    fact.array.setProp(fact.chunk, fact.x, fact.y, fact.z, p | DISCOVERED);
                 }) //
                 .build();
     }

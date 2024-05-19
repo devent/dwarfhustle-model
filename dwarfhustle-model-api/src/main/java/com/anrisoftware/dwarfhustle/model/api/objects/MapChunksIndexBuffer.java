@@ -29,10 +29,9 @@ import java.nio.ByteBuffer;
  * </ul>
  * 
  * <pre>
- * long 0         1
- * int  0    1    2    3
- * byte 0    4    8    12
- *      cccc ppp0 sss0 ppp1 sss1 pppN sssN
+ * int   0         1         2         3         4         5...
+ * short 0    1    2    3    4    5    6    7    8    9...
+ *       cccc cccc ppp0 ppp0 sss0 sss0 ppp1 ppp1 sss1 sss1 pppN sssN pppN sssN
  * </pre>
  */
 public class MapChunksIndexBuffer {

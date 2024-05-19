@@ -40,37 +40,32 @@ public abstract class KnowledgeObject extends GameObject {
     public static final String OBJECT_TYPE = KnowledgeObject.class.getSimpleName();
 
     /**
-     * Knowledge ID.
+     * Knowledge KID.
      */
-    private long kid;
+    private int kid;
 
     /**
-     * Returns the game object ID from the knowledge ID.
+     * Returns the game object ID from the knowledge KID.
      */
-    public static long kid2Id(long tid) {
-        return (tid << 32) | ID_FLAG;
+    public static long kid2Id(int kid) {
+        return (kid << 32) | ID_FLAG;
     }
 
     /**
-     * Returns the knowledge ID from the game object ID.
+     * Returns the knowledge KID from the game object ID.
      */
-    public static long id2Kid(long id) {
-        return (id >> 32);
+    public static int id2Kid(long id) {
+        return (int) (id >> 32);
     }
 
-    public KnowledgeObject(long id) {
-        super(kid2Id(id));
-        this.kid = id;
-    }
-
-    public void setKid(long kid) {
+    public KnowledgeObject(int kid) {
+        super(kid2Id(kid));
         this.kid = kid;
-        setId(kid);
     }
 
-    @Override
-    public void setId(long id) {
-        super.setId(kid2Id(id));
+    public void setKid(int kid) {
+        this.kid = kid;
+        setId(kid2Id(kid));
     }
 
     @Override

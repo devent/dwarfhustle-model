@@ -45,8 +45,8 @@ public class ObjectType extends KnowledgeObject {
 
     private String name;
 
-    public ObjectType(long id) {
-        super(id);
+    public ObjectType(int kid) {
+        super(kid);
     }
 
     @Override

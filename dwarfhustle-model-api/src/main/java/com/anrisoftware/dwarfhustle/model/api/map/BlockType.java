@@ -45,8 +45,8 @@ public class BlockType extends KnowledgeObject {
 
     private String name;
 
-    public BlockType(long id) {
-        super(id);
+    public BlockType(int kid) {
+        super(kid);
     }
 
     @Override

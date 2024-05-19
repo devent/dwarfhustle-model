@@ -64,7 +64,7 @@ public class TerrainImageCreateMap {
 
     private AtomicInteger cidCounter;
 
-    private long[][][] terrain;
+    private int[][][] terrain;
 
     private MapChunk mcRoot;
 
@@ -157,26 +157,10 @@ public class TerrainImageCreateMap {
                     for (int zz = z; zz < ez; zz++) {
                         blocksCount++;
                         var mb = new MapBlock(chunk.cid, new GameBlockPos(xx, yy, zz));
-                        var n = new MapBlock[NeighboringDir.values().length];
-                        var fact = new TerrainFact(terrain[mb.pos.z][mb.pos.y][mb.pos.x], mb, n);
-                        knowledge.insert(fact);
-                        //
-                        // mb.setMaterialRid(terrain[zz][yy][xx]);
-                        // mb.setObjectRid(809);
-                        // if (mb.getMaterialRid() == 0) {
-                        // mb.setMaterialRid(898);
-                        // }
-                        // if (mb.getMaterialRid() == 898) {
-                        // mb.setEmpty(true);
-                        // }
+                        chunk.setBlock(mb);
                     }
                 }
             }
-            knowledge.fire();
-            knowledge.forEachFact(TerrainFact.class, (fact) -> {
-                chunk.setBlock(fact.block);
-            });
-            knowledge.clear();
         } else {
             putObjectToBackend(chunk);
             createMap(chunk, x, y, z, ex, ey, ez);

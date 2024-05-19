@@ -33,14 +33,14 @@ import lombok.ToString;
 @Getter
 public class Stone extends Material {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
     public static final String OBJECT_TYPE = Stone.class.getSimpleName();
 
-	public static final String TYPE = "Stone";
+    public static final String TYPE = "Stone";
 
-    public Stone(long id) {
-        super(id);
+    public Stone(int kid) {
+        super(kid);
     }
 
     @Override

@@ -11,9 +11,9 @@ import org.junit.jupiter.api.io.TempDir
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunksStore
 
 /**
- * @see BlockArray
+ * @see MapBlockArray
  */
-class BlockArrayTest {
+class MapBlockArrayTest {
 
     static blocksArrayFile = "/home/devent/Projects/dwarf-hustle/docu/terrain-maps/BlockArrayTest-512-512-128.txt"
 
@@ -23,16 +23,10 @@ class BlockArrayTest {
 
     static short LIQUID_ID = 930
 
-    static BlockArrayRules rules
+    static MapBlockArrayRules rules
 
     @TempDir
     static Path tmp
-
-    @BeforeAll
-    static void setupRules() {
-        this.rules = new BlockArrayRules()
-        rules.setupRulesMap()
-    }
 
     static path = "/home/devent/Projects/dwarf-hustle/docu/terrain-maps"
 
@@ -45,7 +39,11 @@ class BlockArrayTest {
         return new MapChunksStore(file, w, h, chunkSize, chunksCount)
     }
 
-    BlockArray array
+    @BeforeAll
+    static void setupRules() {
+        this.rules = new MapBlockArrayRules()
+        rules.setupRulesMap()
+    }
 
     MapChunksStore store
 
@@ -57,19 +55,11 @@ class BlockArrayTest {
         int chunkSize = 32
         int chunksCount = 1353
         this.store = createStore(tmp, w, h, d, chunkSize, chunksCount)
-        this.array = new BlockArray(w, h, d, store)
-    }
-
-    void loadBlockArrayFromFile() {
-        def fc = new FileInputStream(blocksArrayFile).getChannel();
-        array.blocks.position(0);
-        fc.read(array.blocks);
-        fc.close();
     }
 
     @Test
     void up_natural_light() {
-        def worker = new BlockArrayWorker(store, rules)
+        def worker = new MapBlockArrayWorker(store, rules)
         worker.runRules()
     }
 }

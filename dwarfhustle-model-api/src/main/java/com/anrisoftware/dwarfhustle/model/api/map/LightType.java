@@ -45,8 +45,8 @@ public class LightType extends KnowledgeObject {
 
     private String name;
 
-    public LightType(long id) {
-        super(id);
+    public LightType(int kid) {
+        super(kid);
     }
 
     @Override

@@ -17,68 +17,69 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import java.nio.ByteBuffer;
+import java.nio.ShortBuffer;
 
 /**
  * Writes and reads {@link GameBlockPos} in a byte buffer.
- * <p>
- * <code>[xxxx][yyyy][zzzz]</code>
+ * 
+ * <ul>
+ * <li>@{code x} X;
+ * <li>@{code y} Y;
+ * <li>@{code z} Z;
+ * </ul>
+ * 
+ * <pre>
+ * int   0         1         2         3
+ * short 0    1    2    3    4    5    6
+ *       xxxx yyyy zzzz
+ * </pre>
  */
 public class GameBlockPosBuffer {
 
     /**
      * Size in bytes.
      */
-    public static final int SIZE = 3 * 4;
+    public static final int SIZE = 3 * 2;
 
-    protected static final int X_INDEX = 0;
+    protected static final int X_SHORT_INDEX = 0;
 
-    protected static final int Y_INDEX = 1;
+    protected static final int Y_SHORT_INDEX = 1;
 
-    protected static final int Z_INDEX = 2;
+    protected static final int Z_SHORT_INDEX = 2;
 
-    public static void setX(ByteBuffer b, int offset, int x) {
-        b.position(offset);
-        var buffer = b.asIntBuffer();
-        buffer.put(X_INDEX, x);
+    public static void setX(ShortBuffer b, int offset, int x) {
+        b.put(X_SHORT_INDEX + offset, (short) x);
     }
 
-    public static int getX(ByteBuffer b, int offset) {
-        return b.position(offset).asIntBuffer().get(X_INDEX);
+    public static int getX(ShortBuffer b, int offset) {
+        return b.get(X_SHORT_INDEX + offset);
     }
 
-    public static void setY(ByteBuffer b, int offset, int y) {
-        b.position(offset);
-        var buffer = b.asIntBuffer();
-        buffer.put(Y_INDEX, y);
+    public static void setY(ShortBuffer b, int offset, int y) {
+        b.put(Y_SHORT_INDEX + offset, (short) y);
     }
 
-    public static int getY(ByteBuffer b, int offset) {
-        return b.position(offset).asIntBuffer().get(Y_INDEX);
+    public static int getY(ShortBuffer b, int offset) {
+        return b.get(Y_SHORT_INDEX + offset);
     }
 
-    public static void setZ(ByteBuffer b, int offset, int z) {
-        b.position(offset);
-        var buffer = b.asIntBuffer();
-        buffer.put(Z_INDEX, z);
+    public static void setZ(ShortBuffer b, int offset, int z) {
+        b.put(Z_SHORT_INDEX + offset, (short) z);
     }
 
-    public static int getZ(ByteBuffer b, int offset) {
-        return b.position(offset).asIntBuffer().get(Z_INDEX);
+    public static int getZ(ShortBuffer b, int offset) {
+        return b.get(Z_SHORT_INDEX + offset);
     }
 
-    public static void writeGameBlockPos(ByteBuffer b, int offset, GameBlockPos p) {
-        b.position(offset);
-        var bi = b.asIntBuffer();
-        bi.put(X_INDEX, p.x);
-        bi.put(Y_INDEX, p.y);
-        bi.put(Z_INDEX, p.z);
+    public static void writeGameBlockPos(ShortBuffer b, int offset, GameBlockPos p) {
+        b.put(X_SHORT_INDEX + offset, (short) p.x);
+        b.put(Y_SHORT_INDEX + offset, (short) p.y);
+        b.put(Z_SHORT_INDEX + offset, (short) p.z);
     }
 
-    public static GameBlockPos readGameBlockPos(ByteBuffer b, int offset) {
-        b.position(offset);
-        var bi = b.asIntBuffer();
-        return new GameBlockPos(bi.get(X_INDEX), bi.get(Y_INDEX), bi.get(Z_INDEX));
+    public static GameBlockPos readGameBlockPos(ShortBuffer b, int offset) {
+        return new GameBlockPos(b.get(X_SHORT_INDEX + offset), b.get(Y_SHORT_INDEX + offset),
+                b.get(Z_SHORT_INDEX + offset));
     }
 
 }

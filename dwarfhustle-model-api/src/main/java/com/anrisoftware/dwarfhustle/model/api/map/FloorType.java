@@ -45,8 +45,8 @@ public class FloorType extends KnowledgeObject {
 
     private String name;
 
-    public FloorType(long id) {
-        super(id);
+    public FloorType(int kid) {
+        super(kid);
     }
 
     @Override

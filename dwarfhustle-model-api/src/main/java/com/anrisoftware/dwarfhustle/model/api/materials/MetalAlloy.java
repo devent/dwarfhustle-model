@@ -33,14 +33,14 @@ import lombok.ToString;
 @Getter
 public class MetalAlloy extends Metal {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
     public static final String OBJECT_TYPE = MetalAlloy.class.getSimpleName();
 
-	public static final String TYPE = "Metal-Alloy";
+    public static final String TYPE = "Metal-Alloy";
 
-    public MetalAlloy(long id) {
-        super(id);
+    public MetalAlloy(int kid) {
+        super(kid);
     }
 
     @Override

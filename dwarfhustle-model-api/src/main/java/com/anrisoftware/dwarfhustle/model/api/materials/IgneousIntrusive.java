@@ -37,10 +37,10 @@ public class IgneousIntrusive extends StoneLayer {
 
     public static final String OBJECT_TYPE = IgneousIntrusive.class.getSimpleName();
 
-	public static final String TYPE = "Igneous-Intrusive";
+    public static final String TYPE = "Igneous-Intrusive";
 
-    public IgneousIntrusive(long id) {
-        super(id);
+    public IgneousIntrusive(int kid) {
+        super(kid);
     }
 
     @Override

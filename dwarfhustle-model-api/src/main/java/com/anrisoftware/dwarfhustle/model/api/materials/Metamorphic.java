@@ -37,10 +37,10 @@ public class Metamorphic extends StoneLayer {
 
     public static final String OBJECT_TYPE = Metamorphic.class.getSimpleName();
 
-	public static final String TYPE = "Metamorphic";
+    public static final String TYPE = "Metamorphic";
 
-    public Metamorphic(long id) {
-        super(id);
+    public Metamorphic(int kid) {
+        super(kid);
     }
 
     @Override

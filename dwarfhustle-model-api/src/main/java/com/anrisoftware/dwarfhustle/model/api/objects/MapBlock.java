@@ -83,30 +83,38 @@ public class MapBlock implements Serializable {
     public int parent = 0;
 
     /**
-     * ID of the material.
+     * RID of the material.
      */
-    @ToString.Exclude
-    public long material = -1;
+    public int material = -1;
 
     /**
-     * ID of the object.
+     * RID of the object.
      */
-    @ToString.Exclude
-    public long object = -1;
+    public int object = -1;
+
+    /**
+     * Temperature.
+     */
+    public int temp;
+
+    /**
+     * Light lux.
+     */
+    public int lux;
 
     /**
      * Bit field that defines the properties of the map block.
      * 
      * <pre>
-     * 00000000 00000000 00000000 00000000} Block is hidden.
-     * 00000000 00000000 00000000 00000001} Block is visible.
-     * 00000000 00000000 00000000 00000010} block-filled Filled with solid.
-     * 00000000 00000000 00000000 00000100} block-empty Filled with gas.
-     * 00000000 00000000 00000000 00001000} block-liquid Filled with liquid.
-     * 00000000 00000000 00000000 00010000} block-ramp Ramp block.
-     * 00000000 00000000 00000000 00100000} block-floor Floor block.
-     * 00000000 00000000 00000000 01000000} block-roof Roof block.
-     * 00000000 00000000 00000000 10000000} block-discovered
+     * 00000000 00000000} Block is hidden.
+     * 00000000 00000001} Block is visible.
+     * 00000000 00000010} block-filled Filled with solid.
+     * 00000000 00000100} block-empty Filled with gas.
+     * 00000000 00001000} block-liquid Filled with liquid.
+     * 00000000 00010000} block-ramp Ramp block.
+     * 00000000 00100000} block-floor Floor block.
+     * 00000000 01000000} block-roof Roof block.
+     * 00000000 10000000} block-discovered
      * </pre>
      */
     public PropertiesSet p = new PropertiesSet();
@@ -122,33 +130,31 @@ public class MapBlock implements Serializable {
     }
 
     /**
-     * Sets the RID of the material.
+     * Sets the ID of the material.
      */
-    public void setMaterialRid(long material) {
-        setMaterial(KnowledgeObject.kid2Id(material));
+    public void setMaterialId(long material) {
+        setMaterial(KnowledgeObject.id2Kid(material));
     }
 
     /**
-     * Returns the material RID.
+     * Returns the material ID.
      */
-    @ToString.Include
-    public long getMaterialRid() {
-        return KnowledgeObject.id2Kid(material);
+    public long getMaterialId() {
+        return KnowledgeObject.kid2Id(material);
     }
 
     /**
-     * Sets the RID of the material.
+     * Sets the ID of the material.
      */
-    public void setObjectRid(long object) {
-        setObject(KnowledgeObject.kid2Id(object));
+    public void setObjectId(long object) {
+        setObject(KnowledgeObject.id2Kid(object));
     }
 
     /**
-     * Returns the object RID.
+     * Returns the object ID.
      */
-    @ToString.Include
-    public long getObjectRid() {
-        return KnowledgeObject.id2Kid(object);
+    public long getObjectId() {
+        return KnowledgeObject.kid2Id(object);
     }
 
     public void setProperties(int p) {
@@ -297,9 +303,6 @@ public class MapBlock implements Serializable {
     }
 
     public boolean isNeighborsUpEmptyContinuously(MapChunk chunk, Function<Integer, MapChunk> retriever) {
-        if (pos.z == 32) {
-            // System.out.println(); // TODO
-        }
         MapBlock up = getNeighbor(NeighboringDir.U, chunk, retriever);
         while (up != null) {
             if (!up.isEmpty()) {

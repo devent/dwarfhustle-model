@@ -89,11 +89,14 @@ class GameChunkPosTest {
 
     static Stream chunk_contains_pos() {
         Stream.of(
-                of(new GameChunkPos(0, 0, 0, 0, 0, 0), new GameBlockPos(0, 0, 0), true),
+                of(new GameChunkPos(0, 0, 0, 0, 0, 0), new GameBlockPos(0, 0, 0), false),
                 of(new GameChunkPos(0, 0, 0, 64, 64, 64), new GameBlockPos(10, 10, 10), true),
-                of(new GameChunkPos(0, 0, 0, 64, 64, 64), new GameBlockPos(64, 10, 10), true),
-                of(new GameChunkPos(0, 0, 0, 64, 64, 64), new GameBlockPos(64, 64, 10), true),
-                of(new GameChunkPos(0, 0, 0, 64, 64, 64), new GameBlockPos(64, 64, 64), true),
+                of(new GameChunkPos(0, 0, 0, 64, 64, 64), new GameBlockPos(63, 10, 10), true),
+                of(new GameChunkPos(0, 0, 0, 64, 64, 64), new GameBlockPos(63, 63, 10), true),
+                of(new GameChunkPos(0, 0, 0, 64, 64, 64), new GameBlockPos(63, 63, 63), true),
+                of(new GameChunkPos(0, 0, 0, 64, 64, 64), new GameBlockPos(64, 10, 10), false),
+                of(new GameChunkPos(0, 0, 0, 64, 64, 64), new GameBlockPos(64, 64, 10), false),
+                of(new GameChunkPos(0, 0, 0, 64, 64, 64), new GameBlockPos(64, 64, 64), false),
                 of(new GameChunkPos(4, 0, 0, 8, 4, 4), new GameBlockPos(0, 0, 0), false),
                 of(new GameChunkPos(4, 0, 0, 8, 4, 4), new GameBlockPos(4, 0, 0), true),
                 of(new GameChunkPos(4, 0, 0, 8, 4, 4), new GameBlockPos(4, 5, 0), false),

@@ -74,7 +74,7 @@ public enum TerrainImage {
         return new TerrainLoadImage(d, h, w, columns, chunkSize);
     }
 
-    public long[][][] loadTerrain() throws IOException {
+    public int[][][] loadTerrain() throws IOException {
         return getTerrain().load(TerrainImage.class.getResource(getImageName()));
     }
 

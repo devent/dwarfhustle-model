@@ -37,10 +37,10 @@ public class StoneLayer extends Stone {
 
     public static final String OBJECT_TYPE = StoneLayer.class.getSimpleName();
 
-	public static final String TYPE = "Stone-Layer";
+    public static final String TYPE = "Stone-Layer";
 
-    public StoneLayer(long id) {
-        super(id);
+    public StoneLayer(int kid) {
+        super(kid);
     }
 
     @Override

@@ -37,10 +37,10 @@ public class Seabed extends Soil {
 
     public static final String OBJECT_TYPE = Seabed.class.getSimpleName();
 
-	public static final String TYPE = "Seabed";
+    public static final String TYPE = "Seabed";
 
-    public Seabed(long id) {
-        super(id);
+    public Seabed(int kid) {
+        super(kid);
     }
 
     @Override

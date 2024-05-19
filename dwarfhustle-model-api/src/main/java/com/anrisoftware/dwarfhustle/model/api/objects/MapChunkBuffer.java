@@ -18,7 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
@@ -31,15 +31,15 @@ import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
  * <li>@{code P} parent chunk CID;
  * <li>@{code c} chunk size;
  * <li>@{code xyzXYZ} chunk position;
+ * <li>@{code N} 26 CIDs of neighbors;
  * <li>@{code C} {@link CidGameChunkPosMapBuffer};
  * <li>@{code b} optionally {@link MapBlockBuffer};
  * </ul>
  * 
  * <pre>
- * long 0         1         2         3         4         5         6         7         8         9         10        11        12        13        14        15        16        17        18        19        20
- * int  0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21   22   23   24   24   25   26   27   28   29   30   31   32   33   34   35   36   37   38   39
- * byte 0    4    8    12   16   20   24   28   32   36   40   44   48   52   56   58   60   64   68   72   76   80   84   88   92   96   100  104  108  112  116  120  124  128  132  136  140
- *      iiii PPPP cccc xxxx yyyy zzzz XXXX YYYY ZZZZ NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN NNNN CCCC .... bbbb ....
+ * int   0         1         2         3
+ * short 0    1    2    3    4    5    6    7    8    9         35        43
+ *       iiii PPPP cccc xxxx yyyy zzzz XXXX YYYY ZZZZ NNNN x26. CCCC x8.. bbbb ....
  * </pre>
  */
 public class MapChunkBuffer {
@@ -47,53 +47,51 @@ public class MapChunkBuffer {
     /**
      * Size in bytes for non-leafs.
      */
-    public static final int SIZE_MIN = 4 + 4 + 4 + //
+    public static final int SIZE_MIN = 2 + 2 + 2 + //
             GameChunkPosBuffer.SIZE + //
-            26 * 4 + //
+            26 * 2 + //
             CidGameChunkPosMapBuffer.SIZE_MIN + //
             8 * CidGameChunkPosMapBuffer.SIZE_ENTRY;
 
     /**
      * Size in bytes for leafs.
      */
-    public static final int SIZE_LEAF_MIN = 4 + 4 + 4 + //
+    public static final int SIZE_LEAF_MIN = 2 + 2 + 2 + //
             GameChunkPosBuffer.SIZE + //
-            26 * 4 + //
+            26 * 2 + //
             CidGameChunkPosMapBuffer.SIZE_MIN + //
             0 * CidGameChunkPosMapBuffer.SIZE_ENTRY;
 
-    private static final int ID_INT_INDEX = 0;
+    private static final int ID_SHORT_INDEX = 0;
 
-    private static final int PARENT_INT_INDEX = 1;
+    private static final int PARENT_SHORT_INDEX = 1;
 
-    private static final int POS_OFFSET = 12;
+    private static final int CHUNK_SIZE_SHORT_INDEX = 2;
 
-    private static final int CHUNK_SIZE_INT_INDEX = 2;
+    private static final int POS_SHORT_INDEX = 3;
 
-    private static final int CHUNKS_OFFSET = 140;
+    private static final int NEIGHBORS_SHORT_INDEX = 9;
 
-    public static void setCid(ByteBuffer b, int offset, int id) {
-        b.position(offset);
-        var buffer = b.asIntBuffer();
-        buffer.put(ID_INT_INDEX, id);
+    private static final int CHUNKS_SHORT_INDEX = 35;
+
+    public static void setCid(ShortBuffer b, int offset, int id) {
+        b.put(ID_SHORT_INDEX + offset, (short) id);
     }
 
-    public static int getCid(ByteBuffer b, int offset) {
-        return b.position(offset).asIntBuffer().get(ID_INT_INDEX);
+    public static int getCid(ShortBuffer b, int offset) {
+        return b.get(ID_SHORT_INDEX + offset);
     }
 
-    public static void setParent(ByteBuffer b, int offset, int p) {
-        b.position(offset);
-        var buffer = b.asIntBuffer();
-        buffer.put(PARENT_INT_INDEX, p);
+    public static void setParent(ShortBuffer b, int offset, int p) {
+        b.put(PARENT_SHORT_INDEX + offset, (short) p);
     }
 
-    public static int getParent(ByteBuffer b, int offset) {
-        return b.position(offset).asIntBuffer().get(PARENT_INT_INDEX);
+    public static int getParent(ShortBuffer b, int offset) {
+        return b.get(PARENT_SHORT_INDEX + offset);
     }
 
-    public static void setPos(ByteBuffer b, int offset, int sx, int sy, int sz, int ex, int ey, int ez) {
-        offset += POS_OFFSET;
+    public static void setPos(ShortBuffer b, int offset, int sx, int sy, int sz, int ex, int ey, int ez) {
+        offset += POS_SHORT_INDEX;
         GameChunkPosBuffer.setX(b, offset, sx);
         GameChunkPosBuffer.setY(b, offset, sy);
         GameChunkPosBuffer.setZ(b, offset, sz);
@@ -102,83 +100,97 @@ public class MapChunkBuffer {
         GameChunkPosBuffer.setEz(b, offset, ez);
     }
 
-    public static int getSx(ByteBuffer b, int offset) {
-        offset += POS_OFFSET;
+    public static int getSx(ShortBuffer b, int offset) {
+        offset += POS_SHORT_INDEX;
         return GameChunkPosBuffer.getX(b, offset);
     }
 
-    public static int getSy(ByteBuffer b, int offset) {
-        offset += POS_OFFSET;
+    public static int getSy(ShortBuffer b, int offset) {
+        offset += POS_SHORT_INDEX;
         return GameChunkPosBuffer.getY(b, offset);
     }
 
-    public static int getSz(ByteBuffer b, int offset) {
-        offset += POS_OFFSET;
+    public static int getSz(ShortBuffer b, int offset) {
+        offset += POS_SHORT_INDEX;
         return GameChunkPosBuffer.getZ(b, offset);
     }
 
-    public static int getEx(ByteBuffer b, int offset) {
-        offset += POS_OFFSET;
+    public static int getEx(ShortBuffer b, int offset) {
+        offset += POS_SHORT_INDEX;
         return GameChunkPosBuffer.getEx(b, offset);
     }
 
-    public static int getEy(ByteBuffer b, int offset) {
-        offset += POS_OFFSET;
+    public static int getEy(ShortBuffer b, int offset) {
+        offset += POS_SHORT_INDEX;
         return GameChunkPosBuffer.getEy(b, offset);
     }
 
-    public static int getEz(ByteBuffer b, int offset) {
-        offset += POS_OFFSET;
+    public static int getEz(ShortBuffer b, int offset) {
+        offset += POS_SHORT_INDEX;
         return GameChunkPosBuffer.getEz(b, offset);
     }
 
-    public static void setChunkSize(ByteBuffer b, int offset, int c) {
-        b.position(offset);
-        var buffer = b.asIntBuffer();
-        buffer.put(CHUNK_SIZE_INT_INDEX, c);
+    public static void setNeighbors(ShortBuffer b, int offset, int[] neighbors) {
+        b.position(NEIGHBORS_SHORT_INDEX + offset);
+        for (int n : neighbors) {
+            b.put((short) n);
+        }
     }
 
-    public static int getChunkSize(ByteBuffer b, int offset) {
-        return b.position(offset).asIntBuffer().get(CHUNK_SIZE_INT_INDEX);
+    public static int[] getNeighbors(ShortBuffer b, int offset, int[] neighbors) {
+        b.position(NEIGHBORS_SHORT_INDEX + offset);
+        for (int i = 0; i < NeighboringDir.values().length; i++) {
+            neighbors[i] = b.get();
+        }
+        return neighbors;
     }
 
-    public static void setChunksCount(ByteBuffer b, int offset, int c) {
-        offset += CHUNKS_OFFSET;
+    public static void setChunkSize(ShortBuffer b, int offset, int c) {
+        b.put(CHUNK_SIZE_SHORT_INDEX + offset, (short) c);
+    }
+
+    public static int getChunkSize(ShortBuffer b, int offset) {
+        return b.get(CHUNK_SIZE_SHORT_INDEX + offset);
+    }
+
+    public static void setChunksCount(ShortBuffer b, int offset, int c) {
+        offset += CHUNKS_SHORT_INDEX;
         CidGameChunkPosMapBuffer.setCount(b, offset, c);
     }
 
-    public static int getChunksCount(ByteBuffer b, int offset) {
-        offset += CHUNKS_OFFSET;
+    public static int getChunksCount(ShortBuffer b, int offset) {
+        offset += CHUNKS_SHORT_INDEX;
         return CidGameChunkPosMapBuffer.getCount(b, offset);
     }
 
-    public static void setChunks(ByteBuffer b, int offset, int count, int[] entries) {
-        offset += CHUNKS_OFFSET;
+    public static void setChunks(ShortBuffer b, int offset, int count, int[] entries) {
+        offset += CHUNKS_SHORT_INDEX;
         CidGameChunkPosMapBuffer.setEntries(b, offset, count, entries);
     }
 
-    public static int[] getChunks(ByteBuffer b, int offset, int[] dest) {
-        offset += CHUNKS_OFFSET;
+    public static int[] getChunks(ShortBuffer b, int offset, int[] dest) {
+        offset += CHUNKS_SHORT_INDEX;
         return CidGameChunkPosMapBuffer.getEntries(b, offset, dest);
     }
 
     public static void writeMapChunk(ByteBuffer b, int offset, MapChunk chunk) {
         b.position(offset);
-        var bi = b.asIntBuffer();
-        bi.put(chunk.cid);
-        bi.put(chunk.parent);
-        bi.put(chunk.chunkSize);
-        GameChunkPosBuffer.putGameChunkPos(bi, chunk.pos);
-        bi.put(chunk.neighbors);
-        int chunksCount = chunk.getChunksCount();
-        if (!chunk.isLeaf() && chunksCount == 0) {
-            writeEmptyChunks(bi, 8);
+        var bs = b.asShortBuffer();
+        bs.put((short) chunk.cid);
+        bs.put((short) chunk.parent);
+        bs.put((short) chunk.chunkSize);
+        GameChunkPosBuffer.putGameChunkPos(bs, chunk.pos);
+        for (int n : chunk.neighbors) {
+            bs.put((short) n);
+        }
+        if (chunk.isLeaf()) {
+            writeEmptyChunks(bs);
         } else {
-            writeChunks(bi, chunk, chunksCount);
+            writeChunks(bs, chunk, 8);
         }
     }
 
-    private static void writeChunks(IntBuffer bi, MapChunk chunk, int chunksCount) {
+    private static void writeChunks(ShortBuffer b, MapChunk chunk, int chunksCount) {
         var entries = new int[chunksCount * 7];
         var viewChunks = chunk.getChunks().keyValuesView().iterator();
         for (int i = 0; i < chunk.getChunks().size(); i++) {
@@ -191,21 +203,21 @@ public class MapChunkBuffer {
             entries[i * 7 + 5] = next.getTwo().ep.y;
             entries[i * 7 + 6] = next.getTwo().ep.z;
         }
-        CidGameChunkPosMapBuffer.putEntries(bi, chunksCount, entries);
+        CidGameChunkPosMapBuffer.putEntries(b, chunksCount, entries);
     }
 
-    private static void writeEmptyChunks(IntBuffer bi, int chunksCount) {
-        bi.put(chunksCount);
-        var entries = new int[8 * 7];
-        bi.put(entries);
+    private static void writeEmptyChunks(ShortBuffer b) {
+        b.put((short) 0);
     }
 
     public static MapChunk readMapChunk(ByteBuffer b, int offset) {
         b.position(offset);
-        var bi = b.asIntBuffer();
-        var chunk = new MapChunk(bi.get(), bi.get(), bi.get(), GameChunkPosBuffer.getGameChunkPos(bi));
-        bi.get(chunk.neighbors);
-        var chunkEntries = CidGameChunkPosMapBuffer.getEntries(b, offset + CHUNKS_OFFSET, null);
+        var bs = b.asShortBuffer();
+        var chunk = new MapChunk(bs.get(), bs.get(), bs.get(), GameChunkPosBuffer.getGameChunkPos(bs));
+        for (int i = 0; i < 8; i++) {
+            chunk.neighbors[i] = bs.get();
+        }
+        var chunkEntries = CidGameChunkPosMapBuffer.getEntries(bs, offset + CHUNKS_SHORT_INDEX, null);
         if (!chunk.isLeaf()) {
             MutableIntObjectMap<GameChunkPos> chunks = IntObjectMaps.mutable.ofInitialCapacity(chunkEntries.length / 7);
             for (int i = 0; i < chunkEntries.length / 7; i++) {

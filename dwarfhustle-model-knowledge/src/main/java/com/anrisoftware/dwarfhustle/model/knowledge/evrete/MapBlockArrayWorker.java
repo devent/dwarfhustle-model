@@ -5,7 +5,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.MapChunksStore;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class BlockArrayWorker {
+public class MapBlockArrayWorker {
 
     private final MapChunksStore store;
 
@@ -20,7 +20,9 @@ public class BlockArrayWorker {
         });
         store.forEachValue(chunk -> {
             if (chunk.isLeaf()) {
-                // insert block fact
+                chunk.forEachBlocks((block) -> {
+                    session.insert(new MapBlockFact(store::getChunk, chunk, block));
+                });
                 session.fire();
                 session.clear();
             }

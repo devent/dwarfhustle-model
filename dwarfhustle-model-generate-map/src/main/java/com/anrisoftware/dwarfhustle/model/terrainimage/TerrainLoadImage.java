@@ -47,20 +47,20 @@ public class TerrainLoadImage {
 
     public final int chunkSize;
 
-    public CompletionStage<long[][][]> loadAsync(File file) {
+    public CompletionStage<int[][][]> loadAsync(File file) {
         return CompletableFuture.supplyAsync(() -> load(file));
     }
 
-    public long[][][] load(URL file) throws IOException {
+    public int[][][] load(URL file) throws IOException {
         return load(file.openStream());
     }
 
-    public long[][][] load(File file) {
+    public int[][][] load(File file) {
         return load(PngHelperInternal.istreamFromFile(file));
     }
 
-    public long[][][] load(InputStream stream) {
-        long[][][] terrain = new long[depth][height][width];
+    public int[][][] load(InputStream stream) {
+        int[][][] terrain = new int[depth][height][width];
         try (var reader = new PngReader(stream)) {
             int channels = reader.imgInfo.channels;
             if (channels < 3 || reader.imgInfo.bitDepth != 8) {
@@ -71,7 +71,7 @@ public class TerrainLoadImage {
         return terrain;
     }
 
-    private void readImage(PngReader reader, int channels, long[][][] terrain) {
+    private void readImage(PngReader reader, int channels, int[][][] terrain) {
         int x = 0, y = 0, z = 0, zoff = 0;
         for (int r = 0; r < reader.imgInfo.rows; r++) {
             var line = (ImageLineInt) reader.readRow();
@@ -83,7 +83,7 @@ public class TerrainLoadImage {
                 if (channels > 3) {
                     j++;
                 }
-                long id = convert2Id(red, green, blue);
+                int id = convert2Id(red, green, blue);
                 terrain[z + zoff][y][x++] = id;
                 if (x == width) {
                     x = 0;
@@ -100,7 +100,7 @@ public class TerrainLoadImage {
         }
     }
 
-    public static long convert2Id(int r, int g, int b) {
+    public static int convert2Id(int r, int g, int b) {
         return r + (g << 8) + (b << 16);
     }
 
