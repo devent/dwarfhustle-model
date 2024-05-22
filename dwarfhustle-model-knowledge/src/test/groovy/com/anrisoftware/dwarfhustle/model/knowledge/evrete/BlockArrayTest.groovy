@@ -15,13 +15,11 @@ import com.anrisoftware.dwarfhustle.model.api.objects.MapChunksStore
  */
 class BlockArrayTest {
 
-    static blocksArrayFile = "/home/devent/Projects/dwarf-hustle/docu/terrain-maps/BlockArrayTest-512-512-128.txt"
+    static int OXYGEN_ID = 923
 
-    static short OXYGEN_ID = 923
+    static int STONE_ID = 852
 
-    static short STONE_ID = 852
-
-    static short LIQUID_ID = 930
+    static int LIQUID_ID = 930
 
     static BlockArrayRules rules
 
@@ -51,16 +49,16 @@ class BlockArrayTest {
 
     @BeforeEach
     void setupBlocks() {
-        //        int w = 512
-        //        int h = 512
-        //        int d = 128
-        //        int chunkSize = 32
-        //        int chunksCount = 1353
-        int w = 4
-        int h = 4
-        int d = 4
-        int chunkSize = 2
-        int chunksCount = 9
+        int w = 512
+        int h = 512
+        int d = 128
+        int chunkSize = 32
+        int chunksCount = 1353
+        //        int w = 4
+        //        int h = 4
+        //        int d = 4
+        //        int chunkSize = 2
+        //        int chunksCount = 9
         this.store = createStore(tmp, w, h, d, chunkSize, chunksCount)
     }
 

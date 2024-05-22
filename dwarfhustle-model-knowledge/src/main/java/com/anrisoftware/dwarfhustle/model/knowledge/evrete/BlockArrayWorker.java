@@ -14,15 +14,16 @@ public class BlockArrayWorker {
     public void runRules() {
         var session = rules.mapKn.newStatefulSession();
         store.forEachValue(chunk -> {
-            if (chunk.isLeaf() && chunk.pos.ep.z <= 64) {
+            if (chunk.isLeaf() && chunk.pos.ep.z < 128) {
                 chunk.changed = true;
             }
         });
         store.forEachValue(chunk -> {
             if (chunk.changed && chunk.isLeaf()) {
-                for (int z = 0; z < chunk.getPos().getSizeZ(); z++) {
-                    for (int y = 0; y < chunk.getPos().getSizeY(); y++) {
-                        for (int x = 0; x < chunk.getPos().getSizeX(); x++) {
+                var pos = chunk.getPos();
+                for (int z = pos.z; z < pos.ep.z; z++) {
+                    for (int y = pos.y; y < pos.ep.y; y++) {
+                        for (int x = pos.x; x < pos.ep.x; x++) {
                             session.insert(new BlockFact(chunk, x, y, z));
                         }
                     }
