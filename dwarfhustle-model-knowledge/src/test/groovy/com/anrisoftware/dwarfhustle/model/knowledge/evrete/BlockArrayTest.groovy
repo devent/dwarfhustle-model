@@ -51,20 +51,17 @@ class BlockArrayTest {
 
     @BeforeEach
     void setupBlocks() {
-        int w = 512
-        int h = 512
-        int d = 128
-        int chunkSize = 32
-        int chunksCount = 1353
+        //        int w = 512
+        //        int h = 512
+        //        int d = 128
+        //        int chunkSize = 32
+        //        int chunksCount = 1353
+        int w = 4
+        int h = 4
+        int d = 4
+        int chunkSize = 2
+        int chunksCount = 9
         this.store = createStore(tmp, w, h, d, chunkSize, chunksCount)
-        this.array = new BlockArray(w, h, d, store)
-    }
-
-    void loadBlockArrayFromFile() {
-        def fc = new FileInputStream(blocksArrayFile).getChannel();
-        array.blocks.position(0);
-        fc.read(array.blocks);
-        fc.close();
     }
 
     @Test

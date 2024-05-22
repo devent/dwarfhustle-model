@@ -29,8 +29,8 @@ public class BlockArrayRules {
                 .where("$fact.z == 0") //
                 .execute(context -> {
                     BlockFact fact = context.get("$fact");
-                    int p = fact.array.getProp(fact.chunk, fact.x, fact.y, fact.z);
-                    fact.array.setProp(fact.chunk, fact.x, fact.y, fact.z, p | DISCOVERED);
+                    int p = BlockArray.getProp(fact.chunk, fact.x, fact.y, fact.z);
+                    BlockArray.setProp(fact.chunk, fact.x, fact.y, fact.z, p | DISCOVERED);
                 }) //
                 .newRule() //
                 .salience(1000) //
@@ -38,8 +38,8 @@ public class BlockArrayRules {
                 .where("$fact.z > 0") //
                 .execute(context -> {
                     BlockFact fact = context.get("$fact");
-                    int p = fact.array.getProp(fact.chunk, fact.x, fact.y, fact.z);
-                    fact.array.setProp(fact.chunk, fact.x, fact.y, fact.z, p | DISCOVERED);
+                    int p = BlockArray.getProp(fact.chunk, fact.x, fact.y, fact.z);
+                    BlockArray.setProp(fact.chunk, fact.x, fact.y, fact.z, p | DISCOVERED);
                 }) //
                 .build();
     }

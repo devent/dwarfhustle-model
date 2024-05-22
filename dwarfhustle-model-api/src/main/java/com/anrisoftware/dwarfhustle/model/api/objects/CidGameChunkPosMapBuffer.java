@@ -17,7 +17,10 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import java.nio.ShortBuffer;
+import static com.anrisoftware.dwarfhustle.model.api.objects.BufferUtils.readShort;
+import static com.anrisoftware.dwarfhustle.model.api.objects.BufferUtils.writeShort;
+
+import java.nio.ByteBuffer;
 
 /**
  * Writes and reads CID := {@link GameChunkPos} entries in a buffer.
@@ -52,113 +55,99 @@ public class CidGameChunkPosMapBuffer {
      */
     public static final int SIZE_ENTRY = 2 + GameChunkPosBuffer.SIZE;
 
-    /**
-     * Size of one entry in shorts (2 bytes).
-     */
-    public static final int SIZE_ENTRY_SHORT = SIZE_ENTRY / 2;
+    private static final int COUNT_INDEX = 0 * 2;
 
-    private static final int COUNT_SHORT_INDEX = 0;
+    private static final int ID_INDEX = 1 * 2;
 
-    private static final int ID_SHORT_INDEX = 1;
+    private static final int POS_INDEX = 2 * 2;
 
-    private static final int POS_SHORT_INDEX = 2;
-
-    public static void setCount(ShortBuffer b, int offset, int c) {
-        b.put(COUNT_SHORT_INDEX + offset, (short) c);
+    public static void setCount(ByteBuffer b, int offset, int c) {
+        writeShort(b.position(COUNT_INDEX + offset), (short) c);
     }
 
-    public static int getCount(ShortBuffer b, int offset) {
-        return b.get(COUNT_SHORT_INDEX + offset);
+    public static int getCount(ByteBuffer b, int offset) {
+        return readShort(b.position(COUNT_INDEX + offset));
     }
 
-    public static void setEntry(ShortBuffer b, int offset, int i, int[] entry) {
+    public static void setEntry(ByteBuffer b, int offset, int i, int[] entry) {
         assert entry.length == 7;
         setEntry(b, offset, i, entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6]);
     }
 
-    public static void setEntry(ShortBuffer b, int offset, int i, int cid, int sx, int sy, int sz, int ex, int ey,
+    public static void setEntry(ByteBuffer b, int offset, int i, int cid, int sx, int sy, int sz, int ex, int ey,
             int ez) {
-        offset += ID_SHORT_INDEX + i * SIZE_ENTRY_SHORT;
-        b.position(offset);
-        b.put((short) cid);
-        b.put((short) sx);
-        b.put((short) sy);
-        b.put((short) sz);
-        b.put((short) ex);
-        b.put((short) ey);
-        b.put((short) ez);
+        b.position(offset + ID_INDEX + i * SIZE_ENTRY);
+        writeShort(b, (short) cid);
+        writeShort(b, (short) sx);
+        writeShort(b, (short) sy);
+        writeShort(b, (short) sz);
+        writeShort(b, (short) ex);
+        writeShort(b, (short) ey);
+        writeShort(b, (short) ez);
     }
 
-    public static void setEntries(ShortBuffer b, int offset, int count, int[] entries) {
+    public static void setEntries(ByteBuffer b, int offset, int count, int[] entries) {
         b.position(offset);
         putEntries(b, count, entries);
     }
 
-    public static void putEntries(ShortBuffer b, int count, int[] entries) {
-        b.put((short) count);
+    public static void putEntries(ByteBuffer b, int count, int[] entries) {
+        writeShort(b, (short) count);
         for (int i = 0; i < count; i++) {
-            b.put((short) entries[i * 7 + 0]);
-            b.put((short) entries[i * 7 + 1]);
-            b.put((short) entries[i * 7 + 2]);
-            b.put((short) entries[i * 7 + 3]);
-            b.put((short) entries[i * 7 + 4]);
-            b.put((short) entries[i * 7 + 5]);
-            b.put((short) entries[i * 7 + 6]);
+            writeShort(b, (short) entries[i * 7 + 0]);
+            writeShort(b, (short) entries[i * 7 + 1]);
+            writeShort(b, (short) entries[i * 7 + 2]);
+            writeShort(b, (short) entries[i * 7 + 3]);
+            writeShort(b, (short) entries[i * 7 + 4]);
+            writeShort(b, (short) entries[i * 7 + 5]);
+            writeShort(b, (short) entries[i * 7 + 6]);
         }
     }
 
-    public static int[] getEntries(ShortBuffer b, int offset, int[] dest) {
+    public static int[] getEntries(ByteBuffer b, int offset, int[] dest) {
         b.position(offset);
-        int count = b.get();
+        int count = readShort(b);
         if (dest == null) {
             dest = new int[count * 7];
         }
         for (int i = 0; i < count; i++) {
-            dest[i * 7 + 0] = b.get();
-            dest[i * 7 + 1] = b.get();
-            dest[i * 7 + 2] = b.get();
-            dest[i * 7 + 3] = b.get();
-            dest[i * 7 + 4] = b.get();
-            dest[i * 7 + 5] = b.get();
-            dest[i * 7 + 6] = b.get();
+            dest[i * 7 + 0] = readShort(b);
+            dest[i * 7 + 1] = readShort(b);
+            dest[i * 7 + 2] = readShort(b);
+            dest[i * 7 + 3] = readShort(b);
+            dest[i * 7 + 4] = readShort(b);
+            dest[i * 7 + 5] = readShort(b);
+            dest[i * 7 + 6] = readShort(b);
         }
         return dest;
     }
 
-    public static int getCid(ShortBuffer b, int offset, int i) {
-        offset += ID_SHORT_INDEX + i * SIZE_ENTRY_SHORT;
-        b.position(offset);
-        return b.get();
+    public static int getCid(ByteBuffer b, int offset, int i) {
+        return readShort(b.position(offset + ID_INDEX + i * SIZE_ENTRY));
     }
 
-    public static int getSx(ShortBuffer b, int offset, int i) {
-        offset += POS_SHORT_INDEX + i * SIZE_ENTRY_SHORT;
-        return GameChunkPosBuffer.getX(b, offset);
+    public static int getSx(ByteBuffer b, int offset, int i) {
+        return GameChunkPosBuffer.getX(b, offset + POS_INDEX + i * SIZE_ENTRY);
     }
 
-    public static int getSy(ShortBuffer b, int offset, int i) {
-        offset += POS_SHORT_INDEX + i * SIZE_ENTRY_SHORT;
-        return GameChunkPosBuffer.getY(b, offset);
+    public static int getSy(ByteBuffer b, int offset, int i) {
+        return GameChunkPosBuffer.getY(b, offset + POS_INDEX + i * SIZE_ENTRY);
     }
 
-    public static int getSz(ShortBuffer b, int offset, int i) {
-        offset += POS_SHORT_INDEX + i * SIZE_ENTRY_SHORT;
-        return GameChunkPosBuffer.getZ(b, offset);
+    public static int getSz(ByteBuffer b, int offset, int i) {
+        return GameChunkPosBuffer.getZ(b, offset + POS_INDEX + i * SIZE_ENTRY);
     }
 
-    public static int getEx(ShortBuffer b, int offset, int i) {
-        offset += POS_SHORT_INDEX + i * SIZE_ENTRY_SHORT;
-        return GameChunkPosBuffer.getEx(b, offset);
+    public static int getEx(ByteBuffer b, int offset, int i) {
+        return GameChunkPosBuffer.getEx(b, offset + POS_INDEX + i * SIZE_ENTRY);
     }
 
-    public static int getEy(ShortBuffer b, int offset, int i) {
-        offset += POS_SHORT_INDEX + i * SIZE_ENTRY_SHORT;
-        return GameChunkPosBuffer.getEy(b, offset);
+    public static int getEy(ByteBuffer b, int offset, int i) {
+        return GameChunkPosBuffer.getEy(b, offset + POS_INDEX + i * SIZE_ENTRY);
     }
 
-    public static int getEz(ShortBuffer b, int offset, int i) {
-        offset += POS_SHORT_INDEX + i * SIZE_ENTRY_SHORT;
-        return GameChunkPosBuffer.getEz(b, offset);
+    public static int getEz(ByteBuffer b, int offset, int i) {
+        return GameChunkPosBuffer.getEz(b, offset + POS_INDEX + i * SIZE_ENTRY);
     }
 
 }

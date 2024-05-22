@@ -38,34 +38,30 @@ class MapBlockBufferTest {
         def args = []
         def offset = 0
         def b = ByteBuffer.allocate(offset + MapBlockBuffer.SIZE)
-        args << of(b, offset, 0, 1, 2, 3, 0b10000101, 5, 6, 4, 4, 4, 0, 0, 0, '00000085 00010002 00038004 8005')
+        args << of(b, offset, 0, 1, 2, 3, 0b10000101, 5, 6, 4, 4, 4, 0, 0, 0, '00000085 00010002 00038005 8006')
         //
         offset = 4
         b = ByteBuffer.allocate(offset + MapBlockBuffer.SIZE)
-        args << of(b, offset, 0, 1, 2, 3, 0b10000101, 5, 6, 4, 4, 4, 0, 0, 0, '00000000 00000085 00010002 00038004 8005')
+        args << of(b, offset, 0, 1, 2, 3, 0b10000101, 5, 6, 4, 4, 4, 0, 0, 0, '00000000 00000085 00010002 00038005 8006')
         Stream.of(args as Object[])
     }
 
     @ParameterizedTest
     @MethodSource()
     void set_get_map_block(ByteBuffer b, int offset, int i, int parent, int m, int o, int p, int t, int l, int w, int h, int d, int sx, int sy, int sz, def expected) {
-        def sb = b.asShortBuffer()
-        def ib = b.asIntBuffer()
-        int soffset = offset / 2
-        int ioffset = offset / 4
-        MapBlockBuffer.setParent(sb, soffset, parent)
-        MapBlockBuffer.setMaterial(sb, soffset, m)
-        MapBlockBuffer.setObject(sb, soffset, o)
-        MapBlockBuffer.setProp(ib, ioffset, p)
-        MapBlockBuffer.setTemp(sb, soffset, t)
-        MapBlockBuffer.setLux(sb, soffset, l)
+        MapBlockBuffer.setParent(b, offset, parent)
+        MapBlockBuffer.setMaterial(b, offset, m)
+        MapBlockBuffer.setObject(b, offset, o)
+        MapBlockBuffer.setProp(b, offset, p)
+        MapBlockBuffer.setTemp(b, offset, t)
+        MapBlockBuffer.setLux(b, offset, l)
         assert HexFormat.of().formatHex(b.array()) == replace(expected, " ", "")
-        assert MapBlockBuffer.getParent(sb, soffset) == parent
-        assert MapBlockBuffer.getMaterial(sb, soffset) == m
-        assert MapBlockBuffer.getObject(sb, soffset) == o
-        assert MapBlockBuffer.getProp(ib, ioffset) == p
-        assert MapBlockBuffer.getTemp(sb, soffset) == t
-        assert MapBlockBuffer.getLux(sb, soffset) == l
+        assert MapBlockBuffer.getParent(b, offset) == parent
+        assert MapBlockBuffer.getMaterial(b, offset) == m
+        assert MapBlockBuffer.getObject(b, offset) == o
+        assert MapBlockBuffer.getProp(b, offset) == p
+        assert MapBlockBuffer.getTemp(b, offset) == t
+        assert MapBlockBuffer.getLux(b, offset) == l
     }
 
     @ParameterizedTest

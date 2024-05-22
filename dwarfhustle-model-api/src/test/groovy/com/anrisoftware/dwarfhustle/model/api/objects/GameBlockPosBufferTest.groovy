@@ -34,23 +34,23 @@ import org.junit.jupiter.params.provider.MethodSource
 class GameBlockPosBufferTest {
 
     static Stream set_get_x_y_z() {
-        def b = ByteBuffer.allocate(GameBlockPosBuffer.SIZE)
+        int offset = 0
+        def b = ByteBuffer.allocate(offset + GameBlockPosBuffer.SIZE)
         Stream.of(
-                of(b, 0, 1, 2, 3, "00010002 0003"),
+                of(b, offset, 1, 2, 3, "00010002 0003"),
                 )
     }
 
     @ParameterizedTest
     @MethodSource()
     void set_get_x_y_z(ByteBuffer b, int offset, int x, int y, int z, def expected) {
-        def bs = b.asShortBuffer()
-        GameBlockPosBuffer.setX(bs, offset, x)
-        GameBlockPosBuffer.setY(bs, offset, y)
-        GameBlockPosBuffer.setZ(bs, offset, z)
+        GameBlockPosBuffer.setX(b, offset, x)
+        GameBlockPosBuffer.setY(b, offset, y)
+        GameBlockPosBuffer.setZ(b, offset, z)
         b.rewind()
         assert HexFormat.of().formatHex(b.array()) == replace(expected, " ", "")
-        assert GameBlockPosBuffer.getX(bs, offset) == x
-        assert GameBlockPosBuffer.getY(bs, offset) == y
-        assert GameBlockPosBuffer.getZ(bs, offset) == z
+        assert GameBlockPosBuffer.getX(b, offset) == x
+        assert GameBlockPosBuffer.getY(b, offset) == y
+        assert GameBlockPosBuffer.getZ(b, offset) == z
     }
 }

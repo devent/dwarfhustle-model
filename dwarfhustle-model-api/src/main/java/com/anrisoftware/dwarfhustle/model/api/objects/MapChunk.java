@@ -22,8 +22,6 @@ import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockBuffer.read
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockBuffer.writeMapBlockIndex;
 
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -95,18 +93,6 @@ public class MapChunk {
      * chunk is a leaf.
      */
     public Optional<ByteBuffer> blocks = Optional.empty();
-
-    /**
-     * Optionally, the {@link MapBlock}s {@link ShortBuffer} in the chunk if the
-     * chunk is a leaf.
-     */
-    public Optional<ShortBuffer> shortBuffer = Optional.empty();
-
-    /**
-     * Optionally, the {@link MapBlock}s {@link IntBuffer} in the chunk if the chunk
-     * is a leaf.
-     */
-    public Optional<IntBuffer> intBuffer = Optional.empty();
 
     /**
      * The chunk CIDs of {@link NeighboringDir} neighbors of this chunk.
@@ -283,8 +269,6 @@ public class MapChunk {
 
     public void setBlocksBuffer(ByteBuffer buffer) {
         this.blocks = Optional.of(buffer);
-        this.shortBuffer = Optional.of(buffer.asShortBuffer());
-        this.intBuffer = Optional.of(buffer.asIntBuffer());
     }
 
     public MapChunk findChunk(int x, int y, int z, Function<Integer, MapChunk> retriever) {

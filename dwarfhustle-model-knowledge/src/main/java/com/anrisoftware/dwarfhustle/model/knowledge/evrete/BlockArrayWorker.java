@@ -19,8 +19,14 @@ public class BlockArrayWorker {
             }
         });
         store.forEachValue(chunk -> {
-            if (chunk.isLeaf()) {
-                // insert block fact
+            if (chunk.changed && chunk.isLeaf()) {
+                for (int z = 0; z < chunk.getPos().getSizeZ(); z++) {
+                    for (int y = 0; y < chunk.getPos().getSizeY(); y++) {
+                        for (int x = 0; x < chunk.getPos().getSizeX(); x++) {
+                            session.insert(new BlockFact(chunk, x, y, z));
+                        }
+                    }
+                }
                 session.fire();
                 session.clear();
             }

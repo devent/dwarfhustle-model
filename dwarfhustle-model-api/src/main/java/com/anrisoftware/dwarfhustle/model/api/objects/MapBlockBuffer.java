@@ -17,9 +17,12 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import static com.anrisoftware.dwarfhustle.model.api.objects.BufferUtils.readInt;
+import static com.anrisoftware.dwarfhustle.model.api.objects.BufferUtils.readShort;
+import static com.anrisoftware.dwarfhustle.model.api.objects.BufferUtils.writeInt;
+import static com.anrisoftware.dwarfhustle.model.api.objects.BufferUtils.writeShort;
+
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
 
 /**
  * Writes and reads {@link MapBlock} in a byte buffer.
@@ -46,17 +49,17 @@ public class MapBlockBuffer {
      */
     public static final int SIZE = 4 + 2 + 2 + 2 + 2 + 2;
 
-    private static final int PARENT_SHORT_INDEX = 2;
+    private static final int PARENT_INDEX = 2 * 2;
 
-    private static final int MATERIAL_SHORT_INDEX = 3;
+    private static final int MATERIAL_INDEX = 3 * 2;
 
-    private static final int OBJECT_SHORT_INDEX = 4;
+    private static final int OBJECT_INDEX = 4 * 2;
 
-    private static final int PROP_INT_INDEX = 0;
+    private static final int PROP_INDEX = 0 * 4;
 
-    private static final int TEMP_SHORT_INDEX = 5;
+    private static final int TEMP_INDEX = 5 * 2;
 
-    private static final int LUX_SHORT_INDEX = 6;
+    private static final int LUX_INDEX = 6 * 2;
 
     /**
      * Returns the index from the x/y/z position.
@@ -94,52 +97,52 @@ public class MapBlockBuffer {
         return SIZE * w * h * d;
     }
 
-    public static void setParent(ShortBuffer b, int off, int p) {
-        b.put(PARENT_SHORT_INDEX + off, (short) p);
+    public static void setParent(ByteBuffer b, int off, int p) {
+        writeShort(b.position(PARENT_INDEX + off), (short) p);
     }
 
-    public static int getParent(ShortBuffer b, int off) {
-        return b.get(PARENT_SHORT_INDEX + off);
+    public static int getParent(ByteBuffer b, int off) {
+        return readShort(b.position(PARENT_INDEX + off));
     }
 
-    public static void setMaterial(ShortBuffer b, int off, int m) {
-        b.put(MATERIAL_SHORT_INDEX + off, (short) m);
+    public static void setMaterial(ByteBuffer b, int off, int m) {
+        writeShort(b.position(MATERIAL_INDEX + off), (short) m);
     }
 
-    public static int getMaterial(ShortBuffer b, int off) {
-        return b.get(MATERIAL_SHORT_INDEX + off);
+    public static int getMaterial(ByteBuffer b, int off) {
+        return readShort(b.position(MATERIAL_INDEX + off));
     }
 
-    public static void setObject(ShortBuffer b, int off, int o) {
-        b.put(OBJECT_SHORT_INDEX + off, (short) o);
+    public static void setObject(ByteBuffer b, int off, int o) {
+        writeShort(b.position(OBJECT_INDEX + off), (short) o);
     }
 
-    public static int getObject(ShortBuffer b, int off) {
-        return b.get(OBJECT_SHORT_INDEX + off);
+    public static int getObject(ByteBuffer b, int off) {
+        return readShort(b.position(OBJECT_INDEX + off));
     }
 
-    public static void setProp(IntBuffer b, int off, int p) {
-        b.put(PROP_INT_INDEX + off, p);
+    public static void setProp(ByteBuffer b, int off, int p) {
+        writeInt(b.position(PROP_INDEX + off), p);
     }
 
-    public static int getProp(IntBuffer b, int off) {
-        return b.get(PROP_INT_INDEX + off);
+    public static int getProp(ByteBuffer b, int off) {
+        return readInt(b.position(PROP_INDEX + off));
     }
 
-    public static void setTemp(ShortBuffer b, int off, int t) {
-        b.put(TEMP_SHORT_INDEX + off, (short) (t - 32_769));
+    public static void setTemp(ByteBuffer b, int off, int t) {
+        writeShort(b.position(TEMP_INDEX + off), (short) (t - 32_768));
     }
 
-    public static int getTemp(ShortBuffer b, int off) {
-        return b.get(TEMP_SHORT_INDEX + off) + 32_769;
+    public static int getTemp(ByteBuffer b, int off) {
+        return readShort(b.position(TEMP_INDEX + off)) + 32_768;
     }
 
-    public static void setLux(ShortBuffer b, int off, int l) {
-        b.put(LUX_SHORT_INDEX + off, (short) (l - 32_769));
+    public static void setLux(ByteBuffer b, int off, int l) {
+        writeShort(b.position(LUX_INDEX + off), (short) (l - 32_768));
     }
 
-    public static int getLux(ShortBuffer b, int off) {
-        return b.get(LUX_SHORT_INDEX + off) + 32_769;
+    public static int getLux(ByteBuffer b, int off) {
+        return readShort(b.position(LUX_INDEX + off)) + 32_768;
     }
 
     /**
@@ -159,14 +162,12 @@ public class MapBlockBuffer {
             int sy, int sz) {
         int index = calcIndex(cw, ch, cd, sx, sy, sz, block.pos.x, block.pos.y, block.pos.z);
         b.position(offset + index * SIZE);
-        var bs = b.asShortBuffer();
-        var bi = b.asIntBuffer();
-        bi.put(PROP_INT_INDEX, block.p.bits);
-        bs.put(PARENT_SHORT_INDEX, (short) block.parent);
-        bs.put(MATERIAL_SHORT_INDEX, (short) block.material);
-        bs.put(OBJECT_SHORT_INDEX, (short) block.object);
-        bs.put(TEMP_SHORT_INDEX, (short) (block.temp - 32_768));
-        bs.put(LUX_SHORT_INDEX, (short) (block.lux - 32_768));
+        writeInt(b, block.p.bits);
+        writeShort(b, (short) block.parent);
+        writeShort(b, (short) block.material);
+        writeShort(b, (short) block.object);
+        writeShort(b, (short) (block.temp - 32_768));
+        writeShort(b, (short) (block.lux - 32_768));
     }
 
     /**
@@ -185,15 +186,13 @@ public class MapBlockBuffer {
     public static MapBlock readMapBlockIndex(ByteBuffer b, int offset, int i, int cw, int ch, int sx, int sy, int sz) {
         var block = new MapBlock();
         b.position(offset + i * SIZE);
-        var bs = b.asShortBuffer();
-        var bi = b.asIntBuffer();
         block.pos = new GameBlockPos(calcX(i, cw, sx), calcY(i, cw, sy), calcZ(i, cw, ch, sz));
-        block.p = new PropertiesSet(bi.get(PROP_INT_INDEX));
-        block.parent = bs.get(PARENT_SHORT_INDEX);
-        block.material = bs.get(MATERIAL_SHORT_INDEX);
-        block.object = bs.get(OBJECT_SHORT_INDEX);
-        block.temp = bs.get(TEMP_SHORT_INDEX) + 32_768;
-        block.lux = bs.get(LUX_SHORT_INDEX) + 32_768;
+        block.p = new PropertiesSet(readInt(b));
+        block.parent = readShort(b);
+        block.material = readShort(b);
+        block.object = readShort(b);
+        block.temp = readShort(b) + 32_768;
+        block.lux = readShort(b) + 32_768;
         return block;
     }
 
