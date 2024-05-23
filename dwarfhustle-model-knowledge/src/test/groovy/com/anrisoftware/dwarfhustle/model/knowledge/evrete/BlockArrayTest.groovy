@@ -3,11 +3,12 @@ package com.anrisoftware.dwarfhustle.model.knowledge.evrete
 import java.nio.file.Path
 
 import org.apache.commons.io.IOUtils
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 
+import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunksStore
 
 /**
@@ -21,16 +22,8 @@ class BlockArrayTest {
 
     static int LIQUID_ID = 930
 
-    static BlockArrayRules rules
-
     @TempDir
     static Path tmp
-
-    @BeforeAll
-    static void setupRules() {
-        this.rules = new BlockArrayRules()
-        rules.setupRulesMap()
-    }
 
     static path = "/home/devent/Projects/dwarf-hustle/docu/terrain-maps"
 
@@ -49,22 +42,30 @@ class BlockArrayTest {
 
     @BeforeEach
     void setupBlocks() {
-        int w = 512
-        int h = 512
-        int d = 128
-        int chunkSize = 32
-        int chunksCount = 1353
-        //        int w = 4
-        //        int h = 4
-        //        int d = 4
-        //        int chunkSize = 2
-        //        int chunksCount = 9
-        this.store = createStore(tmp, w, h, d, chunkSize, chunksCount)
+        //        int w = 512
+        //        int h = 512
+        //        int d = 128
+        //        int chunkSize = 32
+        //        int chunksCount = 1353
     }
 
-    @Test
-    void up_natural_light() {
-        def worker = new BlockArrayWorker(store, rules)
+    @CsvSource(["4,4,4,2,9"])
+    @ParameterizedTest
+    void up_empty_block_discovered(int w, int h, int d, int chunkSize, int chunksCount) {
+        this.store = createStore(tmp, w, h, d, chunkSize, chunksCount)
+        def worker = new BlockArrayWorker(store)
+        worker.createKnowledge()
         worker.runRules()
+        def blocks = []
+        println "["
+        for (int z = 0; z < d; z++) {
+            for (int y = 0; y < h; y++) {
+                for (int x = 0; x < w; x++) {
+                    def b = store.findBlock(new GameBlockPos(x, y, z)).get().getTwo()
+                    println "[$b.pos.x,$b.pos.y,$b.pos.z,$b.parent,$b.material,$b.object,$b.temp,$b.lux,0b$b.p],"
+                }
+            }
+        }
+        println "]"
     }
 }

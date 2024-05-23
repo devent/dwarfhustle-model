@@ -42,8 +42,18 @@ public class BlockArray {
         return MapBlockBuffer.getProp(chunk.getBlocksBuffer(), off);
     }
 
-    public boolean isProp(MapChunk chunk, int x, int y, int z, int flags) {
+    public static boolean isProp(MapChunk chunk, int x, int y, int z, int flags) {
         return (getProp(chunk, x, y, z) & flags) == flags;
+    }
+
+    public static void addProp(MapChunk chunk, int x, int y, int z, int flags) {
+        int p = getProp(chunk, x, y, z);
+        setProp(chunk, x, y, z, p | flags);
+    }
+
+    public static void removeProp(MapChunk chunk, int x, int y, int z, int flags) {
+        int p = getProp(chunk, x, y, z);
+        setProp(chunk, x, y, z, p & ~flags);
     }
 
     public static void setTemp(MapChunk chunk, int x, int y, int z, short t) {

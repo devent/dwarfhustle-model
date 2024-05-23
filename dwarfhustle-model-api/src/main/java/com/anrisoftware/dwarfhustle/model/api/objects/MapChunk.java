@@ -156,8 +156,11 @@ public class MapChunk {
     }
 
     public boolean isInside(GameBlockPos other) {
-        return other.x >= pos.x && other.y >= pos.y && other.z >= pos.z && other.x < pos.ep.x && other.y < pos.ep.y
-                && other.z < pos.ep.z;
+        return isInside(other.x, other.y, other.z);
+    }
+
+    public boolean isInside(int x, int y, int z) {
+        return x >= pos.x && y >= pos.y && z >= pos.z && x < pos.ep.x && y < pos.ep.y && z < pos.ep.z;
     }
 
     public int getChunk(int x, int y, int z, int ex, int ey, int ez) {
@@ -213,9 +216,13 @@ public class MapChunk {
         }
     }
 
-    public MapBlock getBlock(GameBlockPos pos) {
+    public MapBlock getBlock(int x, int y, int z) {
         var buffer = blocks.orElseThrow();
-        return readMapBlock(buffer, pos.x, pos.y, pos.z);
+        return readMapBlock(buffer, x, y, z);
+    }
+
+    public MapBlock getBlock(GameBlockPos pos) {
+        return getBlock(pos.x, pos.y, pos.z);
     }
 
     public void setBlock(MapBlock block) {
@@ -271,14 +278,11 @@ public class MapChunk {
         this.blocks = Optional.of(buffer);
     }
 
-    public MapChunk findChunk(int x, int y, int z, Function<Integer, MapChunk> retriever) {
-        return findChunk(new GameBlockPos(x, y, z), retriever);
+    public MapChunk findChunk(GameBlockPos pos, Function<Integer, MapChunk> retriever) {
+        return findChunk(pos.x, pos.y, pos.z, retriever);
     }
 
-    public MapChunk findChunk(GameBlockPos pos, Function<Integer, MapChunk> retriever) {
-        int x = pos.getX();
-        int y = pos.getY();
-        int z = pos.getZ();
+    public MapChunk findChunk(int x, int y, int z, Function<Integer, MapChunk> retriever) {
         if (blocks.isEmpty()) {
             for (var view : chunks.keyValuesView()) {
                 var b = view.getTwo();
