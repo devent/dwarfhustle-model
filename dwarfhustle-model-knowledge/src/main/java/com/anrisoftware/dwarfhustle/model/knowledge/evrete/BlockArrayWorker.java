@@ -24,7 +24,6 @@ public class BlockArrayWorker {
 
     public void createKnowledge() throws IOException {
         var conf = new Configuration();
-        conf.setProperty("evrete.core.parallelism", "1");
         var service = new KnowledgeService(conf);
         var rulesetUrl = BlockArrayWorker.class.getResource("BlockArrayRules.java");
         assert rulesetUrl != null;

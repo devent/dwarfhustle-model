@@ -14,7 +14,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.MapChunksStore
 /**
  * @see BlockArray
  */
-class BlockArrayTest {
+class BlockArrayTest1 {
 
     static int OXYGEN_ID = 923
 

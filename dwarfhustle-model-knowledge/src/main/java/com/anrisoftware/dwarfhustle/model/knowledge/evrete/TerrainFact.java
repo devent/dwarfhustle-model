@@ -1,18 +1,28 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.evrete;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
+import java.util.function.Function;
 
-import lombok.Data;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 
 /**
- * Fact for TerrainCreateRules.
+ * Terrain block fact with the terrain material.
+ * <p>
+ * 
  */
-@Data
-public class TerrainFact {
+public class TerrainFact extends BlockFact {
 
-    public final int mid;
+    public final int[][][] terrain;
 
-    public final MapBlock block;
+    public TerrainFact(MapChunk chunk, int x, int y, int z, Function<Integer, MapChunk> retriever, int[][][] terrain) {
+        super(chunk, x, y, z, retriever);
+        this.terrain = terrain;
+    }
 
-    public final MapBlock[] neighbors;
+    public int getTerrain(int x, int y, int z) {
+        return terrain[z][y][x];
+    }
+
+    public int getTerrain() {
+        return getTerrain(x, y, z);
+    }
 }

@@ -27,7 +27,6 @@ import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import java.util.stream.Stream
 
-import org.evrete.api.RuleSession
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Timeout
@@ -39,9 +38,10 @@ import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
 import com.anrisoftware.dwarfhustle.model.actor.DwarfhustleModelActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
+import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunksStore
-import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainCreateKnowledge
+import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustlePowerloomModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor
@@ -67,9 +67,7 @@ class TerrainImageCreateMapTest {
 
     static ActorRef<Message> cacheActor
 
-    static TerrainCreateKnowledge knowledge
-
-    static RuleSession session
+    static TerrainKnowledge terrainKnowledge
 
     @BeforeAll
     static void setupActor() {
@@ -90,8 +88,7 @@ class TerrainImageCreateMapTest {
         PowerLoomKnowledgeActor.create(injector, ofSeconds(1), supplyAsync({cacheActor})).whenComplete({ it, ex ->
             knowledgeActor = it
         } ).get()
-        this.knowledge = new TerrainCreateKnowledge({ timeout, typeClass, type -> askKnowledgeObjects(actor.actorSystem, timeout, typeClass, type) })
-        this.session = knowledge.createSession()
+        this.terrainKnowledge = new TerrainKnowledge({ timeout, typeClass, type -> askKnowledgeObjects(actor.actorSystem, timeout, typeClass, type) })
     }
 
     @AfterAll
@@ -101,20 +98,20 @@ class TerrainImageCreateMapTest {
 
     static Stream test_start_import_terrain() {
         def args = []
-        //        args << of(TerrainImage.terrain_4_4_4_2)
-        //        args << of(TerrainImage.terrain_8_8_8_2)
-        //        args << of(TerrainImage.terrain_8_8_8_4)
-        //        args << of(TerrainImage.terrain_32_32_32_4)
-        //        args << of(TerrainImage.terrain_32_32_32_8)
+        args << of(TerrainImage.terrain_4_4_4_2, false, new Terrain_4_4_4_2_blocks_expected().run())
+        //args << of(TerrainImage.terrain_8_8_8_2, false, null)
+        //                args << of(TerrainImage.terrain_8_8_8_4, false, new Terrain_8_8_8_2_blocks_expected().run())
+        //                args << of(TerrainImage.terrain_32_32_32_4, false, null)
+        //                args << of(TerrainImage.terrain_32_32_32_8, false, null)
         //
-        args << of(TerrainImage.terrain_128_128_128_16)
-        args << of(TerrainImage.terrain_128_128_128_32)
-        args << of(TerrainImage.terrain_256_256_128_16)
-        args << of(TerrainImage.terrain_256_256_128_32)
-        args << of(TerrainImage.terrain_256_256_128_64)
-        args << of(TerrainImage.terrain_512_512_128_16)
-        args << of(TerrainImage.terrain_512_512_128_32)
-        args << of(TerrainImage.terrain_512_512_128_64)
+        //        args << of(TerrainImage.terrain_128_128_128_16, false, null)
+        //        args << of(TerrainImage.terrain_128_128_128_32, false, null)
+        //        args << of(TerrainImage.terrain_256_256_128_16, false, null)
+        //        args << of(TerrainImage.terrain_256_256_128_32, false, null)
+        //        args << of(TerrainImage.terrain_256_256_128_64, false, null)
+        //args << of(TerrainImage.terrain_512_512_128_16, false, null)
+        //        args << of(TerrainImage.terrain_512_512_128_32, false, null)
+        //        args << of(TerrainImage.terrain_512_512_128_64, false, null)
         Stream.of(args as Object[])
     }
 
@@ -124,7 +121,7 @@ class TerrainImageCreateMapTest {
     @ParameterizedTest
     @MethodSource()
     @Timeout(value = 60, unit = TimeUnit.MINUTES)
-    void test_start_import_terrain(TerrainImage image) {
+    void test_start_import_terrain(TerrainImage image, boolean printBlocks, List blocksExpected) {
         def terrain = image.terrain
         def gm = new GameMap(1)
         gm.chunkSize = image.chunkSize;
@@ -134,8 +131,40 @@ class TerrainImageCreateMapTest {
         gm.depth = terrain.depth
         def file = format("terrain_%d_%d_%d_%d_%d.map", gm.width, gm.height, gm.depth, gm.chunkSize, gm.chunksCount)
         def store = new MapChunksStore(Path.of(tmp.absolutePath, file), gm.width, gm.height, gm.chunkSize, gm.chunksCount);
-        def createMap = injector.getInstance(TerrainImageCreateMapFactory).create(store)
-        createMap.startImport(TerrainImageCreateMapTest.class.getResource(image.imageName), terrain, gm, session)
+        def createMap = injector.getInstance(TerrainImageCreateMapFactory).create(store, terrainKnowledge)
+        createMap.startImport(TerrainImageCreateMapTest.class.getResource(image.imageName), terrain, gm)
+        if (printBlocks) {
+            println "["
+            for (int z = 0; z < terrain.depth; z++) {
+                for (int y = 0; y < terrain.height; y++) {
+                    for (int x = 0; x < terrain.width; x++) {
+                        def b = store.findBlock(new GameBlockPos(x, y, z)).get().getTwo()
+                        println "[$b.pos.x,$b.pos.y,$b.pos.z,$b.parent,$b.material,$b.object,$b.temp,$b.lux,0b$b.p],"
+                    }
+                }
+            }
+            println "]"
+        }
+        if (blocksExpected) {
+            int i = 0
+            for (int z = 0; z < terrain.depth; z++) {
+                for (int y = 0; y < terrain.height; y++) {
+                    for (int x = 0; x < terrain.width; x++) {
+                        def b = store.findBlock(new GameBlockPos(x, y, z)).get().getTwo()
+                        assert blocksExpected[i][0] == b.pos.x
+                        assert blocksExpected[i][1] == b.pos.y
+                        assert blocksExpected[i][2] == b.pos.z
+                        assert blocksExpected[i][3] == b.parent
+                        assert blocksExpected[i][4] == b.material
+                        assert blocksExpected[i][5] == b.object
+                        assert blocksExpected[i][6] == b.temp
+                        assert blocksExpected[i][7] == b.lux
+                        assert blocksExpected[i][8] == b.p.bits
+                        i++
+                    }
+                }
+            }
+        }
         println "$image done"
     }
 }

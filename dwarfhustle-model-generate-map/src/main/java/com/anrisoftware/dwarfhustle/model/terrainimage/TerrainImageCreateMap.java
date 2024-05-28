@@ -17,6 +17,11 @@
  */
 package com.anrisoftware.dwarfhustle.model.terrainimage;
 
+import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge.MATERIALS_GASES_NAME;
+import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge.MATERIALS_LIQUIDS_NAME;
+import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge.MATERIALS_SOLIDS_NAME;
+import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge.MATERIAL_OXYGEN_NAME;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -24,7 +29,7 @@ import java.util.function.Function;
 
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
-import org.evrete.api.StatefulSession;
+import org.evrete.api.Knowledge;
 import org.lable.oss.uniqueid.GeneratorException;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
@@ -35,6 +40,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunksStore;
 import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
 import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainFact;
+import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge;
 import com.google.inject.assistedinject.Assisted;
 
 import jakarta.inject.Inject;
@@ -55,12 +61,16 @@ public class TerrainImageCreateMap {
      */
     public interface TerrainImageCreateMapFactory {
 
-        TerrainImageCreateMap create(MapChunksStore store);
+        TerrainImageCreateMap create(MapChunksStore store, TerrainKnowledge terrainKnowledge);
     }
 
     @Inject
     @Assisted
     private MapChunksStore store;
+
+    @Inject
+    @Assisted
+    private TerrainKnowledge terrainKnowledge;
 
     private AtomicInteger cidCounter;
 
@@ -76,14 +86,10 @@ public class TerrainImageCreateMap {
 
     private int chunkSize;
 
-    private StatefulSession knowledge;
-
-    public void startImport(URL url, TerrainLoadImage image, GameMap gm, StatefulSession knowledge)
-            throws IOException, GeneratorException {
+    public void startImport(URL url, TerrainLoadImage image, GameMap gm) throws IOException, GeneratorException {
         this.cidCounter = new AtomicInteger(0);
         this.terrain = image.load(url);
         this.chunkSize = image.chunkSize;
-        this.knowledge = knowledge;
         this.mcRoot = new MapChunk(nextCid(), 0, chunkSize, new GameChunkPos(0, 0, 0, gm.width, gm.height, gm.depth));
         putObjectToBackend(mcRoot);
         this.gm = gm;
@@ -92,35 +98,49 @@ public class TerrainImageCreateMap {
         chunksCount++;
         createMap(mcRoot, 0, 0, 0, gm.width, gm.height, gm.depth);
         createNeighbors(mcRoot);
-        updateBlocks();
+        // updateTerrainMaterial();
         log.debug("startImport chunks {} blocks {}", chunksCount, blocksCount);
         gm.chunksCount = chunksCount;
         gm.blocksCount = blocksCount;
     }
 
-    private void updateBlocks() {
+    private void updateTerrainMaterial() throws IOException {
         Function<Integer, MapChunk> retriever = store::getChunk;
+        var terrainBlockMaterialRules = terrainKnowledge.createTerrainBlockMaterialRulesKnowledge();
+        var terrainBlockKindRules = terrainKnowledge.createTerrainBlockKindRulesKnowledge();
         store.forEachValue((c) -> {
-            if (c.isBlocksNotEmpty()) {
-                updateBlocks(c, retriever);
+            if (c.isLeaf()) {
+                updateTerrainMaterialBlocks(terrainBlockMaterialRules, c, retriever);
+                updateTerrainMaterialKind(terrainBlockKindRules, c, retriever);
             }
         });
     }
 
-    private void updateBlocks(MapChunk chunk, Function<Integer, MapChunk> retriever) {
-        chunk.forEachBlocks((b) -> {
-            var n = new MapBlock[NeighboringDir.values().length];
-            for (var dir : NeighboringDir.values()) {
-                n[dir.ordinal()] = b.getNeighbor(dir, chunk, retriever);
+    private void updateTerrainMaterialBlocks(Knowledge knowledge, MapChunk chunk,
+            Function<Integer, MapChunk> retriever) {
+        var session = knowledge.newStatelessSession();
+        var pos = chunk.getPos();
+        for (int z = pos.z; z < pos.ep.z; z++) {
+            for (int y = pos.y; y < pos.ep.y; y++) {
+                for (int x = pos.x; x < pos.ep.x; x++) {
+                    session.insert(new TerrainFact(chunk, x, y, z, retriever, terrain));
+                }
             }
-            var fact = new TerrainFact(terrain[b.pos.z][b.pos.y][b.pos.x], b, n);
-            knowledge.insert(fact);
-        });
-        knowledge.fire();
-        knowledge.forEachFact(TerrainFact.class, (fact) -> {
-            chunk.setBlock(fact.block);
-        });
-        knowledge.clear();
+        }
+        session.fire();
+    }
+
+    private void updateTerrainMaterialKind(Knowledge knowledge, MapChunk chunk, Function<Integer, MapChunk> retriever) {
+        var session = knowledge.newStatelessSession();
+        var pos = chunk.getPos();
+        for (int z = pos.z; z < pos.ep.z; z++) {
+            for (int y = pos.y; y < pos.ep.y; y++) {
+                for (int x = pos.x; x < pos.ep.x; x++) {
+                    session.insert(new TerrainFact(chunk, x, y, z, retriever, terrain));
+                }
+            }
+        }
+        session.fire();
     }
 
     private int nextCid() {
@@ -157,6 +177,18 @@ public class TerrainImageCreateMap {
                     for (int zz = z; zz < ez; zz++) {
                         blocksCount++;
                         var mb = new MapBlock(chunk.cid, new GameBlockPos(xx, yy, zz));
+                        if (terrain[zz][yy][xx] == 0) {
+                            mb.material = terrainKnowledge.getMaterials(MATERIAL_OXYGEN_NAME).getFirst();
+                        } else {
+                            mb.material = terrain[zz][yy][xx];
+                        }
+                        if (isMaterialGas(mb.material)) {
+                            mb.setEmpty(true);
+                        } else if (isMaterialLiquid(mb.material)) {
+                            mb.setLiquid(true);
+                        } else if (isMaterialSolid(mb.material)) {
+                            mb.setFilled(true);
+                        }
                         chunk.setBlock(mb);
                     }
                 }
@@ -167,6 +199,18 @@ public class TerrainImageCreateMap {
         }
         chunks.put(chunk.cid, chunk.getPos());
         putObjectToBackend(chunk);
+    }
+
+    public boolean isMaterialGas(int material) {
+        return terrainKnowledge.getMaterials(MATERIALS_GASES_NAME).contains(material);
+    }
+
+    public boolean isMaterialLiquid(int material) {
+        return terrainKnowledge.getMaterials(MATERIALS_LIQUIDS_NAME).contains(material);
+    }
+
+    public boolean isMaterialSolid(int material) {
+        return terrainKnowledge.getMaterials(MATERIALS_SOLIDS_NAME).contains(material);
     }
 
     private void createNeighbors(MapChunk rootc) {

@@ -25,6 +25,7 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.eclipse.collections.api.factory.primitive.IntIntMaps;
 import org.eclipse.collections.api.factory.primitive.IntLists;
@@ -35,7 +36,6 @@ import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.evrete.Configuration;
 import org.evrete.KnowledgeService;
 import org.evrete.api.Knowledge;
-import org.evrete.api.StatefulSession;
 import org.evrete.util.CompilationException;
 
 import com.anrisoftware.dwarfhustle.model.api.map.ObjectType;
@@ -45,16 +45,18 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Material;
 import com.anrisoftware.dwarfhustle.model.api.materials.Soil;
 import com.anrisoftware.dwarfhustle.model.api.materials.Stone;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapChunksStore;
 import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Knowledge rules to create a terrain.
+ * Knowledge rules for the terrain.
  */
 @Slf4j
-public class TerrainCreateKnowledge {
+public class TerrainKnowledge {
 
     public static final String MATERIALS_NAME = "materials";
 
@@ -114,35 +116,99 @@ public class TerrainCreateKnowledge {
 
     private static final Duration ASK_TIMEOUT = Duration.of(10, ChronoUnit.SECONDS);
 
-    private Knowledge knowledge;
-
     private final MutableIntObjectMap<MutableIntList> materials;
 
     private final MutableIntIntMap objects;
 
-    public TerrainCreateKnowledge(AskKnowledge askKnowledge) throws IOException {
+    private final Configuration conf;
+
+    private final KnowledgeService service;
+
+    public TerrainKnowledge(AskKnowledge askKnowledge) throws IOException {
         this.materials = IntObjectMaps.mutable.empty();
         this.objects = IntIntMaps.mutable.ofInitialCapacity(100);
         loadKnowledges(askKnowledge);
-        var conf = new Configuration();
+        this.conf = new Configuration();
         conf.addImport(NeighboringDir.class);
         for (var d : NeighboringDir.values()) {
             conf.addImport(String.format("static %s.%s", NeighboringDir.class.getName(), d.name()));
         }
-        var service = new KnowledgeService(conf);
-        var rulesetUrl = TerrainCreateKnowledge.class.getResource("TerrainCreateRules.java");
+        this.service = new KnowledgeService(conf);
+    }
+
+    public MutableIntList getMaterials(int name) {
+        return materials.get(name);
+    }
+
+    public int getObject(int name) {
+        return objects.get(name);
+    }
+
+    /**
+     * Creates the knowledge from {@code TerrainBlockMaterialRules.java}
+     */
+    public Knowledge createTerrainBlockMaterialRulesKnowledge() throws IOException {
+        return createRulesKnowledgeFromSource("TerrainBlockMaterialRules.java");
+    }
+
+    /**
+     * Creates the knowledge from {@code TerrainBlockKindRules.java}
+     */
+    public Knowledge createTerrainBlockKindRulesKnowledge() throws IOException {
+        return createRulesKnowledgeFromSource("TerrainBlockKindRules.java");
+    }
+
+    /**
+     * Creates the knowledge from {@code TerrainUpdateRules.java}
+     */
+    public Knowledge createTerrainUpdateRulesKnowledge() throws IOException {
+        return createRulesKnowledgeFromSource("TerrainUpdateRules.java");
+    }
+
+    private Knowledge createRulesKnowledgeFromSource(String name) throws IOException {
+        var rulesetUrl = TerrainKnowledge.class.getResource(name);
         assert rulesetUrl != null;
         try {
-            this.knowledge = service.newKnowledge("JAVA-SOURCE", rulesetUrl);
+            var knowledge = service.newKnowledge("JAVA-SOURCE", rulesetUrl);
             knowledge.set(MATERIALS_NAME, materials);
             knowledge.set(OBJECTS_NAME, objects);
+            return knowledge;
         } catch (IllegalStateException e) {
             if (e.getCause() instanceof CompilationException ce) {
                 ce.getErrorSources().forEach((c) -> {
                     log.error("{} - {}", c, ce.getErrorMessage(c));
                 });
             }
+            throw e;
         }
+    }
+
+    /**
+     * Run the rules to update the terrain.
+     */
+    public <T extends BlockFact> void runTerrainUpdateRules(MapChunksStore store, Knowledge knowledge) {
+        var session = knowledge.newStatefulSession();
+        store.forEachValue(chunk -> {
+            if (chunk.isLeaf() && chunk.pos.ep.z < 128) {
+                chunk.changed = true;
+            }
+        });
+        Function<Integer, MapChunk> retriever = store::getChunk;
+        store.forEachValue(chunk -> {
+            if (chunk.changed && chunk.isLeaf()) {
+                var pos = chunk.getPos();
+                for (int z = pos.z; z < pos.ep.z; z++) {
+                    for (int y = pos.y; y < pos.ep.y; y++) {
+                        for (int x = pos.x; x < pos.ep.x; x++) {
+                            session.insert(new BlockFact(chunk, x, y, z, retriever));
+                        }
+                    }
+                }
+                session.fire();
+                session.clear();
+            }
+        });
+        session.close();
     }
 
     @SneakyThrows
@@ -255,10 +321,5 @@ public class TerrainCreateKnowledge {
             dest.add(o.getKid());
             consume.accept(o);
         }
-    }
-
-    public StatefulSession createSession() {
-        var session = knowledge.newStatefulSession();
-        return session;
     }
 }

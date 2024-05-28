@@ -57,7 +57,7 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StartEmbeddedServerM
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StartEmbeddedServerMessage.StartEmbeddedServerSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StopEmbeddedServerMessage;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StopEmbeddedServerMessage.StopEmbeddedServerSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainCreateKnowledge;
+import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.ImportImageErrorMessage;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.ImportImageSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImporterStartEmbeddedServerMessage.ImporterStartEmbeddedServerSuccessMessage;
@@ -215,7 +215,7 @@ public class ImporterMapImage2DbActor {
             var wm = getWorldMap(og, gm.world);
             var store = new MapChunksStore(Path.of(root, format("%d.map", m.mapid)), gm.width, gm.height, gm.chunkSize,
                     gm.chunksCount);
-            var knowledge = new TerrainCreateKnowledge((timeout, typeClass,
+            var knowledge = new TerrainKnowledge((timeout, typeClass,
                     type) -> askKnowledgeObjects(actor.getActorSystem(), timeout, typeClass, type));
             var session = knowledge.createSession();
             terrainImageCreateMap.create(store).startImport(m.url, m.image, gm, session);
