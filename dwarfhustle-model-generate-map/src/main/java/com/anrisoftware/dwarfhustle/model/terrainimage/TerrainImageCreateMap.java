@@ -39,7 +39,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunksStore;
 import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
-import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainFact;
+import com.anrisoftware.dwarfhustle.model.knowledge.evrete.BlockFact;
 import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge;
 import com.google.inject.assistedinject.Assisted;
 
@@ -98,45 +98,30 @@ public class TerrainImageCreateMap {
         chunksCount++;
         createMap(mcRoot, 0, 0, 0, gm.width, gm.height, gm.depth);
         createNeighbors(mcRoot);
-        // updateTerrainMaterial();
-        log.debug("startImport chunks {} blocks {}", chunksCount, blocksCount);
+        updateTerrain();
+        log.debug("startImport done chunks {} blocks {}", chunksCount, blocksCount);
         gm.chunksCount = chunksCount;
         gm.blocksCount = blocksCount;
     }
 
-    private void updateTerrainMaterial() throws IOException {
+    private void updateTerrain() throws IOException {
         Function<Integer, MapChunk> retriever = store::getChunk;
-        var terrainBlockMaterialRules = terrainKnowledge.createTerrainBlockMaterialRulesKnowledge();
-        var terrainBlockKindRules = terrainKnowledge.createTerrainBlockKindRulesKnowledge();
+        var terrainBlockMaterialRules = terrainKnowledge.createTerrainUpdateRulesKnowledge();
         store.forEachValue((c) -> {
             if (c.isLeaf()) {
-                updateTerrainMaterialBlocks(terrainBlockMaterialRules, c, retriever);
-                updateTerrainMaterialKind(terrainBlockKindRules, c, retriever);
+                updateTerrainBlocks(terrainBlockMaterialRules, c, retriever);
             }
         });
     }
 
-    private void updateTerrainMaterialBlocks(Knowledge knowledge, MapChunk chunk,
-            Function<Integer, MapChunk> retriever) {
+    private void updateTerrainBlocks(Knowledge knowledge, MapChunk chunk, Function<Integer, MapChunk> retriever) {
+        chunk.changed = true;
         var session = knowledge.newStatelessSession();
         var pos = chunk.getPos();
         for (int z = pos.z; z < pos.ep.z; z++) {
             for (int y = pos.y; y < pos.ep.y; y++) {
                 for (int x = pos.x; x < pos.ep.x; x++) {
-                    session.insert(new TerrainFact(chunk, x, y, z, retriever, terrain));
-                }
-            }
-        }
-        session.fire();
-    }
-
-    private void updateTerrainMaterialKind(Knowledge knowledge, MapChunk chunk, Function<Integer, MapChunk> retriever) {
-        var session = knowledge.newStatelessSession();
-        var pos = chunk.getPos();
-        for (int z = pos.z; z < pos.ep.z; z++) {
-            for (int y = pos.y; y < pos.ep.y; y++) {
-                for (int x = pos.x; x < pos.ep.x; x++) {
-                    session.insert(new TerrainFact(chunk, x, y, z, retriever, terrain));
+                    session.insert(new BlockFact(chunk, x, y, z, gm.width, gm.height, gm.depth, retriever));
                 }
             }
         }

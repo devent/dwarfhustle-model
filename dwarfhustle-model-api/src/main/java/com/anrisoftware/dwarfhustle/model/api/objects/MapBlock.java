@@ -52,24 +52,6 @@ public class MapBlock implements Serializable {
 
     private static final int DISCOVERED_POS = 7;
 
-    public static final int HIDDEN = 0b00000000;
-
-    public static final int VISIBLE = 0b00000001;
-
-    public static final int FILLED = 0b00000010;
-
-    public static final int EMPTY = 0b00000100;
-
-    public static final int LIQUID = 0b00001000;
-
-    public static final int RAMP = 0b00010000;
-
-    public static final int FLOOR = 0b00100000;
-
-    public static final int ROOF = 0b01000000;
-
-    public static final int DISCOVERED = 0b10000000;
-
     public static final String OBJECT_TYPE = MapBlock.class.getSimpleName();
 
     /**

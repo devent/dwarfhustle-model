@@ -1,6 +1,6 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.evrete;
 
-import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlock.*;
+import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags.*;
 import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.BlockArray.*;
 
 import org.evrete.api.Environment;
@@ -21,13 +21,9 @@ import org.evrete.dsl.annotation.MethodPredicate;
  * <ul>
  * </ul>
  */
-public class BlockArrayRules extends AbstractTerrainRules {
+public class TerrainUpdateRules extends AbstractTerrainRules {
 
-    private static final int SALIENCE_BLOCK_VISIBLE = 1000;
-    
-    private static final int SALIENCE_LOWEST = 1;
-
-    @Rule(salience = SALIENCE_LOWEST)
+    @Rule(salience = 1)
     public void chunk_done(BlockFact $f, RhsContext ctx) {
         $f.chunk.changed = false;
     }
@@ -36,35 +32,35 @@ public class BlockArrayRules extends AbstractTerrainRules {
     // Block hidden or visible based on neighbors.
     //
 
-//    @Rule(salience = SALIENCE_BLOCK_VISIBLE)
-//    @Where(value = { "$f.block.isNeighborsFilled($f.neighbors, U)" })
-//    public void block_is_hidden(BlockFact $f, RhsContext ctx) {
-//        $f.block.setHidden(true);
-//    }
-
-    @Rule(salience = SALIENCE_BLOCK_VISIBLE)
-    @Where("$f.z == 0")
-    public void block_discovered_z_0(BlockFact $f, RhsContext ctx) {
-        //System.out.printf("block_discovered_z_0 %d/%d/%d \n", $f.x, $f.y, $f.z); // TODO
-        $f.addProp(DISCOVERED);
+    @Rule(salience = 10)
+    @Where(value = { "$f.z == 0" })
+    public void block_z_0_is_visible_discovered(BlockFact $f, RhsContext ctx) {
+        $f.addProp(VISIBLE.flag);
+        $f.addProp(DISCOVERED.flag);
     }
 
-    @Rule(salience = SALIENCE_BLOCK_VISIBLE)
-    @Where(value = "$f.z > 0", methods = { @MethodPredicate(method = "test_up_empty", args = { "$f" }) })
+    @Rule(salience = 10)
+    @Where(value = { "$f.z > 0 && $f.isNeighborsFilled(U)" })
+    public void block_is_hidden(BlockFact $f, RhsContext ctx) {
+        $f.addProp(HIDDEN.flag);
+    }
+
+    @Rule(salience = 10)
+    @Where(value = "$f.z > 0 && $f.isLineOfSightUp()")
     public void block_discovered_above_empty(BlockFact $f, RhsContext ctx) {
         //System.out.printf("block_discovered_above_empty(%d/%d/%d)%n",$f.x, $f.y, $f.z); // TODO
-        $f.addProp(DISCOVERED);
+        $f.addProp(DISCOVERED.flag);
     }
 
     //
     // Object type based on block status and neighbors.
     //
 
-    @Rule(salience = 100)
-    @Where(value = { "$f.isProp(EMPTY) || $f.isProp(LIQUID)" })
-    public void object_set_block_on_empty_liquid(BlockFact $f, RhsContext ctx) {
-        $f.setObject(block);
-    }
+//    @Rule(salience = 100)
+//    @Where(value = { "$f.isProp(MapBlockFlags.EMPTY) || $f.isProp(MapBlockFlags.LIQUID)" })
+//    public void object_set_block_on_empty_liquid(BlockFact $f, RhsContext ctx) {
+//        $f.setObject(block);
+//    }
 //
 //    @Rule(salience = 100)
 //    @Where(value = { "$f.block.filled", "!$f.block.isNeighborsSameLevelExist($f.neighbors)" })
@@ -258,24 +254,4 @@ public class BlockArrayRules extends AbstractTerrainRules {
 //        $f.block.setRamp(true);
 //    }
 
-    /**
-     * Returns true if every block above the fact block is empty, i.e. there is
-     * natural light above the fact block.
-     */
-    public boolean test_up_empty(BlockFact f) {
-        //System.out.printf("test_up_empty(%d/%d/%d)%n",f.x, f.y, f.z); // TODO
-        var chunk = f.chunk;
-        for (int z = f.z - 1; z > 0; z--) {
-            if (chunk.isInside(f.x, f.y, z)) {
-                //System.out.printf("%d/%d/%d %s\n", f.x, f.y, z, isProp(chunk, f.x, f.y, z, EMPTY)); // TODO
-                if (!isProp(chunk, f.x, f.y, z, EMPTY)) {
-                    return false;
-                }
-            } else {
-                chunk = f.retriever.apply(chunk.parent);
-                chunk = chunk.findChunk(f.x, f.y, z, f.retriever);
-            }
-        }
-        return true;
-    }
 }

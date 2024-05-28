@@ -44,7 +44,9 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Liquid;
 import com.anrisoftware.dwarfhustle.model.api.materials.Material;
 import com.anrisoftware.dwarfhustle.model.api.materials.Soil;
 import com.anrisoftware.dwarfhustle.model.api.materials.Stone;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunksStore;
 import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
@@ -133,6 +135,10 @@ public class TerrainKnowledge {
         for (var d : NeighboringDir.values()) {
             conf.addImport(String.format("static %s.%s", NeighboringDir.class.getName(), d.name()));
         }
+        conf.addImport(MapBlockFlags.class);
+        for (var d : MapBlockFlags.values()) {
+            conf.addImport(String.format("static %s.%s", MapBlockFlags.class.getName(), d.name()));
+        }
         this.service = new KnowledgeService(conf);
     }
 
@@ -186,7 +192,7 @@ public class TerrainKnowledge {
     /**
      * Run the rules to update the terrain.
      */
-    public <T extends BlockFact> void runTerrainUpdateRules(MapChunksStore store, Knowledge knowledge) {
+    public <T extends BlockFact> void runTerrainUpdateRules(MapChunksStore store, Knowledge knowledge, GameMap gm) {
         var session = knowledge.newStatefulSession();
         store.forEachValue(chunk -> {
             if (chunk.isLeaf() && chunk.pos.ep.z < 128) {
@@ -200,7 +206,7 @@ public class TerrainKnowledge {
                 for (int z = pos.z; z < pos.ep.z; z++) {
                     for (int y = pos.y; y < pos.ep.y; y++) {
                         for (int x = pos.x; x < pos.ep.x; x++) {
-                            session.insert(new BlockFact(chunk, x, y, z, retriever));
+                            session.insert(new BlockFact(chunk, x, y, z, gm.width, gm.height, gm.depth, retriever));
                         }
                     }
                 }
