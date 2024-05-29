@@ -2,11 +2,12 @@ package com.anrisoftware.dwarfhustle.model.knowledge.evrete;
 
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockBuffer.calcIndex;
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags.EMPTY;
+import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags.FILLED;
+import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags.RAMP;
 
 import java.util.function.Function;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlockBuffer;
-import com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
 
@@ -226,48 +227,81 @@ public class BlockFact {
         return true;
     }
 
+    public boolean isNeighborsSameLevelExist() {
+        return isNeighborsExist(NeighboringDir.DIRS_SAME_LEVEL);
+    }
+
     /**
      * Returns true if all the neighbors are filled.
      */
     public boolean isNeighborsFilled(NeighboringDir... dirs) {
+        return isNeighborsFlag(FILLED.flag, dirs);
+    }
+
+    /**
+     * Returns true if all the neighbors are filled.
+     */
+    public boolean isNeighborsEmpty(NeighboringDir... dirs) {
+        return isNeighborsFlag(EMPTY.flag, dirs);
+    }
+
+    /**
+     * Returns true if all the neighbors are ramps.
+     */
+    public boolean isNeighborsRamp(NeighboringDir... dirs) {
+        return isNeighborsFlag(RAMP.flag, dirs);
+    }
+
+    private boolean isNeighborsFlag(int flag, NeighboringDir... dirs) {
         for (var dir : dirs) {
-            if (!isNeighborFilled(chunk, dir, MapBlockFlags.FILLED.flag)) {
+            if (!isNeighborFlag(chunk, dir, flag)) {
                 return false;
             }
         }
         return true;
     }
 
-    private boolean isNeighborFilled(MapChunk chunk, NeighboringDir dir, int flag) {
+    /**
+     * Returns true if the neighbors on the same level are empty.
+     */
+    public boolean isNeighborsSameLevelEmpty() {
+        return isNeighborsFlag(EMPTY.flag, NeighboringDir.DIRS_SAME_LEVEL);
+    }
+
+    /**
+     * Returns true if the neighbors on the same level are filled.
+     */
+    public boolean isNeighborsSameLevelFilled() {
+        return isNeighborsFlag(FILLED.flag, NeighboringDir.DIRS_SAME_LEVEL);
+    }
+
+    private boolean isNeighborFlag(MapChunk chunk, NeighboringDir dir, int flag) {
         int dx = x + dir.pos.x;
         int dy = y + dir.pos.y;
         int dz = z + dir.pos.z;
-//        if (!chunk.isLeaf()) {
-//            chunk = chunk.findChunk(dx, dy, dz, retriever);
-//        }
         if (dx < chunk.pos.x) {
-            chunk = retriever.apply(chunk.neighbors[NeighboringDir.E.ordinal()]);
-            return isNeighborFilled(chunk, dir, flag);
+            chunk = retriever.apply(chunk.neighbors[NeighboringDir.W.ordinal()]);
+            return isNeighborFlag(chunk, dir, flag);
         }
         if (dy < chunk.pos.y) {
-            chunk = retriever.apply(chunk.neighbors[NeighboringDir.S.ordinal()]);
-            return isNeighborFilled(chunk, dir, flag);
+            chunk = retriever.apply(chunk.neighbors[NeighboringDir.N.ordinal()]);
+            return isNeighborFlag(chunk, dir, flag);
         }
         if (dz < chunk.pos.z) {
             chunk = retriever.apply(chunk.neighbors[NeighboringDir.U.ordinal()]);
-            return isNeighborFilled(chunk, dir, flag);
+            return isNeighborFlag(chunk, dir, flag);
         }
         if (dx >= chunk.pos.ep.x) {
-            chunk = retriever.apply(chunk.neighbors[NeighboringDir.W.ordinal()]);
-            return isNeighborFilled(chunk, dir, flag);
+            chunk = retriever.apply(chunk.neighbors[NeighboringDir.E.ordinal()]);
+            return isNeighborFlag(chunk, dir, flag);
         }
         if (dy >= chunk.pos.ep.y) {
-            chunk = retriever.apply(chunk.neighbors[NeighboringDir.N.ordinal()]);
-            return isNeighborFilled(chunk, dir, flag);
+            chunk = retriever.apply(chunk.neighbors[NeighboringDir.S.ordinal()]);
+            return isNeighborFlag(chunk, dir, flag);
         }
         if (dz >= chunk.pos.ep.z) {
             chunk = retriever.apply(chunk.neighbors[NeighboringDir.D.ordinal()]);
-            return isNeighborFilled(chunk, dir, flag);
+            return isNeighborFlag(chunk, dir, flag);
         }
         return isProp(chunk, dx, dy, dz, flag);
     }

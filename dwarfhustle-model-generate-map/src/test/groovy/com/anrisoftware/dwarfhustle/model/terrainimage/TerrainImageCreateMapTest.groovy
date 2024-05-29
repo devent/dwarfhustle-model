@@ -109,7 +109,7 @@ class TerrainImageCreateMapTest {
         //        args << of(TerrainImage.terrain_256_256_128_16, false, null)
         //        args << of(TerrainImage.terrain_256_256_128_32, false, null)
         //        args << of(TerrainImage.terrain_256_256_128_64, false, null)
-        //        args << of(TerrainImage.terrain_512_512_128_16, false, null)
+        args << of(TerrainImage.terrain_512_512_128_16, false, null)
         //        args << of(TerrainImage.terrain_512_512_128_32, false, null)
         //        args << of(TerrainImage.terrain_512_512_128_64, false, null)
         Stream.of(args as Object[])
