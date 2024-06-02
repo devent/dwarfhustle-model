@@ -19,7 +19,6 @@ package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.READ;
-import static java.nio.file.StandardOpenOption.SYNC;
 import static java.nio.file.StandardOpenOption.WRITE;
 
 import java.io.IOException;
@@ -70,7 +69,7 @@ public class MapChunksStore {
     private final int height;
 
     public MapChunksStore(Path file, int width, int height, int chunkSize, int chunksCount) throws IOException {
-        this.channel = FileChannel.open(file, CREATE, READ, WRITE, SYNC);
+        this.channel = FileChannel.open(file, CREATE, READ, WRITE);
         boolean newFile = channel.size() == 0;
         this.indexSize = MapChunksIndexBuffer.SIZE_MIN + (chunksCount + 1) * MapChunksIndexBuffer.SIZE_ENTRY;
         this.indexBuffer = channel.map(MapMode.READ_WRITE, 0, indexSize);

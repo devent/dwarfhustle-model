@@ -32,8 +32,6 @@ public enum TerrainImage {
 
     terrain_4_4_4_2(4, 4, 4, 2, 2, 9),
 
-    terrain_8_8_8_2(8, 8, 8, 4, 2, 73),
-
     terrain_8_8_8_4(8, 8, 8, 4, 4, 9),
 
     terrain_32_32_32_4(32, 32, 32, 8, 4, 585),

@@ -99,8 +99,7 @@ class TerrainImageCreateMapTest {
     static Stream test_start_import_terrain() {
         def args = []
         args << of(TerrainImage.terrain_4_4_4_2, false, new Terrain_4_4_4_2_blocks_expected().run())
-        //        args << of(TerrainImage.terrain_8_8_8_2, false, null)
-        //                args << of(TerrainImage.terrain_8_8_8_4, false, new Terrain_8_8_8_2_blocks_expected().run())
+        args << of(TerrainImage.terrain_8_8_8_4, false, new Terrain_8_8_8_4_blocks_expected().run())
         //                args << of(TerrainImage.terrain_32_32_32_4, false, null)
         //                args << of(TerrainImage.terrain_32_32_32_8, false, null)
         //
@@ -133,6 +132,7 @@ class TerrainImageCreateMapTest {
         def store = new MapChunksStore(Path.of(tmp.absolutePath, file), gm.width, gm.height, gm.chunkSize, gm.chunksCount);
         def createMap = injector.getInstance(TerrainImageCreateMapFactory).create(store, terrainKnowledge)
         createMap.startImport(TerrainImageCreateMapTest.class.getResource(image.imageName), terrain, gm)
+        store.close()
         if (printBlocks) {
             println "["
             for (int z = 0; z < terrain.depth; z++) {
