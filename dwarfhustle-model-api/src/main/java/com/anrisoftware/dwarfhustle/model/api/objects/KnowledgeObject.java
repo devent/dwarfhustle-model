@@ -47,7 +47,7 @@ public abstract class KnowledgeObject extends GameObject {
     /**
      * Returns the game object ID from the knowledge KID.
      */
-    public static long kid2Id(int kid) {
+    public static long kid2Id(long kid) {
         return (kid << 32) | ID_FLAG;
     }
 
