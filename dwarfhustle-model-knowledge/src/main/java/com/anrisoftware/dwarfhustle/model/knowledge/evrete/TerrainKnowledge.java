@@ -41,7 +41,7 @@ import org.evrete.util.CompilationException;
 import com.anrisoftware.dwarfhustle.model.api.map.ObjectType;
 import com.anrisoftware.dwarfhustle.model.api.materials.Gas;
 import com.anrisoftware.dwarfhustle.model.api.materials.Liquid;
-import com.anrisoftware.dwarfhustle.model.api.materials.Material;
+import com.anrisoftware.dwarfhustle.model.api.materials.BlockMaterial;
 import com.anrisoftware.dwarfhustle.model.api.materials.Soil;
 import com.anrisoftware.dwarfhustle.model.api.materials.Stone;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
@@ -241,7 +241,7 @@ public class TerrainKnowledge {
                 }).toCompletableFuture(), //
                 ask.doAskAsync(ASK_TIMEOUT, Gas.class, Gas.TYPE).whenComplete((res, ex) -> {
                     knowledgeGet(res, gases, (o) -> {
-                        var mo = (Material) o;
+                        var mo = (BlockMaterial) o;
                         if (mo.getName().equalsIgnoreCase("oxygen")) {
                             oxygen.add(o.getKid());
                         }

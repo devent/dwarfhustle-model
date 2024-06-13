@@ -31,7 +31,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Getter
-public class Stone extends Material {
+public class Stone extends BlockMaterial {
 
     private static final long serialVersionUID = 1L;
 

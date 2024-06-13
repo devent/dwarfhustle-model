@@ -22,6 +22,8 @@ import static akka.actor.typed.javadsl.AskPattern.ask;
 import java.time.Duration;
 import java.util.concurrent.CompletionStage;
 
+import org.eclipse.collections.api.list.ListIterable;
+
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
@@ -30,6 +32,7 @@ import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeRespon
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.ActorSystem;
+import akka.actor.typed.Scheduler;
 import lombok.SneakyThrows;
 import lombok.ToString;
 
@@ -46,18 +49,26 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
     /**
      * Asks the actor to retrieve knowledge.
      */
+    public static CompletionStage<KnowledgeResponseMessage> askKnowledgeGet(ActorRef<Message> a, Duration timeout,
+            Scheduler scheduler, Class<? extends GameObject> typeClass, String type) {
+        return ask(a, replyTo -> new KnowledgeGetMessage<>(replyTo, typeClass, type), timeout, scheduler);
+    }
+
+    /**
+     * Asks the actor to retrieve knowledge.
+     */
     public static CompletionStage<KnowledgeResponseMessage> askKnowledgeGet(ActorSystem<Message> a, Duration timeout,
             Class<? extends GameObject> typeClass, String type) {
-        return ask(a, replyTo -> new KnowledgeGetMessage<>(replyTo, typeClass, type), timeout, a.scheduler());
+        return askKnowledgeGet(a, timeout, a.scheduler(), typeClass, type);
     }
 
     /**
      * Asks the actor to retrieve {@link KnowledgeObject}s.
      */
     @SneakyThrows
-    public static CompletionStage<Iterable<KnowledgeObject>> askKnowledgeObjects(ActorSystem<Message> a,
-            Duration timeout, Class<? extends GameObject> typeClass, String type) {
-        return KnowledgeGetMessage.askKnowledgeGet(a, timeout, typeClass, type).handle((res, ex) -> {
+    public static CompletionStage<ListIterable<KnowledgeObject>> askKnowledgeObjects(ActorRef<Message> a,
+            Duration timeout, Scheduler scheduler, Class<? extends GameObject> typeClass, String type) {
+        return askKnowledgeGet(a, timeout, scheduler, typeClass, type).handle((res, ex) -> {
             if (ex != null) {
                 throw new RuntimeException(ex);
             } else {
@@ -69,6 +80,15 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
             }
             return null;
         });
+    }
+
+    /**
+     * Asks the actor to retrieve {@link KnowledgeObject}s.
+     */
+    @SneakyThrows
+    public static CompletionStage<ListIterable<KnowledgeObject>> askKnowledgeObjects(ActorSystem<Message> a,
+            Duration timeout, Class<? extends GameObject> typeClass, String type) {
+        return askKnowledgeObjects(a, timeout, a.scheduler(), typeClass, type);
     }
 
     public final Class<? extends GameObject> typeClass;

@@ -30,7 +30,7 @@ import org.lable.oss.uniqueid.IDGenerator;
 
 import com.anrisoftware.dwarfhustle.model.api.materials.Gas;
 import com.anrisoftware.dwarfhustle.model.api.materials.IgneousIntrusive;
-import com.anrisoftware.dwarfhustle.model.api.materials.Material;
+import com.anrisoftware.dwarfhustle.model.api.materials.BlockMaterial;
 import com.anrisoftware.dwarfhustle.model.api.materials.Sedimentary;
 import com.anrisoftware.dwarfhustle.model.api.materials.Soil;
 import com.anrisoftware.dwarfhustle.model.api.materials.SpecialStoneLayer;
@@ -119,7 +119,7 @@ public class WorkerBlocks {
         materials.forEach((type, ms) -> {
             mm.put(type, Maps.mutable.empty());
             ms.forEach(go -> {
-                mm.get(type).put(((Material) (go)).getName(), go);
+                mm.get(type).put(((BlockMaterial) (go)).getName(), go);
             });
         });
     }

@@ -118,8 +118,10 @@ public class MockStoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
 
     @Override
     protected void storeValueBackend(Object key, GameObject go) {
-        var b = (MutableLongObjectMap<GameObject>) this.backend;
-        b.put((long) key, go);
+        if (key instanceof Long) {
+            var b = (MutableLongObjectMap<GameObject>) this.backend;
+            b.put((long) key, go);
+        }
     }
 
     @Override
@@ -131,7 +133,9 @@ public class MockStoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
 
     @Override
     protected void retrieveValueFromBackend(CacheGetMessage<?> m, Consumer<GameObject> consumer) {
-        retrieveGameObject(m.typeClass, m.type, (long) m.key, consumer);
+        if (m.key instanceof Long) {
+            retrieveGameObject(m.typeClass, m.type, (long) m.key, consumer);
+        }
     }
 
     private void retrieveGameObject(Class<? extends GameObject> typeClass, String type, long id,
