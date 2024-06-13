@@ -21,6 +21,7 @@
   :documentation "Object type.")
 
 (assert (ObjectType tile-block)) :documentation "Not mined out tile block."
+(assert (ObjectType tile-water)) :documentation "Water block."
 (assert (ObjectType tile-ramp-corner-ne)) :documentation "Not mined out ramp."
 (assert (ObjectType tile-ramp-corner-nw)) :documentation "Not mined out ramp."
 (assert (ObjectType tile-ramp-corner-se)) :documentation "Not mined out ramp."

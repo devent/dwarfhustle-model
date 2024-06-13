@@ -21,6 +21,8 @@ public class AbstractTerrainRules {
     MutableIntList gases;
 
     int block;
+    
+    int water;
 
     int ramp_tri_n;
 
@@ -73,6 +75,7 @@ public class AbstractTerrainRules {
         this.gases = materials.get(TerrainKnowledge.MATERIALS_GASES_NAME);
         MutableIntIntMap objects = env.get(TerrainKnowledge.OBJECTS_NAME);
         this.block = objects.get(TerrainKnowledge.OBJECT_BLOCK_NAME);
+        this.water = objects.get(TerrainKnowledge.OBJECT_WATER_NAME);
         this.ramp_tri_n = objects.get(TerrainKnowledge.OBJECT_RAMP_TRI_N_NAME);
         this.ramp_tri_e = objects.get(TerrainKnowledge.OBJECT_RAMP_TRI_E_NAME);
         this.ramp_tri_s = objects.get(TerrainKnowledge.OBJECT_RAMP_TRI_S_NAME);

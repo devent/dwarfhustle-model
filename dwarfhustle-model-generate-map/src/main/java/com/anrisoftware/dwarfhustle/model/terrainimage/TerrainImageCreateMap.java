@@ -24,6 +24,7 @@ import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowled
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
@@ -43,6 +44,7 @@ import com.anrisoftware.dwarfhustle.model.knowledge.evrete.BlockFact;
 import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge;
 import com.google.inject.assistedinject.Assisted;
 
+import groovy.lang.GroovyShell;
 import jakarta.inject.Inject;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +64,25 @@ public class TerrainImageCreateMap {
     public interface TerrainImageCreateMapFactory {
 
         TerrainImageCreateMap create(MapChunksStore store, TerrainKnowledge terrainKnowledge);
+    }
+
+    private static final Map<Integer, Integer> terrainImageMapping;
+
+    static {
+        terrainImageMapping = loadTerrainImageMapping();
+    }
+
+    @SuppressWarnings("unchecked")
+    @SneakyThrows
+    private static Map<Integer, Integer> loadTerrainImageMapping() {
+        var script = new GroovyShell()
+                .parse(TerrainImageCreateMap.class.getResource("TerrainImageMapping.groovy").toURI());
+        return (Map<Integer, Integer>) script.run();
+    }
+
+    @FunctionalInterface
+    private interface UpdateTerrainBlock {
+        void updateMaterialBlock(MapBlock mb, int x, int y, int z);
     }
 
     @Inject
@@ -87,6 +108,15 @@ public class TerrainImageCreateMap {
     private int chunkSize;
 
     public void startImport(URL url, TerrainLoadImage image, GameMap gm) throws IOException, GeneratorException {
+        startImport0(url, image, gm, this::updateMaterialBlock);
+    }
+
+    public void startImportMapping(URL url, TerrainLoadImage image, GameMap gm) throws IOException, GeneratorException {
+        startImport0(url, image, gm, this::updateMaterialBlockMapping);
+    }
+
+    private void startImport0(URL url, TerrainLoadImage image, GameMap gm, UpdateTerrainBlock updateTerrainBlock)
+            throws IOException, GeneratorException {
         this.cidCounter = new AtomicInteger(0);
         this.terrain = image.load(url);
         this.chunkSize = image.chunkSize;
@@ -96,7 +126,7 @@ public class TerrainImageCreateMap {
         this.chunksCount = 0;
         this.blocksCount = 0;
         chunksCount++;
-        createMap(mcRoot, 0, 0, 0, gm.width, gm.height, gm.depth);
+        createMap(mcRoot, 0, 0, 0, gm.width, gm.height, gm.depth, updateTerrainBlock);
         createNeighbors(mcRoot);
         updateTerrain();
         log.debug("startImport done chunks {} blocks {}", chunksCount, blocksCount);
@@ -133,7 +163,8 @@ public class TerrainImageCreateMap {
     }
 
     @SneakyThrows
-    private void createMap(MapChunk chunk, int sx, int sy, int sz, int ex, int ey, int ez) throws GeneratorException {
+    private void createMap(MapChunk chunk, int sx, int sy, int sz, int ex, int ey, int ez,
+            UpdateTerrainBlock updateTerrainBlock) throws GeneratorException {
         MutableIntObjectMap<GameChunkPos> chunks = IntObjectMaps.mutable.empty();
         int cx = (ex - sx) / 2;
         int cy = (ey - sy) / 2;
@@ -141,7 +172,7 @@ public class TerrainImageCreateMap {
         for (int xx = sx; xx < ex; xx += cx) {
             for (int yy = sy; yy < ey; yy += cy) {
                 for (int zz = sz; zz < ez; zz += cz) {
-                    createChunk(chunk, chunks, xx, yy, zz, xx + cx, yy + cy, zz + cz);
+                    createChunk(chunk, chunks, xx, yy, zz, xx + cx, yy + cy, zz + cz, updateTerrainBlock);
                 }
             }
         }
@@ -151,7 +182,7 @@ public class TerrainImageCreateMap {
 
     @SneakyThrows
     private void createChunk(MapChunk parent, MutableIntObjectMap<GameChunkPos> chunks, int x, int y, int z, int ex,
-            int ey, int ez) throws GeneratorException {
+            int ey, int ez, UpdateTerrainBlock updateTerrainBlock) throws GeneratorException {
         var chunk = new MapChunk(nextCid(), parent.cid, chunkSize, new GameChunkPos(x, y, z, ex, ey, ez));
         chunksCount++;
         if (chunk.isLeaf()) {
@@ -162,28 +193,41 @@ public class TerrainImageCreateMap {
                     for (int zz = z; zz < ez; zz++) {
                         blocksCount++;
                         var mb = new MapBlock(chunk.cid, new GameBlockPos(xx, yy, zz));
-                        if (terrain[zz][yy][xx] == 0) {
-                            mb.material = terrainKnowledge.getMaterials(MATERIAL_OXYGEN_NAME).getFirst();
-                        } else {
-                            mb.material = terrain[zz][yy][xx];
-                        }
-                        if (isMaterialGas(mb.material)) {
-                            mb.setEmpty(true);
-                        } else if (isMaterialLiquid(mb.material)) {
-                            mb.setLiquid(true);
-                        } else if (isMaterialSolid(mb.material)) {
-                            mb.setFilled(true);
-                        }
+                        updateTerrainBlock.updateMaterialBlock(mb, xx, yy, zz);
                         chunk.setBlock(mb);
                     }
                 }
             }
         } else {
             putObjectToBackend(chunk);
-            createMap(chunk, x, y, z, ex, ey, ez);
+            createMap(chunk, x, y, z, ex, ey, ez, updateTerrainBlock);
         }
         chunks.put(chunk.cid, chunk.getPos());
         putObjectToBackend(chunk);
+    }
+
+    private void updateMaterialBlock(MapBlock mb, int x, int y, int z) {
+        updateMaterialBlock0(mb, terrain[z][y][x], x, y, z);
+    }
+
+    private void updateMaterialBlockMapping(MapBlock mb, int x, int y, int z) {
+        int t = terrainImageMapping.get(terrain[z][y][x]);
+        updateMaterialBlock0(mb, t, x, y, z);
+    }
+
+    private void updateMaterialBlock0(MapBlock mb, int t, int x, int y, int z) {
+        if (t == 0) {
+            mb.material = terrainKnowledge.getMaterials(MATERIAL_OXYGEN_NAME).getFirst();
+        } else {
+            mb.material = t;
+        }
+        if (isMaterialGas(mb.material)) {
+            mb.setEmpty(true);
+        } else if (isMaterialLiquid(mb.material)) {
+            mb.setLiquid(true);
+        } else if (isMaterialSolid(mb.material)) {
+            mb.setFilled(true);
+        }
     }
 
     public boolean isMaterialGas(int material) {

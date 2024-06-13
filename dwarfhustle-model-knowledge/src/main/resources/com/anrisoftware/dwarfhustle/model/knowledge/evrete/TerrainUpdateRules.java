@@ -56,13 +56,19 @@ public class TerrainUpdateRules extends AbstractTerrainRules {
     //
 
     @Rule(salience = 1000)
-    @Where(value = { "$f.isProp(EMPTY.flag) || $f.isProp(LIQUID.flag) || $f.isProp(FILLED.flag)" })
-    public void object_set_block_on_empty_liquid(BlockFact $f, RhsContext ctx) {
+    @Where(value = { "$f.isProp(EMPTY.flag) || $f.isProp(FILLED.flag)" })
+    public void object_set_block_on_empty_filled(BlockFact $f, RhsContext ctx) {
         $f.setObject(block);
     }
 
+    @Rule(salience = 1000)
+    @Where(value = { "$f.isProp(LIQUID.flag)" })
+    public void object_set_block_on_liquid(BlockFact $f, RhsContext ctx) {
+        $f.setObject(water);
+    }
+
     @Rule(salience = 100)
-    @Where(value = { "$f.isProp(FILLED.flag)", "!$f.isNeighborsSameLevelExist()" })
+    @Where(value = { "!$f.isProp(LIQUID.flag)", "!$f.isNeighborsSameLevelExist()" })
     public void object_set_block_on_map_edge(BlockFact $f, RhsContext ctx) {
         $f.setObject(block);
     }

@@ -74,6 +74,8 @@ public class TerrainKnowledge {
 
     public static final int OBJECT_BLOCK_NAME = "object-block".hashCode();
 
+    public static final int OBJECT_WATER_NAME = "object-water".hashCode();
+
     public static final int OBJECT_RAMP_SINGLE_NAME = "object-ramp-single".hashCode();
 
     public static final int OBJECT_RAMP_TRI_N_NAME = "object-ramp-tri-n".hashCode();
@@ -314,6 +316,9 @@ public class TerrainKnowledge {
                             break;
                         case "TILE-BLOCK":
                             objects.put(OBJECT_BLOCK_NAME, o.getKid());
+                            break;
+                        case "TILE-WATER":
+                            objects.put(OBJECT_WATER_NAME, o.getKid());
                             break;
                         }
                     });

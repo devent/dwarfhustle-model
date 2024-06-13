@@ -119,6 +119,8 @@ public class GameMap extends GameObject implements StoredObject {
 
     public MapCursor cursor = new MapCursor(0, 0, 0);
 
+    public float[] sunPos = new float[3];
+
     public GameMap(long id) {
         super(id);
     }
@@ -179,5 +181,11 @@ public class GameMap extends GameObject implements StoredObject {
 
     public void setCursorZ(int z) {
         setCursor(new MapCursor(cursor.x, cursor.y, z));
+    }
+
+    public void setSunPosition(float x, float y, float z) {
+        sunPos[0] = x;
+        sunPos[1] = y;
+        sunPos[2] = z;
     }
 }

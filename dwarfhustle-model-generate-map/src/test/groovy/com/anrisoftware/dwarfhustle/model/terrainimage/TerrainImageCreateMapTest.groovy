@@ -100,17 +100,17 @@ class TerrainImageCreateMapTest {
         def args = []
         args << of(TerrainImage.terrain_4_4_4_2, false, new Terrain_4_4_4_2_blocks_expected().run())
         args << of(TerrainImage.terrain_8_8_8_4, false, new Terrain_8_8_8_4_blocks_expected().run())
-        //                args << of(TerrainImage.terrain_32_32_32_4, false, null)
-        //                args << of(TerrainImage.terrain_32_32_32_8, false, null)
+        args << of(TerrainImage.terrain_32_32_32_4, false, null)
+        args << of(TerrainImage.terrain_32_32_32_8, false, null)
         //
         //        args << of(TerrainImage.terrain_128_128_128_16, false, null)
         //        args << of(TerrainImage.terrain_128_128_128_32, false, null)
         //        args << of(TerrainImage.terrain_256_256_128_16, false, null)
         //        args << of(TerrainImage.terrain_256_256_128_32, false, null)
         //        args << of(TerrainImage.terrain_256_256_128_64, false, null)
-        //        args << of(TerrainImage.terrain_512_512_128_16, false, null)
-        //        args << of(TerrainImage.terrain_512_512_128_32, false, null)
-        //        args << of(TerrainImage.terrain_512_512_128_64, false, null)
+        args << of(TerrainImage.terrain_512_512_128_16, false, null)
+        args << of(TerrainImage.terrain_512_512_128_32, false, null)
+        args << of(TerrainImage.terrain_512_512_128_64, false, null)
         Stream.of(args as Object[])
     }
 
@@ -123,7 +123,7 @@ class TerrainImageCreateMapTest {
     void test_start_import_terrain(TerrainImage image, boolean printBlocks, List blocksExpected) {
         def terrain = image.terrain
         def gm = new GameMap(1)
-        gm.chunkSize = image.chunkSize;
+        gm.chunkSize = image.chunkSize
         gm.chunksCount = image.chunksCount
         gm.width = terrain.width
         gm.height = terrain.height
@@ -131,7 +131,7 @@ class TerrainImageCreateMapTest {
         def file = format("terrain_%d_%d_%d_%d_%d.map", gm.width, gm.height, gm.depth, gm.chunkSize, gm.chunksCount)
         def store = new MapChunksStore(Path.of(tmp.absolutePath, file), gm.width, gm.height, gm.chunkSize, gm.chunksCount);
         def createMap = injector.getInstance(TerrainImageCreateMapFactory).create(store, terrainKnowledge)
-        createMap.startImport(TerrainImageCreateMapTest.class.getResource(image.imageName), terrain, gm)
+        createMap.startImportMapping(TerrainImageCreateMapTest.class.getResource(image.imageName), terrain, gm)
         store.close()
         if (printBlocks) {
             println "["
