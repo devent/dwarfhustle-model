@@ -18,13 +18,17 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl;
 
 import static akka.actor.typed.javadsl.AskPattern.ask;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.time.Duration;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import org.eclipse.collections.api.list.ListIterable;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+import com.anrisoftware.dwarfhustle.model.api.materials.BlockMaterial;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseErrorMessage;
@@ -80,6 +84,19 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
             }
             return null;
         });
+    }
+
+    /**
+     * Ask the actor to retrieve the ID of a specific material.
+     */
+    public static long askBlockMaterialId(ActorRef<Message> a, Duration timeout, Scheduler scheduler,
+            Class<? extends GameObject> typeClass, String type, String name)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        return askKnowledgeObjects(a, timeout, scheduler, typeClass, type).toCompletableFuture()
+                .get(timeout.toSeconds(), SECONDS).collectIf((o) -> {
+                    var bm = (BlockMaterial) o;
+                    return bm.getName().equalsIgnoreCase(name);
+                }, KnowledgeObject::getId).getFirst();
     }
 
     /**
