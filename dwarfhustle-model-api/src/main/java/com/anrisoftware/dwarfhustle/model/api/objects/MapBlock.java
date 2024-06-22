@@ -52,6 +52,10 @@ public class MapBlock implements Serializable {
 
     private static final int DISCOVERED_POS = 7;
 
+    private static final int HAVE_ROOF_POS = 8;
+
+    private static final int HAVE_FLOOR_POS = 9;
+
     public static final String OBJECT_TYPE = MapBlock.class.getSimpleName();
 
     /**
@@ -88,15 +92,19 @@ public class MapBlock implements Serializable {
      * Bit field that defines the properties of the map block.
      * 
      * <pre>
-     * 00000000 00000000} Block is hidden.
-     * 00000000 00000001} Block is visible.
-     * 00000000 00000010} block-filled Filled with solid.
-     * 00000000 00000100} block-empty Filled with gas.
-     * 00000000 00001000} block-liquid Filled with liquid.
-     * 00000000 00010000} block-ramp Ramp block.
-     * 00000000 00100000} block-floor Floor block.
-     * 00000000 01000000} block-roof Roof block.
-     * 00000000 10000000} block-discovered
+     * Exclusive Flags:
+     * 00000000 00000000 Block is hidden.
+     * 00000000 00000001 Block is visible.
+     * 00000000 00000010 block-filled Filled with solid.
+     * 00000000 00000100 block-empty Filled with gas.
+     * 00000000 00001000 block-liquid Filled with liquid.
+     * 00000000 00010000 block-ramp Ramp block.
+     * 00000000 00100000 block-floor Floor block.
+     * 00000000 01000000 block-roof Roof block.
+     * Inclusive Flags:
+     * 00000000 10000000 block-discovered
+     * 00000001 00000000 have-roof
+     * 00000010 00000000 have-floor
      * </pre>
      */
     public PropertiesSet p = new PropertiesSet();
@@ -249,6 +257,30 @@ public class MapBlock implements Serializable {
 
     public boolean isDiscovered() {
         return p.get(DISCOVERED_POS);
+    }
+
+    public void setHaveRoof(boolean flag) {
+        if (flag) {
+            p.set(HAVE_ROOF_POS);
+        } else {
+            p.clear(HAVE_ROOF_POS);
+        }
+    }
+
+    public boolean isHaveRoof() {
+        return p.get(HAVE_ROOF_POS);
+    }
+
+    public void setHaveFloor(boolean flag) {
+        if (flag) {
+            p.set(HAVE_FLOOR_POS);
+        } else {
+            p.clear(HAVE_FLOOR_POS);
+        }
+    }
+
+    public boolean isHaveFloor() {
+        return p.get(HAVE_FLOOR_POS);
     }
 
     public MapBlock getNeighbor(NeighboringDir dir, MapChunk chunk, Function<Integer, MapChunk> retriever) {

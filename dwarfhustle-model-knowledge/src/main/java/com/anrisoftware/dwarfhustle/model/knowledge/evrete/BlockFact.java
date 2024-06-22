@@ -227,6 +227,13 @@ public class BlockFact {
     }
 
     /**
+     * Returns true if the current block is not on the map edge.
+     */
+    public boolean isNotEdge() {
+        return x > 0 && x < w && y > 0 && y < h;
+    }
+
+    /**
      * Returns true if the neighbors exist.
      */
     public boolean isNeighborsExist(NeighboringDir... dirs) {

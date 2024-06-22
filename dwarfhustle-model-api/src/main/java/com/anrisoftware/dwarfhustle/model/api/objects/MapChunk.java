@@ -384,4 +384,8 @@ public class MapChunk {
         return getNeighbor(NeighboringDir.S);
     }
 
+    public int getNeighborDown() {
+        return getNeighbor(NeighboringDir.D);
+    }
+
 }
