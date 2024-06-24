@@ -103,7 +103,7 @@ public class MapBlock implements Serializable {
      * 00000000 01000000 block-roof Roof block.
      * Inclusive Flags:
      * 00000000 10000000 block-discovered
-     * 00000001 00000000 have-roof
+     * 00000001 00000000 have-ceiling
      * 00000010 00000000 have-floor
      * </pre>
      */

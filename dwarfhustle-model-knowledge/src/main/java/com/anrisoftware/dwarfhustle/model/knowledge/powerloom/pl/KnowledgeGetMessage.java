@@ -24,10 +24,12 @@ import java.time.Duration;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Predicate;
 
 import org.eclipse.collections.api.list.ListIterable;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+import com.anrisoftware.dwarfhustle.model.api.map.ObjectType;
 import com.anrisoftware.dwarfhustle.model.api.materials.BlockMaterial;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
@@ -89,14 +91,39 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
     /**
      * Ask the actor to retrieve the ID of a specific material.
      */
-    public static long askBlockMaterialId(ActorRef<Message> a, Duration timeout, Scheduler scheduler,
-            Class<? extends GameObject> typeClass, String type, String name)
+    public static <T extends KnowledgeObject> long askKnowledgeId(ActorRef<Message> a, Duration timeout,
+            Scheduler scheduler, Class<? extends GameObject> typeClass, String type, Predicate<T> predicate)
             throws InterruptedException, ExecutionException, TimeoutException {
         return askKnowledgeObjects(a, timeout, scheduler, typeClass, type).toCompletableFuture()
                 .get(timeout.toSeconds(), SECONDS).collectIf((o) -> {
-                    var bm = (BlockMaterial) o;
-                    return bm.getName().equalsIgnoreCase(name);
+                    @SuppressWarnings("unchecked")
+                    var ko = (T) o;
+                    return predicate.test(ko);
                 }, KnowledgeObject::getId).getFirst();
+    }
+
+    /**
+     * Ask the actor to retrieve the ID of a specific material.
+     * 
+     * @see BlockMaterial
+     */
+    public static long askBlockMaterialId(ActorRef<Message> a, Duration timeout, Scheduler scheduler,
+            Class<? extends GameObject> typeClass, String type, String name)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        return askKnowledgeId(a, timeout, scheduler, typeClass, type,
+                (BlockMaterial ko) -> ko.getName().equalsIgnoreCase(name));
+    }
+
+    /**
+     * Ask the actor to retrieve the ID of a object type.
+     * 
+     * @see ObjectType
+     */
+    public static long askObjectTypeId(ActorRef<Message> a, Duration timeout, Scheduler scheduler,
+            Class<? extends GameObject> typeClass, String type, String name)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        return askKnowledgeId(a, timeout, scheduler, typeClass, type,
+                (ObjectType ko) -> ko.getName().equalsIgnoreCase(name));
     }
 
     /**
