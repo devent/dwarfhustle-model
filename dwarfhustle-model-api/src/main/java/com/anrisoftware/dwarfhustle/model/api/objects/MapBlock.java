@@ -52,9 +52,11 @@ public class MapBlock implements Serializable {
 
     private static final int DISCOVERED_POS = 7;
 
-    private static final int HAVE_ROOF_POS = 8;
+    private static final int HAVE_CEILING_POS = 8;
 
     private static final int HAVE_FLOOR_POS = 9;
+
+    private static final int HAVE_NATURAL_LIGHT_POS = 10;
 
     public static final String OBJECT_TYPE = MapBlock.class.getSimpleName();
 
@@ -105,6 +107,7 @@ public class MapBlock implements Serializable {
      * 00000000 10000000 block-discovered
      * 00000001 00000000 have-ceiling
      * 00000010 00000000 have-floor
+     * 00000100 00000000 have-natural-light
      * </pre>
      */
     public PropertiesSet p = new PropertiesSet();
@@ -259,16 +262,16 @@ public class MapBlock implements Serializable {
         return p.get(DISCOVERED_POS);
     }
 
-    public void setHaveRoof(boolean flag) {
+    public void setHaveCeiling(boolean flag) {
         if (flag) {
-            p.set(HAVE_ROOF_POS);
+            p.set(HAVE_CEILING_POS);
         } else {
-            p.clear(HAVE_ROOF_POS);
+            p.clear(HAVE_CEILING_POS);
         }
     }
 
-    public boolean isHaveRoof() {
-        return p.get(HAVE_ROOF_POS);
+    public boolean isHaveCeiling() {
+        return p.get(HAVE_CEILING_POS);
     }
 
     public void setHaveFloor(boolean flag) {
@@ -281,6 +284,18 @@ public class MapBlock implements Serializable {
 
     public boolean isHaveFloor() {
         return p.get(HAVE_FLOOR_POS);
+    }
+
+    public void setHaveNaturalLight(boolean flag) {
+        if (flag) {
+            p.set(HAVE_NATURAL_LIGHT_POS);
+        } else {
+            p.clear(HAVE_NATURAL_LIGHT_POS);
+        }
+    }
+
+    public boolean isHaveNaturalLight() {
+        return p.get(HAVE_NATURAL_LIGHT_POS);
     }
 
     public MapBlock getNeighbor(NeighboringDir dir, MapChunk chunk, Function<Integer, MapChunk> retriever) {

@@ -27,6 +27,7 @@ import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import java.util.stream.Stream
 
+import org.apache.commons.io.FileUtils
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Timeout
@@ -93,6 +94,7 @@ class TerrainImageCreateMapTest {
 
     @AfterAll
     static void testsFinished() {
+        FileUtils.copyDirectory(tmp, new File("/home/devent/Projects/dwarf-hustle/docu/terrain-maps/"))
         println tmp
     }
 
@@ -100,19 +102,20 @@ class TerrainImageCreateMapTest {
         def args = []
         //        args << of(TerrainImage.terrain_4_4_4_2, true, new Terrain_4_4_4_2_blocks_expected().run())
         //        args << of(TerrainImage.terrain_8_8_8_4, true, new Terrain_8_8_8_4_blocks_expected().run())
+        //
         args << of(TerrainImage.terrain_4_4_4_2, false, new Terrain_4_4_4_2_blocks_expected().run())
         args << of(TerrainImage.terrain_8_8_8_4, false, new Terrain_8_8_8_4_blocks_expected().run())
-        args << of(TerrainImage.terrain_32_32_32_4, false, null)
-        args << of(TerrainImage.terrain_32_32_32_8, false, null)
+        //        args << of(TerrainImage.terrain_32_32_32_4, false, null)
+        //        args << of(TerrainImage.terrain_32_32_32_8, false, null)
+        //        args << of(TerrainImage.terrain_512_512_128_16, false, null)
+        //        args << of(TerrainImage.terrain_512_512_128_32, false, null)
+        //        args << of(TerrainImage.terrain_512_512_128_64, false, null)
         //
         //        args << of(TerrainImage.terrain_128_128_128_16, false, null)
         //        args << of(TerrainImage.terrain_128_128_128_32, false, null)
         //        args << of(TerrainImage.terrain_256_256_128_16, false, null)
         //        args << of(TerrainImage.terrain_256_256_128_32, false, null)
         //        args << of(TerrainImage.terrain_256_256_128_64, false, null)
-        args << of(TerrainImage.terrain_512_512_128_16, false, null)
-        args << of(TerrainImage.terrain_512_512_128_32, false, null)
-        args << of(TerrainImage.terrain_512_512_128_64, false, null)
         Stream.of(args as Object[])
     }
 

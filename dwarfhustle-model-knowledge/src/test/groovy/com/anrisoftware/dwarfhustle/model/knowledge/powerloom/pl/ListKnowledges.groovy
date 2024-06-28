@@ -133,7 +133,7 @@ class ListKnowledges {
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Liquid.class, Liquid.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockType.class, BlockType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ObjectType.class, ObjectType.TYPE))
-        while (ko.size() != 85) {
+        while (ko.size() != 87) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
         }
@@ -187,7 +187,7 @@ class ListKnowledges {
             Thread.sleep(10)
         }
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ObjectType.class, ObjectType.TYPE))
-        while (ko.size() != 24) {
+        while (ko.size() != 26) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
         }
@@ -289,7 +289,7 @@ class ListKnowledges {
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, RoofType.class, RoofType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockType.class, BlockType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ObjectType.class, ObjectType.TYPE))
-        while (ko.size() != 94) {
+        while (ko.size() != 96) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
         }

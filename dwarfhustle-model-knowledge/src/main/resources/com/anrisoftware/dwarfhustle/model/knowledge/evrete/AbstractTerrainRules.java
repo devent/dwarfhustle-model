@@ -66,6 +66,10 @@ public class AbstractTerrainRules {
 
     int ramp_corner_sw;    
 
+    int ramp_two_ne;
+
+    int ramp_two_se;    
+
     @PhaseListener(Phase.CREATE)
     public void initResources(Environment env) {
         MutableIntObjectMap<MutableIntList> materials = env.get(TerrainKnowledge.MATERIALS_NAME);
@@ -97,6 +101,8 @@ public class AbstractTerrainRules {
         this.ramp_corner_nw = objects.get(TerrainKnowledge.OBJECT_RAMP_CORNER_NW_NAME);
         this.ramp_corner_se = objects.get(TerrainKnowledge.OBJECT_RAMP_CORNER_SE_NAME);
         this.ramp_corner_sw = objects.get(TerrainKnowledge.OBJECT_RAMP_CORNER_SW_NAME);
+        this.ramp_two_ne = objects.get(TerrainKnowledge.OBJECT_RAMP_TWO_NE_NAME);
+        this.ramp_two_se = objects.get(TerrainKnowledge.OBJECT_RAMP_TWO_SE_NAME);
     }
 
 }

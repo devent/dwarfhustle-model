@@ -255,6 +255,10 @@ public class BlockFact {
         return isNeighborsExist(NeighboringDir.DIRS_SAME_LEVEL);
     }
 
+    public boolean isNeighborsSameLevelPerpExist() {
+        return isNeighborsExist(NeighboringDir.DIRS_PERPENDICULAR_SAME_LEVEL);
+    }
+
     /**
      * Returns true if all the neighbors are filled.
      */
@@ -290,6 +294,13 @@ public class BlockFact {
      */
     public boolean isNeighborsSameLevelEmpty() {
         return isNeighborsFlag(EMPTY.flag, NeighboringDir.DIRS_SAME_LEVEL);
+    }
+
+    /**
+     * Returns true if the perpendicular neighbors on the same level are empty.
+     */
+    public boolean isNeighborsSameLevelPerpEmpty() {
+        return isNeighborsFlag(EMPTY.flag, NeighboringDir.DIRS_PERPENDICULAR_SAME_LEVEL);
     }
 
     /**

@@ -37,6 +37,7 @@ public class TerrainUpdateRules extends AbstractTerrainRules {
     public void block_z_0_is_visible_discovered(BlockFact $f, RhsContext ctx) {
         $f.addProp(VISIBLE.flag);
         $f.addProp(DISCOVERED.flag);
+        $f.addProp(HAVE_NATURAL_LIGHT.flag);
     }
 
     @Rule(salience = 10)
@@ -49,6 +50,7 @@ public class TerrainUpdateRules extends AbstractTerrainRules {
     @Where(value = "$f.z > 0 && $f.isLineOfSightUp()")
     public void block_discovered_line_if_sight_from_up(BlockFact $f, RhsContext ctx) {
         $f.addProp(DISCOVERED.flag);
+        $f.addProp(HAVE_NATURAL_LIGHT.flag);
     }
 
     //
@@ -107,7 +109,7 @@ public class TerrainUpdateRules extends AbstractTerrainRules {
 
     @Rule(salience = 1_000)
     @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsSameLevelExist() && $f.isNeighborsSameLevelEmpty()" })
+            "$f.isNeighborsSameLevelPerpExist() && $f.isNeighborsSameLevelPerpEmpty()" })
     public void object_set_ramp_single_on_neighbors_same_level_empty(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_single);
         $f.addProp(RAMP.flag);
@@ -186,7 +188,7 @@ public class TerrainUpdateRules extends AbstractTerrainRules {
 
     @Rule(salience = 1_000)
     @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(S, N, E, W) && $f.isNeighborsEmpty(S) && $f.isNeighborsFilled(N) && $f.isNeighborsRamp(E, W)" })
+            "$f.isNeighborsExist(S, N, E, W) && $f.isNeighborsEmpty(S) && $f.isNeighborsFilled(N, E, W)" })
     public void ramp_perp_s(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_perp_s);
         $f.addProp(RAMP.flag);
@@ -194,7 +196,7 @@ public class TerrainUpdateRules extends AbstractTerrainRules {
 
     @Rule(salience = 1_000)
     @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(E, W, N, S) && $f.isNeighborsEmpty(E) && $f.isNeighborsFilled(W) && $f.isNeighborsRamp(N, S)" })
+            "$f.isNeighborsExist(E, N, S, W) && $f.isNeighborsEmpty(E) && $f.isNeighborsFilled(N, S, W)" })
     public void ramp_perp_e(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_perp_e);
         $f.addProp(RAMP.flag);
@@ -202,7 +204,7 @@ public class TerrainUpdateRules extends AbstractTerrainRules {
 
     @Rule(salience = 1_000)
     @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(N, S, E, W) && $f.isNeighborsEmpty(N) && $f.isNeighborsFilled(S) && $f.isNeighborsRamp(E, W)" })
+            "$f.isNeighborsExist(N, S, E, W) && $f.isNeighborsEmpty(N) && $f.isNeighborsFilled(E, S, W)" })
     public void ramp_perp_n(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_perp_n);
         $f.addProp(RAMP.flag);
@@ -210,7 +212,7 @@ public class TerrainUpdateRules extends AbstractTerrainRules {
 
     @Rule(salience = 1_000)
     @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(W, E, N, S) && $f.isNeighborsEmpty(W) && $f.isNeighborsFilled(E) && $f.isNeighborsRamp(N, S)" })
+            "$f.isNeighborsExist(W, E, N, S) && $f.isNeighborsEmpty(W) && $f.isNeighborsFilled(N, E, S)" })
     public void ramp_perp_w(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_perp_w);
         $f.addProp(RAMP.flag);
@@ -218,7 +220,7 @@ public class TerrainUpdateRules extends AbstractTerrainRules {
 
     @Rule(salience = 1_000)
     @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(E, S, NW, N, W) && $f.isNeighborsEmpty(E, S) && $f.isNeighborsFilled(NW) && $f.isNeighborsRamp(N, W)" })
+            "$f.isNeighborsExist(E, S, NW, N, W) && $f.isNeighborsEmpty(E, S) && $f.isNeighborsFilled(NW, N, W)" })
     public void ramp_edge_out_se(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_edge_out_se);
         $f.addProp(RAMP.flag);
@@ -226,7 +228,7 @@ public class TerrainUpdateRules extends AbstractTerrainRules {
 
     @Rule(salience = 1_000)
     @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(N, W, SE, E, S) && $f.isNeighborsEmpty(N, W) && $f.isNeighborsFilled(SE) && $f.isNeighborsRamp(E, S)" })
+            "$f.isNeighborsExist(N, W, SE, E, S) && $f.isNeighborsEmpty(N, W) && $f.isNeighborsFilled(SE, E, S)" })
     public void ramp_edge_out_nw(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_edge_out_nw);
         $f.addProp(RAMP.flag);
@@ -234,7 +236,7 @@ public class TerrainUpdateRules extends AbstractTerrainRules {
 
     @Rule(salience = 1_000)
     @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(S, W, NE, N, E) && $f.isNeighborsEmpty(S, W) && $f.isNeighborsFilled(NE) && $f.isNeighborsRamp(N, E)" })
+            "$f.isNeighborsExist(S, W, NE, N, E) && $f.isNeighborsEmpty(S, W) && $f.isNeighborsFilled(NE, N, E)" })
     public void ramp_edge_out_sw(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_edge_out_sw);
         $f.addProp(RAMP.flag);
@@ -242,7 +244,7 @@ public class TerrainUpdateRules extends AbstractTerrainRules {
 
     @Rule(salience = 1_000)
     @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(N, E, SW, S, W) && $f.isNeighborsEmpty(N, E) && $f.isNeighborsFilled(SW) && $f.isNeighborsRamp(S, W)" })
+            "$f.isNeighborsExist(N, E, SW, S, W) && $f.isNeighborsEmpty(N, E) && $f.isNeighborsFilled(SW, S, W)" })
     public void ramp_edge_out_ne(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_edge_out_ne);
         $f.addProp(RAMP.flag);
@@ -250,7 +252,7 @@ public class TerrainUpdateRules extends AbstractTerrainRules {
 
     @Rule(salience = 1_000)
     @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(E, N, W, NW, SW) && $f.isNeighborsEmpty(E) && $f.isNeighborsFilled(N, W, NW) && $f.isNeighborsRamp(S, SW)" })
+            "$f.isNeighborsExist(SE, N, NE, E, S, SW, W) && $f.isNeighborsEmpty(SE) && $f.isNeighborsFilled(N, NE, E, S, SW, W)" })
     public void ramp_edge_in_se(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_edge_in_se);
         $f.addProp(RAMP.flag);
@@ -258,7 +260,7 @@ public class TerrainUpdateRules extends AbstractTerrainRules {
 
     @Rule(salience = 1_000)
     @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(W, E, SE, S, N, NE) && $f.isNeighborsEmpty(W) && $f.isNeighborsFilled(E, SE, S) && $f.isNeighborsRamp(N, NE)" })
+            "$f.isNeighborsExist(NW, NE, E, SE, S, SW, W) && $f.isNeighborsEmpty(NW) && $f.isNeighborsFilled(N, NE, E, SE, S, SW, W)" })
     public void ramp_edge_in_nw(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_edge_in_nw);
         $f.addProp(RAMP.flag);
@@ -266,7 +268,7 @@ public class TerrainUpdateRules extends AbstractTerrainRules {
 
     @Rule(salience = 1_000)
     @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(S, N, NE, E, W, NW) && $f.isNeighborsEmpty(S) && $f.isNeighborsFilled(N, NE, E) && $f.isNeighborsRamp(W, NW)" })
+            "$f.isNeighborsExist(SW, N, NE, E, SE, S, W, NW) && $f.isNeighborsEmpty(SW) && $f.isNeighborsFilled(N, NE, E, SE, S, W, NW)" })
     public void ramp_edge_in_sw(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_edge_in_sw);
         $f.addProp(RAMP.flag);
@@ -274,9 +276,25 @@ public class TerrainUpdateRules extends AbstractTerrainRules {
 
     @Rule(salience = 1_000)
     @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(E, S, SW, W, N, NW) && $f.isNeighborsEmpty(E) && $f.isNeighborsFilled(S, SW, W) && $f.isNeighborsRamp(N, NW)" })
+            "$f.isNeighborsExist(NE, N, E, SE, S, SW, W, NW) && $f.isNeighborsEmpty(NE) && $f.isNeighborsFilled(N, E, SE, S, SW, W, NW)" })
     public void ramp_edge_in_ne(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_edge_in_ne);
+        $f.addProp(RAMP.flag);
+    }
+
+    @Rule(salience = 1_000)
+    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
+            "$f.isNeighborsExist(NE, SW, N, E, SE, S, W, NW) && $f.isNeighborsEmpty(NE, SW) && $f.isNeighborsFilled(N, E, SE, S, W, NW)" })
+    public void ramp_edge_two_ne(BlockFact $f, RhsContext ctx) {
+        $f.setObject(ramp_two_ne);
+        $f.addProp(RAMP.flag);
+    }
+
+    @Rule(salience = 1_000)
+    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
+            "$f.isNeighborsExist(SE, NW, N, NE, E, W, S, SW, W) && $f.isNeighborsEmpty(SE, NW) && $f.isNeighborsFilled(N, NE, E, W, S, SW, W)" })
+    public void ramp_edge_two_se(BlockFact $f, RhsContext ctx) {
+        $f.setObject(ramp_two_se);
         $f.addProp(RAMP.flag);
     }
 
@@ -287,7 +305,7 @@ public class TerrainUpdateRules extends AbstractTerrainRules {
     @Rule(salience = 100)
     @Where(value = { "$f.isNeighborsExist(U) && $f.isNeighborsFilled(U)" })
     public void have_foor_up(BlockFact $f, RhsContext ctx) {
-        $f.addProp(HAVE_ROOF.flag);
+        $f.addProp(HAVE_CEILING.flag);
     }
 
     @Rule(salience = 100)

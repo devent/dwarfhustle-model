@@ -44,3 +44,5 @@
 (assert (ObjectType block-ramp-tri-e)) :documentation "Not mined out ramp."
 (assert (ObjectType block-ramp-tri-w)) :documentation "Not mined out ramp."
 (assert (ObjectType block-ramp-tri-s)) :documentation "Not mined out ramp."
+(assert (ObjectType block-ramp-two-ne)) :documentation "Not mined out ramp."
+(assert (ObjectType block-ramp-two-se)) :documentation "Not mined out ramp."

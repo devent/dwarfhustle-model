@@ -118,6 +118,10 @@ public class TerrainKnowledge {
 
     public static final int OBJECT_RAMP_CORNER_SW_NAME = "object-ramp-corner-sw".hashCode();
 
+    public static final int OBJECT_RAMP_TWO_NE_NAME = "object-ramp-two-ne".hashCode();
+
+    public static final int OBJECT_RAMP_TWO_SE_NAME = "object-ramp-two-se".hashCode();
+
     private static final Duration ASK_TIMEOUT = Duration.of(10, ChronoUnit.SECONDS);
 
     private final MutableIntObjectMap<MutableIntList> materials;
@@ -313,6 +317,12 @@ public class TerrainKnowledge {
                             break;
                         case "BLOCK-RAMP-CORNER-SW":
                             objects.put(OBJECT_RAMP_CORNER_SW_NAME, o.getKid());
+                            break;
+                        case "BLOCK-RAMP-TWO-NE":
+                            objects.put(OBJECT_RAMP_TWO_NE_NAME, o.getKid());
+                            break;
+                        case "BLOCK-RAMP-TWO-SE":
+                            objects.put(OBJECT_RAMP_TWO_SE_NAME, o.getKid());
                             break;
                         case "BLOCK-NORMAL":
                             objects.put(OBJECT_BLOCK_NAME, o.getKid());
