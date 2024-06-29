@@ -295,7 +295,7 @@ public class MapChunk {
                 int ebz = ep.getZ();
                 if (x >= bx && y >= by && z >= bz && x < ebx && y < eby && z < ebz) {
                     var mb = retriever.apply(view.getOne());
-                    return mb.findChunk(pos, retriever);
+                    return mb.findChunk(x, y, z, retriever);
                 }
             }
         }
