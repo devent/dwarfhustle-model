@@ -20,6 +20,7 @@ package com.anrisoftware.dwarfhustle.model.knowledge.evrete;
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockBuffer.calcIndex;
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags.EMPTY;
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags.FILLED;
+import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags.LIQUID;
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags.RAMP;
 
 import java.util.function.Function;
@@ -349,7 +350,7 @@ public class BlockFact {
         var c = chunk;
         for (int zz = z - 1; zz >= 0;) {
             if (c.isInside(x, y, zz)) {
-                if (!isProp(c, x, y, zz, EMPTY.flag)) {
+                if (!isProp(c, x, y, zz, EMPTY.flag) && !isProp(c, x, y, zz, LIQUID.flag)) {
                     return false;
                 } else {
                     zz--;
