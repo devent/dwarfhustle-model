@@ -186,11 +186,47 @@ public class TerrainUpdateRules extends AbstractTerrainRules {
         $f.addProp(RAMP.flag);
     }
 
+    //
+    // ramp_perp
+    //
+    
+    @Rule(salience = 1_000)
+    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
+            "$f.x == 0 && $f.isNeighborsExist(S, N, E) && $f.isNeighborsEmpty(S) && $f.isNeighborsFilled(N, E)" })
+    public void ramp_perp_s_left_edge(BlockFact $f, RhsContext ctx) {
+        $f.setObject(ramp_perp_s);
+        $f.addProp(RAMP.flag);
+    }
+
+    @Rule(salience = 1_000)
+    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
+            "$f.x == ($f.w - 1) && $f.isNeighborsExist(S, N, W) && $f.isNeighborsEmpty(S) && $f.isNeighborsFilled(N, W)" })
+    public void ramp_perp_s_right_edge(BlockFact $f, RhsContext ctx) {
+        $f.setObject(ramp_perp_s);
+        $f.addProp(RAMP.flag);
+    }
+
     @Rule(salience = 1_000)
     @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
             "$f.isNeighborsExist(S, N, E, W) && $f.isNeighborsEmpty(S) && $f.isNeighborsFilled(N, E, W)" })
     public void ramp_perp_s(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_perp_s);
+        $f.addProp(RAMP.flag);
+    }
+
+    @Rule(salience = 1_000)
+    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
+            "$f.y == 0 && $f.isNeighborsExist(E, S, W) && $f.isNeighborsEmpty(E) && $f.isNeighborsFilled(S, W)" })
+    public void ramp_perp_e_top_edge(BlockFact $f, RhsContext ctx) {
+        $f.setObject(ramp_perp_e);
+        $f.addProp(RAMP.flag);
+    }
+
+    @Rule(salience = 1_000)
+    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
+            "$f.y == ($f.h - 1) && $f.isNeighborsExist(E, N, W) && $f.isNeighborsEmpty(E) && $f.isNeighborsFilled(N, W)" })
+    public void ramp_perp_e_bottom_edge(BlockFact $f, RhsContext ctx) {
+        $f.setObject(ramp_perp_e);
         $f.addProp(RAMP.flag);
     }
 
@@ -204,9 +240,41 @@ public class TerrainUpdateRules extends AbstractTerrainRules {
 
     @Rule(salience = 1_000)
     @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
+            "$f.x == 0 && $f.isNeighborsExist(N, S, E) && $f.isNeighborsEmpty(N) && $f.isNeighborsFilled(E, S)" })
+    public void ramp_perp_n_left_edge(BlockFact $f, RhsContext ctx) {
+        $f.setObject(ramp_perp_n);
+        $f.addProp(RAMP.flag);
+    }
+
+    @Rule(salience = 1_000)
+    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
+            "$f.x == ($f.w - 1) && $f.isNeighborsExist(N, S, W) && $f.isNeighborsEmpty(N) && $f.isNeighborsFilled(S, W)" })
+    public void ramp_perp_n_right_edge(BlockFact $f, RhsContext ctx) {
+        $f.setObject(ramp_perp_n);
+        $f.addProp(RAMP.flag);
+    }
+
+    @Rule(salience = 1_000)
+    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
             "$f.isNeighborsExist(N, S, E, W) && $f.isNeighborsEmpty(N) && $f.isNeighborsFilled(E, S, W)" })
     public void ramp_perp_n(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_perp_n);
+        $f.addProp(RAMP.flag);
+    }
+
+    @Rule(salience = 1_000)
+    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
+            "$f.y == 0 && $f.isNeighborsExist(W, E, S) && $f.isNeighborsEmpty(W) && $f.isNeighborsFilled(E, S)" })
+    public void ramp_perp_w_top_edge(BlockFact $f, RhsContext ctx) {
+        $f.setObject(ramp_perp_w);
+        $f.addProp(RAMP.flag);
+    }
+
+    @Rule(salience = 1_000)
+    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
+            "$f.y == ($f.d - 1) && $f.isNeighborsExist(W, E, N) && $f.isNeighborsEmpty(W) && $f.isNeighborsFilled(N, E)" })
+    public void ramp_perp_w_bottom_edge(BlockFact $f, RhsContext ctx) {
+        $f.setObject(ramp_perp_w);
         $f.addProp(RAMP.flag);
     }
 
@@ -218,6 +286,10 @@ public class TerrainUpdateRules extends AbstractTerrainRules {
         $f.addProp(RAMP.flag);
     }
 
+    //
+    // ramp_edge_out
+    //
+    
     @Rule(salience = 1_000)
     @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
             "$f.isNeighborsExist(E, S, NW, N, W) && $f.isNeighborsEmpty(E, S) && $f.isNeighborsFilled(NW, N, W)" })
