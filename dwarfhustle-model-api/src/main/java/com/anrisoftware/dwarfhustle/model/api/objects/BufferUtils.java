@@ -18,6 +18,9 @@
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import java.nio.ByteBuffer;
+import java.util.HexFormat;
+
+import org.agrona.DirectBuffer;
 
 /**
  * Methods to read short, integer and long directly from a {@link ByteBuffer}.
@@ -66,5 +69,11 @@ public class BufferUtils {
         value = Math.floor(value);
         value = value / Math.pow(10, decimalpoint);
         return value;
+    }
+
+    public static String toHex(DirectBuffer b) {
+        var array = new byte[b.capacity()];
+        b.getBytes(0, array);
+        return HexFormat.of().formatHex(array);
     }
 }

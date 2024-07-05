@@ -3,8 +3,13 @@ package com.anrisoftware.dwarfhustle.model.db.lmbd;
 import static java.lang.Math.pow;
 import static java.nio.ByteBuffer.allocateDirect;
 import static org.lmdbjava.DbiFlags.MDB_CREATE;
+import static org.lmdbjava.DbiFlags.MDB_DUPFIXED;
+import static org.lmdbjava.DbiFlags.MDB_DUPSORT;
+import static org.lmdbjava.DbiFlags.MDB_INTEGERDUP;
+import static org.lmdbjava.DbiFlags.MDB_INTEGERKEY;
 import static org.lmdbjava.DirectBufferProxy.PROXY_DB;
 import static org.lmdbjava.Env.create;
+import static org.lmdbjava.GetOp.MDB_SET;
 
 import java.nio.file.Path;
 import java.util.function.BiConsumer;
@@ -27,7 +32,7 @@ public class LmbdStorage {
 
     private final Env<DirectBuffer> env;
 
-    private final Dbi<DirectBuffer> db;
+    private final Dbi<DirectBuffer> dbPosIds;
 
     private final int w;
 
@@ -37,12 +42,15 @@ public class LmbdStorage {
 
     private final Txn<DirectBuffer> readTxn;
 
+    private final Dbi<DirectBuffer> dbIdObject;
+
     public LmbdStorage(Path file, GameMap gm) {
         this.w = gm.width;
         this.h = gm.height;
         this.d = gm.depth;
-        this.env = create(PROXY_DB).setMapSize((long) (10 * pow(10, 9))).setMaxDbs(1).open(file.toFile());
-        this.db = env.openDbi(Long.toString(gm.id), MDB_CREATE);
+        this.env = create(PROXY_DB).setMapSize((long) (10 * pow(10, 9))).setMaxDbs(2).open(file.toFile());
+        this.dbPosIds = env.openDbi("pos-ids", MDB_CREATE, MDB_DUPSORT, MDB_DUPFIXED, MDB_INTEGERDUP);
+        this.dbIdObject = env.openDbi("id-object", MDB_CREATE, MDB_INTEGERKEY);
         this.readTxn = env.txnRead();
         readTxn.reset();
     }
@@ -52,27 +60,46 @@ public class LmbdStorage {
         env.close();
     }
 
-    public void putObject(int x, int y, int z, int size, Consumer<MutableDirectBuffer> writeBuffer) {
+    public void putObject(int x, int y, int z, int size, long id, Consumer<MutableDirectBuffer> writeBuffer) {
         int index = GameBlockPos.calcIndex(w, h, d, 0, 0, 0, x, y, z);
-        final MutableDirectBuffer key = new UnsafeBuffer(allocateDirect(4));
-        final MutableDirectBuffer val = new UnsafeBuffer(allocateDirect(size));
         try (Txn<DirectBuffer> txn = env.txnWrite()) {
-            writeBuffer.accept(val);
+            final var key = new UnsafeBuffer(allocateDirect(4));
             key.putInt(0, index);
-            db.put(txn, key, val);
+            final var val = new UnsafeBuffer(allocateDirect(8));
+            val.putLong(0, id);
+            dbPosIds.put(txn, key, val);
+            txn.commit();
+        }
+        try (Txn<DirectBuffer> txn = env.txnWrite()) {
+            final var key = new UnsafeBuffer(allocateDirect(8));
+            key.putLong(0, id);
+            final var val = new UnsafeBuffer(allocateDirect(size));
+            writeBuffer.accept(val);
+            dbIdObject.put(txn, key, val);
             txn.commit();
         }
     }
 
     public void putObjects(int size, Iterable<GameMapObject> objects,
             BiConsumer<GameMapObject, MutableDirectBuffer> writeBuffer) {
-        final MutableDirectBuffer key = new UnsafeBuffer(allocateDirect(4));
-        final MutableDirectBuffer val = new UnsafeBuffer(allocateDirect(size));
         try (Txn<DirectBuffer> txn = env.txnWrite()) {
-            final var c = db.openCursor(txn);
+            final var key = new UnsafeBuffer(allocateDirect(4));
+            final var val = new UnsafeBuffer(allocateDirect(8));
+            final var c = dbPosIds.openCursor(txn);
             for (var o : objects) {
                 int index = GameBlockPos.calcIndex(w, h, d, 0, 0, 0, o.pos.x, o.pos.y, o.pos.z);
                 key.putInt(0, index);
+                val.putLong(0, o.id);
+                c.put(key, val);
+            }
+            txn.commit();
+        }
+        try (Txn<DirectBuffer> txn = env.txnWrite()) {
+            final var key = new UnsafeBuffer(allocateDirect(8));
+            final var val = new UnsafeBuffer(allocateDirect(size));
+            final var c = dbPosIds.openCursor(txn);
+            for (var o : objects) {
+                key.putLong(0, o.id);
                 writeBuffer.accept(o, val);
                 c.put(key, val);
             }
@@ -80,14 +107,36 @@ public class LmbdStorage {
         }
     }
 
-    public <T extends GameObject> T getObject(int x, int y, int z, Function<DirectBuffer, T> readBuffer) {
-        int index = GameBlockPos.calcIndex(w, h, d, 0, 0, 0, x, y, z);
-        final MutableDirectBuffer key = new UnsafeBuffer(allocateDirect(4));
+    public <T extends GameObject> T getObject(long id, Function<DirectBuffer, T> readBuffer) {
+        try {
+            final var key = new UnsafeBuffer(allocateDirect(8));
+            readTxn.renew();
+            key.putLong(0, id);
+            var val = dbIdObject.get(readTxn, key);
+            return readBuffer.apply(val);
+        } finally {
+            readTxn.reset();
+        }
+    }
+
+    public <T extends GameObject> void getObjects(int x, int y, int z, Function<DirectBuffer, T> readBuffer,
+            Consumer<T> consumer) {
         try {
             readTxn.renew();
-            key.putInt(0, index);
-            var val = db.get(readTxn, key);
-            return readBuffer.apply(val);
+            final var bkey = new UnsafeBuffer(allocateDirect(4));
+            final int index = GameBlockPos.calcIndex(w, h, d, 0, 0, 0, x, y, z);
+            bkey.putInt(0, index);
+            final var c = dbPosIds.openCursor(readTxn);
+            if (!c.get(bkey, MDB_SET)) {
+                return;
+            }
+            for (int i = 0; i < c.count(); i++) {
+                var bid = c.val();
+                var val = dbPosIds.get(readTxn, bid);
+                var o = readBuffer.apply(val);
+                consumer.accept(o);
+                c.next();
+            }
         } finally {
             readTxn.reset();
         }
@@ -95,20 +144,28 @@ public class LmbdStorage {
 
     public <T extends GameObject> void getObjectsRange(int sx, int sy, int sz, int ex, int ey, int ez,
             Function<DirectBuffer, T> readBuffer, Consumer<T> consumer) {
-        final MutableDirectBuffer key = new UnsafeBuffer(allocateDirect(4));
+        final var bkey = new UnsafeBuffer(allocateDirect(4));
         final int xx = ex - sx;
         final int yy = ey - sy;
         final int zz = ez - sz;
         try {
             readTxn.renew();
+            final var c = dbPosIds.openCursor(readTxn);
             for (int x = sx; x < xx; x++) {
                 for (int y = sy; y < yy; y++) {
                     for (int z = sz; z < zz; z++) {
                         final int index = GameBlockPos.calcIndex(w, h, d, 0, 0, 0, x, y, z);
-                        key.putInt(0, index);
-                        var val = db.get(readTxn, key);
-                        var o = readBuffer.apply(val);
-                        consumer.accept(o);
+                        bkey.putInt(0, index);
+                        if (!c.get(bkey, MDB_SET)) {
+                            return;
+                        }
+                        for (int i = 0; i < c.count(); i++) {
+                            var bid = c.val();
+                            var val = dbPosIds.get(readTxn, bid);
+                            var o = readBuffer.apply(val);
+                            consumer.accept(o);
+                            c.next();
+                        }
                     }
                 }
             }
