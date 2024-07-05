@@ -1,0 +1,44 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Author: Erwin Mueller
+;;; Version: material-vegetation.plm,v 1.0
+
+;;; Using Modules
+
+(defmodule "DWARFHUSTLE-VEGETATION-SHRUBS"
+  :documentation "Small to medium sized plants."
+  :includes ("PL-USER")
+  :uses ("LOGIC" "STELLA" "DWARFHUSTLE-GAME-MAP" "DWARFHUSTLE-OBJECTS-VEGETATION" "DWARFHUSTLE-MATERIALS-CLAYS" "DWARFHUSTLE-MATERIALS-TOPSOILS" "DWARFHUSTLE-MATERIALS-SEABEDS")
+  )
+
+(in-module "DWARFHUSTLE-VEGETATION-SHRUBS")
+
+;; clear any info from previous runs:
+(clear-module "DWARFHUSTLE-VEGETATION-SHRUBS")
+(reset-features)
+
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/Grass Blueberries)) :documentation "Blueberries is a grass widely cultivated for its seed, a cereal grain that is a staple food around the world."
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-season Blueberries Spring))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-season Blueberries Summer))
+(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-speed Blueberries) 0.3333))
+(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-min-temp Blueberries) 10))
+(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-max-temp Blueberries) 50))
+(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-opt-temp Blueberries) 25))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Blueberries DWARFHUSTLE-MATERIALS-CLAYS/Clay))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Blueberries DWARFHUSTLE-MATERIALS-CLAYS/Clay-Loam))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Blueberries DWARFHUSTLE-MATERIALS-CLAYS/Sandy-Clay))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Blueberries DWARFHUSTLE-MATERIALS-CLAYS/Silty-Clay))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Blueberries DWARFHUSTLE-MATERIALS-CLAYS/Fire-Clay))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Blueberries DWARFHUSTLE-MATERIALS-TOPSOILS/Loam))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Blueberries DWARFHUSTLE-MATERIALS-TOPSOILS/Loam))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Blueberries DWARFHUSTLE-MATERIALS-TOPSOILS/Loamy-Sand))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Blueberries DWARFHUSTLE-MATERIALS-TOPSOILS/Sandy-Clay-Loam))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Blueberries DWARFHUSTLE-MATERIALS-TOPSOILS/Silt))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Blueberries DWARFHUSTLE-MATERIALS-TOPSOILS/Silty-Clay-Loam))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Blueberries DWARFHUSTLE-MATERIALS-TOPSOILS/Silt-Loam))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Blueberries DWARFHUSTLE-MATERIALS-SEABEDS/Pelagic-Clay))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Blueberries DWARFHUSTLE-MATERIALS-SEABEDS/Siliceous-Ooze))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Blueberries DWARFHUSTLE-MATERIALS-SEABEDS/Calcareous-Ooze))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/flowering-months Blueberries April))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/flowering-months Blueberries May))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/flowering-months Blueberries June))

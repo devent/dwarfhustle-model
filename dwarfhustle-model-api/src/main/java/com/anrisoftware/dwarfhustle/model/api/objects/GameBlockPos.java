@@ -48,6 +48,34 @@ public class GameBlockPos implements Externalizable, StreamStorage {
     private static final long serialVersionUID = 1L;
 
     /**
+     * Returns the index from the x/y/z position.
+     */
+    public static int calcIndex(int w, int h, int d, int sx, int sy, int sz, int x, int y, int z) {
+        return (z - sz) * w * h + (y - sy) * w + x - sx;
+    }
+
+    /**
+     * Returns the X position from the index.
+     */
+    public static int calcX(int i, int w, int sx) {
+        return i % w + sx;
+    }
+
+    /**
+     * Returns the Y position from the index.
+     */
+    public static int calcY(int i, int w, int sy) {
+        return Math.floorMod(i / w, w) + sy;
+    }
+
+    /**
+     * Returns the Z position from the index.
+     */
+    public static int calcZ(int i, int w, int h, int sz) {
+        return (int) Math.floor(i / w / h) + sz;
+    }
+
+    /**
      * X position on the game map
      */
     public int x = -1;

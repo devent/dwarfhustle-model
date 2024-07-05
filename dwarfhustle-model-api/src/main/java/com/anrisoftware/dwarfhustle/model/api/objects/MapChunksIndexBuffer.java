@@ -20,7 +20,7 @@ package com.anrisoftware.dwarfhustle.model.api.objects;
 import java.nio.ByteBuffer;
 
 /**
- * Writes and reads {@link MapChunk} in a byte buffer.
+ * Index of {@link MapChunk}s that stores the chunk position and chunk size.
  * 
  * <ul>
  * <li>@{code c} index entries count;

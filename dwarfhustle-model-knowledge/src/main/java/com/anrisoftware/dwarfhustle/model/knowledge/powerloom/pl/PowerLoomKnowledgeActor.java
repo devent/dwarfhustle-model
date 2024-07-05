@@ -93,8 +93,6 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
     public static void loadPowerLoom() {
         var resources = new ArrayList<InputStream>();
         resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials.plm"));
-        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("game-map.plm"));
-        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("game-map-objects.plm"));
         resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-sedimentary-stones.plm"));
         resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-igneous-intrusive-stones.plm"));
         resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-igneous-extrusive-stones.plm"));
@@ -108,6 +106,12 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
         resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-topsoils.plm"));
         resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-gases.plm"));
         resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-liquids.plm"));
+        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("game-map.plm"));
+        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("game-map-objects.plm"));
+        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("game-map-objects-vegetation.plm"));
+        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("game-vegetation-grasses.plm"));
+        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("game-vegetation-shrubs.plm"));
+        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("game-vegetation-trees.plm"));
         resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("working.plm"));
         PLI.initialize();
         for (InputStream res : resources) {

@@ -17,7 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockBuffer.calcIndex;
+import static com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos.calcIndex;
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockBuffer.readMapBlockIndex;
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockBuffer.writeMapBlockIndex;
 

@@ -94,6 +94,14 @@
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest</artifactId>
         </dependency>
+		<dependency>
+		    <groupId>org.lmdbjava</groupId>
+		    <artifactId>lmdbjava</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>org.agrona</groupId>
+		    <artifactId>agrona</artifactId>
+		</dependency>
 
         <!-- Own modules dependencies -->
         <dependency>

@@ -41,11 +41,9 @@ import lombok.ToString;
  */
 @NoArgsConstructor
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Data
 public class GameObject implements Externalizable, StreamStorage {
-
-    private static final long serialVersionUID = 1L;
 
     public static final String OBJECT_TYPE = GameObject.class.getSimpleName();
 
@@ -66,6 +64,7 @@ public class GameObject implements Externalizable, StreamStorage {
     /**
      * Unique ID of the object.
      */
+    @EqualsAndHashCode.Include
     public long id;
 
     public GameObject(long id) {
@@ -76,7 +75,6 @@ public class GameObject implements Externalizable, StreamStorage {
         this(toId(idbuf));
     }
 
-    @EqualsAndHashCode.Include
     public String getObjectType() {
         return GameObject.OBJECT_TYPE;
     }

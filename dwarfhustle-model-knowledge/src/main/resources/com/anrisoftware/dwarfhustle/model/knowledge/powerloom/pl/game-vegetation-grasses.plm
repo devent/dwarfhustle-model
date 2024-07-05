@@ -1,0 +1,96 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Author: Erwin Mueller
+;;; Version: material-vegetation.plm,v 1.0
+
+;;; Using Modules
+
+(defmodule "DWARFHUSTLE-VEGETATION-GRASSES"
+  :documentation "Cereal grasses, bamboos, the grasses of natural grassland and species cultivated in lawns and pasture."
+  :includes ("PL-USER")
+  :uses ("LOGIC" "STELLA" "DWARFHUSTLE-GAME-MAP" "DWARFHUSTLE-OBJECTS-VEGETATION" "DWARFHUSTLE-MATERIALS-TOPSOILS" "DWARFHUSTLE-MATERIALS-SEABEDS")
+  )
+
+(in-module "DWARFHUSTLE-VEGETATION-GRASSES")
+
+;; clear any info from previous runs:
+(clear-module "DWARFHUSTLE-VEGETATION-GRASSES")
+(reset-features)
+
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/Grass Wheat)) :documentation "Wheat is a grass widely cultivated for its seed, a cereal grain that is a staple food around the world."
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-season Wheat Spring))
+(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-speed Wheat) 1.0989))
+(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-min-temp Wheat) 10))
+(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-max-temp Wheat) 50))
+(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-opt-temp Wheat) 25))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Wheat Loam))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/flowering-months Wheat June))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/flowering-months Wheat Juny))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/flowering-months Wheat August))
+
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/Grass Carrot)) :documentation "The carrot is a root vegetable, typically orange in color."
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-season Wheat Spring))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-season Wheat Summer))
+(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-speed Carrot) 0.3333))
+(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-min-temp Carrot) 10))
+(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-max-temp Carrot) 50))
+(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-opt-temp Carrot) 25))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Carrot Loam))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Carrot Loamy-Sand))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Carrot Peat))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Carrot Sandy-Clay-Loam))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Carrot Silt))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Carrot Silty-Clay-Loam))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Carrot Silt-Loam))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Carrot Pelagic-Clay))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Carrot Siliceous-Ooze))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Carrot Calcareous-Ooze))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/flowering-months Carrot June))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/flowering-months Carrot Juny))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/flowering-months Carrot August))
+
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/Grass Daisy)) :documentation "Common daisy."
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-season Daisy Spring))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-season Daisy Summer))
+(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-speed Daisy) 3.3333))
+(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-min-temp Daisy) 10))
+(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-max-temp Daisy) 50))
+(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-opt-temp Daisy) 25))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Daisy Loam))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Daisy Loamy-Sand))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Daisy Peat))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Daisy Sandy-Clay-Loam))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Daisy Silt))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Daisy Silty-Clay-Loam))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Daisy Silt-Loam))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Daisy Pelagic-Clay))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Daisy Siliceous-Ooze))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Daisy Calcareous-Ooze))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/flowering-months Daisy March))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/flowering-months Daisy April))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/flowering-months Daisy May))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/flowering-months Daisy June))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/flowering-months Daisy July))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/flowering-months Daisy August))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/flowering-months Daisy September))
+
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/Grass Red-Poppy)) :documentation "Red poppy."
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-season Red-Poppy Spring))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-season Red-Poppy Summer))
+(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-speed Red-Poppy) 3.3333))
+(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-min-temp Red-Poppy) 10))
+(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-max-temp Red-Poppy) 50))
+(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-opt-temp Red-Poppy) 25))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Red-Poppy Loam))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Red-Poppy Loamy-Sand))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Red-Poppy Peat))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Red-Poppy Sandy-Clay-Loam))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Red-Poppy Silt))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Red-Poppy Silty-Clay-Loam))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Red-Poppy Silt-Loam))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Red-Poppy Pelagic-Clay))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Red-Poppy Siliceous-Ooze))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Red-Poppy Calcareous-Ooze))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/flowering-months Red-Poppy April))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/flowering-months Red-Poppy May))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/flowering-months Red-Poppy June))

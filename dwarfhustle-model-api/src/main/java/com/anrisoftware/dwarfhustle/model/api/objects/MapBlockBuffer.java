@@ -21,6 +21,10 @@ import static com.anrisoftware.dwarfhustle.model.api.objects.BufferUtils.readInt
 import static com.anrisoftware.dwarfhustle.model.api.objects.BufferUtils.readShort;
 import static com.anrisoftware.dwarfhustle.model.api.objects.BufferUtils.writeInt;
 import static com.anrisoftware.dwarfhustle.model.api.objects.BufferUtils.writeShort;
+import static com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos.calcIndex;
+import static com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos.calcX;
+import static com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos.calcY;
+import static com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos.calcZ;
 
 import java.nio.ByteBuffer;
 
@@ -60,34 +64,6 @@ public class MapBlockBuffer {
     private static final int TEMP_INDEX = 5 * 2;
 
     private static final int LUX_INDEX = 6 * 2;
-
-    /**
-     * Returns the index from the x/y/z position.
-     */
-    public static int calcIndex(int w, int h, int d, int sx, int sy, int sz, int x, int y, int z) {
-        return (z - sz) * w * h + (y - sy) * w + x - sx;
-    }
-
-    /**
-     * Returns the X position from the index.
-     */
-    public static int calcX(int i, int w, int sx) {
-        return i % w + sx;
-    }
-
-    /**
-     * Returns the Y position from the index.
-     */
-    public static int calcY(int i, int w, int sy) {
-        return Math.floorMod(i / w, w) + sy;
-    }
-
-    /**
-     * Returns the Z position from the index.
-     */
-    public static int calcZ(int i, int w, int h, int sz) {
-        return (int) Math.floor(i / w / h) + sz;
-    }
 
     /**
      * Returns the size of the {@link MapBlock}'s buffer for the chunk width, height

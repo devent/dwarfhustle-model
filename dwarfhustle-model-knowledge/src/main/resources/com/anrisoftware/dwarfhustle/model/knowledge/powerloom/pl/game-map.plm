@@ -17,6 +17,35 @@
 (clear-module "DWARFHUSTLE-GAME-MAP")
 (reset-features)
 
+(defconcept Season (?s)
+  :documentation "Seasons.")
+
+(assert (Season spring)) :documentation "Spring season."
+(assert (Season summer)) :documentation "Summer season."
+(assert (Season autumn)) :documentation "Autumn season."
+(assert (Season winter)) :documentation "Winter season."
+
+(defconcept Month (?m)
+  :documentation "Months.")
+
+(assert (Month january)) :documentation "January."
+(assert (Month february)) :documentation "February."
+(assert (Month march)) :documentation "March."
+(assert (Month april)) :documentation "April."
+(assert (Month may)) :documentation "May."
+(assert (Month june)) :documentation "June."
+(assert (Month july)) :documentation "July."
+(assert (Month august)) :documentation "August."
+(assert (Month september)) :documentation "September."
+(assert (Month october)) :documentation "October."
+(assert (Month november)) :documentation "November."
+(assert (Month december)) :documentation "December."
+
+(deffunction year-days () :-> (?result INTEGER)
+  :documentation "Sets the result block type based on the neighbor of the block in the specific direction.")
+
+(assert (= (year-days) 360))
+
 (defconcept BlockType (?type)
   :documentation "Tile type.")
 

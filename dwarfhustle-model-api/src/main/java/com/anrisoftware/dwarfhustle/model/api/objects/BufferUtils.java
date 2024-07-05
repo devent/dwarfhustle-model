@@ -61,4 +61,10 @@ public class BufferUtils {
                 | (b.get() & 255) << 24 | (b.get() & 255) << 16 | (b.get() & 255) << 8 | (b.get() & 255);
     }
 
+    public static double trunc(double value, int decimalpoint) {
+        value = value * Math.pow(10, decimalpoint);
+        value = Math.floor(value);
+        value = value / Math.pow(10, decimalpoint);
+        return value;
+    }
 }

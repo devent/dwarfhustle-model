@@ -1,0 +1,49 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Author: Erwin Mueller
+;;; Version: material-vegetation.plm,v 1.0
+
+;;; Using Modules
+
+(defmodule "DWARFHUSTLE-VEGETATION-TREES"
+  :documentation "Plant with an elongated stem, or trunk, usually supporting branches and leaves."
+  :includes ("PL-USER")
+  :uses ("LOGIC" "STELLA" "DWARFHUSTLE-GAME-MAP" "DWARFHUSTLE-OBJECTS-VEGETATION" "DWARFHUSTLE-MATERIALS-CLAYS" "DWARFHUSTLE-MATERIALS-TOPSOILS" "DWARFHUSTLE-MATERIALS-SEABEDS")
+  )
+
+(in-module "DWARFHUSTLE-VEGETATION-TREES")
+
+;; clear any info from previous runs:
+(clear-module "DWARFHUSTLE-VEGETATION-TREES")
+(reset-features)
+
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/Tree Pine)) :documentation "Pinus nigra, black pine."
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/Tree-Root Pine-Root)) :documentation "Pinus nigra, black pine."
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/Tree-Trunk Pine-Trunk)) :documentation "Pinus nigra, black pine."
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/Tree-Branch Pine-Branch)) :documentation "Pinus nigra, black pine."
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/Tree-Twig Pine-Twig)) :documentation "Pinus nigra, black pine."
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/Tree-Leaf Pine-Leaf)) :documentation "Pinus nigra, black pine."
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-season Pine Winter))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-season Pine Spring))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-season Pine Summer))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-season Pine Autumn))
+(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-speed Pine) 0.2739))
+(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-min-temp Pine) 10))
+(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-max-temp Pine) 50))
+(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-opt-temp Pine) 15))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-CLAYS/Clay))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-CLAYS/Clay-Loam))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-CLAYS/Sandy-Clay))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-CLAYS/Silty-Clay))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-CLAYS/Fire-Clay))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-TOPSOILS/Loam))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-TOPSOILS/Loam))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-TOPSOILS/Loamy-Sand))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-TOPSOILS/Peat))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-TOPSOILS/Sandy-Clay-Loam))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-TOPSOILS/Silt))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-TOPSOILS/Silty-Clay-Loam))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-TOPSOILS/Silt-Loam))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-SEABEDS/Pelagic-Clay))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-SEABEDS/Siliceous-Ooze))
+(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-SEABEDS/Calcareous-Ooze))

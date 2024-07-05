@@ -29,20 +29,13 @@ import lombok.ToString;
  */
 @NoArgsConstructor
 @ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @Data
 public abstract class KnowledgeObject extends GameObject {
-
-    private static final long serialVersionUID = 1L;
 
     public static final long ID_FLAG = 1;
 
     public static final String OBJECT_TYPE = KnowledgeObject.class.getSimpleName();
-
-    /**
-     * Knowledge KID.
-     */
-    private int kid;
 
     /**
      * Returns the game object ID from the knowledge KID.
@@ -57,6 +50,11 @@ public abstract class KnowledgeObject extends GameObject {
     public static int id2Kid(long id) {
         return (int) (id >> 32);
     }
+
+    /**
+     * Knowledge KID.
+     */
+    public int kid;
 
     public KnowledgeObject(int kid) {
         super(kid2Id(kid));

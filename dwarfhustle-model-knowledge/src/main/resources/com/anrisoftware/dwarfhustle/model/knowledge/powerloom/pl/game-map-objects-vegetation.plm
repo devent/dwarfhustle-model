@@ -1,0 +1,66 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Author: Erwin Mueller
+;;; Version: material-vegetation.plm,v 1.0
+
+;;; Using Modules
+
+(defmodule "DWARFHUSTLE-OBJECTS-VEGETATION"
+  :documentation "Grasses, shrubs, trees."
+  :includes ("PL-USER")
+  :uses ("LOGIC" "STELLA" "DWARFHUSTLE-GAME-MAP" "DWARFHUSTLE-GAME-MAP-OBJECTS" "DWARFHUSTLE-MATERIALS")
+  )
+
+(in-module "DWARFHUSTLE-OBJECTS-VEGETATION")
+
+;; clear any info from previous runs:
+(clear-module "DWARFHUSTLE-OBJECTS-VEGETATION")
+(reset-features)
+
+(defconcept Vegetation (?type ObjectType))
+  :documentation "Grasses, shrubs, trees."
+
+(defrelation growing-season ((?v Vegetation) (?season Season)))
+  :documentation "Season(s) of the growing time."
+
+(deffunction growing-speed ((?v Vegetation)) :-> (?time NUMBER))
+  :documentation "Growing speed in units/day giving best conditions."
+
+(deffunction growing-min-temp ((?v Vegetation)) :-> (?temp NUMBER))
+  :documentation "Minimum temperature for the plant, below the plant will die."
+
+(deffunction growing-max-temp ((?v Vegetation)) :-> (?temp NUMBER))
+  :documentation "Maximum temperature for the plant, above the plant will die."
+
+(deffunction growing-opt-temp ((?v Vegetation)) :-> (?temp NUMBER))
+  :documentation "Optimal temperature for the plant, above or below the plant will receive growth penalties."
+
+(defrelation growing-soil ((?v Vegetation) (?m Material)))
+  :documentation "Defines where the plant can grow."
+
+(defrelation flowering-months ((?v Vegetation) (?month Month)))
+  :documentation "Month(s) of the flowering period."
+
+(defconcept Grass (?v Vegetation))
+  :documentation "Cereal grasses, bamboos, the grasses of natural grassland and species cultivated in lawns and pasture."
+
+(defconcept Shrub (?v Vegetation))
+  :documentation "Small to medium sized plants."
+
+(defconcept Tree (?v Vegetation))
+  :documentation "Plant with an elongated stem, or trunk, usually supporting branches and leaves."
+
+(defconcept Tree-Root (?t Tree))
+  :documentation "Root of the tree."
+
+(defconcept Tree-Trunk (?t Tree))
+  :documentation "Trunk of the tree."
+
+(defconcept Tree-Branch (?t Tree))
+  :documentation "Branch of the tree."
+
+(defconcept Tree-Twig (?t Tree))
+  :documentation "Twig of the tree."
+
+(defconcept Tree-Leaf (?t Tree))
+  :documentation "Leaves of the tree."

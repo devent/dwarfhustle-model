@@ -1,5 +1,6 @@
 databases
 dwarf-test-1/
-db/
 *.kate-swp
 chunks.txt
+*.swp
+dwarfhustle-model-generate-map/db/**

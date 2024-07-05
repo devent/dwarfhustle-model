@@ -37,8 +37,6 @@ import lombok.ToString;
 @Setter
 public class ObjectType extends KnowledgeObject {
 
-    private static final long serialVersionUID = 1L;
-
     public static final String OBJECT_TYPE = ObjectType.class.getSimpleName();
 
     public static final String TYPE = ObjectType.class.getSimpleName();
