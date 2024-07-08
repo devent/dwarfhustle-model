@@ -12,6 +12,12 @@ import static org.lmdbjava.Env.create;
 import static org.lmdbjava.GetOp.MDB_SET;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.RecursiveAction;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -28,7 +34,12 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
-public class LmbdStorage {
+import lombok.RequiredArgsConstructor;
+
+/**
+ * LMBD storage for game map objects on the {@link GameMap}.
+ */
+public class MapObjectsLmbdStorage implements AutoCloseable {
 
     private final Env<DirectBuffer> env;
 
@@ -44,7 +55,14 @@ public class LmbdStorage {
 
     private final Dbi<DirectBuffer> dbIdObject;
 
-    public LmbdStorage(Path file, GameMap gm) {
+    private final ThreadLocal<UnsafeBuffer> buff4;
+
+    private final ThreadLocal<UnsafeBuffer> buff8;
+
+    /**
+     * Creates or opens the game map objects storage for the game map.
+     */
+    public MapObjectsLmbdStorage(Path file, GameMap gm) {
         this.w = gm.width;
         this.h = gm.height;
         this.d = gm.depth;
@@ -52,26 +70,35 @@ public class LmbdStorage {
         this.dbPosIds = env.openDbi("pos-ids", MDB_CREATE, MDB_DUPSORT, MDB_DUPFIXED, MDB_INTEGERDUP);
         this.dbIdObject = env.openDbi("id-object", MDB_CREATE, MDB_INTEGERKEY);
         this.readTxn = env.txnRead();
+        this.buff4 = ThreadLocal.withInitial(() -> new UnsafeBuffer(allocateDirect(4)));
+        this.buff8 = ThreadLocal.withInitial(() -> new UnsafeBuffer(allocateDirect(8)));
         readTxn.reset();
     }
 
+    /**
+     * Closes the storage.
+     */
+    @Override
     public void close() {
         readTxn.close();
         env.close();
     }
 
+    /**
+     * Stores the game map object in the (x,y,z) block in the database.
+     */
     public void putObject(int x, int y, int z, int size, long id, Consumer<MutableDirectBuffer> writeBuffer) {
         int index = GameBlockPos.calcIndex(w, h, d, 0, 0, 0, x, y, z);
         try (Txn<DirectBuffer> txn = env.txnWrite()) {
-            final var key = new UnsafeBuffer(allocateDirect(4));
+            final var key = buff4.get();
+            final var val = buff8.get();
             key.putInt(0, index);
-            final var val = new UnsafeBuffer(allocateDirect(8));
             val.putLong(0, id);
             dbPosIds.put(txn, key, val);
             txn.commit();
         }
         try (Txn<DirectBuffer> txn = env.txnWrite()) {
-            final var key = new UnsafeBuffer(allocateDirect(8));
+            final var key = buff8.get();
             key.putLong(0, id);
             final var val = new UnsafeBuffer(allocateDirect(size));
             writeBuffer.accept(val);
@@ -80,12 +107,91 @@ public class LmbdStorage {
         }
     }
 
+    @SuppressWarnings("serial")
+    @RequiredArgsConstructor
+    private class CustomRecursiveAction extends RecursiveAction {
+
+        private final int max;
+
+        private final int size;
+
+        private final int start;
+
+        private final int end;
+
+        private final List<GameMapObject> objects;
+
+        private final BiConsumer<GameMapObject, MutableDirectBuffer> writeBuffer;
+
+        @Override
+        protected void compute() {
+            if (end - start > max) {
+                ForkJoinTask.invokeAll(createSubtasks());
+            } else {
+                processing();
+            }
+        }
+
+        private Collection<CustomRecursiveAction> createSubtasks() {
+            List<CustomRecursiveAction> dividedTasks = new ArrayList<>();
+            dividedTasks.add(new CustomRecursiveAction(max, size, start, start / 2 + end / 2, objects, writeBuffer));
+            dividedTasks.add(new CustomRecursiveAction(max, size, start / 2 + end / 2, end, objects, writeBuffer));
+            return dividedTasks;
+        }
+
+        private void processing() {
+            try (Txn<DirectBuffer> txn = env.txnWrite()) {
+                final var c = dbPosIds.openCursor(txn);
+                final var key = buff4.get();
+                final var val = buff8.get();
+                for (int i = start; i < end; i++) {
+                    var o = objects.get(i);
+                    int index = GameBlockPos.calcIndex(w, h, d, 0, 0, 0, o.pos.x, o.pos.y, o.pos.z);
+                    key.putInt(0, index);
+                    val.putLong(0, o.id);
+                    c.put(key, val);
+                }
+                txn.commit();
+            }
+            try (Txn<DirectBuffer> txn = env.txnWrite()) {
+                final var key = buff8.get();
+                final var val = new UnsafeBuffer(allocateDirect(size));
+                final var c = dbPosIds.openCursor(txn);
+                for (int i = start; i < end; i++) {
+                    var o = objects.get(i);
+                    key.putLong(0, o.id);
+                    writeBuffer.accept(o, val);
+                    c.put(key, val);
+                }
+                txn.commit();
+            }
+        }
+
+    }
+
+    /**
+     * Mass storage for game map objects.
+     */
+    public void putObjects(int size, List<GameMapObject> objects,
+            BiConsumer<GameMapObject, MutableDirectBuffer> writeBuffer) {
+        int max = 8192;
+        if (objects.size() < max) {
+            putObjects(size, (Iterable<GameMapObject>) objects, writeBuffer);
+        } else {
+            var pool = ForkJoinPool.commonPool();
+            pool.invoke(new CustomRecursiveAction(max, size, 0, objects.size(), objects, writeBuffer));
+        }
+    }
+
+    /**
+     * Mass storage for game map objects.
+     */
     public void putObjects(int size, Iterable<GameMapObject> objects,
             BiConsumer<GameMapObject, MutableDirectBuffer> writeBuffer) {
         try (Txn<DirectBuffer> txn = env.txnWrite()) {
-            final var key = new UnsafeBuffer(allocateDirect(4));
-            final var val = new UnsafeBuffer(allocateDirect(8));
             final var c = dbPosIds.openCursor(txn);
+            final var key = buff4.get();
+            final var val = buff8.get();
             for (var o : objects) {
                 int index = GameBlockPos.calcIndex(w, h, d, 0, 0, 0, o.pos.x, o.pos.y, o.pos.z);
                 key.putInt(0, index);
@@ -95,7 +201,7 @@ public class LmbdStorage {
             txn.commit();
         }
         try (Txn<DirectBuffer> txn = env.txnWrite()) {
-            final var key = new UnsafeBuffer(allocateDirect(8));
+            final var key = buff8.get();
             final var val = new UnsafeBuffer(allocateDirect(size));
             final var c = dbPosIds.openCursor(txn);
             for (var o : objects) {
@@ -107,10 +213,13 @@ public class LmbdStorage {
         }
     }
 
+    /**
+     * Retrieves the game map object with the specific object ID from the database.
+     */
     public <T extends GameObject> T getObject(long id, Function<DirectBuffer, T> readBuffer) {
         try {
-            final var key = new UnsafeBuffer(allocateDirect(8));
             readTxn.renew();
+            final var key = buff8.get();
             key.putLong(0, id);
             var val = dbIdObject.get(readTxn, key);
             return readBuffer.apply(val);
@@ -119,15 +228,18 @@ public class LmbdStorage {
         }
     }
 
+    /**
+     * Retrieves the game map objects on the (x,y,z) block from the database.
+     */
     public <T extends GameObject> void getObjects(int x, int y, int z, Function<DirectBuffer, T> readBuffer,
             Consumer<T> consumer) {
         try {
             readTxn.renew();
-            final var bkey = new UnsafeBuffer(allocateDirect(4));
+            final var key = buff4.get();
             final int index = GameBlockPos.calcIndex(w, h, d, 0, 0, 0, x, y, z);
-            bkey.putInt(0, index);
+            key.putInt(0, index);
             final var c = dbPosIds.openCursor(readTxn);
-            if (!c.get(bkey, MDB_SET)) {
+            if (!c.get(key, MDB_SET)) {
                 return;
             }
             for (int i = 0; i < c.count(); i++) {
@@ -142,21 +254,25 @@ public class LmbdStorage {
         }
     }
 
+    /**
+     * Retrieves the game map objects from a range start (x,y,z) to end (x,y,z)
+     * blocks from the database.
+     */
     public <T extends GameObject> void getObjectsRange(int sx, int sy, int sz, int ex, int ey, int ez,
             Function<DirectBuffer, T> readBuffer, Consumer<T> consumer) {
-        final var bkey = new UnsafeBuffer(allocateDirect(4));
         final int xx = ex - sx;
         final int yy = ey - sy;
         final int zz = ez - sz;
         try {
             readTxn.renew();
+            final var key = buff4.get();
             final var c = dbPosIds.openCursor(readTxn);
             for (int x = sx; x < xx; x++) {
                 for (int y = sy; y < yy; y++) {
                     for (int z = sz; z < zz; z++) {
                         final int index = GameBlockPos.calcIndex(w, h, d, 0, 0, 0, x, y, z);
-                        bkey.putInt(0, index);
-                        if (!c.get(bkey, MDB_SET)) {
+                        key.putInt(0, index);
+                        if (!c.get(key, MDB_SET)) {
                             return;
                         }
                         for (int i = 0; i < c.count(); i++) {

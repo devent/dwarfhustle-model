@@ -17,10 +17,10 @@ import com.anrisoftware.dwarfhustle.model.api.vegetations.VegetationBuffer
 import groovy.util.logging.Slf4j
 
 /**
- * @see LmbdStorage
+ * @see MapObjectsLmbdStorage
  */
 @Slf4j
-class LmbdStorageTest {
+class MapObjectsLmbdStorageTest {
 
     @Test
     void putObject_test(@TempDir Path tmp) {
@@ -36,7 +36,7 @@ class LmbdStorageTest {
         grass.pos.z = 12
         grass.kid = 800
         grass.growth = 0.3
-        def storage = new LmbdStorage(tmp, gm)
+        def storage = new MapObjectsLmbdStorage(tmp, gm)
         assert VegetationBuffer.SIZE == 28
         storage.putObject(grass.pos.x, grass.pos.y, grass.pos.z, VegetationBuffer.SIZE, grass.id, { b ->
             VegetationBuffer.writeObject(b, 0, grass)
@@ -58,7 +58,7 @@ class LmbdStorageTest {
         gm.width = 512
         gm.height = 512
         gm.depth = 512
-        def storage = new LmbdStorage(tmp, gm)
+        def storage = new MapObjectsLmbdStorage(tmp, gm)
         int zz = 32
         int yy = 256
         int xx = 256
@@ -102,7 +102,34 @@ class LmbdStorageTest {
         gm.height = 512
         gm.depth = 512
         def objects = createObjects(gm, xx, yy, zz)
-        def storage = new LmbdStorage(tmp, gm)
+        def storage = new MapObjectsLmbdStorage(tmp, gm)
+        log.info "putObjects_benchmark {} objects", objects.size()
+        def timeNow = System.currentTimeMillis()
+        storage.putObjects(VegetationBuffer.SIZE, objects, { o, b ->
+            VegetationBuffer.writeObject(b, 0, o)
+        })
+        storage.close()
+        log.info "putObjects_benchmark done in {}.", (System.currentTimeMillis() - timeNow) / 1000f
+        Files.list(tmp).withCloseable {
+            it.filter({file -> !Files.isDirectory(file)})
+            .collect(Collectors.toSet()).each {
+                def size = it.toFile().size()
+                log.info "Size {} = {} B, {} KB, {} MB, {} GB.", it, size, round(size / 1024), round(size / 1024 / 1024), round(size / 1024 / 1024 / 1024)
+            }
+        }
+    }
+
+    @Test
+    void putObjectsParallel_benchmark(@TempDir Path tmp) {
+        int zz = 32
+        int yy = 256
+        int xx = 256
+        def gm = new GameMap(1)
+        gm.width = 512
+        gm.height = 512
+        gm.depth = 512
+        def objects = createObjects(gm, xx, yy, zz)
+        def storage = new MapObjectsLmbdStorage(tmp, gm)
         log.info "putObjects_benchmark {} objects", objects.size()
         def timeNow = System.currentTimeMillis()
         storage.putObjects(VegetationBuffer.SIZE, objects, { o, b ->
@@ -129,7 +156,7 @@ class LmbdStorageTest {
         gm.height = 512
         gm.depth = 512
         def objects = createObjects(gm, xx, yy, zz)
-        def storage = new LmbdStorage(tmp, gm)
+        def storage = new MapObjectsLmbdStorage(tmp, gm)
         storage.putObjects(VegetationBuffer.SIZE, objects, { o, b ->
             VegetationBuffer.writeObject(b, 0, o)
         })
@@ -164,7 +191,7 @@ class LmbdStorageTest {
         gm.height = 32
         gm.depth = 32
         def objects = createObjects(gm, xx, yy, zz)
-        def storage = new LmbdStorage(tmp, gm)
+        def storage = new MapObjectsLmbdStorage(tmp, gm)
         storage.putObjects(VegetationBuffer.SIZE,objects, { o, b ->
             VegetationBuffer.writeObject(b, 0, o)
         })
