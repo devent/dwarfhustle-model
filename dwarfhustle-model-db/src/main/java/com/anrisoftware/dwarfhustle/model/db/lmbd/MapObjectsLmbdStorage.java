@@ -12,12 +12,8 @@ import static org.lmdbjava.Env.create;
 import static org.lmdbjava.GetOp.MDB_SET;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinTask;
-import java.util.concurrent.RecursiveAction;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -25,6 +21,7 @@ import java.util.function.Function;
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
+import org.eclipse.collections.api.map.primitive.IntObjectMap;
 import org.lmdbjava.Dbi;
 import org.lmdbjava.Env;
 import org.lmdbjava.Txn;
@@ -33,13 +30,12 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
-
-import lombok.RequiredArgsConstructor;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 
 /**
  * LMBD storage for game map objects on the {@link GameMap}.
  */
-public class MapObjectsLmbdStorage implements AutoCloseable {
+public class MapObjectsLmbdStorage implements AutoCloseable, ObjectsGetter {
 
     private final Env<DirectBuffer> env;
 
@@ -59,10 +55,14 @@ public class MapObjectsLmbdStorage implements AutoCloseable {
 
     private final ThreadLocal<UnsafeBuffer> buff8;
 
+    private final IntObjectMap<Function<DirectBuffer, GameObject>> typeReadBuffers;
+
     /**
      * Creates or opens the game map objects storage for the game map.
      */
-    public MapObjectsLmbdStorage(Path file, GameMap gm) {
+    public MapObjectsLmbdStorage(Path file, GameMap gm,
+            IntObjectMap<Function<DirectBuffer, GameObject>> typeReadBuffers) {
+        this.typeReadBuffers = typeReadBuffers;
         this.w = gm.width;
         this.h = gm.height;
         this.d = gm.depth;
@@ -107,39 +107,17 @@ public class MapObjectsLmbdStorage implements AutoCloseable {
         }
     }
 
-    @SuppressWarnings("serial")
-    @RequiredArgsConstructor
-    private class CustomRecursiveAction extends RecursiveAction {
+    private class ObjectsListRecursiveAction extends AbstractObjectsListRecursiveAction {
 
-        private final int max;
+        private static final long serialVersionUID = 1L;
 
-        private final int size;
-
-        private final int start;
-
-        private final int end;
-
-        private final List<GameMapObject> objects;
-
-        private final BiConsumer<GameMapObject, MutableDirectBuffer> writeBuffer;
+        public ObjectsListRecursiveAction(int max, int size, int start, int end, List<GameMapObject> objects,
+                BiConsumer<GameMapObject, MutableDirectBuffer> writeBuffer) {
+            super(max, size, start, end, objects, writeBuffer);
+        }
 
         @Override
-        protected void compute() {
-            if (end - start > max) {
-                ForkJoinTask.invokeAll(createSubtasks());
-            } else {
-                processing();
-            }
-        }
-
-        private Collection<CustomRecursiveAction> createSubtasks() {
-            List<CustomRecursiveAction> dividedTasks = new ArrayList<>();
-            dividedTasks.add(new CustomRecursiveAction(max, size, start, start / 2 + end / 2, objects, writeBuffer));
-            dividedTasks.add(new CustomRecursiveAction(max, size, start / 2 + end / 2, end, objects, writeBuffer));
-            return dividedTasks;
-        }
-
-        private void processing() {
+        protected void processing() {
             try (Txn<DirectBuffer> txn = env.txnWrite()) {
                 final var c = dbPosIds.openCursor(txn);
                 final var key = buff4.get();
@@ -167,6 +145,11 @@ public class MapObjectsLmbdStorage implements AutoCloseable {
             }
         }
 
+        @Override
+        protected AbstractObjectsListRecursiveAction create(int max, int size, int start, int end,
+                List<GameMapObject> objects, BiConsumer<GameMapObject, MutableDirectBuffer> writeBuffer) {
+            return new ObjectsListRecursiveAction(max, size, start, end, objects, writeBuffer);
+        }
     }
 
     /**
@@ -179,7 +162,7 @@ public class MapObjectsLmbdStorage implements AutoCloseable {
             putObjects(size, (Iterable<GameMapObject>) objects, writeBuffer);
         } else {
             var pool = ForkJoinPool.commonPool();
-            pool.invoke(new CustomRecursiveAction(max, size, 0, objects.size(), objects, writeBuffer));
+            pool.invoke(new ObjectsListRecursiveAction(max, size, 0, objects.size(), objects, writeBuffer));
         }
     }
 
@@ -289,4 +272,11 @@ public class MapObjectsLmbdStorage implements AutoCloseable {
             readTxn.reset();
         }
     }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends GameObject> T get(Class<T> typeClass, String type, Object key) {
+        return (T) getObject((long) key, typeReadBuffers.get(type.hashCode()));
+    }
+
 }

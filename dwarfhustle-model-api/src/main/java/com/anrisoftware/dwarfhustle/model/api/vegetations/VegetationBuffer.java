@@ -41,11 +41,11 @@ public class VegetationBuffer extends GameMapObjectBuffer {
     }
 
     public static void setGrowth(MutableDirectBuffer b, int off, float g) {
-        b.putShort(GROWTH_INDEX_BYTES + off, (short) (g * 65_536f - 32_768f));
+        b.putShort(GROWTH_INDEX_BYTES + off, BufferUtils.floatToShort(g));
     }
 
     public static float getGrowth(DirectBuffer b, int off) {
-        return (float) BufferUtils.trunc((b.getShort(GROWTH_INDEX_BYTES + off) + 32_768f) / 65_536f, 5);
+        return BufferUtils.shortToFloat(b.getShort(GROWTH_INDEX_BYTES + off));
     }
 
     public static void writeObject(MutableDirectBuffer b, int off, Vegetation o) {

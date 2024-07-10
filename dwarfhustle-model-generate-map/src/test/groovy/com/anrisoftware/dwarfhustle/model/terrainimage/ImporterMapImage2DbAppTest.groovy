@@ -32,7 +32,6 @@ import org.junit.jupiter.params.provider.MethodSource
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
 import com.anrisoftware.dwarfhustle.model.actor.DwarfhustleModelActorsModule
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DwarfhustleModelDbOrientdbModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustlePowerloomModule
 import com.google.inject.Guice
 import com.google.inject.Injector
@@ -50,7 +49,6 @@ class ImporterMapImage2DbAppTest {
         this.injector = Guice.createInjector(
                 new DwarfhustleModelActorsModule(),
                 new DwarfhustlePowerloomModule(),
-                new DwarfhustleModelDbOrientdbModule(),
                 new DwarfhustleModelApiObjectsModule(),
                 new DwarfhustleModelTerrainimageModule(),
                 )
@@ -84,7 +82,7 @@ class ImporterMapImage2DbAppTest {
         def importer = injector.getInstance(ImporterMapImage2DbApp)
         importer.init(injector).get()
         def gmid = importer.createGameMap(image.terrain, mapProperties, image.chunksCount)
-        importer.initEmbedded(tmp.resolve(image.name()).toFile(),RegExUtils.replaceAll(mapProperties.map_name, /(\s+)/, "_"), "root", "admin").get()
+        importer.initEmbedded(tmp.resolve(image.name()).toFile(), RegExUtils.replaceAll(mapProperties.map_name, /(\s+)/, "_"), "root", "admin").get()
         importer.startImport(ImporterMapImage2DbAppTest.class.getResource(image.imageName), image.terrain, gmid)
         importer.shutdownEmbedded().get()
         println "done"

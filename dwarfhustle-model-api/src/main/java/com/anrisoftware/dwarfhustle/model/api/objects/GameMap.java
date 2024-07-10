@@ -111,7 +111,7 @@ public class GameMap extends GameObject implements StoredObject {
 
     public ZoneOffset timeZone = ZoneOffset.of("Z");
 
-    public MapArea area;
+    public MapArea area = new MapArea();
 
     public float[] cameraPos = new float[3];
 

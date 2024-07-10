@@ -4,30 +4,31 @@ import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
 /**
- * Writes and reads {@link Grass} in a byte buffer.
+ * Writes and reads {@link Shrub} in a byte buffer.
  * 
  * <ul>
- * <li>@{code i} the ID;
+ * <li>@{code i} the KID;
+ * <li>@{code g} the growth;
  * </ul>
  * 
  * <pre>
  * int   0         1         2         3
  * short 0    1    2    3    4    5    6
- *       iiii iiii iiii iiii
+ *       iiii iiii gggg
  * </pre>
  */
-public class GrassBuffer extends VegetationBuffer {
+public class ShrubBuffer {
 
     /**
      * Size in bytes.
      */
     public static final int SIZE = VegetationBuffer.SIZE;
 
-    public static void setGrass(MutableDirectBuffer b, int off, Grass o) {
+    public static void setShrub(MutableDirectBuffer b, int off, Shrub o) {
         VegetationBuffer.writeObject(b, off, o);
     }
 
-    public static Grass getGrass(DirectBuffer b, int off, Grass o) {
+    public static Shrub getShrub(DirectBuffer b, int off, Shrub o) {
         VegetationBuffer.readObject(b, off, o);
         return o;
     }

@@ -20,6 +20,7 @@ package com.anrisoftware.dwarfhustle.model.api.objects;
 import java.io.Serializable;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Rectangular map area from the north-west corner to the south-east corner.
@@ -27,6 +28,7 @@ import lombok.Data;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Data
+@NoArgsConstructor
 public class MapArea implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -71,14 +73,17 @@ public class MapArea implements Serializable {
     /**
      * North-west corner.
      */
-    public final MapCoordinate nw;
+    public MapCoordinate nw = new MapCoordinate();
 
     /**
      * South-east corner.
      */
-    public final MapCoordinate se;
+    public MapCoordinate se = new MapCoordinate();
 
-    public final MapCoordinate center;
+    /**
+     * The center of the area.
+     */
+    public MapCoordinate center;
 
     public MapArea(MapCoordinate nw, MapCoordinate se) {
         this.nw = nw;
@@ -86,4 +91,7 @@ public class MapArea implements Serializable {
         this.center = getCentralGeoCoordinate(nw, se);
     }
 
+    public void updateCenter() {
+        this.center = getCentralGeoCoordinate(nw, se);
+    }
 }

@@ -20,6 +20,8 @@ package com.anrisoftware.dwarfhustle.model.knowledge.evrete;
 import java.time.Duration;
 import java.util.concurrent.CompletionStage;
 
+import org.eclipse.collections.api.list.ListIterable;
+
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 
@@ -38,7 +40,7 @@ public interface AskKnowledge {
      * @return the {@link CompletionStage} that returns all
      *         {@link KnowledgeObject}s.
      */
-    CompletionStage<Iterable<KnowledgeObject>> doAskAsync(Duration timeout, Class<? extends GameObject> typeClass,
+    CompletionStage<ListIterable<KnowledgeObject>> doAskAsync(Duration timeout, Class<? extends GameObject> typeClass,
             String type);
 
 }

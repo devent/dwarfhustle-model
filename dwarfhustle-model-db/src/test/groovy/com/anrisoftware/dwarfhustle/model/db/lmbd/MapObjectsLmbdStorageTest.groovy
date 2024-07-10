@@ -36,7 +36,7 @@ class MapObjectsLmbdStorageTest {
         grass.pos.z = 12
         grass.kid = 800
         grass.growth = 0.3
-        def storage = new MapObjectsLmbdStorage(tmp, gm)
+        def storage = new MapObjectsLmbdStorage(tmp, gm, TypeReadBuffers.TYPE_READ_BUFFERS)
         assert VegetationBuffer.SIZE == 28
         storage.putObject(grass.pos.x, grass.pos.y, grass.pos.z, VegetationBuffer.SIZE, grass.id, { b ->
             VegetationBuffer.writeObject(b, 0, grass)
@@ -53,12 +53,40 @@ class MapObjectsLmbdStorageTest {
     }
 
     @Test
+    void getObjectGetter_test(@TempDir Path tmp) {
+        def gm = new GameMap(1)
+        gm.width = 32
+        gm.height = 32
+        gm.depth = 32
+        def grass = new Grass()
+        grass.id = 100
+        grass.map = gm.id
+        grass.pos.x = 10
+        grass.pos.y = 11
+        grass.pos.z = 12
+        grass.kid = 800
+        grass.growth = 0.3
+        def storage = new MapObjectsLmbdStorage(tmp, gm, TypeReadBuffers.TYPE_READ_BUFFERS)
+        assert VegetationBuffer.SIZE == 28
+        storage.putObject(grass.pos.x, grass.pos.y, grass.pos.z, VegetationBuffer.SIZE, grass.id, { b ->
+            VegetationBuffer.writeObject(b, 0, grass)
+        })
+        def thatGrass = storage.get(Grass, Grass.OBJECT_TYPE, grass.id)
+        storage.close()
+        assert thatGrass.id == grass.id
+        assert thatGrass.map == grass.map
+        assert thatGrass.pos == grass.pos
+        assert thatGrass.kid == grass.kid
+        assert thatGrass.growth == grass.growth
+    }
+
+    @Test
     void putObject_benchmark(@TempDir Path tmp) {
         def gm = new GameMap(1)
         gm.width = 512
         gm.height = 512
         gm.depth = 512
-        def storage = new MapObjectsLmbdStorage(tmp, gm)
+        def storage = new MapObjectsLmbdStorage(tmp, gm, TypeReadBuffers.TYPE_READ_BUFFERS)
         int zz = 32
         int yy = 256
         int xx = 256
@@ -102,7 +130,7 @@ class MapObjectsLmbdStorageTest {
         gm.height = 512
         gm.depth = 512
         def objects = createObjects(gm, xx, yy, zz)
-        def storage = new MapObjectsLmbdStorage(tmp, gm)
+        def storage = new MapObjectsLmbdStorage(tmp, gm, TypeReadBuffers.TYPE_READ_BUFFERS)
         log.info "putObjects_benchmark {} objects", objects.size()
         def timeNow = System.currentTimeMillis()
         storage.putObjects(VegetationBuffer.SIZE, objects, { o, b ->
@@ -129,7 +157,7 @@ class MapObjectsLmbdStorageTest {
         gm.height = 512
         gm.depth = 512
         def objects = createObjects(gm, xx, yy, zz)
-        def storage = new MapObjectsLmbdStorage(tmp, gm)
+        def storage = new MapObjectsLmbdStorage(tmp, gm, TypeReadBuffers.TYPE_READ_BUFFERS)
         log.info "putObjects_benchmark {} objects", objects.size()
         def timeNow = System.currentTimeMillis()
         storage.putObjects(VegetationBuffer.SIZE, objects, { o, b ->
@@ -156,7 +184,7 @@ class MapObjectsLmbdStorageTest {
         gm.height = 512
         gm.depth = 512
         def objects = createObjects(gm, xx, yy, zz)
-        def storage = new MapObjectsLmbdStorage(tmp, gm)
+        def storage = new MapObjectsLmbdStorage(tmp, gm, TypeReadBuffers.TYPE_READ_BUFFERS)
         storage.putObjects(VegetationBuffer.SIZE, objects, { o, b ->
             VegetationBuffer.writeObject(b, 0, o)
         })
@@ -191,7 +219,7 @@ class MapObjectsLmbdStorageTest {
         gm.height = 32
         gm.depth = 32
         def objects = createObjects(gm, xx, yy, zz)
-        def storage = new MapObjectsLmbdStorage(tmp, gm)
+        def storage = new MapObjectsLmbdStorage(tmp, gm, TypeReadBuffers.TYPE_READ_BUFFERS)
         storage.putObjects(VegetationBuffer.SIZE,objects, { o, b ->
             VegetationBuffer.writeObject(b, 0, o)
         })

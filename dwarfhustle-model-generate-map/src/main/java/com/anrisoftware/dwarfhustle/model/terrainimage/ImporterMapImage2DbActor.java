@@ -20,7 +20,6 @@ package com.anrisoftware.dwarfhustle.model.terrainimage;
 import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
 import static com.anrisoftware.dwarfhustle.model.api.objects.GameMap.getGameMap;
 import static com.anrisoftware.dwarfhustle.model.api.objects.WorldMap.getWorldMap;
-import static com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StopEmbeddedServerMessage.askStopEmbeddedServer;
 import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeGetMessage.askKnowledgeObjects;
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -38,34 +37,11 @@ import com.anrisoftware.dwarfhustle.model.api.objects.IdsObjectsProvider.IdsObje
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunksStore;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractJcsCacheActor;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CloseDbMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CloseDbMessage.CloseDbSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.ConnectDbEmbeddedMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.ConnectDbSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CreateDbMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CreateDbMessage.CreateDbSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CreateSchemasMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.CreateSchemasMessage.CreateSchemasSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbResponseMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.RebuildIndexMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.RebuildIndexMessage.RebuildIndexSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.SaveObjectMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StartEmbeddedServerMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StartEmbeddedServerMessage.StartEmbeddedServerSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StopEmbeddedServerMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.StopEmbeddedServerMessage.StopEmbeddedServerSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.ImportImageErrorMessage;
-import com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.ImportImageSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.terrainimage.ImporterStartEmbeddedServerMessage.ImporterStartEmbeddedServerSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.terrainimage.ImporterStopEmbeddedServerMessage.ImporterStopEmbeddedServerSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.terrainimage.TerrainImageCreateMap.TerrainImageCreateMapFactory;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
-import com.orientechnologies.orient.core.db.ODatabaseType;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -74,8 +50,6 @@ import akka.actor.typed.javadsl.BehaviorBuilder;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.receptionist.ServiceKey;
 import jakarta.inject.Inject;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -93,12 +67,6 @@ public class ImporterMapImage2DbActor {
 
     public static final int ID = KEY.hashCode();
 
-    @RequiredArgsConstructor
-    @ToString(callSuper = true)
-    private static class WrappedDbResponse extends Message {
-        private final DbResponseMessage<?> response;
-    }
-
     /**
      * Factory to create {@link AbstractJcsCacheActor}.
      *
@@ -106,16 +74,13 @@ public class ImporterMapImage2DbActor {
      */
     public interface ImporterMapImage2DbActorFactory {
 
-        ImporterMapImage2DbActor create(ActorContext<Message> context, ActorRef<Message> dbActor, ObjectsGetter og);
+        ImporterMapImage2DbActor create(ActorContext<Message> context, ObjectsGetter og);
     }
 
     public static Behavior<Message> create(Injector injector, ActorSystemProvider actor,
             ImporterMapImage2DbActorFactory actorFactory, CompletionStage<ObjectsGetter> og) {
         return Behaviors.setup(context -> {
-            return actorFactory
-                    .create(context, actor.getActorAsync(OrientDbActor.ID).toCompletableFuture().get(15, SECONDS),
-                            og.toCompletableFuture().get(15, SECONDS))
-                    .start();
+            return actorFactory.create(context, og.toCompletableFuture().get(15, SECONDS)).start();
         });
     }
 
@@ -139,10 +104,6 @@ public class ImporterMapImage2DbActor {
 
     @Inject
     @Assisted
-    private ActorRef<Message> dbActor;
-
-    @Inject
-    @Assisted
     private ObjectsGetter og;
 
     @Inject
@@ -155,26 +116,8 @@ public class ImporterMapImage2DbActor {
     @Inject
     private TerrainImageCreateMapFactory terrainImageCreateMap;
 
-    @SuppressWarnings("rawtypes")
-    private ActorRef<DbResponseMessage> dbResponseAdapter;
-
-    private String database;
-
-    private String user;
-
-    private String password;
-
-    private Runnable stopServerMessage = () -> {
+    private final Runnable stopServerMessage = () -> {
     };
-
-    @SuppressWarnings("rawtypes")
-    private ActorRef startServerReplyTo;
-
-    @SuppressWarnings("rawtypes")
-    private ActorRef stopServerReplyTo;
-
-    @SuppressWarnings("rawtypes")
-    private ActorRef importImageReplyTo;
 
     private String root;
 
@@ -182,84 +125,38 @@ public class ImporterMapImage2DbActor {
      * @see #getInitialBehavior()
      */
     public Behavior<Message> start() {
-        this.dbResponseAdapter = context.messageAdapter(DbResponseMessage.class, WrappedDbResponse::new);
         return getInitialBehavior().build();
     }
 
     @SuppressWarnings({ "rawtypes" })
     private Behavior<Message> onImporterStartEmbeddedServer(ImporterStartEmbeddedServerMessage m) {
         log.debug("onImporterStartEmbeddedServer {}", m);
-        this.database = m.database;
-        this.user = m.user;
-        this.password = m.password;
         this.root = m.root;
-        dbActor.tell(new StartEmbeddedServerMessage<>(dbResponseAdapter, m.root, m.config));
-        this.startServerReplyTo = m.replyTo;
         return Behaviors.same();
     }
 
     @SuppressWarnings({ "rawtypes" })
     private Behavior<Message> onImporterStopEmbeddedServer(ImporterStopEmbeddedServerMessage m) {
         log.debug("onImporterStopEmbeddedServer {}", m);
-        this.stopServerReplyTo = m.replyTo;
-        dbActor.tell(new CloseDbMessage<>(dbResponseAdapter));
         return getInitialBehavior().build();
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private Behavior<Message> onImportImage(ImportImageMessage m) {
         log.debug("onImportImage {}", m);
-        this.importImageReplyTo = m.replyTo;
         try {
             var gm = getGameMap(og, m.mapid);
             var wm = getWorldMap(og, gm.world);
-            var store = new MapChunksStore(Path.of(root, format("%d.map", m.mapid)), gm.width, gm.height, gm.chunkSize,
-                    gm.chunksCount);
+            var store = new MapChunksStore(Path.of(root, format("%d-%d.map", wm.id, gm.id)), gm.width, gm.height,
+                    gm.chunkSize, gm.chunksCount);
             var knowledge = new TerrainKnowledge((timeout, typeClass,
                     type) -> askKnowledgeObjects(actor.getActorSystem(), timeout, typeClass, type));
-            var session = knowledge.createSession();
-            terrainImageCreateMap.create(store).startImport(m.url, m.image, gm, session);
+            terrainImageCreateMap.create(store, knowledge).startImportMapping(m.url, m.image, gm);
             store.close();
-            dbActor.tell(new SaveObjectMessage<>(dbResponseAdapter, gm));
-            dbActor.tell(new SaveObjectMessage<>(dbResponseAdapter, wm));
-            dbActor.tell(new RebuildIndexMessage<>(dbResponseAdapter));
         } catch (Exception e) {
             log.error("onImportImage", e);
             m.replyTo.tell(new ImportImageErrorMessage(e));
             return Behaviors.same();
-        }
-        return Behaviors.same();
-    }
-
-    /**
-     * <ul>
-     * <li>
-     * </ul>
-     */
-    @SuppressWarnings({ "unchecked", "unused" })
-    private Behavior<Message> onWrappedDbResponse(WrappedDbResponse m) {
-        var r = m.response;
-        if (r instanceof DbErrorMessage<?> rm) {
-            log.error("onWrappedDbResponse", rm.error);
-            return Behaviors.same();
-        } else if (r instanceof StartEmbeddedServerSuccessMessage rm) {
-            this.stopServerMessage = () -> askStopEmbeddedServer(actor.getActorSystem(), Duration.ofSeconds(30));
-            dbActor.tell(new ConnectDbEmbeddedMessage<>(dbResponseAdapter, rm.server, database, user, password));
-        } else if (r instanceof ConnectDbSuccessMessage<?> rm) {
-            dbActor.tell(new CreateDbMessage<>(dbResponseAdapter, ODatabaseType.PLOCAL));
-        } else if (r instanceof CreateDbSuccessMessage rm) {
-            dbActor.tell(new CreateSchemasMessage<>(dbResponseAdapter));
-        } else if (r instanceof CreateSchemasSuccessMessage rm) {
-            startServerReplyTo.tell(new ImporterStartEmbeddedServerSuccessMessage<>());
-            return getServerStartedBehavior().build();
-        } else if (r instanceof RebuildIndexSuccessMessage rm) {
-            importImageReplyTo.tell(new ImportImageSuccessMessage());
-        } else if (r instanceof CloseDbSuccessMessage rm) {
-            dbActor.tell(new StopEmbeddedServerMessage<>(dbResponseAdapter));
-        } else if (r instanceof StopEmbeddedServerSuccessMessage rm) {
-            stopServerReplyTo.tell(new ImporterStopEmbeddedServerSuccessMessage<>());
-        } else if (r instanceof DbSuccessMessage<?> rm) {
-            log.info("onWrappedDbResponse", m);
         }
         return Behaviors.same();
     }
@@ -281,14 +178,12 @@ public class ImporterMapImage2DbActor {
      *
      * <ul>
      * <li>{@link ImporterStartEmbeddedServerMessage}
-     * <li>{@link WrappedDbResponse}
      * <li>{@link ShutdownMessage}
      * </ul>
      */
     protected BehaviorBuilder<Message> getInitialBehavior() {
         return Behaviors.receive(Message.class)//
                 .onMessage(ImporterStartEmbeddedServerMessage.class, this::onImporterStartEmbeddedServer)//
-                .onMessage(WrappedDbResponse.class, this::onWrappedDbResponse)//
                 .onMessage(ShutdownMessage.class, this::onShutdown)//
         ;
     }
@@ -299,7 +194,6 @@ public class ImporterMapImage2DbActor {
      *
      * <ul>
      * <li>{@link ImportImageMessage}
-     * <li>{@link WrappedDbResponse}
      * <li>{@link ShutdownMessage}
      * </ul>
      */
@@ -307,7 +201,6 @@ public class ImporterMapImage2DbActor {
         return Behaviors.receive(Message.class)//
                 .onMessage(ImporterStopEmbeddedServerMessage.class, this::onImporterStopEmbeddedServer)//
                 .onMessage(ImportImageMessage.class, this::onImportImage)//
-                .onMessage(WrappedDbResponse.class, this::onWrappedDbResponse)//
                 .onMessage(ShutdownMessage.class, this::onShutdown)//
         ;
     }

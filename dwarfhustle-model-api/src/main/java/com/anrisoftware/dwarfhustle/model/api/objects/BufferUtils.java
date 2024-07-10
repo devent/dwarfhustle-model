@@ -17,6 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.agrona.BufferUtil.NULL_BYTES;
+
 import java.nio.ByteBuffer;
 import java.util.HexFormat;
 
@@ -76,4 +79,27 @@ public class BufferUtils {
         b.getBytes(0, array);
         return HexFormat.of().formatHex(array);
     }
+
+    /**
+     * Converts the short number to a float number.
+     */
+    public static float shortToFloat(short value) {
+        return (float) trunc((value + 32_768f) / 65_536f, 5);
+    }
+
+    /**
+     * Converts the float number to a short number with loss of precision.
+     */
+    public static short floatToShort(float value) {
+        return (short) (value * 65_536f - 32_768f);
+    }
+
+    /**
+     * Returns the size of a UTF-8 string.
+     */
+    public static int getSizeStringUtf8(String s) {
+        final byte[] bytes = s != null ? s.getBytes(UTF_8) : NULL_BYTES;
+        return bytes.length;
+    }
+
 }

@@ -15,35 +15,42 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api.objects;
+package com.anrisoftware.dwarfhustle.model.api.objects
 
-import java.io.Serializable;
+import java.time.ZoneOffset
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 
 /**
- * Position of the map cursor.
+ * @see ZoneOffsetBuffer
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@ToString
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class MapCursor implements Serializable {
+class ZoneOffsetBufferTest {
 
-    private static final long serialVersionUID = 1L;
+    @ParameterizedTest
+    @CsvSource([
+        "+1,+01:00",
+        "Z,Z",
+        "+02:30,+02:30",
+        "+02:30:45,+02:30:45",
+        "+0230,+02:30",
+    ])
+    void get_zone_ids_from_string(def offsetId, def expected) {
+        def zone = ZoneOffset.of(offsetId)
+        assert zone.getId() == expected
+    }
 
-    public int x;
-
-    public int y;
-
-    public int z;
-
-    public boolean equals(int z, int y, int x) {
-        return this.z == z && this.y == y && this.x == x;
+    @ParameterizedTest
+    @CsvSource([
+        "3600,+01:00",
+        "0,Z",
+        "5560,+01:32:40",
+        "-3600,-01:00",
+    ])
+    void get_zone_ids_from_seconds(int seconds, def expected) {
+        def zone = ZoneOffset.ofTotalSeconds(seconds)
+        assert zone.getId() == expected
     }
 }
