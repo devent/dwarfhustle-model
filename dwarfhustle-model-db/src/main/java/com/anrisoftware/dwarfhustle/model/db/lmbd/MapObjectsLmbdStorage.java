@@ -13,7 +13,7 @@ import static org.lmdbjava.GetOp.MDB_SET;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 import org.agrona.DirectBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
@@ -24,11 +24,9 @@ import org.lmdbjava.Txn;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
-import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 
 /**
- * LMBD storage for game map objects on the {@link GameMap}.
+ * Store the object ID and object type for the (x,y,z) map block.
  */
 public class MapObjectsLmbdStorage implements AutoCloseable {
 
@@ -48,13 +46,10 @@ public class MapObjectsLmbdStorage implements AutoCloseable {
 
     private final ThreadLocal<UnsafeBuffer> buffval;
 
-    private final ObjectsGetter og;
-
     /**
      * Creates or opens the game map objects storage for the game map.
      */
-    public MapObjectsLmbdStorage(Path file, GameMap gm, ObjectsGetter og) {
-        this.og = og;
+    public MapObjectsLmbdStorage(Path file, GameMap gm) {
         this.w = gm.width;
         this.h = gm.height;
         this.d = gm.depth;
@@ -158,8 +153,7 @@ public class MapObjectsLmbdStorage implements AutoCloseable {
     /**
      * Retrieves the game map objects on the (x,y,z) block from the database.
      */
-    @SuppressWarnings("unchecked")
-    public <T extends GameObject> void getObjects(int x, int y, int z, Consumer<T> consumer) {
+    public void getObjects(int x, int y, int z, BiConsumer<Integer, Long> consumer) {
         try {
             readTxn.renew();
             final var key = buffkey.get();
@@ -170,12 +164,10 @@ public class MapObjectsLmbdStorage implements AutoCloseable {
                 return;
             }
             for (int i = 0; i < c.count(); i++) {
-                var bid = c.val();
-                var val = db.get(readTxn, bid);
+                var val = c.val();
                 long id = MapObjectValue.getId(val, 0);
                 int type = MapObjectValue.getType(val, 0);
-                var o = og.get(type, id);
-                consumer.accept((T) o);
+                consumer.accept(type, id);
                 c.next();
             }
         } finally {
@@ -187,9 +179,7 @@ public class MapObjectsLmbdStorage implements AutoCloseable {
      * Retrieves the game map objects from a range start (x,y,z) to end (x,y,z)
      * blocks from the database.
      */
-    @SuppressWarnings("unchecked")
-    public <T extends GameObject> void getObjectsRange(int sx, int sy, int sz, int ex, int ey, int ez,
-            Consumer<T> consumer) {
+    public void getObjectsRange(int sx, int sy, int sz, int ex, int ey, int ez, BiConsumer<Integer, Long> consumer) {
         final int xx = ex - sx;
         final int yy = ey - sy;
         final int zz = ez - sz;
@@ -206,12 +196,10 @@ public class MapObjectsLmbdStorage implements AutoCloseable {
                             return;
                         }
                         for (int i = 0; i < c.count(); i++) {
-                            var bid = c.val();
-                            var val = db.get(readTxn, bid);
+                            var val = c.val();
                             long id = MapObjectValue.getId(val, 0);
                             int type = MapObjectValue.getType(val, 0);
-                            var o = og.get(type, id);
-                            consumer.accept((T) o);
+                            consumer.accept(type, id);
                             c.next();
                         }
                     }

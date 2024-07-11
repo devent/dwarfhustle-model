@@ -30,7 +30,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 
 /**
- * LMBD storage for game objects that are not on the game map.
+ * Stores {@link GameObject}(s).
  */
 public class GameObjectsLmbdStorage implements AutoCloseable, ObjectsGetter {
 

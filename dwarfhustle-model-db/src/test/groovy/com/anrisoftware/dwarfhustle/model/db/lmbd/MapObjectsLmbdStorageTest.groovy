@@ -8,8 +8,6 @@ import org.junit.jupiter.api.io.TempDir
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
 import com.anrisoftware.dwarfhustle.model.api.vegetations.Grass
-import com.anrisoftware.dwarfhustle.model.api.vegetations.GrassBuffer
-import com.anrisoftware.dwarfhustle.model.api.vegetations.VegetationBuffer
 
 import groovy.util.logging.Slf4j
 
@@ -25,7 +23,7 @@ class MapObjectsLmbdStorageTest {
         gm.width = 512
         gm.height = 512
         gm.depth = 512
-        def storage = new MapObjectsLmbdStorage(tmp, gm, { })
+        def storage = new MapObjectsLmbdStorage(tmp, gm)
         int zz = 32
         int yy = 256
         int xx = 256
@@ -61,7 +59,7 @@ class MapObjectsLmbdStorageTest {
         gm.height = 512
         gm.depth = 512
         def objects = createObjects(gm, xx, yy, zz)
-        def storage = new MapObjectsLmbdStorage(tmp, gm, { })
+        def storage = new MapObjectsLmbdStorage(tmp, gm)
         log.info "putObjects_benchmark {} objects", objects.size()
         def timeNow = System.currentTimeMillis()
         storage.putObjects(objects)
@@ -80,7 +78,7 @@ class MapObjectsLmbdStorageTest {
         gm.height = 512
         gm.depth = 512
         def objects = createObjects(gm, xx, yy, zz)
-        def storage = new MapObjectsLmbdStorage(tmp, gm, { })
+        def storage = new MapObjectsLmbdStorage(tmp, gm)
         log.info "putObjects_benchmark {} objects", objects.size()
         def timeNow = System.currentTimeMillis()
         storage.putObjects(objects)
@@ -99,8 +97,7 @@ class MapObjectsLmbdStorageTest {
         gm.height = 512
         gm.depth = 512
         def objects = createObjects(gm, xx, yy, zz)
-        def ostorage = new GameObjectsLmbdStorage(tmp.resolve("objects"), ObjectTypes.OBJECT_TYPES, TypeReadBuffers.TYPE_READ_BUFFERS)
-        def storage = new MapObjectsLmbdStorage(tmp.resolve("gamemap"), gm)
+        def storage = new MapObjectsLmbdStorage(tmp, gm)
         storage.putObjects(objects)
         log.info "getObjects_benchmark {} objects", objects.size()
         def rnd = new Random()
@@ -110,12 +107,14 @@ class MapObjectsLmbdStorageTest {
                     int pz = rnd.nextInt(zz)
                     int py = rnd.nextInt(yy)
                     int px = rnd.nextInt(xx)
-                    def posObjects = []
-                    storage.getObjects(px, py, pz, { GrassBuffer.getGrass(it, 0, new Grass()) }, { posObjects << it })
-                    assert posObjects.size() == 1
-                    assert posObjects[0].pos.x == px
-                    assert posObjects[0].pos.y == py
-                    assert posObjects[0].pos.z == pz
+                    def posObjectsIds = []
+                    def posObjectsTypes = []
+                    storage.getObjects(px, py, pz, { type, id ->
+                        posObjectsIds << id
+                        posObjectsTypes << type
+                    })
+                    assert posObjectsIds.size() == 1
+                    assert posObjectsIds[0] == calcObjectId(gm, px, py, pz)
                 }
             }
         }
@@ -134,27 +133,29 @@ class MapObjectsLmbdStorageTest {
         gm.depth = 32
         def objects = createObjects(gm, xx, yy, zz)
         def storage = new MapObjectsLmbdStorage(tmp, gm)
-        storage.putObjects(VegetationBuffer.SIZE,objects, { o, b ->
-            VegetationBuffer.writeObject(b, 0, o)
+        storage.putObjects(objects)
+        def posObjectsIds = []
+        def posObjectsTypes = []
+        def o = storage.getObjectsRange(0, 0, 0, 4, 4, 4, { type, id ->
+            posObjectsIds << id
+            posObjectsTypes << type
         })
-        def thatObjects = []
-        def o = storage.getObjectsRange(0, 0, 0, 4, 4, 4, { VegetationBuffer.readObject(it, 0, new Grass()) }, { thatObjects << it })
         storage.close()
-        assert thatObjects.size() == 4 * 4 * 4
-        thatObjects.each {
+        assert posObjectsIds.size() == 4 * 4 * 4
+        posObjectsIds.each {
             println it
         }
         log.info "getObjectsRange_test done."
     }
 
-    List createObjects(GameMap gm, int xx, int yy, int zz) {
+    static List createObjects(GameMap gm, int xx, int yy, int zz) {
         def rnd = new Random()
         def objects = []
         for (int z = 0; z < zz; z++) {
             for (int y = 0; y < yy; y++) {
                 for (int x = 0; x < xx; x++) {
                     def grass = new Grass()
-                    grass.id = 100 + GameBlockPos.calcIndex(gm.width, gm.height, gm.depth, 0, 0, 0, x, y, z);
+                    grass.id = calcObjectId(gm, x, y, z)
                     grass.map = gm.id
                     grass.pos.x = x
                     grass.pos.y = y
@@ -166,5 +167,9 @@ class MapObjectsLmbdStorageTest {
             }
         }
         return objects
+    }
+
+    static long calcObjectId(GameMap gm, int x, int y, int z) {
+        100 + GameBlockPos.calcIndex(gm.width, gm.height, gm.depth, 0, 0, 0, x, y, z)
     }
 }
