@@ -21,9 +21,10 @@ import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.create
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
+
+import org.eclipse.collections.api.map.primitive.IntObjectMap;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
@@ -130,7 +131,7 @@ public class OrientDbActor implements ObjectsGetter {
     private List<GameObjectSchema> schemas;
 
     @Inject
-    private Map<String, GameObjectStorage> storages;
+    private IntObjectMap<GameObjectStorage> storages;
 
     @Inject
     private ActorSystemProvider actor;
@@ -408,7 +409,7 @@ public class OrientDbActor implements ObjectsGetter {
             var rs = m.query.apply(db);
             try {
                 if (!rs.hasNext()) {
-                    mm.replyTo.tell(new LoadObjectsEmptyMessage<>(m.type, m.objectType));
+                    mm.replyTo.tell(new LoadObjectsEmptyMessage<>(m.objectType));
                 }
                 while (rs.hasNext()) {
                     var v = rs.next().getVertex();
@@ -418,7 +419,7 @@ public class OrientDbActor implements ObjectsGetter {
                         m.consumer.accept(go);
                     }
                 }
-                mm.replyTo.tell(new LoadObjectsSuccessMessage<>(m.type, m.objectType));
+                mm.replyTo.tell(new LoadObjectsSuccessMessage<>(m.objectType));
             } finally {
                 rs.close();
             }
@@ -473,7 +474,7 @@ public class OrientDbActor implements ObjectsGetter {
         if (arid instanceof ORID rid) {
             v = db.load(rid);
         } else {
-            v = db.newVertex(go.getObjectType());
+            v = db.newVertex("Type" + go.getObjectType());
         }
         db.begin();
         try {
@@ -579,7 +580,7 @@ public class OrientDbActor implements ObjectsGetter {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends GameObject> T get(String type, Object key) {
+    public <T extends GameObject> T get(int type, Object key) {
         try (var db = orientdb.get().open(database, user, password)) {
             var query = "SELECT * from ? where objecttype = ? and objectid = ? limit 1";
             var rs = db.query(query, type, type, key);

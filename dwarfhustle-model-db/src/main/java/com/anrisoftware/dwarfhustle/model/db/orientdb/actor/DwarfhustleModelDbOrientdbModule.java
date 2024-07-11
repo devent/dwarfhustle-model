@@ -18,9 +18,11 @@
 package com.anrisoftware.dwarfhustle.model.db.orientdb.actor;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
+import org.eclipse.collections.api.map.primitive.IntObjectMap;
+import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectStorage;
@@ -52,8 +54,8 @@ public class DwarfhustleModelDbOrientdbModule extends AbstractModule {
 
     @Singleton
     @Provides
-    public Map<String, GameObjectStorage> getStorages() {
-        var map = new HashMap<String, GameObjectStorage>();
+    public IntObjectMap<GameObjectStorage> getStorages() {
+        MutableIntObjectMap<GameObjectStorage> map = IntObjectMaps.mutable.empty();
         map.put(GameMap.OBJECT_TYPE, new GameMapStorage());
         var worldMapStorage = new WorldMapStorage();
         map.put(WorldMap.OBJECT_TYPE, worldMapStorage);

@@ -33,9 +33,7 @@ import lombok.ToString;
 @Getter
 public class IgneousExtrusive extends StoneLayer {
 
-    private static final long serialVersionUID = 1L;
-
-    public static final String OBJECT_TYPE = IgneousExtrusive.class.getSimpleName();
+    public static final int OBJECT_TYPE = IgneousExtrusive.class.getSimpleName().hashCode();
 
     public static final String TYPE = "Igneous-Extrusive";
 
@@ -44,7 +42,7 @@ public class IgneousExtrusive extends StoneLayer {
     }
 
     @Override
-    public String getObjectType() {
+    public int getObjectType() {
         return IgneousExtrusive.OBJECT_TYPE;
     }
 }

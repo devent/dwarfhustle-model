@@ -58,7 +58,7 @@ public class WorldMapStorage extends AbstractGameObjectStorage {
     }
 
     private void storeMaps(ODatabaseDocument odb, OElement v, WorldMap wm) {
-        try (var rs = queryByObjectIds(odb, GameMap.OBJECT_TYPE, wm.maps)) {
+        try (var rs = queryByObjectIds(odb, "Type" + GameMap.OBJECT_TYPE, wm.maps)) {
             while (rs.hasNext()) {
                 var vv = rs.next().getVertex();
                 if (vv.isPresent()) {
@@ -69,7 +69,7 @@ public class WorldMapStorage extends AbstractGameObjectStorage {
     }
 
     private void storeCurrentMap(ODatabaseDocument odb, OElement v, WorldMap wm) {
-        try (var rs = queryByObjectId(odb, GameMap.OBJECT_TYPE, wm.currentMap)) {
+        try (var rs = queryByObjectId(odb, "Type" + GameMap.OBJECT_TYPE, wm.currentMap)) {
             if (rs.hasNext()) {
                 var vv = rs.next().getVertex();
                 if (vv.isPresent()) {

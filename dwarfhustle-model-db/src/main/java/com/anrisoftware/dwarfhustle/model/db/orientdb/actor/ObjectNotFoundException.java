@@ -29,5 +29,5 @@ public class ObjectNotFoundException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
-    public final String objectType;
+    public final int objectType;
 }

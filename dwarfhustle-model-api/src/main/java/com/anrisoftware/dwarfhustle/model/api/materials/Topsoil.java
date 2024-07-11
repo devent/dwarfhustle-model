@@ -35,9 +35,7 @@ import lombok.ToString;
 @Getter
 public class Topsoil extends Soil {
 
-    private static final long serialVersionUID = 1L;
-
-    public static final String OBJECT_TYPE = Topsoil.class.getSimpleName();
+    public static final int OBJECT_TYPE = Topsoil.class.getSimpleName().hashCode();
 
     public static final String TYPE = "Topsoil";
 
@@ -46,7 +44,7 @@ public class Topsoil extends Soil {
     }
 
     @Override
-    public String getObjectType() {
+    public int getObjectType() {
         return Topsoil.OBJECT_TYPE;
     }
 

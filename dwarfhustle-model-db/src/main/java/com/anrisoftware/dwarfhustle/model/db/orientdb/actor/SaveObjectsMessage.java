@@ -47,15 +47,15 @@ public class SaveObjectsMessage<T extends Message> extends DbMessage<T> {
      * @return {@link CompletionStage} with the {@link DbResponseMessage}.
      */
     public static CompletionStage<DbResponseMessage<?>> askSaveObjects(ActorSystem<Message> a, Duration timeout,
-            String objectType, Iterable<GameObject> values) {
+            int objectType, Iterable<GameObject> values) {
         return ask(a, replyTo -> new SaveObjectsMessage<>(replyTo, objectType, values), timeout, a.scheduler());
     }
 
-    public final String objectType;
+    public final int objectType;
 
     public final Iterable<GameObject> gos;
 
-    public SaveObjectsMessage(ActorRef<T> replyTo, String objectType, Iterable<GameObject> gos) {
+    public SaveObjectsMessage(ActorRef<T> replyTo, int objectType, Iterable<GameObject> gos) {
         super(replyTo);
         this.objectType = objectType;
         this.gos = gos;

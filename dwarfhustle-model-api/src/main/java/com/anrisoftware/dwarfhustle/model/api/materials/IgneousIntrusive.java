@@ -33,9 +33,7 @@ import lombok.ToString;
 @Getter
 public class IgneousIntrusive extends StoneLayer {
 
-    private static final long serialVersionUID = 1L;
-
-    public static final String OBJECT_TYPE = IgneousIntrusive.class.getSimpleName();
+    public static final int OBJECT_TYPE = IgneousIntrusive.class.getSimpleName().hashCode();
 
     public static final String TYPE = "Igneous-Intrusive";
 
@@ -44,7 +42,7 @@ public class IgneousIntrusive extends StoneLayer {
     }
 
     @Override
-    public String getObjectType() {
+    public int getObjectType() {
         return IgneousIntrusive.OBJECT_TYPE;
     }
 

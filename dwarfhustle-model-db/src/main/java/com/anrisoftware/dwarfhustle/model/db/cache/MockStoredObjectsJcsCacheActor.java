@@ -125,7 +125,7 @@ public class MockStoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @Override
-    protected void storeValuesBackend(String objectType, Iterable<GameObject> values) {
+    protected void storeValuesBackend(int objectType, Iterable<GameObject> values) {
         for (var go : values) {
             storeValueBackend(go.id, go);
         }
@@ -138,12 +138,12 @@ public class MockStoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
         }
     }
 
-    private void retrieveGameObject(String type, long id, Consumer<GameObject> consumer) {
+    private void retrieveGameObject(int type, long id, Consumer<GameObject> consumer) {
         consumer.accept(og.get(type, id));
     }
 
     @Override
-    protected <T extends GameObject> T getValueFromBackend(String type, Object key) {
+    protected <T extends GameObject> T getValueFromBackend(int type, Object key) {
         return og.get(type, key);
     }
 

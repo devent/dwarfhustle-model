@@ -33,9 +33,7 @@ import lombok.ToString;
 @Getter
 public class Soil extends BlockMaterial {
 
-    private static final long serialVersionUID = 1L;
-
-    public static final String OBJECT_TYPE = Soil.class.getSimpleName();
+    public static final int OBJECT_TYPE = Soil.class.getSimpleName().hashCode();
 
     public static final String TYPE = "Soil";
 
@@ -44,7 +42,7 @@ public class Soil extends BlockMaterial {
     }
 
     @Override
-    public String getObjectType() {
+    public int getObjectType() {
         return Soil.OBJECT_TYPE;
     }
 

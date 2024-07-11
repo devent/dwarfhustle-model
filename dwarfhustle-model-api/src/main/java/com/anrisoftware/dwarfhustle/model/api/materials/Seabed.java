@@ -33,9 +33,7 @@ import lombok.ToString;
 @Getter
 public class Seabed extends Soil {
 
-    private static final long serialVersionUID = 1L;
-
-    public static final String OBJECT_TYPE = Seabed.class.getSimpleName();
+    public static final int OBJECT_TYPE = Seabed.class.getSimpleName().hashCode();
 
     public static final String TYPE = "Seabed";
 
@@ -44,7 +42,7 @@ public class Seabed extends Soil {
     }
 
     @Override
-    public String getObjectType() {
+    public int getObjectType() {
         return Seabed.OBJECT_TYPE;
     }
 

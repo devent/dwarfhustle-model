@@ -52,7 +52,7 @@ public class LoadObjectMessage<T extends Message> extends DbMessage<T> {
      * @return {@link CompletionStage} with the {@link DbResponseMessage}.
      */
     public static CompletionStage<DbResponseMessage<?>> askLoadObject(ActorSystem<Message> a, Duration timeout,
-            String objectType, Consumer<StoredObject> consumer, Function<ODatabaseDocument, OResultSet> query) {
+            int objectType, Consumer<StoredObject> consumer, Function<ODatabaseDocument, OResultSet> query) {
         return ask(a, replyTo -> new LoadObjectMessage<>(replyTo, objectType, consumer, query), timeout, a.scheduler());
     }
 
@@ -64,7 +64,7 @@ public class LoadObjectMessage<T extends Message> extends DbMessage<T> {
      * @return {@link CompletionStage} with the {@link DbResponseMessage}.
      */
     public static CompletionStage<DbResponseMessage<?>> askLoadObject(ActorSystem<Message> a, Duration timeout,
-            String objectType, Function<ODatabaseDocument, OResultSet> query) {
+            int objectType, Function<ODatabaseDocument, OResultSet> query) {
         return ask(a, replyTo -> new LoadObjectMessage<>(replyTo, objectType, query), timeout, a.scheduler());
     }
 
@@ -81,17 +81,17 @@ public class LoadObjectMessage<T extends Message> extends DbMessage<T> {
     private static final Consumer<StoredObject> EMPTY_CONSUMER = go -> {
     };
 
-    public final String objectType;
+    public final int objectType;
 
     public final Consumer<StoredObject> consumer;
 
     public final Function<ODatabaseDocument, OResultSet> query;
 
-    public LoadObjectMessage(ActorRef<T> replyTo, String objectType, Function<ODatabaseDocument, OResultSet> query) {
+    public LoadObjectMessage(ActorRef<T> replyTo, int objectType, Function<ODatabaseDocument, OResultSet> query) {
         this(replyTo, objectType, EMPTY_CONSUMER, query);
     }
 
-    public LoadObjectMessage(ActorRef<T> replyTo, String objectType, Consumer<StoredObject> consumer,
+    public LoadObjectMessage(ActorRef<T> replyTo, int objectType, Consumer<StoredObject> consumer,
             Function<ODatabaseDocument, OResultSet> query) {
         super(replyTo);
         this.objectType = objectType;

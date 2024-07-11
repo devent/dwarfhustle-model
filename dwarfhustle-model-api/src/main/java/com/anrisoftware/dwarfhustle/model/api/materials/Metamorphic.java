@@ -33,9 +33,7 @@ import lombok.ToString;
 @Getter
 public class Metamorphic extends StoneLayer {
 
-    private static final long serialVersionUID = 1L;
-
-    public static final String OBJECT_TYPE = Metamorphic.class.getSimpleName();
+    public static final int OBJECT_TYPE = Metamorphic.class.getSimpleName().hashCode();
 
     public static final String TYPE = "Metamorphic";
 
@@ -44,7 +42,7 @@ public class Metamorphic extends StoneLayer {
     }
 
     @Override
-    public String getObjectType() {
+    public int getObjectType() {
         return Metamorphic.OBJECT_TYPE;
     }
 

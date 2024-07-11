@@ -33,9 +33,7 @@ import lombok.ToString;
 @Getter
 public class MetalAlloy extends Metal {
 
-    private static final long serialVersionUID = 1L;
-
-    public static final String OBJECT_TYPE = MetalAlloy.class.getSimpleName();
+    public static final int OBJECT_TYPE = MetalAlloy.class.getSimpleName().hashCode();
 
     public static final String TYPE = "Metal-Alloy";
 
@@ -44,7 +42,7 @@ public class MetalAlloy extends Metal {
     }
 
     @Override
-    public String getObjectType() {
+    public int getObjectType() {
         return MetalAlloy.OBJECT_TYPE;
     }
 

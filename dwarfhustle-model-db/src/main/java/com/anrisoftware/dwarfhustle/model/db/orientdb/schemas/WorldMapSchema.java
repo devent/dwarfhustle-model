@@ -44,7 +44,7 @@ public class WorldMapSchema implements GameObjectSchema {
     @Override
     public void createSchema(Object db) {
         var odb = (ODatabaseDocument) db;
-        var c = odb.createClass(WorldMap.OBJECT_TYPE, GameObject.OBJECT_TYPE);
+        var c = odb.createClass("Type" + WorldMap.OBJECT_TYPE, "Type" + GameObject.OBJECT_TYPE);
         c.createProperty(NAME_FIELD, OType.STRING);
         c.createProperty(DIST_LAT_FIELD, OType.FLOAT);
         c.createProperty(DIST_LON_FIELD, OType.FLOAT);

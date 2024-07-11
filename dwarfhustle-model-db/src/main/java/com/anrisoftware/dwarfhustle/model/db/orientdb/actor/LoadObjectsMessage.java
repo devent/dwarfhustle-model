@@ -51,9 +51,8 @@ public class LoadObjectsMessage<T extends Message> extends DbMessage<T> {
      * @return {@link CompletionStage} with the {@link DbResponseMessage}.
      */
     public static CompletionStage<DbResponseMessage<?>> askLoadObjects(ActorSystem<Message> a, Duration timeout,
-            Class<?> type, String objectType, Consumer<StoredObject> consumer,
-            Function<ODatabaseDocument, OResultSet> query) {
-        return ask(a, replyTo -> new LoadObjectsMessage<>(replyTo, type, objectType, consumer, query), timeout,
+            int objectType, Consumer<StoredObject> consumer, Function<ODatabaseDocument, OResultSet> query) {
+        return ask(a, replyTo -> new LoadObjectsMessage<>(replyTo, objectType, consumer, query), timeout,
                 a.scheduler());
     }
 
@@ -65,42 +64,36 @@ public class LoadObjectsMessage<T extends Message> extends DbMessage<T> {
      * @return {@link CompletionStage} with the {@link DbResponseMessage}.
      */
     public static CompletionStage<DbResponseMessage<?>> askLoadObjects(ActorSystem<Message> a, Duration timeout,
-            Class<?> type, String objectType, Function<ODatabaseDocument, OResultSet> query) {
-        return ask(a, replyTo -> new LoadObjectsMessage<>(replyTo, type, objectType, query), timeout, a.scheduler());
+            int objectType, Function<ODatabaseDocument, OResultSet> query) {
+        return ask(a, replyTo -> new LoadObjectsMessage<>(replyTo, objectType, query), timeout, a.scheduler());
     }
 
     @RequiredArgsConstructor
     public static class LoadObjectsSuccessMessage<T extends Message> extends DbSuccessMessage<T> {
-        public final Class<?> type;
-        public final String objectType;
+        public final int objectType;
     }
 
     @RequiredArgsConstructor
     public static class LoadObjectsEmptyMessage<T extends Message> extends DbSuccessMessage<T> {
-        public final Class<?> type;
-        public final String objectType;
+        public final int objectType;
     }
 
     private static final Consumer<StoredObject> EMPTY_CONSUMER = go -> {
     };
 
-    public final Class<?> type;
-
-    public final String objectType;
+    public final int objectType;
 
     public final Consumer<StoredObject> consumer;
 
     public final Function<ODatabaseDocument, OResultSet> query;
 
-    public LoadObjectsMessage(ActorRef<T> replyTo, Class<?> type, String objectType,
-            Function<ODatabaseDocument, OResultSet> query) {
-        this(replyTo, type, objectType, EMPTY_CONSUMER, query);
+    public LoadObjectsMessage(ActorRef<T> replyTo, int objectType, Function<ODatabaseDocument, OResultSet> query) {
+        this(replyTo, objectType, EMPTY_CONSUMER, query);
     }
 
-    public LoadObjectsMessage(ActorRef<T> replyTo, Class<?> type, String objectType, Consumer<StoredObject> consumer,
+    public LoadObjectsMessage(ActorRef<T> replyTo, int objectType, Consumer<StoredObject> consumer,
             Function<ODatabaseDocument, OResultSet> query) {
         super(replyTo);
-        this.type = type;
         this.objectType = objectType;
         this.consumer = consumer;
         this.query = query;

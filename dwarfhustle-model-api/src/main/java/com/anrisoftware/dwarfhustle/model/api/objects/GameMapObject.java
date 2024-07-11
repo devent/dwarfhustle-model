@@ -46,6 +46,8 @@ import lombok.ToString;
 @Data
 public abstract class GameMapObject extends GameObject {
 
+    public static final int OBJECT_TYPE = GameMapObject.class.getSimpleName().hashCode();
+
     /**
      * ID of the {@link GameMap}.
      */

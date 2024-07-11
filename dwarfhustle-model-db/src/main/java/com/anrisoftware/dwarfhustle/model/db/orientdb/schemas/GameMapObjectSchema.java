@@ -41,7 +41,7 @@ public class GameMapObjectSchema implements GameObjectSchema {
     @Override
     public void createSchema(Object db) {
         var odb = (ODatabaseDocument) db;
-        var c = odb.createClass(GameMapObject.OBJECT_TYPE, GameObject.OBJECT_TYPE);
+        var c = odb.createClass("Type" + GameMapObject.OBJECT_TYPE, "Type" + GameObject.OBJECT_TYPE);
         c.createProperty(MAP_FIELD, OType.LONG);
         c.createProperty(POS_X_FIELD, OType.INTEGER);
         c.createProperty(POS_Y_FIELD, OType.INTEGER);

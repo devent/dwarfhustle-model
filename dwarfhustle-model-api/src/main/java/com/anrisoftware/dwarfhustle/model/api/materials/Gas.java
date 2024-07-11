@@ -33,9 +33,7 @@ import lombok.ToString;
 @Getter
 public class Gas extends BlockMaterial {
 
-    private static final long serialVersionUID = 1L;
-
-    public static final String OBJECT_TYPE = Gas.class.getSimpleName();
+    public static final int OBJECT_TYPE = Gas.class.getSimpleName().hashCode();
 
     public static final String TYPE = "Gas";
 
@@ -44,7 +42,7 @@ public class Gas extends BlockMaterial {
     }
 
     @Override
-    public String getObjectType() {
+    public int getObjectType() {
         return Gas.OBJECT_TYPE;
     }
 }

@@ -153,7 +153,7 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
 
     @Override
     protected void handleCacheMiss(@SuppressWarnings("rawtypes") CacheGetMessage m) {
-        if (m.key instanceof Long && StoredObject.class.isAssignableFrom(m.typeClass)) {
+        if (m.key instanceof Long) {
             super.handleCacheMiss(m);
         }
     }
@@ -164,8 +164,8 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @Override
-    protected void storeValuesBackend(String objectType, Iterable<GameObject> values) {
-        actor.tell(new SaveObjectsMessage<>(dbResponseAdapter, objectType, values));
+    protected void storeValuesBackend(int type, Iterable<GameObject> values) {
+        actor.tell(new SaveObjectsMessage<>(dbResponseAdapter, type, values));
     }
 
     @Override
@@ -174,7 +174,7 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private void retrieveGameObject(String type, long id, Consumer consumer) {
+    private void retrieveGameObject(int type, long id, Consumer consumer) {
         actor.tell(new LoadObjectMessage(dbResponseAdapter, type, consumer, db -> {
             var query = "SELECT * from ? where objecttype = ? and objectid = ? limit 1";
             return ((ODatabaseDocument) db).query(query, type, type, id);
@@ -182,7 +182,7 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @Override
-    protected <T extends GameObject> T getValueFromBackend(String type, Object key) {
+    protected <T extends GameObject> T getValueFromBackend(int type, Object key) {
         return og.get(type, key);
     }
 

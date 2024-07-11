@@ -33,9 +33,7 @@ import lombok.ToString;
 @Getter
 public class Sedimentary extends StoneLayer {
 
-    private static final long serialVersionUID = 1L;
-
-    public static final String OBJECT_TYPE = Sedimentary.class.getSimpleName();
+    public static final int OBJECT_TYPE = Sedimentary.class.getSimpleName().hashCode();
 
     public static final String TYPE = "Sedimentary";
 
@@ -44,7 +42,7 @@ public class Sedimentary extends StoneLayer {
     }
 
     @Override
-    public String getObjectType() {
+    public int getObjectType() {
         return Sedimentary.OBJECT_TYPE;
     }
 

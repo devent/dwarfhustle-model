@@ -35,9 +35,7 @@ import lombok.ToString;
 @Getter
 public class Sand extends Soil {
 
-    private static final long serialVersionUID = 1L;
-
-    public static final String OBJECT_TYPE = Sand.class.getSimpleName();
+    public static final int OBJECT_TYPE = Sand.class.getSimpleName().hashCode();
 
     public static final String TYPE = "Sand";
 
@@ -46,7 +44,7 @@ public class Sand extends Soil {
     }
 
     @Override
-    public String getObjectType() {
+    public int getObjectType() {
         return Sand.OBJECT_TYPE;
     }
 
