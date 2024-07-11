@@ -14,4 +14,10 @@ import lombok.ToString;
 @Data
 public class Shrub extends Vegetation {
 
+    public static final int OBJECT_TYPE = Shrub.class.getSimpleName().hashCode();
+
+    @Override
+    public int getObjectType() {
+        return OBJECT_TYPE;
+    }
 }

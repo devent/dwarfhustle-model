@@ -39,12 +39,10 @@ import lombok.ToString;
 @Data
 public class WorldMap extends GameObject implements StoredObject {
 
-    private static final long serialVersionUID = 1L;
-
-    public static final String OBJECT_TYPE = WorldMap.class.getSimpleName();
+    public static final int OBJECT_TYPE = WorldMap.class.getSimpleName().hashCode();
 
     public static WorldMap getWorldMap(ObjectsGetter og, long id) {
-        return og.get(WorldMap.class, OBJECT_TYPE, id);
+        return og.get(OBJECT_TYPE, id);
     }
 
     /**
@@ -92,7 +90,7 @@ public class WorldMap extends GameObject implements StoredObject {
     }
 
     @Override
-    public String getObjectType() {
+    public int getObjectType() {
         return OBJECT_TYPE;
     }
 

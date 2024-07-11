@@ -15,7 +15,7 @@ import lombok.ToString;
 @Data
 public class KnowledgeTree extends KnowledgeVegetation {
 
-    public static final String OBJECT_TYPE = KnowledgeTree.class.getSimpleName();
+    public static final int OBJECT_TYPE = KnowledgeTree.class.getSimpleName().hashCode();
 
     public static final String TYPE = "Tree";
 
@@ -24,7 +24,7 @@ public class KnowledgeTree extends KnowledgeVegetation {
     }
 
     @Override
-    public String getObjectType() {
+    public int getObjectType() {
         return KnowledgeTree.OBJECT_TYPE;
     }
 

@@ -292,7 +292,7 @@ public abstract class AbstractJcsCacheActor implements ObjectsGetter, ObjectsSet
     /**
      * Stores the put values in the database.
      */
-    protected abstract void storeValuesBackend(String objectType, Iterable<GameObject> values);
+    protected abstract void storeValuesBackend(int objectType, Iterable<GameObject> values);
 
     /**
      * Retrieves the value from the database. Example send a database command:
@@ -322,7 +322,7 @@ public abstract class AbstractJcsCacheActor implements ObjectsGetter, ObjectsSet
      * return ret.value;
      * </pre>
      */
-    protected abstract <T extends GameObject> T getValueFromBackend(Class<T> typeClass, String type, Object key);
+    protected abstract <T extends GameObject> T getValueFromBackend(int type, Object key);
 
     /**
      * Returns the value for the key directly from the cache without sending of
@@ -330,16 +330,16 @@ public abstract class AbstractJcsCacheActor implements ObjectsGetter, ObjectsSet
      */
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends GameObject> T get(Class<T> typeClass, String type, Object key) {
-        return (T) cache.get(key, () -> supplyValue(typeClass, type, key));
+    public <T extends GameObject> T get(int type, Object key) {
+        return (T) cache.get(key, () -> supplyValue(type, key));
     }
 
-    private GameObject supplyValue(Class<? extends GameObject> typeClass, String type, Object key) {
-        return getValueFromBackend(typeClass, type, key);
+    private GameObject supplyValue(int type, Object key) {
+        return getValueFromBackend(type, key);
     }
 
     @Override
-    public <T extends GameObject> void set(Class<T> typeClass, String type, T key) {
+    public <T extends GameObject> void set(int type, T key) {
         cache.put(type, key);
         storeValueBackend(key, key);
     }

@@ -14,4 +14,11 @@ import lombok.ToString;
 @Data
 public class TreeLeaf extends Tree {
 
+    public static final int OBJECT_TYPE = TreeLeaf.class.getSimpleName().hashCode();
+
+    @Override
+    public int getObjectType() {
+        return OBJECT_TYPE;
+    }
+
 }

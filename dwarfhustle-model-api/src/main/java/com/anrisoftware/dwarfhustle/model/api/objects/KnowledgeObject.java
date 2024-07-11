@@ -35,8 +35,6 @@ public abstract class KnowledgeObject extends GameObject {
 
     public static final long ID_FLAG = 1;
 
-    public static final String OBJECT_TYPE = KnowledgeObject.class.getSimpleName();
-
     /**
      * Returns the game object ID from the knowledge KID.
      */
@@ -66,14 +64,8 @@ public abstract class KnowledgeObject extends GameObject {
         setId(kid2Id(kid));
     }
 
-    @Override
-    public String getObjectType() {
-        return KnowledgeObject.OBJECT_TYPE;
-    }
-
     /**
      * Type in the knowledge space.
      */
     public abstract String getKnowledgeType();
-
 }

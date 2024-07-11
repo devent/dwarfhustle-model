@@ -5,7 +5,7 @@ package com.anrisoftware.dwarfhustle.model.api.vegetations;
  */
 public class KnowledgeTreeBranch extends KnowledgeTree {
 
-    public static final String OBJECT_TYPE = KnowledgeTree.class.getSimpleName();
+    public static final int OBJECT_TYPE = KnowledgeTree.class.getSimpleName().hashCode();
 
     public static final String TYPE = "Tree-Branch";
 
@@ -14,7 +14,7 @@ public class KnowledgeTreeBranch extends KnowledgeTree {
     }
 
     @Override
-    public String getObjectType() {
+    public int getObjectType() {
         return KnowledgeTreeBranch.OBJECT_TYPE;
     }
 

@@ -324,7 +324,7 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
     @SuppressWarnings("unchecked")
     @Override
     @SneakyThrows
-    public <T extends GameObject> T get(Class<T> typeClass, String type, Object key) throws ObjectsGetterException {
+    public <T extends GameObject> T get(String type, Object key) throws ObjectsGetterException {
         return (T) retrieveKnowledgeLoadedObject(type);
     }
 

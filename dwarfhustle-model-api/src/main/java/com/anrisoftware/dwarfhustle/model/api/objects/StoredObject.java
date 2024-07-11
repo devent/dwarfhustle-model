@@ -42,6 +42,6 @@ public interface StoredObject extends Serializable {
 
     long getId();
 
-    String getObjectType();
+    int getObjectType();
 
 }

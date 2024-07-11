@@ -14,7 +14,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class Vegetation extends GameMapObject {
+public abstract class Vegetation extends GameMapObject {
 
     /**
      * {@link KnowledgeVegetation} RID.

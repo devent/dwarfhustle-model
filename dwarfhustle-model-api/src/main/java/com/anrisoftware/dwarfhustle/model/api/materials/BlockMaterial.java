@@ -37,9 +37,7 @@ import lombok.ToString;
 @Setter
 public class BlockMaterial extends KnowledgeObject {
 
-    private static final long serialVersionUID = 1L;
-
-    public static final String OBJECT_TYPE = BlockMaterial.class.getSimpleName();
+    public static final int OBJECT_TYPE = BlockMaterial.class.getSimpleName().hashCode();
 
     public static final String TYPE = "Material";
 
@@ -58,7 +56,7 @@ public class BlockMaterial extends KnowledgeObject {
     }
 
     @Override
-    public String getObjectType() {
+    public int getObjectType() {
         return BlockMaterial.OBJECT_TYPE;
     }
 

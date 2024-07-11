@@ -33,10 +33,6 @@ import lombok.ToString;
 @Data
 public abstract class GameMovingObject extends GameMapObject {
 
-    private static final long serialVersionUID = 1L;
-
-	public static final String OBJECT_TYPE = GameMovingObject.class.getSimpleName();
-
     public float xx;
 
     public float xy;
@@ -57,16 +53,12 @@ public abstract class GameMovingObject extends GameMapObject {
 
     public float rw;
 
-	public GameMovingObject(long id) {
-		super(id);
-	}
+    public GameMovingObject(long id) {
+        super(id);
+    }
 
-	public GameMovingObject(byte[] idbuf) {
-		super(idbuf);
-	}
+    public GameMovingObject(byte[] idbuf) {
+        super(idbuf);
+    }
 
-	@Override
-	public String getObjectType() {
-		return OBJECT_TYPE;
-	}
 }

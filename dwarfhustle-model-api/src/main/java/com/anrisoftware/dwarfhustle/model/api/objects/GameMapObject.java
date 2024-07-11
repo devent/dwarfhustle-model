@@ -46,10 +46,6 @@ import lombok.ToString;
 @Data
 public abstract class GameMapObject extends GameObject {
 
-    private static final long serialVersionUID = 1L;
-
-    public static final String OBJECT_TYPE = GameMapObject.class.getSimpleName();
-
     /**
      * ID of the {@link GameMap}.
      */
@@ -76,11 +72,6 @@ public abstract class GameMapObject extends GameObject {
     public GameMapObject(byte[] idbuf, GameBlockPos pos) {
         super(idbuf);
         this.pos = pos;
-    }
-
-    @Override
-    public String getObjectType() {
-        return OBJECT_TYPE;
     }
 
     @Override

@@ -1,10 +1,6 @@
 package com.anrisoftware.dwarfhustle.model.db.lmbd
 
-import static java.lang.Math.round
-
-import java.nio.file.Files
 import java.nio.file.Path
-import java.util.stream.Collectors
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -12,6 +8,7 @@ import org.junit.jupiter.api.io.TempDir
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
 import com.anrisoftware.dwarfhustle.model.api.vegetations.Grass
+import com.anrisoftware.dwarfhustle.model.api.vegetations.GrassBuffer
 import com.anrisoftware.dwarfhustle.model.api.vegetations.VegetationBuffer
 
 import groovy.util.logging.Slf4j
@@ -23,70 +20,12 @@ import groovy.util.logging.Slf4j
 class MapObjectsLmbdStorageTest {
 
     @Test
-    void putObject_test(@TempDir Path tmp) {
-        def gm = new GameMap(1)
-        gm.width = 32
-        gm.height = 32
-        gm.depth = 32
-        def grass = new Grass()
-        grass.id = 100
-        grass.map = gm.id
-        grass.pos.x = 10
-        grass.pos.y = 11
-        grass.pos.z = 12
-        grass.kid = 800
-        grass.growth = 0.3
-        def storage = new MapObjectsLmbdStorage(tmp, gm, TypeReadBuffers.TYPE_READ_BUFFERS)
-        assert VegetationBuffer.SIZE == 28
-        storage.putObject(grass.pos.x, grass.pos.y, grass.pos.z, VegetationBuffer.SIZE, grass.id, { b ->
-            VegetationBuffer.writeObject(b, 0, grass)
-        })
-        def thatGrass = storage.getObject(grass.id, { b ->
-            VegetationBuffer.readObject(b, 0, new Grass())
-        })
-        storage.close()
-        assert thatGrass.id == grass.id
-        assert thatGrass.map == grass.map
-        assert thatGrass.pos == grass.pos
-        assert thatGrass.kid == grass.kid
-        assert thatGrass.growth == grass.growth
-    }
-
-    @Test
-    void getObjectGetter_test(@TempDir Path tmp) {
-        def gm = new GameMap(1)
-        gm.width = 32
-        gm.height = 32
-        gm.depth = 32
-        def grass = new Grass()
-        grass.id = 100
-        grass.map = gm.id
-        grass.pos.x = 10
-        grass.pos.y = 11
-        grass.pos.z = 12
-        grass.kid = 800
-        grass.growth = 0.3
-        def storage = new MapObjectsLmbdStorage(tmp, gm, TypeReadBuffers.TYPE_READ_BUFFERS)
-        assert VegetationBuffer.SIZE == 28
-        storage.putObject(grass.pos.x, grass.pos.y, grass.pos.z, VegetationBuffer.SIZE, grass.id, { b ->
-            VegetationBuffer.writeObject(b, 0, grass)
-        })
-        def thatGrass = storage.get(Grass, Grass.OBJECT_TYPE, grass.id)
-        storage.close()
-        assert thatGrass.id == grass.id
-        assert thatGrass.map == grass.map
-        assert thatGrass.pos == grass.pos
-        assert thatGrass.kid == grass.kid
-        assert thatGrass.growth == grass.growth
-    }
-
-    @Test
     void putObject_benchmark(@TempDir Path tmp) {
         def gm = new GameMap(1)
         gm.width = 512
         gm.height = 512
         gm.depth = 512
-        def storage = new MapObjectsLmbdStorage(tmp, gm, TypeReadBuffers.TYPE_READ_BUFFERS)
+        def storage = new MapObjectsLmbdStorage(tmp, gm, { })
         int zz = 32
         int yy = 256
         int xx = 256
@@ -96,55 +35,39 @@ class MapObjectsLmbdStorageTest {
             for (int y = 0; y < yy; y++) {
                 for (int x = 0; x < xx; x++) {
                     def grass = new Grass()
-                    grass.id = 100 + z + y + x
+                    grass.id = 100 + GameBlockPos.calcIndex(gm.width, gm.height, gm.depth, 0, 0, 0, x, y, z);
                     grass.map = gm.id
                     grass.pos.x = x
                     grass.pos.y = y
                     grass.pos.z = z
                     grass.kid = 800
                     grass.growth = 0.3
-                    storage.putObject(grass.pos.x, grass.pos.y, grass.pos.z, VegetationBuffer.SIZE, grass.id, { b ->
-                        VegetationBuffer.writeObject(b, 0, grass)
-                    })
+                    storage.putObject(grass.pos.x, grass.pos.y, grass.pos.z, Grass.OBJECT_TYPE, grass.id)
                 }
             }
         }
         storage.close()
         log.info "putObject_benchmark done in {}.", (System.currentTimeMillis() - timeNow) / 1000f
-        Files.list(tmp).withCloseable {
-            it.filter({file -> !Files.isDirectory(file)})
-            .collect(Collectors.toSet()).each {
-                def size = it.toFile().size()
-                log.info "Size {} = {} B, {} KB, {} MB, {} GB.", it, size, round(size / 1024), round(size / 1024 / 1024), round(size / 1024 / 1024 / 1024)
-            }
-        }
+        Utils.listFiles log, tmp
     }
 
     @Test
     void putObjects_benchmark(@TempDir Path tmp) {
         int zz = 32
-        int yy = 256
-        int xx = 256
+        int yy = 12
+        int xx = 12
         def gm = new GameMap(1)
         gm.width = 512
         gm.height = 512
         gm.depth = 512
         def objects = createObjects(gm, xx, yy, zz)
-        def storage = new MapObjectsLmbdStorage(tmp, gm, TypeReadBuffers.TYPE_READ_BUFFERS)
+        def storage = new MapObjectsLmbdStorage(tmp, gm, { })
         log.info "putObjects_benchmark {} objects", objects.size()
         def timeNow = System.currentTimeMillis()
-        storage.putObjects(VegetationBuffer.SIZE, objects, { o, b ->
-            VegetationBuffer.writeObject(b, 0, o)
-        })
+        storage.putObjects(objects)
         storage.close()
         log.info "putObjects_benchmark done in {}.", (System.currentTimeMillis() - timeNow) / 1000f
-        Files.list(tmp).withCloseable {
-            it.filter({file -> !Files.isDirectory(file)})
-            .collect(Collectors.toSet()).each {
-                def size = it.toFile().size()
-                log.info "Size {} = {} B, {} KB, {} MB, {} GB.", it, size, round(size / 1024), round(size / 1024 / 1024), round(size / 1024 / 1024 / 1024)
-            }
-        }
+        Utils.listFiles log, tmp
     }
 
     @Test
@@ -157,21 +80,13 @@ class MapObjectsLmbdStorageTest {
         gm.height = 512
         gm.depth = 512
         def objects = createObjects(gm, xx, yy, zz)
-        def storage = new MapObjectsLmbdStorage(tmp, gm, TypeReadBuffers.TYPE_READ_BUFFERS)
+        def storage = new MapObjectsLmbdStorage(tmp, gm, { })
         log.info "putObjects_benchmark {} objects", objects.size()
         def timeNow = System.currentTimeMillis()
-        storage.putObjects(VegetationBuffer.SIZE, objects, { o, b ->
-            VegetationBuffer.writeObject(b, 0, o)
-        })
+        storage.putObjects(objects)
         storage.close()
         log.info "putObjects_benchmark done in {}.", (System.currentTimeMillis() - timeNow) / 1000f
-        Files.list(tmp).withCloseable {
-            it.filter({file -> !Files.isDirectory(file)})
-            .collect(Collectors.toSet()).each {
-                def size = it.toFile().size()
-                log.info "Size {} = {} B, {} KB, {} MB, {} GB.", it, size, round(size / 1024), round(size / 1024 / 1024), round(size / 1024 / 1024 / 1024)
-            }
-        }
+        Utils.listFiles log, tmp
     }
 
     @Test
@@ -184,10 +99,9 @@ class MapObjectsLmbdStorageTest {
         gm.height = 512
         gm.depth = 512
         def objects = createObjects(gm, xx, yy, zz)
-        def storage = new MapObjectsLmbdStorage(tmp, gm, TypeReadBuffers.TYPE_READ_BUFFERS)
-        storage.putObjects(VegetationBuffer.SIZE, objects, { o, b ->
-            VegetationBuffer.writeObject(b, 0, o)
-        })
+        def ostorage = new GameObjectsLmbdStorage(tmp.resolve("objects"), ObjectTypes.OBJECT_TYPES, TypeReadBuffers.TYPE_READ_BUFFERS)
+        def storage = new MapObjectsLmbdStorage(tmp.resolve("gamemap"), gm)
+        storage.putObjects(objects)
         log.info "getObjects_benchmark {} objects", objects.size()
         def rnd = new Random()
         for (int z = 0; z < zz; z++) {
@@ -197,7 +111,7 @@ class MapObjectsLmbdStorageTest {
                     int py = rnd.nextInt(yy)
                     int px = rnd.nextInt(xx)
                     def posObjects = []
-                    storage.getObjects(px, py, pz, { VegetationBuffer.readObject(it, 0, new Grass()) }, { posObjects << it })
+                    storage.getObjects(px, py, pz, { GrassBuffer.getGrass(it, 0, new Grass()) }, { posObjects << it })
                     assert posObjects.size() == 1
                     assert posObjects[0].pos.x == px
                     assert posObjects[0].pos.y == py
@@ -219,7 +133,7 @@ class MapObjectsLmbdStorageTest {
         gm.height = 32
         gm.depth = 32
         def objects = createObjects(gm, xx, yy, zz)
-        def storage = new MapObjectsLmbdStorage(tmp, gm, TypeReadBuffers.TYPE_READ_BUFFERS)
+        def storage = new MapObjectsLmbdStorage(tmp, gm)
         storage.putObjects(VegetationBuffer.SIZE,objects, { o, b ->
             VegetationBuffer.writeObject(b, 0, o)
         })

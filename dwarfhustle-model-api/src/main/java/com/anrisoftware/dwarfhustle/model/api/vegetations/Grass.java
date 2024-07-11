@@ -15,4 +15,10 @@ import lombok.ToString;
 @Data
 public class Grass extends Vegetation {
 
+    public static final int OBJECT_TYPE = Grass.class.getSimpleName().hashCode();
+
+    @Override
+    public int getObjectType() {
+        return OBJECT_TYPE;
+    }
 }

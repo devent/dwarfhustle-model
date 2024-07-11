@@ -33,9 +33,7 @@ import lombok.ToString;
 @Data
 public class Person extends GameMovingObject {
 
-    private static final long serialVersionUID = 1L;
-
-    public static final String OBJECT_TYPE = Person.class.getSimpleName();
+    public static final int OBJECT_TYPE = Person.class.getSimpleName().hashCode();
 
     public String firstName;
 
@@ -52,7 +50,7 @@ public class Person extends GameMovingObject {
     }
 
     @Override
-    public String getObjectType() {
+    public int getObjectType() {
         return OBJECT_TYPE;
     }
 

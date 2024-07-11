@@ -15,4 +15,11 @@ import lombok.ToString;
 @Data
 public class Tree extends Vegetation {
 
+    public static final int OBJECT_TYPE = Tree.class.getSimpleName().hashCode();
+
+    @Override
+    public int getObjectType() {
+        return OBJECT_TYPE;
+    }
+
 }

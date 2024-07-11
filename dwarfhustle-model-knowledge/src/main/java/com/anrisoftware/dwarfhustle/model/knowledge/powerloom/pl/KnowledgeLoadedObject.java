@@ -38,7 +38,7 @@ public class KnowledgeLoadedObject extends GameObject {
 
     private static final long serialVersionUID = 1L;
 
-    public static final String OBJECT_TYPE = KnowledgeLoadedObject.class.getSimpleName();
+    public static final int OBJECT_TYPE = KnowledgeLoadedObject.class.getSimpleName().hashCode();
 
     public String type;
 
@@ -59,8 +59,8 @@ public class KnowledgeLoadedObject extends GameObject {
     }
 
     @Override
-    public String getObjectType() {
-        return KnowledgeLoadedObject.OBJECT_TYPE;
+    public int getObjectType() {
+        return OBJECT_TYPE;
     }
 
 }

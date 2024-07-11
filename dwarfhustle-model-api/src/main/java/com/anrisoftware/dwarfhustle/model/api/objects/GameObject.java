@@ -43,9 +43,7 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Data
-public class GameObject implements Externalizable, StreamStorage {
-
-    public static final String OBJECT_TYPE = GameObject.class.getSimpleName();
+public abstract class GameObject implements Externalizable, StreamStorage {
 
     /**
      * Converts the byte array to an Id.
@@ -75,9 +73,7 @@ public class GameObject implements Externalizable, StreamStorage {
         this(toId(idbuf));
     }
 
-    public String getObjectType() {
-        return GameObject.OBJECT_TYPE;
-    }
+    public abstract int getObjectType();
 
     public <T extends GameObject> T getAs(Class<T> type) {
         return type.cast(this);

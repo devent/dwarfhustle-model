@@ -37,9 +37,7 @@ import lombok.ToString;
 @Setter
 public class RoofType extends KnowledgeObject {
 
-    private static final long serialVersionUID = 1L;
-
-    public static final String OBJECT_TYPE = RoofType.class.getSimpleName();
+    public static final int OBJECT_TYPE = RoofType.class.getSimpleName().hashCode();
 
     public static final String TYPE = "RoofType";
 
@@ -50,7 +48,7 @@ public class RoofType extends KnowledgeObject {
     }
 
     @Override
-    public String getObjectType() {
+    public int getObjectType() {
         return RoofType.OBJECT_TYPE;
     }
 

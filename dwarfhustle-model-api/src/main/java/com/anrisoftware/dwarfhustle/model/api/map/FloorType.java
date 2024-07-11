@@ -37,9 +37,7 @@ import lombok.ToString;
 @Setter
 public class FloorType extends KnowledgeObject {
 
-    private static final long serialVersionUID = 1L;
-
-    public static final String OBJECT_TYPE = FloorType.class.getSimpleName();
+    public static final int OBJECT_TYPE = FloorType.class.getSimpleName().hashCode();
 
     public static final String TYPE = "FloorType";
 
@@ -50,7 +48,7 @@ public class FloorType extends KnowledgeObject {
     }
 
     @Override
-    public String getObjectType() {
+    public int getObjectType() {
         return FloorType.OBJECT_TYPE;
     }
 

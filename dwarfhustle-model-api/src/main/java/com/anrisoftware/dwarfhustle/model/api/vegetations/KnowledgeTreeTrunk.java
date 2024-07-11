@@ -14,7 +14,7 @@ import lombok.ToString;
 @Data
 public class KnowledgeTreeTrunk extends KnowledgeTree {
 
-    public static final String OBJECT_TYPE = KnowledgeTree.class.getSimpleName();
+    public static final int OBJECT_TYPE = KnowledgeTree.class.getSimpleName().hashCode();
 
     public static final String TYPE = "Tree-Trunk";
 
@@ -23,7 +23,7 @@ public class KnowledgeTreeTrunk extends KnowledgeTree {
     }
 
     @Override
-    public String getObjectType() {
+    public int getObjectType() {
         return KnowledgeTreeTrunk.OBJECT_TYPE;
     }
 

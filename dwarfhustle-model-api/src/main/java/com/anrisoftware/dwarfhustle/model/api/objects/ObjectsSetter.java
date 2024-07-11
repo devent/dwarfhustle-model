@@ -45,6 +45,6 @@ public interface ObjectsSetter {
     /**
      * Stores the {@link GameObject}.
      */
-    <T extends GameObject> void set(Class<T> typeClass, String type, T key) throws ObjectsSetterException;
+    <T extends GameObject> void set(int type, T key) throws ObjectsSetterException;
 
 }

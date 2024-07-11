@@ -153,7 +153,7 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
 
     @Override
     protected void handleCacheMiss(@SuppressWarnings("rawtypes") CacheGetMessage m) {
-        if (m.key instanceof Long id && StoredObject.class.isAssignableFrom(m.typeClass)) {
+        if (m.key instanceof Long && StoredObject.class.isAssignableFrom(m.typeClass)) {
             super.handleCacheMiss(m);
         }
     }
@@ -182,8 +182,8 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @Override
-    protected <T extends GameObject> T getValueFromBackend(Class<T> typeClass, String type, Object key) {
-        return og.get(typeClass, type, key);
+    protected <T extends GameObject> T getValueFromBackend(String type, Object key) {
+        return og.get(type, key);
     }
 
     @Override

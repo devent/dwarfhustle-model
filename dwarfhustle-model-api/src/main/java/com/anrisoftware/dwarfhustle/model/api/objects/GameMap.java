@@ -78,12 +78,10 @@ public class GameMap extends GameObject implements StoredObject {
     }
 
     public static GameMap getGameMap(ObjectsGetter og, long id) {
-        return og.get(GameMap.class, OBJECT_TYPE, id);
+        return og.get(OBJECT_TYPE, id);
     }
 
-    private static final long serialVersionUID = 1L;
-
-    public static final String OBJECT_TYPE = GameMap.class.getSimpleName();
+    public static final int OBJECT_TYPE = GameMap.class.getSimpleName().hashCode();
 
     /**
      * Record ID set after the object was once stored in the backend.
@@ -130,7 +128,7 @@ public class GameMap extends GameObject implements StoredObject {
     }
 
     @Override
-    public String getObjectType() {
+    public int getObjectType() {
         return OBJECT_TYPE;
     }
 

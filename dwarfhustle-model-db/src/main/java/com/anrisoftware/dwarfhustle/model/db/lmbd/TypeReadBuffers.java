@@ -38,34 +38,34 @@ public class TypeReadBuffers {
 
     static {
         MutableIntObjectMap<Function<DirectBuffer, GameObject>> map = IntObjectMaps.mutable.empty();
-        map.put(WorldMap.OBJECT_TYPE.hashCode(), (b) -> {
+        map.put(WorldMap.OBJECT_TYPE, (b) -> {
             return WorldMapBuffer.getWorldMap(b, 0, new WorldMap());
         });
-        map.put(GameMap.OBJECT_TYPE.hashCode(), (b) -> {
+        map.put(GameMap.OBJECT_TYPE, (b) -> {
             return GameMapBuffer.getGameMap(b, 0, new GameMap());
         });
-        map.put(Grass.OBJECT_TYPE.hashCode(), (b) -> {
+        map.put(Grass.OBJECT_TYPE, (b) -> {
             return GrassBuffer.getGrass(b, 0, new Grass());
         });
-        map.put(Shrub.OBJECT_TYPE.hashCode(), (b) -> {
+        map.put(Shrub.OBJECT_TYPE, (b) -> {
             return ShrubBuffer.getShrub(b, 0, new Shrub());
         });
-        map.put(Tree.OBJECT_TYPE.hashCode(), (b) -> {
+        map.put(Tree.OBJECT_TYPE, (b) -> {
             return TreeBuffer.getTree(b, 0, new Tree());
         });
-        map.put(TreeBranch.OBJECT_TYPE.hashCode(), (b) -> {
+        map.put(TreeBranch.OBJECT_TYPE, (b) -> {
             return TreeBranchBuffer.getTreeBranch(b, 0, new TreeBranch());
         });
-        map.put(TreeLeaf.OBJECT_TYPE.hashCode(), (b) -> {
+        map.put(TreeLeaf.OBJECT_TYPE, (b) -> {
             return TreeLeafBuffer.getTreeLeaf(b, 0, new TreeLeaf());
         });
-        map.put(TreeRoot.OBJECT_TYPE.hashCode(), (b) -> {
+        map.put(TreeRoot.OBJECT_TYPE, (b) -> {
             return TreeRootBuffer.getTreeRoot(b, 0, new TreeRoot());
         });
-        map.put(TreeTrunk.OBJECT_TYPE.hashCode(), (b) -> {
+        map.put(TreeTrunk.OBJECT_TYPE, (b) -> {
             return TreeTrunkBuffer.getTreeTrunk(b, 0, new TreeTrunk());
         });
-        map.put(TreeTwig.OBJECT_TYPE.hashCode(), (b) -> {
+        map.put(TreeTwig.OBJECT_TYPE, (b) -> {
             return TreeTwigBuffer.getTreeTwig(b, 0, new TreeTwig());
         });
         TYPE_READ_BUFFERS = map;

@@ -135,14 +135,14 @@ public class ImporterObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @Override
-    protected <T extends GameObject> T getValueFromBackend(Class<T> typeClass, String type, Object key) {
+    protected <T extends GameObject> T getValueFromBackend(String type, Object key) {
         // nothing to do
         return null;
     }
 
     @Override
-    public <T extends GameObject> T get(Class<T> typeClass, String type, Object key) {
-        return super.get(typeClass, type, key);
+    public <T extends GameObject> T get(String type, Object key) {
+        return super.get(type, key);
     }
 
     @Override

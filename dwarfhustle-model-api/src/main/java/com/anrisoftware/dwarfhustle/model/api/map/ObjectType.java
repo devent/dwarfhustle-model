@@ -37,7 +37,7 @@ import lombok.ToString;
 @Setter
 public class ObjectType extends KnowledgeObject {
 
-    public static final String OBJECT_TYPE = ObjectType.class.getSimpleName();
+    public static final int OBJECT_TYPE = ObjectType.class.getSimpleName().hashCode();
 
     public static final String TYPE = ObjectType.class.getSimpleName();
 
@@ -48,7 +48,7 @@ public class ObjectType extends KnowledgeObject {
     }
 
     @Override
-    public String getObjectType() {
+    public int getObjectType() {
         return ObjectType.OBJECT_TYPE;
     }
 

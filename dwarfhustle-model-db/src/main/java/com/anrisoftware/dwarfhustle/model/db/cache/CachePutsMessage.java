@@ -38,15 +38,15 @@ import lombok.ToString;
 public class CachePutsMessage<T extends Message> extends CacheMessage<T> {
 
     public static CompletionStage<CacheResponseMessage<?>> askCachePuts(ActorSystem<Message> a, Duration timeout,
-            String objectType, Iterable<? extends GameObject> values) {
+            int objectType, Iterable<? extends GameObject> values) {
         return ask(a, replyTo -> new CachePutsMessage<>(replyTo, objectType, values), timeout, a.scheduler());
     }
 
-    public final String objectType;
+    public final int objectType;
 
     public final Iterable<? extends GameObject> values;
 
-    public CachePutsMessage(ActorRef<T> replyTo, String objectType, Iterable<? extends GameObject> values) {
+    public CachePutsMessage(ActorRef<T> replyTo, int objectType, Iterable<? extends GameObject> values) {
         super(replyTo);
         this.objectType = objectType;
         this.values = values;

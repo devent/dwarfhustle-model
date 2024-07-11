@@ -37,9 +37,7 @@ import lombok.ToString;
 @Setter
 public class LightType extends KnowledgeObject {
 
-    private static final long serialVersionUID = 1L;
-
-    public static final String OBJECT_TYPE = LightType.class.getSimpleName();
+    public static final int OBJECT_TYPE = LightType.class.getSimpleName().hashCode();
 
     public static final String TYPE = "LightType";
 
@@ -50,7 +48,7 @@ public class LightType extends KnowledgeObject {
     }
 
     @Override
-    public String getObjectType() {
+    public int getObjectType() {
         return LightType.OBJECT_TYPE;
     }
 
