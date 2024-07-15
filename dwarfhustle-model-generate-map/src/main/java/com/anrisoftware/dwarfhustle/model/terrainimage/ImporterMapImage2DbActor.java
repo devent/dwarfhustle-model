@@ -116,28 +116,12 @@ public class ImporterMapImage2DbActor {
     @Inject
     private TerrainImageCreateMapFactory terrainImageCreateMap;
 
-    private final Runnable stopServerMessage = () -> {
-    };
-
     private String root;
 
     /**
      * @see #getInitialBehavior()
      */
     public Behavior<Message> start() {
-        return getInitialBehavior().build();
-    }
-
-    @SuppressWarnings({ "rawtypes" })
-    private Behavior<Message> onImporterStartEmbeddedServer(ImporterStartEmbeddedServerMessage m) {
-        log.debug("onImporterStartEmbeddedServer {}", m);
-        this.root = m.root;
-        return Behaviors.same();
-    }
-
-    @SuppressWarnings({ "rawtypes" })
-    private Behavior<Message> onImporterStopEmbeddedServer(ImporterStopEmbeddedServerMessage m) {
-        log.debug("onImporterStopEmbeddedServer {}", m);
         return getInitialBehavior().build();
     }
 
@@ -149,8 +133,8 @@ public class ImporterMapImage2DbActor {
             var wm = getWorldMap(og, gm.world);
             var store = new MapChunksStore(Path.of(root, format("%d-%d.map", wm.id, gm.id)), gm.width, gm.height,
                     gm.chunkSize, gm.chunksCount);
-            var knowledge = new TerrainKnowledge((timeout, typeClass,
-                    type) -> askKnowledgeObjects(actor.getActorSystem(), timeout, typeClass, type));
+            var knowledge = new TerrainKnowledge(
+                    (timeout, type) -> askKnowledgeObjects(actor.getActorSystem(), timeout, type));
             terrainImageCreateMap.create(store, knowledge).startImportMapping(m.url, m.image, gm);
             store.close();
         } catch (Exception e) {
@@ -168,7 +152,6 @@ public class ImporterMapImage2DbActor {
      */
     private Behavior<Message> onShutdown(ShutdownMessage m) {
         log.debug("onShutdown {}", m);
-        stopServerMessage.run();
         return Behaviors.stopped();
     }
 
@@ -177,13 +160,11 @@ public class ImporterMapImage2DbActor {
      * the messages:
      *
      * <ul>
-     * <li>{@link ImporterStartEmbeddedServerMessage}
      * <li>{@link ShutdownMessage}
      * </ul>
      */
     protected BehaviorBuilder<Message> getInitialBehavior() {
         return Behaviors.receive(Message.class)//
-                .onMessage(ImporterStartEmbeddedServerMessage.class, this::onImporterStartEmbeddedServer)//
                 .onMessage(ShutdownMessage.class, this::onShutdown)//
         ;
     }
@@ -199,7 +180,6 @@ public class ImporterMapImage2DbActor {
      */
     protected BehaviorBuilder<Message> getServerStartedBehavior() {
         return Behaviors.receive(Message.class)//
-                .onMessage(ImporterStopEmbeddedServerMessage.class, this::onImporterStopEmbeddedServer)//
                 .onMessage(ImportImageMessage.class, this::onImportImage)//
                 .onMessage(ShutdownMessage.class, this::onShutdown)//
         ;

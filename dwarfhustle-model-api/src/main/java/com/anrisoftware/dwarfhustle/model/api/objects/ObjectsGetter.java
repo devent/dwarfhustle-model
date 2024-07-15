@@ -45,6 +45,6 @@ public interface ObjectsGetter {
     /**
      * Returns the {@link GameObject}.
      */
-    <T extends GameObject> T get(int type, Object key);
+    <T extends GameObject> T get(int type, Object key) throws ObjectsGetterException;
 
 }

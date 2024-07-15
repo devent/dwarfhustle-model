@@ -24,8 +24,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
-import jakarta.inject.Inject;
-
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.impl.factory.Maps;
 
@@ -35,16 +33,12 @@ import com.anrisoftware.dwarfhustle.model.actor.ShutdownMessage;
 import com.anrisoftware.dwarfhustle.model.api.materials.Gas;
 import com.anrisoftware.dwarfhustle.model.api.materials.IgneousExtrusive;
 import com.anrisoftware.dwarfhustle.model.api.materials.IgneousIntrusive;
+import com.anrisoftware.dwarfhustle.model.api.materials.Liquid;
 import com.anrisoftware.dwarfhustle.model.api.materials.Metamorphic;
 import com.anrisoftware.dwarfhustle.model.api.materials.Sedimentary;
 import com.anrisoftware.dwarfhustle.model.api.materials.Soil;
-import com.anrisoftware.dwarfhustle.model.api.materials.SpecialStoneLayer;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.anrisoftware.dwarfhustle.model.generate.GenerateMapMessage.GenerateErrorMessage;
-import com.anrisoftware.dwarfhustle.model.generate.GenerateMapMessage.GenerateProgressMessage;
-import com.anrisoftware.dwarfhustle.model.generate.GenerateMapMessage.GenerateSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.generate.WorkerBlocks.WorkerBlocksFactory;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeGetMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseErrorMessage;
@@ -60,6 +54,7 @@ import akka.actor.typed.javadsl.BehaviorBuilder;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.TimerScheduler;
 import akka.actor.typed.receptionist.ServiceKey;
+import jakarta.inject.Inject;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -95,7 +90,6 @@ public class GenerateMapActor {
     @RequiredArgsConstructor
     @ToString(callSuper = true)
     private static class StartGenerateMessage extends Message {
-        public final WorkerBlocks workerBlocks;
     }
 
     @RequiredArgsConstructor
@@ -103,8 +97,6 @@ public class GenerateMapActor {
     private static class SendGeneratorStatusMessage extends Message {
 
         public final GenerateMapMessage om;
-
-        public final WorkerBlocks workerBlocks;
     }
 
     @RequiredArgsConstructor
@@ -154,16 +146,11 @@ public class GenerateMapActor {
     @Assisted
     private ActorRef<Message> knowledge;
 
-    @Inject
-    private WorkerBlocksFactory workerBlocksFactory;
-
     private ActorRef<KnowledgeResponseMessage> knowledgeResponseAdapter;
 
     private Optional<GenerateMapMessage> generateMap;
 
     private Map<String, ListIterable<KnowledgeObject>> materials;
-
-    private Optional<WorkerBlocks> workerBlocks;
 
     /**
      * Initial behavior. Returns a behavior for the messages from
@@ -184,19 +171,18 @@ public class GenerateMapActor {
         log.debug("onGenerate {}", m);
         this.materials = Maps.mutable.empty();
         this.generateMap = Optional.of(m);
-        knowledge.tell(createKgMessage(Sedimentary.class, Sedimentary.TYPE));
-        knowledge.tell(createKgMessage(IgneousIntrusive.class, IgneousIntrusive.TYPE));
-        knowledge.tell(createKgMessage(IgneousExtrusive.class, IgneousExtrusive.TYPE));
-        knowledge.tell(createKgMessage(Metamorphic.class, Metamorphic.TYPE));
-        knowledge.tell(createKgMessage(SpecialStoneLayer.class, SpecialStoneLayer.TYPE));
-        knowledge.tell(createKgMessage(Soil.class, Soil.TYPE));
-        knowledge.tell(createKgMessage(Gas.class, Gas.TYPE));
+        knowledge.tell(createKgMessage(Sedimentary.TYPE));
+        knowledge.tell(createKgMessage(IgneousIntrusive.TYPE));
+        knowledge.tell(createKgMessage(IgneousExtrusive.TYPE));
+        knowledge.tell(createKgMessage(Metamorphic.TYPE));
+        knowledge.tell(createKgMessage(Liquid.TYPE));
+        knowledge.tell(createKgMessage(Soil.TYPE));
+        knowledge.tell(createKgMessage(Gas.TYPE));
         return Behaviors.same();
     }
 
-    private KnowledgeGetMessage<KnowledgeResponseMessage> createKgMessage(Class<? extends GameObject> typeClass,
-            String type) {
-        return new KnowledgeGetMessage<>(knowledgeResponseAdapter, typeClass, type);
+    private KnowledgeGetMessage<KnowledgeResponseMessage> createKgMessage(String type) {
+        return new KnowledgeGetMessage<>(knowledgeResponseAdapter, type);
     }
 
     /**
@@ -205,10 +191,12 @@ public class GenerateMapActor {
      */
     protected Behavior<Message> onMaterialsLoadSuccess(MaterialsLoadSuccessMessage m) {
         log.debug("onMaterialsLoadSuccess {}", m);
-        this.workerBlocks = Optional.of(workerBlocksFactory.create(db, materials, generateMap.get().p));
-        context.getSelf().tell(new StartGenerateMessage(workerBlocks.get()));
-        timer.startTimerAtFixedRate(new SendGeneratorStatusMessage(generateMap.get(), workerBlocks.get()),
-                Duration.ofSeconds(5), Duration.ofSeconds(5));
+        // this.workerBlocks = Optional.of(workerBlocksFactory.create(db, materials,
+        // generateMap.get().p));
+        context.getSelf().tell(new StartGenerateMessage());
+        // timer.startTimerAtFixedRate(new SendGeneratorStatusMessage(generateMap.get(),
+        // workerBlocks.get()),
+        // Duration.ofSeconds(5), Duration.ofSeconds(5));
         return Behaviors.same();
     }
 
@@ -219,7 +207,7 @@ public class GenerateMapActor {
     protected Behavior<Message> onStartGenerate(StartGenerateMessage m) {
         log.debug("onStartGenerate {}", m);
         var thread = new Thread(() -> {
-            m.workerBlocks.generate(generateMap.get());
+            // m.workerBlocks.generate(generateMap.get());
         });
         thread.start();
         return Behaviors.same();
@@ -231,12 +219,12 @@ public class GenerateMapActor {
      */
     protected Behavior<Message> onSendGeneratorStatus(SendGeneratorStatusMessage m) {
         log.debug("onSendGeneratorStatus {}", m);
-        m.om.progressTo.tell(new GenerateProgressMessage(generateMap.get(), m.workerBlocks.getBlocksDone(),
-                m.workerBlocks.isGenerateDone()));
-        if (m.workerBlocks.isGenerateDone()) {
-            timer.cancelAll();
-            generateMap.get().replyTo.tell(new GenerateSuccessMessage(generateMap.get()));
-        }
+//        m.om.progressTo.tell(new GenerateProgressMessage(generateMap.get(), m.workerBlocks.getBlocksDone(),
+//                m.workerBlocks.isGenerateDone()));
+//        if (m.workerBlocks.isGenerateDone()) {
+//            timer.cancelAll();
+//            generateMap.get().replyTo.tell(new GenerateSuccessMessage(generateMap.get()));
+//        }
         return Behaviors.same();
     }
 
@@ -264,7 +252,7 @@ public class GenerateMapActor {
      */
     private Behavior<Message> onShutdown(ShutdownMessage m) {
         log.debug("onShutdown {}", m);
-        workerBlocks.ifPresent(WorkerBlocks::cancel);
+//        workerBlocks.ifPresent(WorkerBlocks::cancel);
         return Behaviors.stopped();
     }
 

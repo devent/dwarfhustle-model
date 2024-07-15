@@ -19,9 +19,8 @@ package com.anrisoftware.dwarfhustle.model.terrainimage;
 
 import static com.anrisoftware.dwarfhustle.model.db.cache.CachePutMessage.askCachePut;
 import static com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.askImportImage;
-import static com.anrisoftware.dwarfhustle.model.terrainimage.ImporterStartEmbeddedServerMessage.askImporterStartEmbeddedServer;
-import static com.anrisoftware.dwarfhustle.model.terrainimage.ImporterStopEmbeddedServerMessage.askImporterStopEmbeddedServer;
 import static java.time.Duration.ofSeconds;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import java.io.File;
 import java.net.URL;
@@ -34,6 +33,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CountDownLatch;
 
+import org.lable.oss.uniqueid.GeneratorException;
 import org.lable.oss.uniqueid.IDGenerator;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
@@ -43,21 +43,24 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.IdsObjectsProvider.IdsObjects;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapArea;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsSetter;
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
 import com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor;
+import com.anrisoftware.dwarfhustle.model.db.lmbd.GameObjectsLmbdStorage;
+import com.anrisoftware.dwarfhustle.model.db.lmbd.MapObjectsLmbdStorage;
+import com.anrisoftware.dwarfhustle.model.db.lmbd.ObjectTypes;
+import com.anrisoftware.dwarfhustle.model.db.lmbd.TypeReadBuffers;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.ImportImageErrorMessage;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.ImportImageSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.terrainimage.ImporterStartEmbeddedServerMessage.ImporterStartEmbeddedServerSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.terrainimage.ImporterStopEmbeddedServerMessage.ImporterStopEmbeddedServerSuccessMessage;
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
 
 import akka.Done;
 import akka.actor.typed.ActorRef;
+import akka.actor.typed.Scheduler;
 import jakarta.inject.Inject;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -70,8 +73,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ImporterMapImage2DbApp {
 
-    private static final Duration START_EMBEDDED_TIMEOUT = Duration.ofMinutes(10);
-
     private static final Duration IMPORT_IMAGE_TIMEOUT = Duration.ofMinutes(30);
 
     @Inject
@@ -81,12 +82,17 @@ public class ImporterMapImage2DbApp {
     @IdsObjects
     private IDGenerator gen;
 
+    private GameObjectsLmbdStorage gameObjectsStorage;
+
+    private MapObjectsLmbdStorage mapObjectsStorage;
+
     /**
      * Initiate the importer.
      *
      * @param injector the {@link Injector} with external modules.
      */
-    public CompletableFuture<Void> init(Injector injector) {
+    public CompletableFuture<Void> init(Injector injector, File root, WorldMap wm, GameMap gm) {
+        initStorage(root, gm);
         var childInjector = injector.createChildInjector(new AbstractModule() {
             @Override
             protected void configure() {
@@ -94,31 +100,39 @@ public class ImporterMapImage2DbApp {
 
         });
         return CompletableFuture.allOf( //
-                createDb(injector).thenAccept((adb) -> { //
-                    createObjectsCache(injector, actor.getObjectGetterAsync(OrientDbActor.ID)).thenAccept((a) -> {
-                        createPowerLoom(injector, actor).thenAccept((aa) -> {
-                            createKnowledgeCache(injector, actor, aa).whenComplete((ret, ex) -> {
+                createObjectsCache(injector, supplyAsync(() -> gameObjectsStorage),
+                        supplyAsync(() -> gameObjectsStorage)).thenAccept((a) -> {
+                            createPowerLoom(injector, actor).thenAccept((aa) -> {
+                                createKnowledgeCache(injector, actor, aa).whenComplete((ret, ex) -> {
+                                    cacheMap(a, actor.getScheduler(), wm, gm);
+                                });
                             });
-                        });
-                    });
-                }).toCompletableFuture(), //
+                        }).toCompletableFuture(), //
                 createImporter(childInjector).toCompletableFuture()).toCompletableFuture()
                 .exceptionally(this::errorInit);
     }
 
+    @SneakyThrows
+    private void cacheMap(ActorRef<Message> a, Scheduler scheduler, WorldMap wm, GameMap gm) {
+        askCachePut(a, scheduler, ofSeconds(1), gm).toCompletableFuture().get();
+        askCachePut(a, scheduler, ofSeconds(1), wm).toCompletableFuture().get();
+    }
+
     /**
-     * Init with embedded database.
-     *
-     * @param injector  the {@link Injector} with external modules.
-     * @param parentDir the {@link File} of the database parent directory.
-     * @param database  the {@link String} database name.
-     * @param user      the {@link String} user name.
-     * @param password  the {@link String} password.
+     * Init storages.
      */
-    public CompletableFuture<Void> initEmbedded(File parentDir, String database, String user, String password) {
-        return CompletableFuture.runAsync(() -> {
-            connectDbEmbedded(parentDir, database, user, password);
-        });
+    private void initStorage(File root, GameMap gm) {
+        var gameObjectsPath = new File(root, "objects");
+        if (!gameObjectsPath.isDirectory()) {
+            gameObjectsPath.mkdir();
+        }
+        this.gameObjectsStorage = new GameObjectsLmbdStorage(gameObjectsPath.toPath(), ObjectTypes.OBJECT_TYPES,
+                TypeReadBuffers.TYPE_READ_BUFFERS);
+        var mapObjectsPath = new File(root, "map-" + gm.id);
+        if (!mapObjectsPath.isDirectory()) {
+            mapObjectsPath.mkdir();
+        }
+        this.mapObjectsStorage = new MapObjectsLmbdStorage(mapObjectsPath.toPath(), gm);
     }
 
     private CompletionStage<ActorRef<Message>> createImporter(Injector injector) {
@@ -133,19 +147,9 @@ public class ImporterMapImage2DbApp {
                 });
     }
 
-    private static CompletionStage<ActorRef<Message>> createDb(Injector injector) {
-        return OrientDbActor.create(injector, ofSeconds(1)).whenComplete((ret, ex) -> {
-            if (ex != null) {
-                log.error("OrientDbActor.create", ex);
-            } else {
-                log.debug("OrientDbActor created");
-            }
-        });
-    }
-
     private static CompletionStage<ActorRef<Message>> createObjectsCache(Injector injector,
-            CompletionStage<ObjectsGetter> og) {
-        var task = ImporterObjectsJcsCacheActor.create(injector, Duration.ofSeconds(30), og);
+            CompletionStage<ObjectsGetter> og, CompletionStage<ObjectsSetter> os) {
+        var task = ImporterObjectsJcsCacheActor.create(injector, Duration.ofSeconds(30), og, os);
         return task.whenComplete((ret, ex) -> {
             if (ex != null) {
                 log.error("ObjectsJcsCacheActor.create", ex);
@@ -169,9 +173,8 @@ public class ImporterMapImage2DbApp {
 
     private static CompletionStage<ActorRef<Message>> createKnowledgeCache(Injector injector, ActorSystemProvider actor,
             ActorRef<Message> powerLoom) {
-        return KnowledgeJcsCacheActor
-                .create(injector, ofSeconds(10), actor.getObjectGetterAsync(PowerLoomKnowledgeActor.ID))
-                .whenComplete((ret, ex) -> {
+        return KnowledgeJcsCacheActor.create(injector, ofSeconds(10),
+                actor.getObjectGetterAsync(PowerLoomKnowledgeActor.ID), ObjectsSetter.EMPTY).whenComplete((ret, ex) -> {
                     if (ex != null) {
                         log.error("KnowledgeJcsCacheActor.create", ex);
                     } else {
@@ -187,52 +190,17 @@ public class ImporterMapImage2DbApp {
     @SneakyThrows
     private Void logError(String msg, Throwable ex) {
         log.error(msg, ex);
-        shutdownEmbedded().toCompletableFuture().get();
+        shutdownImporter().toCompletableFuture().get();
         return null;
-    }
-
-    @SuppressWarnings("unused")
-    @SneakyThrows
-    private void connectDbEmbedded(File root, String database, String user, String password) {
-        URL config = ImporterMapImage2DbApp.class.getResource("orientdb-config.xml");
-        var lock = new CountDownLatch(1);
-        String rootPath = root.getAbsolutePath();
-        var ret = askImporterStartEmbeddedServer(actor.getActorSystem(), START_EMBEDDED_TIMEOUT, rootPath, config,
-                database, user, password);
-        ret.whenComplete((res, ex) -> {
-            if (ex != null) {
-                logError("ImporterStartEmbeddedServerMessage", ex);
-            } else if (res instanceof DbErrorMessage<?> rm) {
-                logError("ImporterStartEmbeddedServerMessage", ex);
-            } else if (res instanceof ImporterStartEmbeddedServerSuccessMessage<?> rm) {
-                log.info("ImporterStartEmbeddedServerMessage Success");
-                lock.countDown();
-            }
-        });
-        ret.toCompletableFuture().get();
-        lock.await();
     }
 
     /**
      * Shutdowns the importer.
      */
-    @SuppressWarnings("unused")
     @SneakyThrows
-    public CompletionStage<Done> shutdownEmbedded() {
-        var lock = new CountDownLatch(1);
-        var ret = askImporterStopEmbeddedServer(actor.getActorSystem(), IMPORT_IMAGE_TIMEOUT);
-        ret.whenComplete((res, ex) -> {
-            if (ex != null) {
-                logError("ImporterStopEmbeddedServerMessage", ex);
-            } else if (res instanceof DbErrorMessage<?> rm) {
-                logError("ImporterStopEmbeddedServerMessage", ex);
-            } else if (res instanceof ImporterStopEmbeddedServerSuccessMessage<?> rm) {
-                log.info("ImporterStopEmbeddedServerMessage Success");
-                lock.countDown();
-            }
-        });
-        ret.toCompletableFuture().get();
-        lock.await();
+    public CompletionStage<Done> shutdownImporter() {
+        gameObjectsStorage.close();
+        mapObjectsStorage.close();
         actor.getMainActor().tell(new ShutdownMessage());
         return actor.shutdown();
     }
@@ -266,22 +234,17 @@ public class ImporterMapImage2DbApp {
     }
 
     /**
-     * Creates the {@link WorldMap} and {@link GameMap} according the the terrain
-     * image and map properties.
+     * Creates the {@link GameMap} according the the map properties and terrain
+     * image.
      *
      * @param image the {@link TerrainLoadImage}
      * @return the ID of the {@link GameMap}
      */
-    @SneakyThrows
-    public long createGameMap(TerrainLoadImage image, Properties mapProperties, int chunksCount) {
+    public GameMap createGameMap(Properties p, TerrainLoadImage image, int chunksCount, WorldMap wm)
+            throws GeneratorException {
         var gm = new GameMap(gen.generate());
-        var wm = new WorldMap(gen.generate());
-        wm.setName(mapProperties.getProperty("world_name"));
         wm.addMap(gm);
         wm.currentMap = gm.id;
-        wm.time = LocalDateTime.of(2023, Month.APRIL, 15, 12, 0);
-        wm.distanceLat = 100f;
-        wm.distanceLon = 100f;
         gm.world = wm.id;
         gm.chunkSize = image.chunkSize;
         gm.chunksCount = chunksCount;
@@ -294,9 +257,19 @@ public class ImporterMapImage2DbApp {
         // gm.setCameraPos(0.0f, 0.0f, 12.0f);
         gm.setCameraRot(0.0f, 1.0f, 0.0f, 0.0f);
         gm.setCursorZ(0);
-        gm.setName(mapProperties.getProperty("map_name"));
-        askCachePut(actor.getActorSystem(), ofSeconds(333331), gm.id, gm).toCompletableFuture().get();
-        askCachePut(actor.getActorSystem(), ofSeconds(333331), wm.id, wm).toCompletableFuture().get();
-        return gm.id;
+        gm.setName(p.getProperty("map_name"));
+        return gm;
+    }
+
+    /**
+     * Creates the {@link WorldMap} map properties.
+     */
+    public WorldMap createWorldMap(Properties p) throws GeneratorException {
+        var wm = new WorldMap(gen.generate());
+        wm.setName(p.getProperty("world_name"));
+        wm.time = LocalDateTime.of(2023, Month.APRIL, 15, 12, 0);
+        wm.distanceLat = 100f;
+        wm.distanceLon = 100f;
+        return wm;
     }
 }

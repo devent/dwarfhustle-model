@@ -17,7 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.evrete;
 
-import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockBuffer.calcIndex;
+import static com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos.calcIndex;
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags.EMPTY;
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags.FILLED;
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags.LIQUID;

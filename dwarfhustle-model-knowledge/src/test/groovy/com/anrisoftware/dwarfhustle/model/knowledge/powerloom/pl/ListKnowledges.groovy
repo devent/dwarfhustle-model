@@ -48,6 +48,7 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Soil
 import com.anrisoftware.dwarfhustle.model.api.materials.Stone
 import com.anrisoftware.dwarfhustle.model.api.materials.Topsoil
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsSetter
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseErrorMessage
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseSuccessMessage
 import com.google.inject.Guice
@@ -76,7 +77,7 @@ class ListKnowledges {
     static void setupActor() {
         injector = Guice.createInjector(new DwarfhustleModelActorsModule(), new DwarfhustlePowerloomModule(), new DwarfhustleModelApiObjectsModule())
         actor = injector.getInstance(ActorSystemProvider.class)
-        KnowledgeJcsCacheActor.create(injector, ofSeconds(1), actor.getObjectGetterAsync(PowerLoomKnowledgeActor.ID)).whenComplete({ it, ex ->
+        KnowledgeJcsCacheActor.create(injector, ofSeconds(1), actor.getObjectGetterAsync(PowerLoomKnowledgeActor.ID), ObjectsSetter.EMPTY).whenComplete({ it, ex ->
             cacheActor = it
         } ).get()
         PowerLoomKnowledgeActor.create(injector, ofSeconds(1), supplyAsync({cacheActor})).whenComplete({ it, ex ->
@@ -127,12 +128,12 @@ class ListKnowledges {
         while (listKnowledge == null) {
             Thread.sleep(10)
         }
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Stone.class, Stone.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Soil.class, Soil.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Gas.class, Gas.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Liquid.class, Liquid.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockType.class, BlockType.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ObjectType.class, ObjectType.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Stone.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Soil.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Gas.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Liquid.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockType.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ObjectType.TYPE))
         while (ko.size() != 98) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
@@ -186,8 +187,8 @@ class ListKnowledges {
         while (listKnowledge == null) {
             Thread.sleep(10)
         }
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ObjectType.class, ObjectType.TYPE))
-        while (ko.size() != 26) {
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ObjectType.TYPE))
+        while (ko.size() != 37) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
         }
@@ -221,16 +222,16 @@ class ListKnowledges {
         while (listKnowledge == null) {
             Thread.sleep(10)
         }
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Clay.class, Clay.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Gas.class, Gas.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, IgneousExtrusive.class, IgneousExtrusive.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, IgneousIntrusive.class, IgneousIntrusive.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Metamorphic.class, Metamorphic.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Sand.class, Sand.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Seabed.class, Seabed.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Sedimentary.class, Sedimentary.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Liquid.class, Liquid.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Topsoil.class, Topsoil.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Clay.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Gas.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, IgneousExtrusive.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, IgneousIntrusive.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Metamorphic.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Sand.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Seabed.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Sedimentary.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Liquid.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Topsoil.TYPE))
         while (ko.size() != 10) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
@@ -274,22 +275,22 @@ class ListKnowledges {
         while (listKnowledge == null) {
             Thread.sleep(10)
         }
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Clay.class, Clay.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Gas.class, Gas.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, IgneousExtrusive.class, IgneousExtrusive.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, IgneousIntrusive.class, IgneousIntrusive.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Metamorphic.class, Metamorphic.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Sand.class, Sand.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Seabed.class, Seabed.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Sedimentary.class, Sedimentary.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Liquid.class, Liquid.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Topsoil.class, Topsoil.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, FloorType.class, FloorType.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, LightType.class, LightType.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, RoofType.class, RoofType.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockType.class, BlockType.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ObjectType.class, ObjectType.TYPE))
-        while (ko.size() != 96) {
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Clay.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Gas.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, IgneousExtrusive.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, IgneousIntrusive.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Metamorphic.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Sand.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Seabed.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Sedimentary.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Liquid.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Topsoil.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, FloorType.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, LightType.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, RoofType.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockType.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ObjectType.TYPE))
+        while (ko.size() != 107) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
         }

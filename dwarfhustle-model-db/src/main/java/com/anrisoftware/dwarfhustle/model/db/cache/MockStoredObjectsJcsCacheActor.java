@@ -34,6 +34,7 @@ import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsSetter;
 import com.google.inject.Injector;
 
 import akka.actor.typed.ActorRef;
@@ -69,12 +70,13 @@ public class MockStoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
 
         @Override
         MockStoredObjectsJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash,
-                ObjectsGetter og);
+                ObjectsGetter og, ObjectsSetter os);
     }
 
     public static Behavior<Message> create(Injector injector, AbstractJcsCacheActorFactory actorFactory,
-            CompletionStage<ObjectsGetter> og, CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
-        return AbstractJcsCacheActor.create(injector, actorFactory, og, initCacheAsync);
+            CompletionStage<ObjectsGetter> og, CompletionStage<ObjectsSetter> os,
+            CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
+        return AbstractJcsCacheActor.create(injector, actorFactory, og, os, initCacheAsync);
     }
 
     /**
@@ -84,11 +86,11 @@ public class MockStoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
      * @param timeout  the {@link Duration} timeout.
      */
     public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout,
-            CompletionStage<ObjectsGetter> og) {
+            CompletionStage<ObjectsGetter> og, CompletionStage<ObjectsSetter> os) {
         var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
         var actorFactory = injector.getInstance(MockStoredObjectsJcsCacheActorFactory.class);
         var initCache = createInitCacheAsync();
-        return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, actorFactory, og, initCache));
+        return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, actorFactory, og, os, initCache));
     }
 
     public static CompletableFuture<CacheAccess<Object, GameObject>> createInitCacheAsync() {
@@ -117,17 +119,15 @@ public class MockStoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @Override
-    protected void storeValueBackend(Object key, GameObject go) {
-        if (key instanceof Long) {
-            var b = (MutableLongObjectMap<GameObject>) this.backend;
-            b.put((long) key, go);
-        }
+    protected void storeValueBackend(GameObject go) {
+        var b = (MutableLongObjectMap<GameObject>) this.backend;
+        b.put(go.getId(), go);
     }
 
     @Override
     protected void storeValuesBackend(int objectType, Iterable<GameObject> values) {
         for (var go : values) {
-            storeValueBackend(go.id, go);
+            storeValueBackend(go);
         }
     }
 

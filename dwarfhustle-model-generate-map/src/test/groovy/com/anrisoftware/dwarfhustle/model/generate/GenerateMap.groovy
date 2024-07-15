@@ -31,10 +31,10 @@ import java.util.concurrent.TimeUnit
 
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.MethodOrderer.OrderAnnotation
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation
 import org.junit.jupiter.api.extension.ExtendWith
 import org.lable.oss.uniqueid.IDGenerator
 import org.mockito.Mockito
@@ -43,8 +43,8 @@ import org.mockito.junit.jupiter.MockitoExtension
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
 import com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage
 import com.anrisoftware.dwarfhustle.model.actor.DwarfhustleModelActorsModule
-import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.actor.ShutdownMessage
+import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
 import com.anrisoftware.dwarfhustle.model.api.objects.IdsObjectsProvider
@@ -56,7 +56,6 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbTestUtils
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DwarfhustleModelDbOrientdbModule
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor
 import com.anrisoftware.dwarfhustle.model.generate.GenerateMapMessage.GenerateProgressMessage
-import com.anrisoftware.dwarfhustle.model.generate.WorkerBlocks.WorkerBlocksFactory
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustlePowerloomModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor
@@ -99,8 +98,6 @@ class GenerateMap {
 
     static dbActor
 
-    static WorkerBlocksFactory workerFactory
-
     static IDGenerator gen
 
     static timeout = Duration.ofSeconds(300)
@@ -137,7 +134,7 @@ class GenerateMap {
                 new DwarfhustleModelDbCacheModule(),
                 new PropertiesThreadsModule())
         actor = injector.getInstance(ActorSystemProvider)
-        workerFactory = injector.getInstance(WorkerBlocksFactory)
+        //workerFactory = injector.getInstance(WorkerBlocksFactory)
         PowerLoomKnowledgeActor.create(injector, ofSeconds(1), CompletableFuture.supplyAsync({ objectsActor })).whenComplete({ret, ex ->
             log_reply_failure "PowerLoomKnowledgeActor.create", ret, ex
         }).get(5, TimeUnit.SECONDS)

@@ -267,12 +267,11 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
     @SneakyThrows
     private Behavior<Message> onKnowledgeGet(KnowledgeGetMessage<?> m) {
         log.debug("onKnowledgeGet {}", m);
-        objectsCache.tell(new CacheGetMessage<>(cacheResponseAdapter, KnowledgeLoadedObject.class,
-                KnowledgeLoadedObject.OBJECT_TYPE, m.type, go -> {
-                    cacheHit(m, go);
-                }, () -> {
-                    cacheMiss(m);
-                }));
+        objectsCache.tell(new CacheGetMessage<>(cacheResponseAdapter, KnowledgeLoadedObject.OBJECT_TYPE, m.type, go -> {
+            cacheHit(m, go);
+        }, () -> {
+            cacheMiss(m);
+        }));
         return Behaviors.same();
     }
 
@@ -281,7 +280,7 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
     private void cacheMiss(@SuppressWarnings("rawtypes") KnowledgeGetMessage m) {
         var glo = retrieveKnowledgeLoadedObject(m.type);
         cacheObjects(glo);
-        objectsCache.tell(new CachePutMessage<>(cacheResponseAdapter, glo.type, glo));
+        objectsCache.tell(new CachePutMessage<>(cacheResponseAdapter, glo));
         m.replyTo.tell(new KnowledgeResponseSuccessMessage(glo));
     }
 
@@ -324,8 +323,8 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
     @SuppressWarnings("unchecked")
     @Override
     @SneakyThrows
-    public <T extends GameObject> T get(String type, Object key) throws ObjectsGetterException {
-        return (T) retrieveKnowledgeLoadedObject(type);
+    public <T extends GameObject> T get(int type, Object key) throws ObjectsGetterException {
+        return (T) retrieveKnowledgeLoadedObject((String) key);
     }
 
     private KnowledgeLoadedObject retrieveKnowledgeLoadedObject(String type) throws GeneratorException {

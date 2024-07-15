@@ -42,6 +42,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjects
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunksStore
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsSetter
 import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustlePowerloomModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor
@@ -83,13 +84,13 @@ class TerrainImageCreateMapTest {
                 }
                 )
         actor = injector.getInstance(ActorSystemProvider.class)
-        KnowledgeJcsCacheActor.create(injector, ofSeconds(1), actor.getObjectGetterAsync(PowerLoomKnowledgeActor.ID)).whenComplete({ it, ex ->
+        KnowledgeJcsCacheActor.create(injector, ofSeconds(1), actor.getObjectGetterAsync(PowerLoomKnowledgeActor.ID), ObjectsSetter.EMPTY).whenComplete({ it, ex ->
             cacheActor = it
         } ).get()
         PowerLoomKnowledgeActor.create(injector, ofSeconds(1), supplyAsync({cacheActor})).whenComplete({ it, ex ->
             knowledgeActor = it
         } ).get()
-        this.terrainKnowledge = new TerrainKnowledge({ timeout, typeClass, type -> askKnowledgeObjects(actor.actorSystem, timeout, typeClass, type) })
+        this.terrainKnowledge = new TerrainKnowledge({ timeout, type -> askKnowledgeObjects(actor.actorSystem, timeout, type) })
     }
 
     @AfterAll
@@ -107,9 +108,9 @@ class TerrainImageCreateMapTest {
         args << of(TerrainImage.terrain_8_8_8_4, false, new Terrain_8_8_8_4_blocks_expected().run())
         args << of(TerrainImage.terrain_32_32_32_4, false, null)
         args << of(TerrainImage.terrain_32_32_32_8, false, null)
-        //        args << of(TerrainImage.terrain_512_512_128_16, false, null)
-        //        args << of(TerrainImage.terrain_512_512_128_32, false, null)
-        //        args << of(TerrainImage.terrain_512_512_128_64, false, null)
+        args << of(TerrainImage.terrain_512_512_128_16, false, null)
+        args << of(TerrainImage.terrain_512_512_128_32, false, null)
+        args << of(TerrainImage.terrain_512_512_128_64, false, null)
         //
         //        args << of(TerrainImage.terrain_128_128_128_16, false, null)
         //        args << of(TerrainImage.terrain_128_128_128_32, false, null)

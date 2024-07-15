@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.terrainimage;
 
+import static akka.actor.typed.javadsl.AskPattern.ask;
+
 import java.net.URL;
 import java.time.Duration;
 import java.util.concurrent.CompletionStage;
@@ -25,7 +27,6 @@ import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.ActorSystem;
-import akka.actor.typed.javadsl.AskPattern;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
@@ -68,8 +69,7 @@ public class ImportImageMessage<T extends Message> extends Message {
      */
     public static CompletionStage<Message> askImportImage(ActorSystem<Message> a, Duration timeout, URL url,
             TerrainLoadImage image, long mapid) {
-        return AskPattern.ask(a, replyTo -> new ImportImageMessage<>(replyTo, url, image, mapid), timeout,
-                a.scheduler());
+        return ask(a, replyTo -> new ImportImageMessage<>(replyTo, url, image, mapid), timeout, a.scheduler());
     }
 
     /**

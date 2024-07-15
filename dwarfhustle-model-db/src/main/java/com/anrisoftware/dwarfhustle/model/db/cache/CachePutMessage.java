@@ -26,7 +26,7 @@ import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 import akka.actor.typed.ActorRef;
-import akka.actor.typed.ActorSystem;
+import akka.actor.typed.Scheduler;
 import lombok.ToString;
 
 /**
@@ -40,24 +40,20 @@ public class CachePutMessage<T extends Message> extends CacheMessage<T> {
     /**
      * Asks the actor to put the value with the key in the cache.
      *
-     * @param a       the {@link ActorSystem}.
+     * @param a       the {@link ActorRef}.
      * @param timeout the {@link Duration} timeout.
-     * @param key     the {@link Object} key.
      * @param value   the {@link GameObject} value.
      * @return {@link CompletionStage} with the {@link CacheResponseMessage}.
      */
-    public static CompletionStage<CacheResponseMessage<?>> askCachePut(ActorSystem<Message> a, Duration timeout,
-            Object key, GameObject value) {
-        return ask(a, replyTo -> new CachePutMessage<>(replyTo, key, value), timeout, a.scheduler());
+    public static CompletionStage<CacheResponseMessage<?>> askCachePut(ActorRef<Message> a, Scheduler scheduler,
+            Duration timeout, GameObject value) {
+        return ask(a, replyTo -> new CachePutMessage<>(replyTo, value), timeout, scheduler);
     }
-
-    public final Object key;
 
     public final GameObject value;
 
-    public CachePutMessage(ActorRef<T> replyTo, Object key, GameObject value) {
+    public CachePutMessage(ActorRef<T> replyTo, GameObject value) {
         super(replyTo);
-        this.key = key;
         this.value = value;
     }
 

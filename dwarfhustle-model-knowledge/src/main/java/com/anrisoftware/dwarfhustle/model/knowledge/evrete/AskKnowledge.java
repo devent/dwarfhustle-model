@@ -22,7 +22,6 @@ import java.util.concurrent.CompletionStage;
 
 import org.eclipse.collections.api.list.ListIterable;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 
 /**
@@ -34,13 +33,11 @@ public interface AskKnowledge {
     /**
      * Ask knowledge asynchronously.
      * 
-     * @param timeout   the {@link Duration} timeout.
-     * @param typeClass the type of the {@link KnowledgeObject}.
-     * @param type      the type of the {@link KnowledgeObject}.
+     * @param timeout the {@link Duration} timeout.
+     * @param type    the type of the {@link KnowledgeObject}.
      * @return the {@link CompletionStage} that returns all
      *         {@link KnowledgeObject}s.
      */
-    CompletionStage<ListIterable<KnowledgeObject>> doAskAsync(Duration timeout, Class<? extends GameObject> typeClass,
-            String type);
+    CompletionStage<ListIterable<KnowledgeObject>> doAskAsync(Duration timeout, String type);
 
 }

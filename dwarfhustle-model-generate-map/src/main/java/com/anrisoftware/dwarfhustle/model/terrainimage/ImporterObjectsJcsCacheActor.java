@@ -36,6 +36,7 @@ import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsSetter;
 import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheGetMessage;
@@ -64,13 +65,14 @@ public class ImporterObjectsJcsCacheActor extends AbstractJcsCacheActor {
     public interface ImporterObjectsJcsCacheActorFactory extends AbstractJcsCacheActorFactory {
 
         @Override
-        ImporterObjectsJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash,
-                ObjectsGetter og);
+        ImporterObjectsJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, ObjectsGetter og,
+                ObjectsSetter os);
     }
 
     public static Behavior<Message> create(Injector injector, AbstractJcsCacheActorFactory actorFactory,
-            CompletionStage<ObjectsGetter> og, CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
-        return AbstractJcsCacheActor.create(injector, actorFactory, og, initCacheAsync);
+            CompletionStage<ObjectsGetter> og, CompletionStage<ObjectsSetter> os,
+            CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
+        return AbstractJcsCacheActor.create(injector, actorFactory, og, os, initCacheAsync);
     }
 
     /**
@@ -80,11 +82,11 @@ public class ImporterObjectsJcsCacheActor extends AbstractJcsCacheActor {
      * @param timeout  the {@link Duration} timeout.
      */
     public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout,
-            CompletionStage<ObjectsGetter> og) {
+            CompletionStage<ObjectsGetter> og, CompletionStage<ObjectsSetter> os) {
         var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
         var actorFactory = injector.getInstance(ImporterObjectsJcsCacheActorFactory.class);
         var initCache = createInitCacheAsync();
-        return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, actorFactory, og, initCache));
+        return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, actorFactory, og, os, initCache));
     }
 
     public static CompletableFuture<CacheAccess<Object, GameObject>> createInitCacheAsync() {
@@ -115,12 +117,12 @@ public class ImporterObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @Override
-    protected void storeValueBackend(Object key, GameObject go) {
+    protected void storeValueBackend(GameObject go) {
         // nothing to do
     }
 
     @Override
-    protected void storeValuesBackend(String objectType, Iterable<GameObject> values) {
+    protected void storeValuesBackend(int objectType, Iterable<GameObject> values) {
         // nothing to do
     }
 
@@ -130,19 +132,14 @@ public class ImporterObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @SuppressWarnings({ "rawtypes" })
-    private void retrieveGameObject(String type, long id, Consumer consumer) {
+    private void retrieveGameObject(int type, long id, Consumer consumer) {
         // nothing to do
     }
 
     @Override
-    protected <T extends GameObject> T getValueFromBackend(String type, Object key) {
+    protected <T extends GameObject> T getValueFromBackend(int type, Object key) {
         // nothing to do
         return null;
-    }
-
-    @Override
-    public <T extends GameObject> T get(String type, Object key) {
-        return super.get(type, key);
     }
 
     @Override

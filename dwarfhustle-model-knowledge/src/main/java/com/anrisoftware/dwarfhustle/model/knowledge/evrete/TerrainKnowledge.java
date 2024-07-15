@@ -234,16 +234,16 @@ public class TerrainKnowledge {
         materials.put(MATERIALS_GASES_NAME, gases);
         materials.put(MATERIAL_OXYGEN_NAME, oxygen);
         allOf( //
-                ask.doAskAsync(ASK_TIMEOUT, Stone.class, Stone.TYPE).whenComplete((res, ex) -> {
+                ask.doAskAsync(ASK_TIMEOUT, Stone.TYPE).whenComplete((res, ex) -> {
                     knowledgeGet(res, solids, nop());
                 }).toCompletableFuture(), //
-                ask.doAskAsync(ASK_TIMEOUT, Soil.class, Soil.TYPE).whenComplete((res, ex) -> {
+                ask.doAskAsync(ASK_TIMEOUT, Soil.TYPE).whenComplete((res, ex) -> {
                     knowledgeGet(res, solids, nop());
                 }).toCompletableFuture(), //
-                ask.doAskAsync(ASK_TIMEOUT, Liquid.class, Liquid.TYPE).whenComplete((res, ex) -> {
+                ask.doAskAsync(ASK_TIMEOUT, Liquid.TYPE).whenComplete((res, ex) -> {
                     knowledgeGet(res, liquids, nop());
                 }).toCompletableFuture(), //
-                ask.doAskAsync(ASK_TIMEOUT, Gas.class, Gas.TYPE).whenComplete((res, ex) -> {
+                ask.doAskAsync(ASK_TIMEOUT, Gas.TYPE).whenComplete((res, ex) -> {
                     knowledgeGet(res, gases, (o) -> {
                         var mo = (BlockMaterial) o;
                         if (mo.getName().equalsIgnoreCase("oxygen")) {
@@ -251,7 +251,7 @@ public class TerrainKnowledge {
                         }
                     });
                 }).toCompletableFuture(), //
-                ask.doAskAsync(ASK_TIMEOUT, ObjectType.class, ObjectType.TYPE).whenComplete((res, ex) -> {
+                ask.doAskAsync(ASK_TIMEOUT, ObjectType.TYPE).whenComplete((res, ex) -> {
                     knowledgeGet(res, IntLists.mutable.empty(), (o) -> {
                         var ot = (ObjectType) o;
                         switch (ot.getName()) {

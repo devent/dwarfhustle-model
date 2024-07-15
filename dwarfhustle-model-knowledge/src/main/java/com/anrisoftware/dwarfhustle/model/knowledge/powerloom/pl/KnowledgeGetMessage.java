@@ -31,7 +31,6 @@ import org.eclipse.collections.api.list.ListIterable;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.map.ObjectType;
 import com.anrisoftware.dwarfhustle.model.api.materials.BlockMaterial;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseErrorMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseSuccessMessage;
@@ -56,16 +55,16 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
      * Asks the actor to retrieve knowledge.
      */
     public static CompletionStage<KnowledgeResponseMessage> askKnowledgeGet(ActorRef<Message> a, Duration timeout,
-            Scheduler scheduler, Class<? extends GameObject> typeClass, String type) {
-        return ask(a, replyTo -> new KnowledgeGetMessage<>(replyTo, typeClass, type), timeout, scheduler);
+            Scheduler scheduler, String type) {
+        return ask(a, replyTo -> new KnowledgeGetMessage<>(replyTo, type), timeout, scheduler);
     }
 
     /**
      * Asks the actor to retrieve knowledge.
      */
     public static CompletionStage<KnowledgeResponseMessage> askKnowledgeGet(ActorSystem<Message> a, Duration timeout,
-            Class<? extends GameObject> typeClass, String type) {
-        return askKnowledgeGet(a, timeout, a.scheduler(), typeClass, type);
+            String type) {
+        return askKnowledgeGet(a, timeout, a.scheduler(), type);
     }
 
     /**
@@ -73,8 +72,8 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
      */
     @SneakyThrows
     public static CompletionStage<ListIterable<KnowledgeObject>> askKnowledgeObjects(ActorRef<Message> a,
-            Duration timeout, Scheduler scheduler, Class<? extends GameObject> typeClass, String type) {
-        return askKnowledgeGet(a, timeout, scheduler, typeClass, type).handle((res, ex) -> {
+            Duration timeout, Scheduler scheduler, String type) {
+        return askKnowledgeGet(a, timeout, scheduler, type).handle((res, ex) -> {
             if (ex != null) {
                 throw new RuntimeException(ex);
             } else {
@@ -92,10 +91,10 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
      * Ask the actor to retrieve the ID of a specific material.
      */
     public static <T extends KnowledgeObject> long askKnowledgeId(ActorRef<Message> a, Duration timeout,
-            Scheduler scheduler, Class<? extends GameObject> typeClass, String type, Predicate<T> predicate)
+            Scheduler scheduler, String type, Predicate<T> predicate)
             throws InterruptedException, ExecutionException, TimeoutException {
-        return askKnowledgeObjects(a, timeout, scheduler, typeClass, type).toCompletableFuture()
-                .get(timeout.toSeconds(), SECONDS).collectIf((o) -> {
+        return askKnowledgeObjects(a, timeout, scheduler, type).toCompletableFuture().get(timeout.toSeconds(), SECONDS)
+                .collectIf((o) -> {
                     @SuppressWarnings("unchecked")
                     var ko = (T) o;
                     return predicate.test(ko);
@@ -107,11 +106,9 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
      * 
      * @see BlockMaterial
      */
-    public static long askBlockMaterialId(ActorRef<Message> a, Duration timeout, Scheduler scheduler,
-            Class<? extends GameObject> typeClass, String type, String name)
-            throws InterruptedException, ExecutionException, TimeoutException {
-        return askKnowledgeId(a, timeout, scheduler, typeClass, type,
-                (BlockMaterial ko) -> ko.getName().equalsIgnoreCase(name));
+    public static long askBlockMaterialId(ActorRef<Message> a, Duration timeout, Scheduler scheduler, String type,
+            String name) throws InterruptedException, ExecutionException, TimeoutException {
+        return askKnowledgeId(a, timeout, scheduler, type, (BlockMaterial ko) -> ko.getName().equalsIgnoreCase(name));
     }
 
     /**
@@ -119,11 +116,9 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
      * 
      * @see ObjectType
      */
-    public static long askObjectTypeId(ActorRef<Message> a, Duration timeout, Scheduler scheduler,
-            Class<? extends GameObject> typeClass, String type, String name)
-            throws InterruptedException, ExecutionException, TimeoutException {
-        return askKnowledgeId(a, timeout, scheduler, typeClass, type,
-                (ObjectType ko) -> ko.getName().equalsIgnoreCase(name));
+    public static long askObjectTypeId(ActorRef<Message> a, Duration timeout, Scheduler scheduler, String type,
+            String name) throws InterruptedException, ExecutionException, TimeoutException {
+        return askKnowledgeId(a, timeout, scheduler, type, (ObjectType ko) -> ko.getName().equalsIgnoreCase(name));
     }
 
     /**
@@ -131,17 +126,14 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
      */
     @SneakyThrows
     public static CompletionStage<ListIterable<KnowledgeObject>> askKnowledgeObjects(ActorSystem<Message> a,
-            Duration timeout, Class<? extends GameObject> typeClass, String type) {
-        return askKnowledgeObjects(a, timeout, a.scheduler(), typeClass, type);
+            Duration timeout, String type) {
+        return askKnowledgeObjects(a, timeout, a.scheduler(), type);
     }
-
-    public final Class<? extends GameObject> typeClass;
 
     public final String type;
 
-    public KnowledgeGetMessage(ActorRef<T> replyTo, Class<? extends GameObject> typeClass, String type) {
+    public KnowledgeGetMessage(ActorRef<T> replyTo, String type) {
         super(replyTo);
-        this.typeClass = typeClass;
         this.type = type;
     }
 }

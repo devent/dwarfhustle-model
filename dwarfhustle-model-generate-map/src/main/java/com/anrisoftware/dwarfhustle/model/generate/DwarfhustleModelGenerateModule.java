@@ -17,11 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.generate;
 
-import static com.google.inject.name.Names.named;
-
 import com.anrisoftware.dwarfhustle.model.generate.GenerateMapActor.GenerateMapActorFactory;
-import com.anrisoftware.dwarfhustle.model.generate.WorkerBlocks.WorkerBlocksFactory;
-import com.anrisoftware.globalpom.threads.external.core.Threads;
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 
@@ -34,10 +30,6 @@ public class DwarfhustleModelGenerateModule extends AbstractModule {
     protected void configure() {
         install(new FactoryModuleBuilder().implement(GenerateMapActor.class, GenerateMapActor.class)
                 .build(GenerateMapActorFactory.class));
-        install(new FactoryModuleBuilder().implement(WorkerBlocks.class, WorkerBlocks.class)
-                .build(WorkerBlocksFactory.class));
-        bind(Threads.class).annotatedWith(named("generateMapThreads")).toProvider(ThreadsProvider.class)
-                .asEagerSingleton();
     }
 
 }

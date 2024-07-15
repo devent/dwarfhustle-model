@@ -1,7 +1,6 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.evrete;
 
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags.*;
-import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.BlockArray.*;
 
 import org.evrete.api.Environment;
 import org.evrete.api.RhsContext;

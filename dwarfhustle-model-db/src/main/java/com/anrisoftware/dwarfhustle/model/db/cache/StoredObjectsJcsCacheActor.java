@@ -32,26 +32,16 @@ import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsSetter;
 import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbErrorMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbResponseMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.LoadObjectMessage.LoadObjectSuccessMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.SaveObjectMessage;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.SaveObjectsMessage;
 import com.google.inject.Injector;
-import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.BehaviorBuilder;
-import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.StashBuffer;
 import akka.actor.typed.receptionist.ServiceKey;
-import jakarta.inject.Inject;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -69,12 +59,6 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
 
     public static final int ID = KEY.hashCode();
 
-    @RequiredArgsConstructor
-    @ToString(callSuper = true)
-    private static class WrappedDbResponse extends Message {
-        private final DbResponseMessage<?> response;
-    }
-
     /**
      * Factory to create {@link StoredObjectsJcsCacheActor}.
      *
@@ -83,12 +67,14 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     public interface StoredObjectsJcsCacheActorFactory extends AbstractJcsCacheActorFactory {
 
         @Override
-        StoredObjectsJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, ObjectsGetter og);
+        StoredObjectsJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, ObjectsGetter og,
+                ObjectsSetter os);
     }
 
-    public static Behavior<Message> create(Injector injector, AbstractJcsCacheActorFactory actorFactory,
-            CompletionStage<ObjectsGetter> og, CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
-        return AbstractJcsCacheActor.create(injector, actorFactory, og, initCacheAsync);
+    public static Behavior<Message> create(Injector injector, StoredObjectsJcsCacheActorFactory actorFactory,
+            CompletionStage<ObjectsGetter> og, CompletionStage<ObjectsSetter> os,
+            CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
+        return AbstractJcsCacheActor.create(injector, actorFactory, og, os, initCacheAsync);
     }
 
     /**
@@ -98,11 +84,11 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
      * @param timeout  the {@link Duration} timeout.
      */
     public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout,
-            CompletionStage<ObjectsGetter> og) {
+            CompletionStage<ObjectsGetter> og, CompletionStage<ObjectsSetter> os) {
         var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
         var actorFactory = injector.getInstance(StoredObjectsJcsCacheActorFactory.class);
         var initCache = createInitCacheAsync();
-        return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, actorFactory, og, initCache));
+        return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, actorFactory, og, os, initCache));
     }
 
     public static CompletableFuture<CacheAccess<Object, GameObject>> createInitCacheAsync() {
@@ -116,34 +102,10 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
         return initCache;
     }
 
-    @Inject
-    private ActorSystemProvider actor;
-
-    @SuppressWarnings("rawtypes")
-    private ActorRef<DbResponseMessage> dbResponseAdapter;
-
     @Override
     protected Behavior<Message> initialStage(InitialStateMessage m) {
         log.debug("initialStage {}", m);
-        this.dbResponseAdapter = context.messageAdapter(DbResponseMessage.class, WrappedDbResponse::new);
         return super.initialStage(m);
-    }
-
-    /**
-     * <ul>
-     * <li>
-     * </ul>
-     */
-    private Behavior<Message> onWrappedDbResponse(WrappedDbResponse m) {
-        log.debug("onWrappedDbResponse {}", m);
-        var response = m.response;
-        if (response instanceof DbErrorMessage<?> rm) {
-            log.error("onWrappedDbResponse", rm.error);
-            return Behaviors.stopped();
-        } else if (response instanceof LoadObjectSuccessMessage<?> rm) {
-            rm.consumer.accept(rm.go);
-        }
-        return Behaviors.same();
     }
 
     @Override
@@ -159,26 +121,18 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @Override
-    protected void storeValueBackend(Object key, GameObject go) {
-        actor.tell(new SaveObjectMessage<>(dbResponseAdapter, (StoredObject) go));
+    protected void storeValueBackend(GameObject go) {
+        os.set(go.getObjectType(), go);
     }
 
     @Override
     protected void storeValuesBackend(int type, Iterable<GameObject> values) {
-        actor.tell(new SaveObjectsMessage<>(dbResponseAdapter, type, values));
+        os.set(type, values);
     }
 
     @Override
     protected void retrieveValueFromBackend(CacheGetMessage<?> m, Consumer<GameObject> consumer) {
-        retrieveGameObject(m.type, (long) m.key, consumer);
-    }
-
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    private void retrieveGameObject(int type, long id, Consumer consumer) {
-        actor.tell(new LoadObjectMessage(dbResponseAdapter, type, consumer, db -> {
-            var query = "SELECT * from ? where objecttype = ? and objectid = ? limit 1";
-            return ((ODatabaseDocument) db).query(query, type, type, id);
-        }));
+        consumer.accept(og.get(m.type, m.key));
     }
 
     @Override
@@ -189,7 +143,6 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     @Override
     protected BehaviorBuilder<Message> getInitialBehavior() {
         return super.getInitialBehavior()//
-                .onMessage(WrappedDbResponse.class, this::onWrappedDbResponse)//
         ;
     }
 

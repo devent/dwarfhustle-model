@@ -74,14 +74,17 @@ public abstract class AbstractJcsCacheActor implements ObjectsGetter, ObjectsSet
      */
     public interface AbstractJcsCacheActorFactory {
 
-        AbstractJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, ObjectsGetter og);
+        AbstractJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, ObjectsGetter og,
+                ObjectsSetter os);
     }
 
     public static Behavior<Message> create(Injector injector, AbstractJcsCacheActorFactory actorFactory,
-            CompletionStage<ObjectsGetter> og, CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
+            CompletionStage<ObjectsGetter> og, CompletionStage<ObjectsSetter> os,
+            CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
         return Behaviors.withStash(100, stash -> Behaviors.setup(context -> {
             initCache(context, initCacheAsync);
-            return actorFactory.create(context, stash, og.toCompletableFuture().get(15, SECONDS)).start();
+            return actorFactory.create(context, stash, og.toCompletableFuture().get(15, SECONDS),
+                    os.toCompletableFuture().get(15, SECONDS)).start();
         }));
     }
 
@@ -113,6 +116,10 @@ public abstract class AbstractJcsCacheActor implements ObjectsGetter, ObjectsSet
     @Inject
     @Assisted
     protected ObjectsGetter og;
+
+    @Inject
+    @Assisted
+    protected ObjectsSetter os;
 
     protected CacheAccess<Object, GameObject> cache;
 
@@ -161,8 +168,8 @@ public abstract class AbstractJcsCacheActor implements ObjectsGetter, ObjectsSet
     @SuppressWarnings("unchecked")
     private Behavior<Message> onCachePut(@SuppressWarnings("rawtypes") CachePutMessage m) {
         try {
-            cache.put(m.key, m.value);
-            storeValueBackend(m.key, m.value);
+            cache.put(m.value.getId(), m.value);
+            storeValueBackend(m.value);
             m.replyTo.tell(new CacheSuccessMessage<>(m));
         } catch (CacheException e) {
             m.replyTo.tell(new CacheErrorMessage<>(m, e));
@@ -178,7 +185,7 @@ public abstract class AbstractJcsCacheActor implements ObjectsGetter, ObjectsSet
         try {
             for (var o : m.values) {
                 var go = (GameObject) o;
-                cache.put(go.id, go);
+                cache.put(go.getId(), go);
             }
             storeValuesBackend(m.objectType, m.values);
             m.replyTo.tell(new CacheSuccessMessage<>(m));
@@ -287,7 +294,7 @@ public abstract class AbstractJcsCacheActor implements ObjectsGetter, ObjectsSet
     /**
      * Stores the put value in the database.
      */
-    protected abstract void storeValueBackend(Object key, GameObject go);
+    protected abstract void storeValueBackend(GameObject go);
 
     /**
      * Stores the put values in the database.
@@ -339,8 +346,16 @@ public abstract class AbstractJcsCacheActor implements ObjectsGetter, ObjectsSet
     }
 
     @Override
-    public <T extends GameObject> void set(int type, T key) {
-        cache.put(type, key);
-        storeValueBackend(key, key);
+    public void set(int type, GameObject go) {
+        cache.put(go.getId(), go);
+        storeValueBackend(go);
+    }
+
+    @Override
+    public void set(int type, Iterable<GameObject> values) {
+        for (GameObject go : values) {
+            cache.put(go.getId(), go);
+        }
+        storeValuesBackend(type, values);
     }
 }

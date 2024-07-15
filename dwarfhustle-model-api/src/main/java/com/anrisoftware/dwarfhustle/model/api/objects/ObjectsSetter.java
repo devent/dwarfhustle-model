@@ -17,6 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+
 /**
  * Stores {@link GameObject} game objects.
  *
@@ -42,9 +45,25 @@ public interface ObjectsSetter {
         }
     }
 
+    static CompletionStage<ObjectsSetter> EMPTY = CompletableFuture.supplyAsync(() -> new ObjectsSetter() {
+
+        @Override
+        public void set(int type, GameObject go) throws ObjectsSetterException {
+        }
+
+        @Override
+        public void set(int type, Iterable<GameObject> values) throws ObjectsSetterException {
+        }
+    });
+
     /**
      * Stores the {@link GameObject}.
      */
-    <T extends GameObject> void set(int type, T key) throws ObjectsSetterException;
+    void set(int type, GameObject go) throws ObjectsSetterException;
+
+    /**
+     * Bulk store the {@link GameObject}(s).
+     */
+    void set(int type, Iterable<GameObject> values) throws ObjectsSetterException;
 
 }
