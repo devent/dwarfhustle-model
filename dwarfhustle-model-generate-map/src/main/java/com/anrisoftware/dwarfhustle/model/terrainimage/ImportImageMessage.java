@@ -27,6 +27,7 @@ import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.ActorSystem;
+import akka.actor.typed.Scheduler;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
@@ -67,15 +68,17 @@ public class ImportImageMessage<T extends Message> extends Message {
      * @param timeout the {@link Duration} timeout.
      * @return {@link CompletionStage} with the {@link Message}.
      */
-    public static CompletionStage<Message> askImportImage(ActorSystem<Message> a, Duration timeout, URL url,
-            TerrainLoadImage image, long mapid) {
-        return ask(a, replyTo -> new ImportImageMessage<>(replyTo, url, image, mapid), timeout, a.scheduler());
+    public static CompletionStage<Message> askImportImage(ActorRef<Message> a, Scheduler scheduler, Duration timeout,
+            String root, URL url, TerrainLoadImage image, long mapid) {
+        return ask(a, replyTo -> new ImportImageMessage<>(replyTo, root, url, image, mapid), timeout, scheduler);
     }
 
     /**
      * Reply to {@link ActorRef}.
      */
     public final ActorRef<T> replyTo;
+
+    public final String root;
 
     public final URL url;
 

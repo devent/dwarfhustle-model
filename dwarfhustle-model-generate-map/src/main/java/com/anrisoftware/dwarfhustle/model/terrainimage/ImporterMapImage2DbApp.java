@@ -60,7 +60,6 @@ import com.google.inject.Injector;
 
 import akka.Done;
 import akka.actor.typed.ActorRef;
-import akka.actor.typed.Scheduler;
 import jakarta.inject.Inject;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -73,7 +72,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ImporterMapImage2DbApp {
 
-    private static final Duration IMPORT_IMAGE_TIMEOUT = Duration.ofMinutes(30);
+    private static final Duration IMPORT_IMAGE_TIMEOUT = Duration.ofMinutes(5);
 
     @Inject
     private ActorSystemProvider actor;
@@ -85,6 +84,10 @@ public class ImporterMapImage2DbApp {
     private GameObjectsLmbdStorage gameObjectsStorage;
 
     private MapObjectsLmbdStorage mapObjectsStorage;
+
+    private ActorRef<Message> importActor;
+
+    private ActorRef<Message> cacheActor;
 
     /**
      * Initiate the importer.
@@ -100,22 +103,37 @@ public class ImporterMapImage2DbApp {
 
         });
         return CompletableFuture.allOf( //
-                createObjectsCache(injector, supplyAsync(() -> gameObjectsStorage),
-                        supplyAsync(() -> gameObjectsStorage)).thenAccept((a) -> {
-                            createPowerLoom(injector, actor).thenAccept((aa) -> {
-                                createKnowledgeCache(injector, actor, aa).whenComplete((ret, ex) -> {
-                                    cacheMap(a, actor.getScheduler(), wm, gm);
-                                });
-                            });
-                        }).toCompletableFuture(), //
+                createObjectsCacheStage(injector).thenAccept((a) -> {
+                    this.cacheActor = a;
+                    createPowerLoom(injector, wm, gm);
+                }).toCompletableFuture(), //
                 createImporter(childInjector).toCompletableFuture()).toCompletableFuture()
                 .exceptionally(this::errorInit);
     }
 
     @SneakyThrows
-    private void cacheMap(ActorRef<Message> a, Scheduler scheduler, WorldMap wm, GameMap gm) {
-        askCachePut(a, scheduler, ofSeconds(1), gm).toCompletableFuture().get();
-        askCachePut(a, scheduler, ofSeconds(1), wm).toCompletableFuture().get();
+    private void createPowerLoom(Injector injector, WorldMap wm, GameMap gm) {
+        createPowerLoom(injector, actor).thenAccept((aa) -> {
+            createKnowledgeCache(injector, wm, gm, aa);
+        }).toCompletableFuture().get();
+    }
+
+    @SneakyThrows
+    private void createKnowledgeCache(Injector injector, WorldMap wm, GameMap gm, ActorRef<Message> aa) {
+        createKnowledgeCache(injector, actor, aa).thenRunAsync(() -> {
+            cacheMap0(wm, gm);
+        }).toCompletableFuture().get();
+    }
+
+    private CompletionStage<ActorRef<Message>> createObjectsCacheStage(Injector injector) {
+        return createObjectsCache(injector, supplyAsync(() -> gameObjectsStorage),
+                supplyAsync(() -> gameObjectsStorage));
+    }
+
+    @SneakyThrows
+    private void cacheMap0(WorldMap wm, GameMap gm) {
+        askCachePut(cacheActor, actor.getScheduler(), ofSeconds(1), gm).toCompletableFuture().get();
+        askCachePut(cacheActor, actor.getScheduler(), ofSeconds(1), wm).toCompletableFuture().get();
     }
 
     /**
@@ -142,6 +160,7 @@ public class ImporterMapImage2DbApp {
                     if (ex != null) {
                         log.error("ImporterMapImage2DbActor.create", ex);
                     } else {
+                        this.importActor = ret;
                         log.debug("ImporterMapImage2DbActor created");
                     }
                 });
@@ -214,9 +233,10 @@ public class ImporterMapImage2DbApp {
      */
     @SuppressWarnings("unused")
     @SneakyThrows
-    public void startImport(URL url, TerrainLoadImage image, long map) {
+    public void startImport(URL url, TerrainLoadImage image, File root, long gm) {
         var lock = new CountDownLatch(1);
-        var ret = askImportImage(actor.getActorSystem(), IMPORT_IMAGE_TIMEOUT, url, image, map);
+        var ret = askImportImage(importActor, actor.getScheduler(), IMPORT_IMAGE_TIMEOUT, root.getAbsolutePath(), url,
+                image, gm);
         ret.whenComplete((res, ex) -> {
             if (ex != null) {
                 logError("ImportImageMessage", ex);

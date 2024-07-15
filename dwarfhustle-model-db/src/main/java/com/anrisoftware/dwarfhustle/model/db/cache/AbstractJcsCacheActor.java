@@ -133,8 +133,6 @@ public abstract class AbstractJcsCacheActor implements ObjectsGetter, ObjectsSet
      * </ul>
      */
     public Behavior<Message> start() {
-        actor.registerObjectsGetter(getId(), this);
-        actor.registerObjectsSetter(getId(), this);
         return Behaviors.receive(Message.class)//
                 .onMessage(InitialStateMessage.class, this::onInitialState)//
                 .onMessage(SetupErrorMessage.class, this::onSetupError)//
@@ -159,6 +157,8 @@ public abstract class AbstractJcsCacheActor implements ObjectsGetter, ObjectsSet
     private Behavior<Message> onInitialState(InitialStateMessage m) {
         log.debug("onInitialState {}", m);
         this.cache = m.cache;
+        actor.registerObjectsGetter(getId(), this);
+        actor.registerObjectsSetter(getId(), this);
         return initialStage(m);
     }
 

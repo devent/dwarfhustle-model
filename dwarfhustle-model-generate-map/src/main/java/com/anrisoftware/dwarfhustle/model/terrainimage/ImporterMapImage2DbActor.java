@@ -39,6 +39,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.ImportImageErrorMessage;
+import com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.ImportImageSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.terrainimage.TerrainImageCreateMap.TerrainImageCreateMapFactory;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
@@ -116,8 +117,6 @@ public class ImporterMapImage2DbActor {
     @Inject
     private TerrainImageCreateMapFactory terrainImageCreateMap;
 
-    private String root;
-
     /**
      * @see #getInitialBehavior()
      */
@@ -131,16 +130,17 @@ public class ImporterMapImage2DbActor {
         try {
             var gm = getGameMap(og, m.mapid);
             var wm = getWorldMap(og, gm.world);
-            var store = new MapChunksStore(Path.of(root, format("%d-%d.map", wm.id, gm.id)), gm.width, gm.height,
-                    gm.chunkSize, gm.chunksCount);
+            Path storeFile = Path.of(m.root, format("%d-%d.map", wm.id, gm.id));
+            var store = new MapChunksStore(storeFile, gm.width, gm.height, gm.chunkSize, gm.chunksCount);
             var knowledge = new TerrainKnowledge(
                     (timeout, type) -> askKnowledgeObjects(actor.getActorSystem(), timeout, type));
             terrainImageCreateMap.create(store, knowledge).startImportMapping(m.url, m.image, gm);
             store.close();
+            m.replyTo.tell(new ImportImageSuccessMessage());
         } catch (Exception e) {
             log.error("onImportImage", e);
             m.replyTo.tell(new ImportImageErrorMessage(e));
-            return Behaviors.same();
+            return Behaviors.stopped();
         }
         return Behaviors.same();
     }
@@ -160,29 +160,14 @@ public class ImporterMapImage2DbActor {
      * the messages:
      *
      * <ul>
-     * <li>{@link ShutdownMessage}
-     * </ul>
-     */
-    protected BehaviorBuilder<Message> getInitialBehavior() {
-        return Behaviors.receive(Message.class)//
-                .onMessage(ShutdownMessage.class, this::onShutdown)//
-        ;
-    }
-
-    /**
-     * Returns the behaviors after the database was initialized. Returns a behavior
-     * for the messages:
-     *
-     * <ul>
      * <li>{@link ImportImageMessage}
      * <li>{@link ShutdownMessage}
      * </ul>
      */
-    protected BehaviorBuilder<Message> getServerStartedBehavior() {
+    private BehaviorBuilder<Message> getInitialBehavior() {
         return Behaviors.receive(Message.class)//
                 .onMessage(ImportImageMessage.class, this::onImportImage)//
                 .onMessage(ShutdownMessage.class, this::onShutdown)//
         ;
     }
-
 }
