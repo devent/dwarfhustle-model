@@ -58,6 +58,18 @@ public class BlockFact {
     @ToString.Exclude
     public final Function<Integer, MapChunk> retriever;
 
+    public int getW1() {
+        return w - 1;
+    }
+
+    public int getH1() {
+        return h - 1;
+    }
+
+    public int getD1() {
+        return d - 1;
+    }
+
     public static void setMaterial(MapChunk chunk, int x, int y, int z, int m) {
         int off = getByteOffset(chunk, x, y, z);
         MapBlockBuffer.setMaterial(chunk.getBlocksBuffer(), off, m);
@@ -265,6 +277,13 @@ public class BlockFact {
      */
     public boolean isNeighborsFilled(NeighboringDir... dirs) {
         return isNeighborsFlag(FILLED.flag, dirs);
+    }
+
+    /**
+     * Returns true if all the neighbors are filled.
+     */
+    public boolean isNeighborsFilledIfExist(NeighboringDir... dirs) {
+        return isNeighborsExist(dirs) && isNeighborsFlag(FILLED.flag, dirs);
     }
 
     /**

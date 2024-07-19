@@ -52,6 +52,30 @@ public class TerrainUpdateRules extends AbstractTerrainRules {
         $f.addProp(HAVE_NATURAL_LIGHT.flag);
     }
 
+    @Rule(salience = 10)
+    @Where(value = { "$f.y > 0 && $f.z > 0 && $f.isNeighborsFilled(U) && !$f.isNeighborsFilled(N)" })
+    public void block_is_visible_n_empty(BlockFact $f, RhsContext ctx) {
+        $f.addProp(VISIBLE.flag);
+    }
+
+    @Rule(salience = 10)
+    @Where(value = { "$f.x > 0 && $f.z > 0 && $f.isNeighborsFilled(U) && !$f.isNeighborsFilled(W)" })
+    public void block_is_visible_w_empty(BlockFact $f, RhsContext ctx) {
+        $f.addProp(VISIBLE.flag);
+    }
+
+    @Rule(salience = 10)
+    @Where(value = { "$f.y < $f.h1 && $f.z > 0 && $f.isNeighborsFilled(U) && !$f.isNeighborsFilled(S)" })
+    public void block_is_visible_s_empty(BlockFact $f, RhsContext ctx) {
+        $f.addProp(VISIBLE.flag);
+    }
+
+    @Rule(salience = 10)
+    @Where(value = { "$f.x < $f.w1 && $f.z > 0 && $f.isNeighborsFilled(U) && !$f.isNeighborsFilled(E)" })
+    public void block_is_visible_e_empty(BlockFact $f, RhsContext ctx) {
+        $f.addProp(VISIBLE.flag);
+    }
+
     //
     // Object based on the material flag.
     //
@@ -107,79 +131,69 @@ public class TerrainUpdateRules extends AbstractTerrainRules {
     //
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsSameLevelPerpExist() && $f.isNeighborsSameLevelPerpEmpty()" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.isNeighborsSameLevelPerpExist() && $f.isNeighborsSameLevelPerpEmpty()" })
     public void object_set_ramp_single_on_neighbors_same_level_empty(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_single);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsSameLevelExist() && $f.isNeighborsSameLevelFilled()" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.isNeighborsSameLevelExist() && $f.isNeighborsSameLevelFilled()" })
     public void block_set_block_on_neighbors_same_level_filled(BlockFact $f, RhsContext ctx) {
         $f.setObject(block);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(N, E, S, W) && $f.isNeighborsEmpty(E, S, W) && $f.isNeighborsFilled(N)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.isNeighborsExist(N, E, S, W) && $f.isNeighborsEmpty(E, S, W) && $f.isNeighborsFilled(N)" })
     public void ramp_tri_s(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_tri_s);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(N, E, S, W) && $f.isNeighborsEmpty(N, S, W) && $f.isNeighborsFilled(E)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.isNeighborsExist(N, E, S, W) && $f.isNeighborsEmpty(N, S, W) && $f.isNeighborsFilled(E)" })
     public void ramp_tri_w(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_tri_w);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(N, E, S, W) && $f.isNeighborsEmpty(N, E, W) && $f.isNeighborsFilled(S)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.isNeighborsExist(N, E, S, W) && $f.isNeighborsEmpty(N, E, W) && $f.isNeighborsFilled(S)" })
     public void ramp_tri_n(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_tri_n);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(N, E, S, W) && $f.isNeighborsEmpty(N, E, S) && $f.isNeighborsFilled(W)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.isNeighborsExist(N, E, S, W) && $f.isNeighborsEmpty(N, E, S) && $f.isNeighborsFilled(W)" })
     public void ramp_tri_e(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_tri_e);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(N, SE, W, E, S) && $f.isNeighborsEmpty(N, SE, W) && $f.isNeighborsFilled(E, S)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.isNeighborsExist(N, SE, W, E, S) && $f.isNeighborsEmpty(N, SE, W) && $f.isNeighborsFilled(E, S)" })
     public void ramp_corner_nw(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_corner_nw);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(N, E, SW, W, S) && $f.isNeighborsEmpty(N, E, SW) && $f.isNeighborsFilled(W, S)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.isNeighborsExist(N, E, SW, W, S) && $f.isNeighborsEmpty(N, E, SW) && $f.isNeighborsFilled(W, S)" })
     public void ramp_corner_ne(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_corner_ne);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(NE, S, W, N, E) && $f.isNeighborsEmpty(NE, S, W) && $f.isNeighborsFilled(N, E)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.isNeighborsExist(NE, S, W, N, E) && $f.isNeighborsEmpty(NE, S, W) && $f.isNeighborsFilled(N, E)" })
     public void ramp_corner_sw(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_corner_sw);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(S, NW, E, W) && $f.isNeighborsEmpty(S, NW, E) && $f.isNeighborsFilled(N, W)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.isNeighborsExist(S, NW, E, W) && $f.isNeighborsEmpty(S, NW, E) && $f.isNeighborsFilled(N, W)" })
     public void ramp_corner_se(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_corner_se);
         $f.addProp(RAMP.flag);
@@ -190,96 +204,84 @@ public class TerrainUpdateRules extends AbstractTerrainRules {
     //
     
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.x == 0 && $f.isNeighborsExist(S, N, E) && $f.isNeighborsEmpty(S) && $f.isNeighborsFilled(N, E)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.x == 0 && $f.isNeighborsExist(S, N, E) && $f.isNeighborsEmpty(S) && $f.isNeighborsFilled(N, E)" })
     public void ramp_perp_s_left_edge(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_perp_s);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.x == ($f.w - 1) && $f.isNeighborsExist(S, N, W) && $f.isNeighborsEmpty(S) && $f.isNeighborsFilled(N, W)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.x == $f.w1 && $f.isNeighborsExist(S, N, W) && $f.isNeighborsEmpty(S) && $f.isNeighborsFilled(N, W)" })
     public void ramp_perp_s_right_edge(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_perp_s);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(S, N, E, W) && $f.isNeighborsEmpty(S) && $f.isNeighborsFilled(N, E, W)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.isNeighborsExist(S, N, E, W) && $f.isNeighborsEmpty(S) && $f.isNeighborsFilled(N, E, W)" })
     public void ramp_perp_s(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_perp_s);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.y == 0 && $f.isNeighborsExist(E, S, W) && $f.isNeighborsEmpty(E) && $f.isNeighborsFilled(S, W)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.y == 0 && $f.isNeighborsExist(E, S, W) && $f.isNeighborsEmpty(E) && $f.isNeighborsFilled(S, W)" })
     public void ramp_perp_e_top_edge(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_perp_e);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.y == ($f.h - 1) && $f.isNeighborsExist(E, N, W) && $f.isNeighborsEmpty(E) && $f.isNeighborsFilled(N, W)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.y == $f.h1 && $f.isNeighborsExist(E, N, W) && $f.isNeighborsEmpty(E) && $f.isNeighborsFilled(N, W)" })
     public void ramp_perp_e_bottom_edge(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_perp_e);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(E, N, S, W) && $f.isNeighborsEmpty(E) && $f.isNeighborsFilled(N, S, W)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.isNeighborsExist(E, N, S, W) && $f.isNeighborsEmpty(E) && $f.isNeighborsFilled(N, S, W)" })
     public void ramp_perp_e(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_perp_e);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.x == 0 && $f.isNeighborsExist(N, S, E) && $f.isNeighborsEmpty(N) && $f.isNeighborsFilled(E, S)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.x == 0 && $f.isNeighborsExist(N, S, E) && $f.isNeighborsEmpty(N) && $f.isNeighborsFilled(E, S)" })
     public void ramp_perp_n_left_edge(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_perp_n);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.x == ($f.w - 1) && $f.isNeighborsExist(N, S, W) && $f.isNeighborsEmpty(N) && $f.isNeighborsFilled(S, W)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.x == $f.w1 && $f.isNeighborsExist(N, S, W) && $f.isNeighborsEmpty(N) && $f.isNeighborsFilled(S, W)" })
     public void ramp_perp_n_right_edge(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_perp_n);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(N, S, E, W) && $f.isNeighborsEmpty(N) && $f.isNeighborsFilled(E, S, W)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.isNeighborsExist(N, S, E, W) && $f.isNeighborsEmpty(N) && $f.isNeighborsFilled(E, S, W)" })
     public void ramp_perp_n(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_perp_n);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.y == 0 && $f.isNeighborsExist(W, E, S) && $f.isNeighborsEmpty(W) && $f.isNeighborsFilled(E, S)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.y == 0 && $f.isNeighborsExist(W, E, S) && $f.isNeighborsEmpty(W) && $f.isNeighborsFilled(E, S)" })
     public void ramp_perp_w_top_edge(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_perp_w);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.y == ($f.d - 1) && $f.isNeighborsExist(W, E, N) && $f.isNeighborsEmpty(W) && $f.isNeighborsFilled(N, E)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.y == $f.h1 && $f.isNeighborsExist(W, E, N) && $f.isNeighborsEmpty(W) && $f.isNeighborsFilled(N, E)" })
     public void ramp_perp_w_bottom_edge(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_perp_w);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(W, E, N, S) && $f.isNeighborsEmpty(W) && $f.isNeighborsFilled(N, E, S)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.isNeighborsExist(W, E, N, S) && $f.isNeighborsEmpty(W) && $f.isNeighborsFilled(N, E, S)" })
     public void ramp_perp_w(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_perp_w);
         $f.addProp(RAMP.flag);
@@ -290,80 +292,70 @@ public class TerrainUpdateRules extends AbstractTerrainRules {
     //
     
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(E, S, NW, N, W) && $f.isNeighborsEmpty(E, S) && $f.isNeighborsFilled(NW, N, W)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.isNeighborsExist(E, S, NW, N, W) && $f.isNeighborsEmpty(E, S) && $f.isNeighborsFilled(NW, N, W)" })
     public void ramp_edge_out_se(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_edge_out_se);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(N, W, SE, E, S) && $f.isNeighborsEmpty(N, W) && $f.isNeighborsFilled(SE, E, S)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.isNeighborsExist(N, W, SE, E, S) && $f.isNeighborsEmpty(N, W) && $f.isNeighborsFilled(SE, E, S)" })
     public void ramp_edge_out_nw(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_edge_out_nw);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(S, W, NE, N, E) && $f.isNeighborsEmpty(S, W) && $f.isNeighborsFilled(NE, N, E)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.isNeighborsExist(S, W, NE, N, E) && $f.isNeighborsEmpty(S, W) && $f.isNeighborsFilled(NE, N, E)" })
     public void ramp_edge_out_sw(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_edge_out_sw);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(N, E, SW, S, W) && $f.isNeighborsEmpty(N, E) && $f.isNeighborsFilled(SW, S, W)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.isNeighborsExist(N, E, SW, S, W) && $f.isNeighborsEmpty(N, E) && $f.isNeighborsFilled(SW, S, W)" })
     public void ramp_edge_out_ne(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_edge_out_ne);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(SE, N, NE, E, S, SW, W) && $f.isNeighborsEmpty(SE) && $f.isNeighborsFilled(N, NE, E, S, SW, W)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.isNeighborsExist(SE, N, NE, E, S, SW, W) && $f.isNeighborsEmpty(SE) && $f.isNeighborsFilled(N, NE, E, S, SW, W)" })
     public void ramp_edge_in_se(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_edge_in_se);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(NW, NE, E, SE, S, SW, W) && $f.isNeighborsEmpty(NW) && $f.isNeighborsFilled(N, NE, E, SE, S, SW, W)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.isNeighborsExist(NW, NE, E, SE, S, SW, W) && $f.isNeighborsEmpty(NW) && $f.isNeighborsFilled(N, NE, E, SE, S, SW, W)" })
     public void ramp_edge_in_nw(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_edge_in_nw);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(SW, N, NE, E, SE, S, W, NW) && $f.isNeighborsEmpty(SW) && $f.isNeighborsFilled(N, NE, E, SE, S, W, NW)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.isNeighborsExist(SW, N, NE, E, SE, S, W, NW) && $f.isNeighborsEmpty(SW) && $f.isNeighborsFilled(N, NE, E, SE, S, W, NW)" })
     public void ramp_edge_in_sw(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_edge_in_sw);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(NE, N, E, SE, S, SW, W, NW) && $f.isNeighborsEmpty(NE) && $f.isNeighborsFilled(N, E, SE, S, SW, W, NW)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.isNeighborsExist(NE, N, E, SE, S, SW, W, NW) && $f.isNeighborsEmpty(NE) && $f.isNeighborsFilled(N, E, SE, S, SW, W, NW)" })
     public void ramp_edge_in_ne(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_edge_in_ne);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(NE, SW, N, E, SE, S, W, NW) && $f.isNeighborsEmpty(NE, SW) && $f.isNeighborsFilled(N, E, SE, S, W, NW)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.isNeighborsExist(NE, SW, N, E, SE, S, W, NW) && $f.isNeighborsEmpty(NE, SW) && $f.isNeighborsFilled(N, E, SE, S, W, NW)" })
     public void ramp_edge_two_ne(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_two_ne);
         $f.addProp(RAMP.flag);
     }
 
     @Rule(salience = 1_000)
-    @Where(value = { "$f.isNotEdge() && $f.isProp(FILLED.flag)",
-            "$f.isNeighborsExist(SE, NW, N, NE, E, W, S, SW, W) && $f.isNeighborsEmpty(SE, NW) && $f.isNeighborsFilled(N, NE, E, W, S, SW, W)" })
+    @Where(value = { "$f.z > 0 && $f.isProp(FILLED.flag) && $f.isNotEdge() && !$f.isNeighborsFilled(U) && $f.isNeighborsExist(SE, NW, N, NE, E, W, S, SW, W) && $f.isNeighborsEmpty(SE, NW) && $f.isNeighborsFilled(N, NE, E, W, S, SW, W)" })
     public void ramp_edge_two_se(BlockFact $f, RhsContext ctx) {
         $f.setObject(ramp_two_se);
         $f.addProp(RAMP.flag);
