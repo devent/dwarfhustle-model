@@ -20,6 +20,9 @@
 (defconcept Vegetation (?type ObjectType))
   :documentation "Grasses, shrubs, trees."
 
+(defrelation growing-climate ((?v Vegetation) (?c Climate-Zone)))
+  :documentation "Climate zone where the plant grows."
+
 (defrelation growing-season ((?v Vegetation) (?season Season)))
   :documentation "Season(s) of the growing time."
 

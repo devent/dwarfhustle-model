@@ -46,6 +46,48 @@
 
 (assert (= (year-days) 360))
 
+(defconcept Climate-Zone (?m)
+  :documentation "Climate zones.")
+
+(assert (Climate-Zone Polar-desert)) :documentation "Polar desert."
+(assert (Climate-Zone Subpolar-dry-tundra)) :documentation "Subpolar dry tundra"
+(assert (Climate-Zone Subpolar-moist-tundra)) :documentation "Subpolar moist tundra."
+(assert (Climate-Zone Subpolar-wet-tundra)) :documentation "Subpolar wet tundra."
+(assert (Climate-Zone Subpolar-rain-tundra)) :documentation "Subpolar rain tundra."
+(assert (Climate-Zone Boreal-desert)) :documentation "Boreal desert."
+(assert (Climate-Zone Boreal-dry-scrub)) :documentation "Boreal dry scrub."
+(assert (Climate-Zone Boreal-moist-forest)) :documentation "Boreal moist forest."
+(assert (Climate-Zone Boreal-wet-forest)) :documentation "Boreal wet forest."
+(assert (Climate-Zone Boreal-rain-forest)) :documentation "Boreal rain forest."
+(assert (Climate-Zone Cool-temperate-desert)) :documentation "Cool temperate desert."
+(assert (Climate-Zone Cool-temperate-desert-scrub)) :documentation "Cool temperate desert scrub."
+(assert (Climate-Zone Cool-temperate-steppe)) :documentation "Cool temperate steppe."
+(assert (Climate-Zone Cool-temperate-moist-forest)) :documentation "Cool temperate moist forest."
+(assert (Climate-Zone Cool-temperate-wet-forest)) :documentation "Cool temperate wet forest."
+(assert (Climate-Zone Cool-temperate-rain-forest)) :documentation "Cool temperate rain forest."
+(assert (Climate-Zone Warm-temperate-desert)) :documentation "Warm temperate desert."
+(assert (Climate-Zone Warm-temperate-desert-scrub)) :documentation "Warm temperate desert scrub."
+(assert (Climate-Zone Warm-temperate-thorn-scrub)) :documentation "Warm temperate thorn scrub."
+(assert (Climate-Zone Warm-temperate-dry-forest)) :documentation "Warm temperate dry forest."
+(assert (Climate-Zone Warm-temperate-moist-forest)) :documentation "Warm temperate moist forest."
+(assert (Climate-Zone Warm-temperate-wet-forest)) :documentation "Warm temperate wet forest."
+(assert (Climate-Zone Warm-temperate-rain-forest)) :documentation "Warm temperate rain forest."
+(assert (Climate-Zone Subtropical-desert)) :documentation "Subtropical desert."
+(assert (Climate-Zone Subtropical-desert-scrub)) :documentation "Subtropical desert scrub."
+(assert (Climate-Zone Subtropical-thorn-woodland)) :documentation "Subtropical thorn woodland."
+(assert (Climate-Zone Subtropical-dry-forest)) :documentation "Subtropical dry forest."
+(assert (Climate-Zone Subtropical-moist-forest)) :documentation "Subtropical moist forest."
+(assert (Climate-Zone Subtropical-wet-forest)) :documentation "Subtropical wet forest."
+(assert (Climate-Zone Subtropical-rain-forest)) :documentation "Subtropical rain forest."
+(assert (Climate-Zone Tropical-desert)) :documentation "Tropical desert."
+(assert (Climate-Zone Tropical-desert-scrub)) :documentation "Tropical desert scrub."
+(assert (Climate-Zone Tropical-thorn-woodland)) :documentation "Tropical thorn woodland."
+(assert (Climate-Zone Tropical-very-dry-forest)) :documentation "Tropical very dry forest."
+(assert (Climate-Zone Tropical-dry-forest)) :documentation "Tropical dry forest."
+(assert (Climate-Zone Tropical-moist-forest)) :documentation "Tropical moist forest."
+(assert (Climate-Zone Tropical-wet-forest)) :documentation "Tropical wet forest."
+(assert (Climate-Zone Tropical-rain-forest)) :documentation "Tropical rain forest."
+
 (defconcept BlockType (?type)
   :documentation "Tile type.")
 

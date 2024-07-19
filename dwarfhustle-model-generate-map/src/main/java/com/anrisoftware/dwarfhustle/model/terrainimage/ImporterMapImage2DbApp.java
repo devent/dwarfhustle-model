@@ -192,8 +192,9 @@ public class ImporterMapImage2DbApp {
 
     private static CompletionStage<ActorRef<Message>> createKnowledgeCache(Injector injector, ActorSystemProvider actor,
             ActorRef<Message> powerLoom) {
-        return KnowledgeJcsCacheActor.create(injector, ofSeconds(10),
-                actor.getObjectGetterAsync(PowerLoomKnowledgeActor.ID), ObjectsSetter.EMPTY).whenComplete((ret, ex) -> {
+        return KnowledgeJcsCacheActor
+                .create(injector, ofSeconds(10), actor.getObjectGetterAsync(PowerLoomKnowledgeActor.ID))
+                .whenComplete((ret, ex) -> {
                     if (ex != null) {
                         log.error("KnowledgeJcsCacheActor.create", ex);
                     } else {

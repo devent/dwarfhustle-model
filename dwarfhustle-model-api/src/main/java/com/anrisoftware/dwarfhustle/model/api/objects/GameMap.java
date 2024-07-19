@@ -119,6 +119,8 @@ public class GameMap extends GameObject implements StoredObject {
 
     public float[] sunPos = new float[3];
 
+    public int climateZone;
+
     public GameMap(long id) {
         super(id);
     }

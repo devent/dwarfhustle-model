@@ -18,6 +18,12 @@
 (reset-features)
 
 (assert (DWARFHUSTLE-OBJECTS-VEGETATION/Tree Pine)) :documentation "Pinus nigra, black pine."
+(assert (growing-climate Pine Boreal-dry-scrub))
+(assert (growing-climate Pine Boreal-moist-forest))
+(assert (growing-climate Pine Boreal-wet-forest))
+(assert (growing-climate Pine Boreal-rain-forest))
+(assert (growing-climate Pine Cool-temperate-moist-forest))
+(assert (growing-climate Pine Subtropical-moist-forest))
 (assert (DWARFHUSTLE-OBJECTS-VEGETATION/Tree-Root Pine-Root)) :documentation "Pinus nigra, black pine."
 (assert (DWARFHUSTLE-OBJECTS-VEGETATION/Tree-Trunk Pine-Trunk)) :documentation "Pinus nigra, black pine."
 (assert (DWARFHUSTLE-OBJECTS-VEGETATION/Tree-Branch Pine-Branch)) :documentation "Pinus nigra, black pine."
