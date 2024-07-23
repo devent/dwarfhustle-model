@@ -41,6 +41,15 @@ class PowerLoomKnowledgeTest {
 
     @ParameterizedTest
     @ValueSource(strings = [
+        "all (growing-climate Wheat ?x)",
+    ])
+    @Timeout(10l)
+    void "retrieve wheat growing-climate"(String retrieve) {
+        PowerLoomUtils.printPowerLoomRetrieve(retrieve, WORK_MODULE)
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = [
         "(= (neighbor block-filled dir-n block-filled) block-visible)",
         "(= (neighbor block-filled dir-n block-mined) block-ramp)",
     ])

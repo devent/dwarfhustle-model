@@ -15,7 +15,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api.vegetations;
+package com.anrisoftware.dwarfhustle.model.api.map;
+
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -23,31 +25,32 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
- * Cereal grasses, bamboos, the grasses of natural grassland and species
- * cultivated in lawns and pasture.
+ * Climate zone.
  */
 @NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @Data
-public class KnowledgeGrass extends KnowledgeVegetation {
+public class ClimateZone extends KnowledgeObject {
 
-    public static final int OBJECT_TYPE = KnowledgeGrass.class.getSimpleName().hashCode();
+    public static final int OBJECT_TYPE = ClimateZone.class.getSimpleName().hashCode();
 
-    public static final String TYPE = "Grass";
+    public static final String TYPE = "Climate-Zone";
 
-    public KnowledgeGrass(int kid) {
+    public String name;
+
+    public ClimateZone(int kid) {
         super(kid);
     }
 
     @Override
     public int getObjectType() {
-        return KnowledgeGrass.OBJECT_TYPE;
+        return ClimateZone.OBJECT_TYPE;
     }
 
     @Override
     public String getKnowledgeType() {
-        return KnowledgeGrass.TYPE;
+        return ClimateZone.TYPE;
     }
 
 }

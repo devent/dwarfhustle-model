@@ -53,6 +53,9 @@
 (defconcept Tree (?v Vegetation))
   :documentation "Plant with an elongated stem, or trunk, usually supporting branches and leaves."
 
+(defconcept Tree-Sampling (?t Tree))
+  :documentation "Tree sampling."
+
 (defconcept Tree-Root (?t Tree))
   :documentation "Root of the tree."
 

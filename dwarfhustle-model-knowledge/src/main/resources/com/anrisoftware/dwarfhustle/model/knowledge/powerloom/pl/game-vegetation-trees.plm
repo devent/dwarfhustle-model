@@ -8,7 +8,7 @@
 (defmodule "DWARFHUSTLE-VEGETATION-TREES"
   :documentation "Plant with an elongated stem, or trunk, usually supporting branches and leaves."
   :includes ("PL-USER")
-  :uses ("LOGIC" "STELLA" "DWARFHUSTLE-GAME-MAP" "DWARFHUSTLE-OBJECTS-VEGETATION" "DWARFHUSTLE-MATERIALS-CLAYS" "DWARFHUSTLE-MATERIALS-TOPSOILS" "DWARFHUSTLE-MATERIALS-SEABEDS")
+  :uses ("LOGIC" "STELLA" "DWARFHUSTLE-GAME-MAP" "DWARFHUSTLE-OBJECTS-VEGETATION" "DWARFHUSTLE-MATERIALS" "DWARFHUSTLE-MATERIALS-CLAYS" "DWARFHUSTLE-MATERIALS-TOPSOILS")
   )
 
 (in-module "DWARFHUSTLE-VEGETATION-TREES")
@@ -17,39 +17,38 @@
 (clear-module "DWARFHUSTLE-VEGETATION-TREES")
 (reset-features)
 
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/Tree Pine)) :documentation "Pinus nigra, black pine."
+(assert (Tree Pine)) :documentation "Pinus nigra, black pine."
 (assert (growing-climate Pine Boreal-dry-scrub))
 (assert (growing-climate Pine Boreal-moist-forest))
 (assert (growing-climate Pine Boreal-wet-forest))
 (assert (growing-climate Pine Boreal-rain-forest))
 (assert (growing-climate Pine Cool-temperate-moist-forest))
 (assert (growing-climate Pine Subtropical-moist-forest))
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/Tree-Root Pine-Root)) :documentation "Pinus nigra, black pine."
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/Tree-Trunk Pine-Trunk)) :documentation "Pinus nigra, black pine."
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/Tree-Branch Pine-Branch)) :documentation "Pinus nigra, black pine."
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/Tree-Twig Pine-Twig)) :documentation "Pinus nigra, black pine."
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/Tree-Leaf Pine-Leaf)) :documentation "Pinus nigra, black pine."
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-season Pine Winter))
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-season Pine Spring))
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-season Pine Summer))
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-season Pine Autumn))
-(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-speed Pine) 0.2739))
-(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-min-temp Pine) 10))
-(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-max-temp Pine) 50))
-(assert (= (DWARFHUSTLE-OBJECTS-VEGETATION/growing-opt-temp Pine) 15))
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-CLAYS/Clay))
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-CLAYS/Clay-Loam))
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-CLAYS/Sandy-Clay))
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-CLAYS/Silty-Clay))
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-CLAYS/Fire-Clay))
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-TOPSOILS/Loam))
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-TOPSOILS/Loam))
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-TOPSOILS/Loamy-Sand))
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-TOPSOILS/Peat))
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-TOPSOILS/Sandy-Clay-Loam))
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-TOPSOILS/Silt))
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-TOPSOILS/Silty-Clay-Loam))
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-TOPSOILS/Silt-Loam))
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-SEABEDS/Pelagic-Clay))
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-SEABEDS/Siliceous-Ooze))
-(assert (DWARFHUSTLE-OBJECTS-VEGETATION/growing-soil Pine DWARFHUSTLE-MATERIALS-SEABEDS/Calcareous-Ooze))
+(assert (Tree-Sampling Pine-Sampling)) :documentation "Pinus nigra, black pine."
+(assert (Tree-Root Pine-Root)) :documentation "Pinus nigra, black pine."
+(assert (Tree-Root Pine-Root)) :documentation "Pinus nigra, black pine."
+(assert (Tree-Trunk Pine-Trunk)) :documentation "Pinus nigra, black pine."
+(assert (Tree-Branch Pine-Branch)) :documentation "Pinus nigra, black pine."
+(assert (Tree-Twig Pine-Twig)) :documentation "Pinus nigra, black pine."
+(assert (Tree-Leaf Pine-Leaf)) :documentation "Pinus nigra, black pine."
+(assert (growing-season Pine Winter))
+(assert (growing-season Pine Spring))
+(assert (growing-season Pine Summer))
+(assert (growing-season Pine Autumn))
+(assert (= (growing-speed Pine) 0.2739))
+(assert (= (growing-min-temp Pine) 10))
+(assert (= (growing-max-temp Pine) 50))
+(assert (= (growing-opt-temp Pine) 15))
+(assert (growing-soil Pine Clay))
+(assert (growing-soil Pine Clay-Loam))
+(assert (growing-soil Pine Sandy-Clay))
+(assert (growing-soil Pine Silty-Clay))
+(assert (growing-soil Pine Fire-Clay))
+(assert (growing-soil Pine Loam))
+(assert (growing-soil Pine Loamy-Sand))
+(assert (growing-soil Pine Peat))
+(assert (growing-soil Pine Sandy-Clay-Loam))
+(assert (growing-soil Pine Sandy-Loam))
+(assert (growing-soil Pine Silt))
+(assert (growing-soil Pine Silty-Clay-Loam))
+(assert (growing-soil Pine Silt-Loam))

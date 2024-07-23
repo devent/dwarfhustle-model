@@ -19,16 +19,24 @@ package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl
 
 import java.util.stream.StreamSupport
 
+import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
+import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseErrorMessage
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseSuccessMessage
+
+import akka.actor.typed.javadsl.Behaviors
 import edu.isi.powerloom.Environment
 import edu.isi.powerloom.PLI;
 import edu.isi.powerloom.PlIterator
 import edu.isi.powerloom.logic.TruthValue
+import groovy.util.logging.Slf4j
 
 /**
  * Utils to query PowerLoom.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
+@Slf4j
 class PowerLoomUtils {
 
     static void printPowerLoomRetrieve(String query, String module, Environment env = null) {
@@ -49,5 +57,46 @@ class PowerLoomUtils {
 
     static void printSeparator() {
         println "-----------------------------------------"
+    }
+
+    private static class WrappedKnowledgeResponse extends Message {
+        KnowledgeResponseMessage response
+        WrappedKnowledgeResponse(KnowledgeResponseMessage response) {
+            this.response = response
+        }
+    }
+
+    static def spawnListKnowledgeActor(ActorSystemProvider actor, def successCallback) {
+        def knowledgeResponseAdapter
+        def listKnowledge = actor.spawn(Behaviors.setup({ context ->
+            knowledgeResponseAdapter = context.messageAdapter(KnowledgeResponseMessage.class, {
+                new WrappedKnowledgeResponse(it)
+            });
+            return Behaviors.receive(Message.class)//
+                    .onMessage(WrappedKnowledgeResponse.class, {
+                        switch (it.response) {
+                            case KnowledgeResponseSuccessMessage:
+                                successCallback(it)
+                                break
+                            case KnowledgeResponseErrorMessage:
+                                log.error("KnowledgeResponseErrorMessage", it.response.error)
+                                break
+                        }
+                        Behaviors.same()
+                    })//
+                    .build()
+        }), "listKnowledge")
+        println listKnowledge
+        while (knowledgeResponseAdapter == null) {
+            Thread.sleep(10)
+        }
+        println knowledgeResponseAdapter
+        while (listKnowledge == null) {
+            Thread.sleep(10)
+        }
+        return [
+            listKnowledge,
+            knowledgeResponseAdapter,
+        ]
     }
 }

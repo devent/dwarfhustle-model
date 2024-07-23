@@ -67,13 +67,14 @@ class ImporterMapImage2DbAppTest {
         def mapProperties = new Properties()
         mapProperties.setProperty("world_name", "The Central World")
         mapProperties.setProperty("map_name", "Fierybringer Castle")
-        args << of(TerrainImage.terrain_4_4_4_2, mapProperties)
+        mapProperties.setProperty("map_climate_zone", "Cool-temperate-moist-forest")
+        //        args << of(TerrainImage.terrain_4_4_4_2, mapProperties)
         //        args << of(TerrainImage.terrain_8_8_8_4, mapProperties)
         //        args << of(TerrainImage.terrain_32_32_32_4, mapProperties)
         //        args << of(TerrainImage.terrain_32_32_32_8, mapProperties)
         //        args << of(TerrainImage.terrain_512_512_128_16, mapProperties)
         //        args << of(TerrainImage.terrain_512_512_128_32, mapProperties)
-        //        args << of(TerrainImage.terrain_512_512_128_64, mapProperties)
+        args << of(TerrainImage.terrain_512_512_128_64, mapProperties)
         Stream.of(args as Object[])
     }
 

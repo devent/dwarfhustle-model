@@ -22,7 +22,7 @@ package com.anrisoftware.dwarfhustle.model.api.vegetations;
  */
 public class KnowledgeTreeBranch extends KnowledgeTree {
 
-    public static final int OBJECT_TYPE = KnowledgeTree.class.getSimpleName().hashCode();
+    public static final int OBJECT_TYPE = KnowledgeTreeBranch.class.getSimpleName().hashCode();
 
     public static final String TYPE = "Tree-Branch";
 

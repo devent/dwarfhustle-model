@@ -17,43 +17,37 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
-import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.GameObjectKnowledge.retrieveFloat;
-
-import com.anrisoftware.dwarfhustle.model.api.materials.BlockMaterial;
+import com.anrisoftware.dwarfhustle.model.api.map.ClimateZone;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.google.auto.service.AutoService;
 
 import edu.isi.powerloom.logic.LogicObject;
 
 /**
- * Storage for {@link BlockMaterial}.
+ * Climate zone where the plant grows.
  *
- * @see BlockMaterial
+ * @see ClimateZone
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @AutoService(GameObjectKnowledge.class)
-public class MaterialStorage extends AbstractStorage {
+public class ClimateZoneStorage extends AbstractStorage {
 
     @Override
     public String getType() {
-        return BlockMaterial.TYPE;
+        return ClimateZone.TYPE;
+    }
+
+    @Override
+    public KnowledgeObject create() {
+        return new ClimateZone();
     }
 
     @Override
     public KnowledgeObject retrieve(Object o, KnowledgeObject go) {
         super.retrieve(o, go);
         var next = (LogicObject) o;
-        var m = (BlockMaterial) go;
+        var m = (ClimateZone) go;
         m.setName(next.surrogateValueInverse.symbolName);
-        m.setMeltingPoint(retrieveFloat("melting-point-material", m.getName()));
-        m.setDensity(retrieveFloat("density-of-material", m.getName()));
-        m.setSpecificHeatCapacity(retrieveFloat("specific-heat-capacity-of-material", m.getName()));
-        m.setThermalConductivity(retrieveFloat("thermal-conductivity-of-material", m.getName()));
-        return m;
-    }
-
-    @Override
-    public KnowledgeObject create() {
-        return new BlockMaterial();
+        return go;
     }
 }

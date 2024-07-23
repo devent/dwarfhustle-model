@@ -17,43 +17,33 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
-import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.GameObjectKnowledge.retrieveFloat;
+import org.eclipse.collections.api.factory.primitive.IntSets;
 
-import com.anrisoftware.dwarfhustle.model.api.materials.BlockMaterial;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
-import com.google.auto.service.AutoService;
+import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeVegetation;
 
 import edu.isi.powerloom.logic.LogicObject;
 
 /**
- * Storage for {@link BlockMaterial}.
+ * Grasses, shrubs, trees.
  *
- * @see BlockMaterial
+ * @see KnowledgeVegetation
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@AutoService(GameObjectKnowledge.class)
-public class MaterialStorage extends AbstractStorage {
+public abstract class VegetationStorage extends AbstractStorage {
 
     @Override
     public String getType() {
-        return BlockMaterial.TYPE;
+        return KnowledgeVegetation.TYPE;
     }
 
     @Override
     public KnowledgeObject retrieve(Object o, KnowledgeObject go) {
         super.retrieve(o, go);
         var next = (LogicObject) o;
-        var m = (BlockMaterial) go;
+        var m = (KnowledgeVegetation) go;
         m.setName(next.surrogateValueInverse.symbolName);
-        m.setMeltingPoint(retrieveFloat("melting-point-material", m.getName()));
-        m.setDensity(retrieveFloat("density-of-material", m.getName()));
-        m.setSpecificHeatCapacity(retrieveFloat("specific-heat-capacity-of-material", m.getName()));
-        m.setThermalConductivity(retrieveFloat("thermal-conductivity-of-material", m.getName()));
-        return m;
-    }
-
-    @Override
-    public KnowledgeObject create() {
-        return new BlockMaterial();
+        m.growingSeason = GameObjectKnowledge.retrieveIntSet("growing-climate", m.getName(), IntSets.mutable.empty());
+        return go;
     }
 }

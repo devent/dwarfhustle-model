@@ -17,6 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl
 
+import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomUtils.spawnListKnowledgeActor
 import static java.time.Duration.ofSeconds
 import static java.util.Locale.ENGLISH
 import static java.util.concurrent.CompletableFuture.supplyAsync
@@ -31,6 +32,7 @@ import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
 import com.anrisoftware.dwarfhustle.model.actor.DwarfhustleModelActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.api.map.BlockType
+import com.anrisoftware.dwarfhustle.model.api.map.ClimateZone
 import com.anrisoftware.dwarfhustle.model.api.map.FloorType
 import com.anrisoftware.dwarfhustle.model.api.map.LightType
 import com.anrisoftware.dwarfhustle.model.api.map.ObjectType
@@ -48,13 +50,10 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Soil
 import com.anrisoftware.dwarfhustle.model.api.materials.Stone
 import com.anrisoftware.dwarfhustle.model.api.materials.Topsoil
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseErrorMessage
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseSuccessMessage
 import com.google.inject.Guice
 import com.google.inject.Injector
 
 import akka.actor.typed.ActorRef
-import akka.actor.typed.javadsl.Behaviors
 import groovy.util.logging.Slf4j
 
 /**
@@ -89,44 +88,18 @@ class ListKnowledges {
         actor.shutdownWait()
     }
 
-    private static class WrappedKnowledgeResponse extends Message {
-        KnowledgeResponseMessage response
-        WrappedKnowledgeResponse(KnowledgeResponseMessage response) {
-            this.response = response
-        }
-    }
-
     @Test
     @Timeout(20l)
     void "list knowledge top level"() {
         def ko = []
-        def knowledgeResponseAdapter
-        def listKnowledge = actor.spawn(Behaviors.setup({ context ->
-            knowledgeResponseAdapter = context.messageAdapter(KnowledgeResponseMessage.class, { new WrappedKnowledgeResponse(it) });
-            return Behaviors.receive(Message.class)//
-                    .onMessage(WrappedKnowledgeResponse.class, {
-                        switch (it.response) {
-                            case KnowledgeResponseSuccessMessage:
-                                println it.response.go.type
-                                it.response.go.objects.each {
-                                    println "${it.name},${it.kid}"
-                                    ko << it
-                                }
-                                break
-                            case KnowledgeResponseErrorMessage:
-                                log.error("KnowledgeResponseErrorMessage", it.response.error)
-                                break
-                        }
-                        Behaviors.same()
-                    })//
-                    .build()
-        }), "listKnowledge")
-        while (knowledgeResponseAdapter == null) {
-            Thread.sleep(10)
-        }
-        while (listKnowledge == null) {
-            Thread.sleep(10)
-        }
+        def ret = spawnListKnowledgeActor(actor, {
+            println it.response.go.type
+            it.response.go.objects.each {
+                println "${it.name},${it.kid}"
+                ko << it
+            }
+        })
+        def knowledgeResponseAdapter = ret[1]
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Stone.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Soil.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Gas.TYPE))
@@ -143,49 +116,30 @@ class ListKnowledges {
     @Timeout(20l)
     void "print model-map"() {
         def ko = []
-        def knowledgeResponseAdapter
-        def listKnowledge = actor.spawn(Behaviors.setup({ context ->
-            knowledgeResponseAdapter = context.messageAdapter(KnowledgeResponseMessage.class, { new WrappedKnowledgeResponse(it) });
-            return Behaviors.receive(Message.class)//
-                    .onMessage(WrappedKnowledgeResponse.class, {
-                        switch (it.response) {
-                            case KnowledgeResponseSuccessMessage:
-                                println "rid = [:]"
-                                println "\n// ${it.response.go.type}"
-                                it.response.go.objects.each {
-                                    println "rid[\"${it.name}\"] = ${it.kid}"
-                                    ko << it
-                                }
-                                println "\nm = new ModelMap()\n"
-                                it.response.go.objects.each { o ->
-                                    def name = o.name.toLowerCase(ENGLISH)
-                                    name = RegExUtils.removeAll(name, /-n$/)
-                                    name = RegExUtils.removeAll(name, /-e$/)
-                                    name = RegExUtils.removeAll(name, /-s$/)
-                                    name = RegExUtils.removeAll(name, /-w$/)
-                                    name = RegExUtils.removeAll(name, /-ne$/)
-                                    name = RegExUtils.removeAll(name, /-nw$/)
-                                    name = RegExUtils.removeAll(name, /-se$/)
-                                    name = RegExUtils.removeAll(name, /-sw$/)
-                                    name = RegExUtils.replaceAll(name, /tile-(?!block)/, "block-")
-                                    println "m[rid[\"${o.name}\"]] = [model: \"Models/${name}/${name}.j3o\"]"
-                                }
-                                println "\nm"
-                                break
-                            case KnowledgeResponseErrorMessage:
-                                log.error("KnowledgeResponseErrorMessage", it.response.error)
-                                break
-                        }
-                        Behaviors.same()
-                    })//
-                    .build()
-        }), "listKnowledge")
-        while (knowledgeResponseAdapter == null) {
-            Thread.sleep(10)
-        }
-        while (listKnowledge == null) {
-            Thread.sleep(10)
-        }
+        def ret = spawnListKnowledgeActor(actor, {
+            println "rid = [:]"
+            println "\n// ${it.response.go.type}"
+            it.response.go.objects.each {
+                println "rid[\"${it.name}\"] = ${it.kid}"
+                ko << it
+            }
+            println "\nm = new ModelMap()\n"
+            it.response.go.objects.each { o ->
+                def name = o.name.toLowerCase(ENGLISH)
+                name = RegExUtils.removeAll(name, /-n$/)
+                name = RegExUtils.removeAll(name, /-e$/)
+                name = RegExUtils.removeAll(name, /-s$/)
+                name = RegExUtils.removeAll(name, /-w$/)
+                name = RegExUtils.removeAll(name, /-ne$/)
+                name = RegExUtils.removeAll(name, /-nw$/)
+                name = RegExUtils.removeAll(name, /-se$/)
+                name = RegExUtils.removeAll(name, /-sw$/)
+                name = RegExUtils.replaceAll(name, /tile-(?!block)/, "block-")
+                println "m[rid[\"${o.name}\"]] = [model: \"Models/${name}/${name}.j3o\"]"
+            }
+            println "\nm"
+        })
+        def knowledgeResponseAdapter = ret[1]
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ObjectType.TYPE))
         while (ko.size() != 37) {
             log.info("Knowledge objects loaded {}", ko.size())
@@ -197,30 +151,11 @@ class ListKnowledges {
     @Timeout(20l)
     void "print texture-map"() {
         def ko = [:]
-        def knowledgeResponseAdapter
         println "rid = [:]"
-        def listKnowledge = actor.spawn(Behaviors.setup({ context ->
-            knowledgeResponseAdapter = context.messageAdapter(KnowledgeResponseMessage.class, { new WrappedKnowledgeResponse(it) });
-            return Behaviors.receive(Message.class)//
-                    .onMessage(WrappedKnowledgeResponse.class, {
-                        switch (it.response) {
-                            case KnowledgeResponseSuccessMessage:
-                                ko["${it.response.go.type}"] = it.response.go.objects
-                                break
-                            case KnowledgeResponseErrorMessage:
-                                log.error("KnowledgeResponseErrorMessage", it.response.error)
-                                break
-                        }
-                        Behaviors.same()
-                    })//
-                    .build()
-        }), "listKnowledge")
-        while (knowledgeResponseAdapter == null) {
-            Thread.sleep(10)
-        }
-        while (listKnowledge == null) {
-            Thread.sleep(10)
-        }
+        def ret = spawnListKnowledgeActor(actor, {
+            ko["${it.response.go.type}"] = it.response.go.objects
+        })
+        def knowledgeResponseAdapter = ret[1]
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Clay.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Gas.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, IgneousExtrusive.TYPE))
@@ -247,33 +182,14 @@ class ListKnowledges {
     @Timeout(20l)
     void "list knowledge low level"() {
         def ko = []
-        def knowledgeResponseAdapter
-        def listKnowledge = actor.spawn(Behaviors.setup({ context ->
-            knowledgeResponseAdapter = context.messageAdapter(KnowledgeResponseMessage.class, { new WrappedKnowledgeResponse(it) });
-            return Behaviors.receive(Message.class)//
-                    .onMessage(WrappedKnowledgeResponse.class, {
-                        switch (it.response) {
-                            case KnowledgeResponseSuccessMessage:
-                                println "## ${it.response.go.type}"
-                                it.response.go.objects.each {
-                                    println "${it.name},${it.kid}"
-                                    ko << it
-                                }
-                                break
-                            case KnowledgeResponseErrorMessage:
-                                log.error("KnowledgeResponseErrorMessage", it.response.error)
-                                break
-                        }
-                        Behaviors.same()
-                    })//
-                    .build()
-        }), "listKnowledge")
-        while (knowledgeResponseAdapter == null) {
-            Thread.sleep(10)
-        }
-        while (listKnowledge == null) {
-            Thread.sleep(10)
-        }
+        def ret = spawnListKnowledgeActor(actor, {
+            println "## ${it.response.go.type}"
+            it.response.go.objects.each {
+                println "${it.name},${it.kid}"
+                ko << it
+            }
+        })
+        def knowledgeResponseAdapter = ret[1]
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Clay.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Gas.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, IgneousExtrusive.TYPE))
@@ -290,6 +206,25 @@ class ListKnowledges {
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ObjectType.TYPE))
         while (ko.size() != 107) {
+            log.info("Knowledge objects loaded {}", ko.size())
+            Thread.sleep(500)
+        }
+    }
+
+    @Test
+    @Timeout(20l)
+    void "list climate zones"() {
+        def ko = []
+        def ret = spawnListKnowledgeActor(actor, {
+            println "## ${it.response.go.type}"
+            it.response.go.objects.each {
+                println "${it.name},${it.kid}"
+                ko << it
+            }
+        })
+        def knowledgeResponseAdapter = ret[1]
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ClimateZone.TYPE))
+        while (ko.size() != 38) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
         }

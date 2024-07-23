@@ -75,6 +75,11 @@ public class KnowledgeVegetation extends ObjectType {
      */
     public IntSet floweringMonths;
 
+    /**
+     * Climate zone(s) where the plant grows.
+     */
+    public IntSet growingClimate;
+
     public KnowledgeVegetation(int kid) {
         super(kid);
     }

@@ -31,7 +31,7 @@ import lombok.ToString;
 @Data
 public class KnowledgeShrub extends KnowledgeVegetation {
 
-    public static final int OBJECT_TYPE = KnowledgeTree.class.getSimpleName().hashCode();
+    public static final int OBJECT_TYPE = KnowledgeShrub.class.getSimpleName().hashCode();
 
     public static final String TYPE = "Shrub";
 
