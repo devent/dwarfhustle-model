@@ -17,6 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.materials;
 
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 
 import lombok.EqualsAndHashCode;
@@ -63,5 +64,10 @@ public class BlockMaterial extends KnowledgeObject {
     @Override
     public String getKnowledgeType() {
         return BlockMaterial.TYPE;
+    }
+
+    @Override
+    public GameObject createObject(byte[] id) {
+        return null;
     }
 }

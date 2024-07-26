@@ -68,4 +68,10 @@ public abstract class KnowledgeObject extends GameObject {
      * Type in the knowledge space.
      */
     public abstract String getKnowledgeType();
+
+    /**
+     * Creates the {@link GameObject} for this {@link KnowledgeObject}.
+     */
+    public abstract GameObject createObject(byte[] id);
+
 }

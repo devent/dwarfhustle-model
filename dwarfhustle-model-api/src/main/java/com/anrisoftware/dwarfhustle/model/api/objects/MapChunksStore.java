@@ -124,7 +124,7 @@ public class MapChunksStore {
         chunksCache.put(chunk.cid, chunk);
     }
 
-    private int getChunkSize(MapChunk chunk) {
+    private synchronized int getChunkSize(MapChunk chunk) {
         if (chunk.isLeaf()) {
             int size = MapChunkBuffer.SIZE_LEAF_MIN;
             size += chunk.getBlocksBuffer().capacity();
@@ -134,14 +134,14 @@ public class MapChunksStore {
         }
     }
 
-    public MapChunk getChunk(int cid) {
+    public synchronized MapChunk getChunk(int cid) {
         return chunksCache.get(cid);
     }
 
     /**
      * Finds the {@link MapChunk} with the {@link GameChunkPos}.
      */
-    public Optional<MapChunk> findChunk(GameChunkPos pos) {
+    public synchronized Optional<MapChunk> findChunk(GameChunkPos pos) {
         for (var chunk : getChunks()) {
             if (chunk.pos.equals(pos)) {
                 return Optional.of(chunk);
@@ -154,7 +154,7 @@ public class MapChunksStore {
      * Finds the {@link MapChunk} and {@link MapBlock} with the
      * {@link GameBlockPos}.
      */
-    public Optional<Pair<MapChunk, MapBlock>> findBlock(GameBlockPos pos) {
+    public synchronized Optional<Pair<MapChunk, MapBlock>> findBlock(GameBlockPos pos) {
         if (pos.isNegative()) {
             return Optional.empty();
         }
@@ -170,7 +170,7 @@ public class MapChunksStore {
      * Finds the {@link MapChunk} and {@link MapBlock} with the
      * {@link GameBlockPos}.
      */
-    public Optional<Pair<MapChunk, MapBlock>> findBlock(MapChunk chunk, GameBlockPos pos) {
+    public synchronized Optional<Pair<MapChunk, MapBlock>> findBlock(MapChunk chunk, GameBlockPos pos) {
         for (var chunks : chunk.getChunks().keyValuesView()) {
             if (chunks.getTwo().contains(pos)) {
                 return findBlock(getChunk(chunks.getOne()), pos);
@@ -184,14 +184,14 @@ public class MapChunksStore {
      * necessarily the same as the order the chunks were set.
      */
     public void forEachValue(Consumer<MapChunk> consumer) {
-        chunksCache.forEach(consumer);
+        chunksCache.asSynchronized().forEach(consumer);
     }
 
     /**
      * Returns an {@link Iterable} over all {@link MapChunk}.
      */
     public Iterable<MapChunk> getChunks() {
-        return chunksCache.asLazy();
+        return chunksCache.asSynchronized().asLazy();
     }
 
     /**

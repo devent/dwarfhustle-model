@@ -35,7 +35,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-public class ObjectType extends KnowledgeObject {
+public abstract class ObjectType extends KnowledgeObject {
 
     public static final int OBJECT_TYPE = ObjectType.class.getSimpleName().hashCode();
 

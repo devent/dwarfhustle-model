@@ -17,6 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.vegetations;
 
+import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
 
 import lombok.Data;
@@ -42,4 +43,21 @@ public abstract class Vegetation extends GameMapObject {
      * Status of growth from 0.0 (seedling) to 1.0 (adult plant).
      */
     public float growth;
+
+    public Vegetation(long id) {
+        super(id);
+    }
+
+    public Vegetation(byte[] idbuf) {
+        super(idbuf);
+    }
+
+    public Vegetation(long id, GameBlockPos pos) {
+        super(id, pos);
+    }
+
+    public Vegetation(byte[] idbuf, GameBlockPos pos) {
+        super(idbuf, pos);
+    }
+
 }

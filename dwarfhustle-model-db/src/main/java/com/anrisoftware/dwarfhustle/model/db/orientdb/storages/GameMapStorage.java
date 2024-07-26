@@ -42,9 +42,9 @@ import static com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.GameMapSche
 
 import java.time.ZoneOffset;
 
+import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapArea;
-import com.anrisoftware.dwarfhustle.model.api.objects.MapCursor;
 import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.schemas.WorldMapSchema;
 import com.orientechnologies.orient.core.record.OElement;
@@ -103,7 +103,7 @@ public class GameMapStorage extends AbstractGameObjectStorage {
                 v.getProperty(CAMERA_POS_Z_FIELD));
         gm.setCameraRot(v.getProperty(CAMERA_ROT_X_FIELD), v.getProperty(CAMERA_ROT_Y_FIELD),
                 v.getProperty(CAMERA_ROT_Z_FIELD), v.getProperty(CAMERA_ROT_W_FIELD));
-        gm.setCursor(new MapCursor(v.getProperty(CURSOR_X_FIELD), v.getProperty(CURSOR_Y_FIELD),
+        gm.setCursor(new GameBlockPos(v.getProperty(CURSOR_X_FIELD), v.getProperty(CURSOR_Y_FIELD),
                 v.getProperty(CURSOR_Z_FIELD)));
         gm.chunksCount = v.getProperty(CHUNKS_COUNT_FIELD);
         gm.blocksCount = v.getProperty(BLOCKS_COUNT_FIELD);

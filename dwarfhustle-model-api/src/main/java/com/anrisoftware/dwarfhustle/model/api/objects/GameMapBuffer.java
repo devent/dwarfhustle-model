@@ -191,7 +191,7 @@ public class GameMapBuffer extends GameObjectBuffer {
         return r;
     }
 
-    public static void setCursor(MutableDirectBuffer b, int off, MapCursor c) {
+    public static void setCursor(MutableDirectBuffer b, int off, GameBlockPos c) {
         b.putShort(CURSOR_BYTES + off + 0 * 2, (short) c.x);
         b.putShort(CURSOR_BYTES + off + 1 * 2, (short) c.y);
         b.putShort(CURSOR_BYTES + off + 2 * 2, (short) c.z);
@@ -203,7 +203,7 @@ public class GameMapBuffer extends GameObjectBuffer {
         b.putShort(CURSOR_BYTES + off + 2 * 2, (short) z);
     }
 
-    public static MapCursor getCursor(DirectBuffer b, int off, MapCursor c) {
+    public static GameBlockPos getCursor(DirectBuffer b, int off, GameBlockPos c) {
         c.x = b.getShort(CURSOR_BYTES + off + 0 * 2);
         c.y = b.getShort(CURSOR_BYTES + off + 1 * 2);
         c.z = b.getShort(CURSOR_BYTES + off + 2 * 2);

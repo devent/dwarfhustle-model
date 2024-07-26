@@ -38,4 +38,9 @@ public class ShrubStorage extends VegetationStorage {
         super.retrieve(o, go);
         return go;
     }
+
+    @Override
+    public KnowledgeObject create() {
+        return new KnowledgeShrub();
+    }
 }

@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.vegetations;
 
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -47,6 +49,11 @@ public class KnowledgeShrub extends KnowledgeVegetation {
     @Override
     public String getKnowledgeType() {
         return KnowledgeShrub.TYPE;
+    }
+
+    @Override
+    public GameObject createObject(byte[] id) {
+        return new Shrub(id);
     }
 
 }

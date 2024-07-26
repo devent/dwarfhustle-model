@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.vegetations;
 
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -50,4 +52,8 @@ public class KnowledgeGrass extends KnowledgeVegetation {
         return KnowledgeGrass.TYPE;
     }
 
+    @Override
+    public GameObject createObject(byte[] id) {
+        return new Grass(id);
+    }
 }

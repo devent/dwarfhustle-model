@@ -1,5 +1,5 @@
 /*
- * dwarfhustle-model-api - Manages the compile dependencies for the model.
+ * dwarfhustle-model-knowledge - Manages the compile dependencies for the model.
  * Copyright © 2023 Erwin Müller (erwin.mueller@anrisoftware.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,35 +15,31 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api.objects;
+package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
-import java.io.Serializable;
+import com.anrisoftware.dwarfhustle.model.api.map.ObjectType;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import edu.isi.powerloom.logic.LogicObject;
 
 /**
- * Position of the map cursor.
  *
+ * @see ObjectType
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@ToString
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class MapCursor implements Serializable {
+public abstract class AbstractObjectTypeStorage implements GameObjectKnowledge {
 
-    private static final long serialVersionUID = 1L;
+    @Override
+    public String getType() {
+        return ObjectType.TYPE;
+    }
 
-    public int x;
-
-    public int y;
-
-    public int z;
-
-    public boolean equals(int z, int y, int x) {
-        return this.z == z && this.y == y && this.x == x;
+    @Override
+    public KnowledgeObject retrieve(Object o, KnowledgeObject go) {
+        var next = (LogicObject) o;
+        var ko = (ObjectType) go;
+        ko.setKid(next.surrogateValueInverse.symbolId);
+        ko.setName(next.surrogateValueInverse.symbolName);
+        return ko;
     }
 }

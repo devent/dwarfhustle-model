@@ -75,8 +75,9 @@ public class KnowledgeJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     public static Behavior<Message> create(Injector injector, AbstractJcsCacheActorFactory actorFactory,
-            CompletionStage<ObjectsGetter> og, CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
-        return AbstractJcsCacheActor.create(injector, actorFactory, og, ObjectsSetter.EMPTY, initCacheAsync);
+            CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
+        return AbstractJcsCacheActor.create(injector, actorFactory, ObjectsGetter.EMPTY, ObjectsSetter.EMPTY,
+                initCacheAsync);
     }
 
     /**
@@ -84,14 +85,12 @@ public class KnowledgeJcsCacheActor extends AbstractJcsCacheActor {
      *
      * @param injector the {@link Injector} injector.
      * @param timeout  the {@link Duration} timeout.
-     * @param og       the {@link ObjectsGetter} for {@link KnowledgeLoadedObject}
      */
-    public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout,
-            CompletionStage<ObjectsGetter> og) {
+    public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout) {
         var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
         var actorFactory = injector.getInstance(KnowledgeJcsCacheActorFactory.class);
         var initCache = createInitCacheAsync();
-        return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, actorFactory, og, initCache));
+        return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, actorFactory, initCache));
     }
 
     public static CompletableFuture<CacheAccess<Object, GameObject>> createInitCacheAsync() {

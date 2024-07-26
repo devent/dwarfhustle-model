@@ -33,7 +33,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @Data
-public class KnowledgeVegetation extends ObjectType {
+public abstract class KnowledgeVegetation extends ObjectType {
 
     public static final int OBJECT_TYPE = KnowledgeVegetation.class.getSimpleName().hashCode();
 

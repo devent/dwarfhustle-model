@@ -17,6 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.map;
 
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 
 import lombok.EqualsAndHashCode;
@@ -55,5 +56,10 @@ public class LightType extends KnowledgeObject {
     @Override
     public String getKnowledgeType() {
         return LightType.TYPE;
+    }
+
+    @Override
+    public GameObject createObject(byte[] id) {
+        return null;
     }
 }

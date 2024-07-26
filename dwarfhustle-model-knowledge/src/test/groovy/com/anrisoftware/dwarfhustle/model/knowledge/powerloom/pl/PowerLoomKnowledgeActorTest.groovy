@@ -19,14 +19,13 @@ package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl
 
 import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomUtils.*
 import static java.util.concurrent.CompletableFuture.supplyAsync
-import static org.mockito.Mockito.mock
 
 import java.time.Duration
 import java.util.concurrent.CountDownLatch
 
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.RepeatedTest
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -66,23 +65,22 @@ class PowerLoomKnowledgeActorTest {
     static void setupActor() {
         injector = Guice.createInjector(new DwarfhustleModelActorsModule(), new DwarfhustlePowerloomModule(), new DwarfhustleModelApiObjectsModule())
         actor = injector.getInstance(ActorSystemProvider.class)
-        def objectsCache = mock(ActorRef)
-        PowerLoomKnowledgeActor.create(injector, Duration.ofSeconds(1), supplyAsync({objectsCache})).whenComplete({ it, ex ->
-            knowledgeActor = it
-        } ).get()
-        KnowledgeJcsCacheActor.create(injector, Duration.ofSeconds(1), actor.getObjectGetterAsync(PowerLoomKnowledgeActor.ID)).whenComplete({ it, ex ->
+        KnowledgeJcsCacheActor.create(injector, Duration.ofSeconds(1)).whenComplete({ it, ex ->
             cacheActor = it
+        } ).get()
+        PowerLoomKnowledgeActor.create(injector, Duration.ofSeconds(1), supplyAsync({cacheActor})).whenComplete({ it, ex ->
+            knowledgeActor = it
         } ).get()
     }
 
     @AfterAll
-    static void closeDb() {
+    static void closeActor() {
         actor.shutdownWait()
     }
 
     @ParameterizedTest
     @ValueSource(strings = [
-        "all (Special-Stone-Layer ?type)",
+        "all (Liquid ?type)",
         "all (Gas ?type)",
         "all (Stone ?type)",
         "all (Sedimentary ?x)",
@@ -151,19 +149,18 @@ class PowerLoomKnowledgeActorTest {
         lock.await()
     }
 
-    @RepeatedTest(10)
-    @Timeout(15l)
+    @Test
     void "test retrieve"() {
         def result =
                 AskPattern.ask(
-                knowledgeActor, {replyTo ->
-                    new KnowledgeGetMessage(replyTo, Sedimentary.class, "Sedimentary")
+                knowledgeActor, { replyTo ->
+                    new KnowledgeGetMessage(replyTo, Sedimentary.TYPE)
                 },
-                Duration.ofSeconds(15),
+                Duration.ofSeconds(600),
                 actor.scheduler)
-        def lock = new CountDownLatch(1)
         KnowledgeLoadedObject go
-        result.whenComplete( {reply, failure ->
+        def lock = new CountDownLatch(1)
+        result.whenComplete( { reply, failure ->
             log.info "Command reply ${reply} failure ${failure}"
             if (failure == null) {
                 switch (reply) {

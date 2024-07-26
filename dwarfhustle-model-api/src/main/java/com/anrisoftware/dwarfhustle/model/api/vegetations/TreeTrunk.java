@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.vegetations;
 
+import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -32,6 +34,18 @@ import lombok.ToString;
 public class TreeTrunk extends Tree {
 
     public static final int OBJECT_TYPE = TreeTrunk.class.getSimpleName().hashCode();
+
+    public TreeTrunk(byte[] idbuf) {
+        super(idbuf);
+    }
+
+    public TreeTrunk(long id, GameBlockPos pos) {
+        super(id, pos);
+    }
+
+    public TreeTrunk(byte[] idbuf, GameBlockPos pos) {
+        super(idbuf, pos);
+    }
 
     @Override
     public int getObjectType() {

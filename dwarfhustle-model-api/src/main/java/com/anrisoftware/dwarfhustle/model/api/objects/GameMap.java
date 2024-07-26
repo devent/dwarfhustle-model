@@ -115,7 +115,7 @@ public class GameMap extends GameObject implements StoredObject {
 
     public float[] cameraRot = new float[4];
 
-    public MapCursor cursor = new MapCursor(0, 0, 0);
+    public GameBlockPos cursor = new GameBlockPos(0, 0, 0);
 
     public float[] sunPos = new float[3];
 
@@ -164,15 +164,15 @@ public class GameMap extends GameObject implements StoredObject {
     }
 
     public void setCursor(int x, int y, int z) {
-        this.cursor = new MapCursor(x, y, z);
+        this.cursor = new GameBlockPos(x, y, z);
     }
 
     public void addCursorZ(int dd) {
-        setCursor(new MapCursor(cursor.x, cursor.y, cursor.z + dd));
+        setCursor(new GameBlockPos(cursor.x, cursor.y, cursor.z + dd));
     }
 
     public boolean isCursor(int x, int y, int z) {
-        return cursor.equals(z, y, x);
+        return cursor.equals(x, y, z);
     }
 
     public int getCursorZ() {
@@ -180,7 +180,7 @@ public class GameMap extends GameObject implements StoredObject {
     }
 
     public void setCursorZ(int z) {
-        setCursor(new MapCursor(cursor.x, cursor.y, z));
+        setCursor(new GameBlockPos(cursor.x, cursor.y, z));
     }
 
     public void setSunPosition(float x, float y, float z) {

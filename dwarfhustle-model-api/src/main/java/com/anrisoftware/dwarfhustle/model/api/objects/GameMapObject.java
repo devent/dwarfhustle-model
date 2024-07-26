@@ -76,6 +76,10 @@ public abstract class GameMapObject extends GameObject {
         this.pos = pos;
     }
 
+    public void setPos(GameBlockPos pos) {
+        this.pos.set(pos);
+    }
+
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
         writeStream(out);

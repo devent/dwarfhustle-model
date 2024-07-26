@@ -30,7 +30,7 @@ import edu.isi.powerloom.logic.LogicObject;
  * @see KnowledgeVegetation
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-public abstract class VegetationStorage extends AbstractStorage {
+public abstract class VegetationStorage extends AbstractObjectTypeStorage {
 
     @Override
     public String getType() {

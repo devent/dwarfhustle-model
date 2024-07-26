@@ -17,6 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+
 /**
  * Returns {@link GameObject} game objects.
  *
@@ -41,6 +44,14 @@ public interface ObjectsGetter {
             super(message);
         }
     }
+
+    static CompletionStage<ObjectsGetter> EMPTY = CompletableFuture.supplyAsync(() -> new ObjectsGetter() {
+
+        @Override
+        public <T extends GameObject> T get(int type, Object key) throws ObjectsGetterException {
+            return null;
+        }
+    });
 
     /**
      * Returns the {@link GameObject}.

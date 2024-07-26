@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.vegetations;
 
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+
 /**
  * Branch of the tree.
  */
@@ -40,4 +42,8 @@ public class KnowledgeTreeBranch extends KnowledgeTree {
         return KnowledgeTreeBranch.TYPE;
     }
 
+    @Override
+    public GameObject createObject(byte[] id) {
+        return new TreeBranch(id);
+    }
 }

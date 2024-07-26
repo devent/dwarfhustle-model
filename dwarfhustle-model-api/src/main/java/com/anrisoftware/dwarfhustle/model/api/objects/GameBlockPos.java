@@ -178,4 +178,14 @@ public class GameBlockPos implements Externalizable, StreamStorage {
         this.z = in.readInt();
     }
 
+    public boolean equals(int x2, int y2, int z2) {
+        return this.x == x2 && this.y == y2 && this.z == z2;
+    }
+
+    public void set(GameBlockPos pos) {
+        this.x = pos.x;
+        this.y = pos.y;
+        this.z = pos.z;
+    }
+
 }
