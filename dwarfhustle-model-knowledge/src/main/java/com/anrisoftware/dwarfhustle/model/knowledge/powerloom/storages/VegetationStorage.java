@@ -17,6 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
+import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.PowerLoomUtils.retrieveFloat;
+import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.PowerLoomUtils.retrieveIntSet;
+
 import org.eclipse.collections.api.factory.primitive.IntSets;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
@@ -43,7 +46,14 @@ public abstract class VegetationStorage extends AbstractObjectTypeStorage {
         var next = (LogicObject) o;
         var m = (KnowledgeVegetation) go;
         m.setName(next.surrogateValueInverse.symbolName);
-        m.growingSeason = GameObjectKnowledge.retrieveIntSet("growing-climate", m.getName(), IntSets.mutable.empty());
+        m.growingSeason = retrieveIntSet("growing-season", m.getName(), IntSets.mutable.empty());
+        m.growingSpeed = retrieveFloat("growing-speed", m.getName());
+        m.growingMinTemp = retrieveFloat("growing-min-temp", m.getName());
+        m.growingMaxTemp = retrieveFloat("growing-max-temp", m.getName());
+        m.growingOptTemp = retrieveFloat("growing-opt-temp", m.getName());
+        m.growingSoil = retrieveIntSet("growing-soil", m.getName(), IntSets.mutable.empty());
+        m.floweringMonths = retrieveIntSet("flowering-months", m.getName(), IntSets.mutable.empty());
+        m.growingClimate = retrieveIntSet("growing-climate", m.getName(), IntSets.mutable.empty());
         return go;
     }
 }

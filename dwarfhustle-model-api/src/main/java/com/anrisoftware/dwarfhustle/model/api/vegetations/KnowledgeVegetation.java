@@ -47,7 +47,7 @@ public abstract class KnowledgeVegetation extends ObjectType {
     /**
      * Growing speed in units/day giving best conditions.
      */
-    public int growingSpeed;
+    public float growingSpeed;
 
     /**
      * Minimum temperature for the plant, below the plant will die.

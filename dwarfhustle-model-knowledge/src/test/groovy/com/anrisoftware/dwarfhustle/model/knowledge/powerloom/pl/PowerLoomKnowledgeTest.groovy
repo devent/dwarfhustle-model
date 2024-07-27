@@ -45,7 +45,7 @@ class PowerLoomKnowledgeTest {
     ])
     @Timeout(10l)
     void "retrieve wheat growing-climate"(String retrieve) {
-        PowerLoomUtils.printPowerLoomRetrieve(retrieve, WORK_MODULE)
+        PowerLoomTestUtils.printPowerLoomRetrieve(retrieve, WORK_MODULE)
     }
 
     @ParameterizedTest
@@ -55,6 +55,6 @@ class PowerLoomKnowledgeTest {
     ])
     @Timeout(10l)
     void "retrieve neighbor"(String retrieve) {
-        PowerLoomUtils.printPowerLoomAsk(retrieve, WORK_MODULE)
+        PowerLoomTestUtils.printPowerLoomAsk(retrieve, WORK_MODULE)
     }
 }

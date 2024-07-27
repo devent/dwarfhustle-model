@@ -17,7 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl
 
-import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomUtils.spawnListKnowledgeActor
+import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomTestUtils.spawnListKnowledgeActor
 import static java.time.Duration.ofSeconds
 import static java.util.Locale.ENGLISH
 import static java.util.concurrent.CompletableFuture.supplyAsync
@@ -27,6 +27,8 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
 import com.anrisoftware.dwarfhustle.model.actor.DwarfhustleModelActorsModule
@@ -75,7 +77,7 @@ class ListKnowledges {
     static void setupActor() {
         injector = Guice.createInjector(new DwarfhustleModelActorsModule(), new DwarfhustlePowerloomModule(), new DwarfhustleModelApiObjectsModule())
         actor = injector.getInstance(ActorSystemProvider.class)
-        KnowledgeJcsCacheActor.create(injector, ofSeconds(1), actor.getObjectGetterAsync(PowerLoomKnowledgeActor.ID)).whenComplete({ it, ex ->
+        KnowledgeJcsCacheActor.create(injector, ofSeconds(1)).whenComplete({ it, ex ->
             cacheActor = it
         } ).get()
         PowerLoomKnowledgeActor.create(injector, ofSeconds(1), supplyAsync({cacheActor})).whenComplete({ it, ex ->
@@ -211,9 +213,12 @@ class ListKnowledges {
         }
     }
 
-    @Test
+    @ParameterizedTest
+    @CsvSource([
+        "Climate-Zone,38",
+    ])
     @Timeout(20l)
-    void "list climate zones"() {
+    void "list knowledges"(String type, int size) {
         def ko = []
         def ret = spawnListKnowledgeActor(actor, {
             println "## ${it.response.go.type}"

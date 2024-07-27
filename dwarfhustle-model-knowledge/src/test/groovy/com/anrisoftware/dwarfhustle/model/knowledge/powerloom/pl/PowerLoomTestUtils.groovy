@@ -37,7 +37,7 @@ import groovy.util.logging.Slf4j
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
-class PowerLoomUtils {
+class PowerLoomTestUtils {
 
     static void printPowerLoomRetrieve(String query, String module, Environment env = null) {
         PlIterator answer = PLI.sRetrieve(query, module, env);

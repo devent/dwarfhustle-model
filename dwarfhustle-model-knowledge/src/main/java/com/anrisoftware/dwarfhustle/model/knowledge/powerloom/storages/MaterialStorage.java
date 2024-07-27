@@ -17,7 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
-import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.GameObjectKnowledge.retrieveFloat;
+import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.PowerLoomUtils.retrieveFloat;
 
 import com.anrisoftware.dwarfhustle.model.api.materials.BlockMaterial;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;

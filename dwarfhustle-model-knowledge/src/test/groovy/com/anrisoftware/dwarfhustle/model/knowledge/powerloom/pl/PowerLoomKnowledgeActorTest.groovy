@@ -17,7 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl
 
-import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomUtils.*
+import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomTestUtils.*
 import static java.util.concurrent.CompletableFuture.supplyAsync
 
 import java.time.Duration
@@ -25,15 +25,14 @@ import java.util.concurrent.CountDownLatch
 
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
 import com.anrisoftware.dwarfhustle.model.actor.DwarfhustleModelActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
-import com.anrisoftware.dwarfhustle.model.api.materials.Sedimentary
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandErrorMessage
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandSuccessMessage
@@ -91,7 +90,7 @@ class PowerLoomKnowledgeActorTest {
         "all (melting-point-material Something ?t)",
     ])
     @Timeout(10l)
-    void "test retrieve"(String retrieve) {
+    void "askKnowledgeCommand test retrieve"(String retrieve) {
         askKnowledgeCommandMessage({
             printPowerLoomRetrieve(retrieve, PowerLoomKnowledgeActor.WORKING_MODULE, null);
         })
@@ -149,12 +148,13 @@ class PowerLoomKnowledgeActorTest {
         lock.await()
     }
 
-    @Test
-    void "test retrieve"() {
+    @ParameterizedTest
+    @CsvSource(["Sedimentary,11", "Shrub,1"])
+    void "KnowledgeGetMessage test retrieve"(String type, int size) {
         def result =
                 AskPattern.ask(
                 knowledgeActor, { replyTo ->
-                    new KnowledgeGetMessage(replyTo, Sedimentary.TYPE)
+                    new KnowledgeGetMessage(replyTo, type)
                 },
                 Duration.ofSeconds(600),
                 actor.scheduler)
@@ -174,7 +174,7 @@ class PowerLoomKnowledgeActorTest {
             lock.countDown()
         })
         lock.await()
-        assert go.type == "Sedimentary"
-        assert go.objects.size() == 11
+        assert go.type == type
+        assert go.objects.size() == size
     }
 }
