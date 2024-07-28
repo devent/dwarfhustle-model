@@ -42,9 +42,10 @@ class PowerLoomKnowledgeTest {
     @ParameterizedTest
     @ValueSource(strings = [
         "all (growing-climate Wheat ?x)",
+        "all (BlockObject ?x)",
     ])
     @Timeout(10l)
-    void "retrieve wheat growing-climate"(String retrieve) {
+    void "retrieve knowledges"(String retrieve) {
         PowerLoomTestUtils.printPowerLoomRetrieve(retrieve, WORK_MODULE)
     }
 

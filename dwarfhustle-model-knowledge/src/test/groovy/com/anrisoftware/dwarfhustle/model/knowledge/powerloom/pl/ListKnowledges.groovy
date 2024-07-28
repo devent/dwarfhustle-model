@@ -33,6 +33,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
 import com.anrisoftware.dwarfhustle.model.actor.DwarfhustleModelActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
+import com.anrisoftware.dwarfhustle.model.api.map.BlockObject
 import com.anrisoftware.dwarfhustle.model.api.map.BlockType
 import com.anrisoftware.dwarfhustle.model.api.map.ClimateZone
 import com.anrisoftware.dwarfhustle.model.api.map.FloorType
@@ -52,6 +53,9 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Soil
 import com.anrisoftware.dwarfhustle.model.api.materials.Stone
 import com.anrisoftware.dwarfhustle.model.api.materials.Topsoil
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
+import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeGrass
+import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeShrub
+import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTree
 import com.google.inject.Guice
 import com.google.inject.Injector
 
@@ -107,8 +111,8 @@ class ListKnowledges {
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Gas.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Liquid.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockType.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ObjectType.TYPE))
-        while (ko.size() != 98) {
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockObject.TYPE))
+        while (ko.size() != 87) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
         }
@@ -117,17 +121,33 @@ class ListKnowledges {
     @Test
     @Timeout(20l)
     void "print model-map"() {
-        def ko = []
+        def komap = [:]
         def ret = spawnListKnowledgeActor(actor, {
-            println "rid = [:]"
-            println "\n// ${it.response.go.type}"
-            it.response.go.objects.each {
-                println "rid[\"${it.name}\"] = ${it.kid}"
-                ko << it
-            }
-            println "\nm = new ModelMap()\n"
+            komap[it.response.go.type] = []
             it.response.go.objects.each { o ->
-                def name = o.name.toLowerCase(ENGLISH)
+                komap[it.response.go.type] << o
+            }
+        })
+        def knowledgeResponseAdapter = ret[1]
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockObject.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTree.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeShrub.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeGrass.TYPE))
+        while (komap.size() != 4) {
+            log.info("Knowledge objects loaded {}", komap.size())
+            Thread.sleep(500)
+        }
+        println "rid = [:]"
+        komap.each { key, list ->
+            println "\n// ${key}"
+            list.each {
+                println "rid[\"${it.name}\"] = ${it.kid}"
+            }
+        }
+        println "\nm = new ModelMap()\n"
+        komap.each { key, list ->
+            list.each {
+                def name = it.name.toLowerCase(ENGLISH)
                 name = RegExUtils.removeAll(name, /-n$/)
                 name = RegExUtils.removeAll(name, /-e$/)
                 name = RegExUtils.removeAll(name, /-s$/)
@@ -137,16 +157,10 @@ class ListKnowledges {
                 name = RegExUtils.removeAll(name, /-se$/)
                 name = RegExUtils.removeAll(name, /-sw$/)
                 name = RegExUtils.replaceAll(name, /tile-(?!block)/, "block-")
-                println "m[rid[\"${o.name}\"]] = [model: \"Models/${name}/${name}.j3o\"]"
+                println "m[rid[\"${it.name}\"]] = [model: \"Models/${name}/${name}.j3o\"]"
             }
-            println "\nm"
-        })
-        def knowledgeResponseAdapter = ret[1]
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ObjectType.TYPE))
-        while (ko.size() != 37) {
-            log.info("Knowledge objects loaded {}", ko.size())
-            Thread.sleep(500)
         }
+        println "\nm"
     }
 
     @Test

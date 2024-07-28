@@ -20,8 +20,6 @@ package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl;
 import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
 import static edu.isi.stella.InputStringStream.newInputStringStream;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasKey;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -336,10 +334,13 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
         MutableList<KnowledgeObject> list = Lists.mutable.empty();
         LogicObject next;
         while ((next = (LogicObject) answer.pop()) != null) {
-            assertThat(storages, hasKey(type));
-            var s = storages.get(type);
-            var go = s.retrieve(next, s.create());
-            list.add(go);
+            if (!storages.containsKey(type)) {
+                log.warn("No storage for object {}", type);
+            } else {
+                var s = storages.get(type);
+                var go = s.retrieve(next, s.create());
+                list.add(go);
+            }
         }
         return new KnowledgeLoadedObject(ids.generate(), type, list.asUnmodifiable());
     }

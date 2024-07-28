@@ -88,6 +88,7 @@ class PowerLoomKnowledgeActorTest {
         "all (and (melting-point-material ?x ?t) (> ?t 2000))",
         "all (melting-point-material Aluminium ?t)",
         "all (melting-point-material Something ?t)",
+        "all (BlockObject ?x)",
     ])
     @Timeout(10l)
     void "askKnowledgeCommand test retrieve"(String retrieve) {
@@ -149,7 +150,11 @@ class PowerLoomKnowledgeActorTest {
     }
 
     @ParameterizedTest
-    @CsvSource(["Sedimentary,11", "Shrub,1"])
+    @CsvSource([
+        "Sedimentary,11",
+        "Shrub,1",
+        "BlockObject,26"
+    ])
     void "KnowledgeGetMessage test retrieve"(String type, int size) {
         def result =
                 AskPattern.ask(
