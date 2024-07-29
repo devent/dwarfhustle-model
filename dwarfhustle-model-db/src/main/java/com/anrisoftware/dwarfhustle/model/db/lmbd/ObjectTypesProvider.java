@@ -24,8 +24,10 @@ import org.eclipse.collections.api.set.primitive.MutableIntSet;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
 import com.anrisoftware.dwarfhustle.model.api.vegetations.Grass;
+import com.anrisoftware.dwarfhustle.model.api.vegetations.Shrub;
+import com.anrisoftware.dwarfhustle.model.api.vegetations.Tree;
 
-public class ObjectTypes {
+public class ObjectTypesProvider {
 
     public static final IntSet OBJECT_TYPES;
 
@@ -33,6 +35,8 @@ public class ObjectTypes {
         MutableIntSet set = IntSets.mutable.empty();
         set.add(WorldMap.OBJECT_TYPE);
         set.add(GameMap.OBJECT_TYPE);
+        set.add(Tree.OBJECT_TYPE);
+        set.add(Shrub.OBJECT_TYPE);
         set.add(Grass.OBJECT_TYPE);
         OBJECT_TYPES = set;
     }

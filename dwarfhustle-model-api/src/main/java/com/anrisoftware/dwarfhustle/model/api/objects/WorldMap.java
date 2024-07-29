@@ -23,6 +23,8 @@ import java.time.LocalDateTime;
 import org.eclipse.collections.api.factory.primitive.LongSets;
 import org.eclipse.collections.api.set.primitive.MutableLongSet;
 
+import com.google.auto.service.AutoService;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -37,6 +39,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Data
+@AutoService(StoredObject.class)
 public class WorldMap extends GameObject implements StoredObject {
 
     public static final int OBJECT_TYPE = WorldMap.class.getSimpleName().hashCode();

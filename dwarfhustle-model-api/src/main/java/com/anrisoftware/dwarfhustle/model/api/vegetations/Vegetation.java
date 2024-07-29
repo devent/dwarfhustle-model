@@ -17,8 +17,11 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.vegetations;
 
+import java.io.Serializable;
+
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -32,7 +35,12 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Data
-public abstract class Vegetation extends GameMapObject {
+public abstract class Vegetation extends GameMapObject implements StoredObject {
+
+    /**
+     * Record ID set after the object was once stored in the backend.
+     */
+    public Serializable rid;
 
     /**
      * {@link KnowledgeVegetation} RID.

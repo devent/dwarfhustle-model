@@ -48,7 +48,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
 import com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.db.lmbd.GameObjectsLmbdStorage;
 import com.anrisoftware.dwarfhustle.model.db.lmbd.MapObjectsLmbdStorage;
-import com.anrisoftware.dwarfhustle.model.db.lmbd.ObjectTypes;
+import com.anrisoftware.dwarfhustle.model.db.lmbd.ObjectTypesProvider;
 import com.anrisoftware.dwarfhustle.model.db.lmbd.TypeReadBuffers;
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbErrorMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor;
@@ -144,7 +144,7 @@ public class ImporterMapImage2DbApp {
         if (!gameObjectsPath.isDirectory()) {
             gameObjectsPath.mkdir();
         }
-        this.gameObjectsStorage = new GameObjectsLmbdStorage(gameObjectsPath.toPath(), ObjectTypes.OBJECT_TYPES,
+        this.gameObjectsStorage = new GameObjectsLmbdStorage(gameObjectsPath.toPath(), ObjectTypesProvider.OBJECT_TYPES,
                 TypeReadBuffers.TYPE_READ_BUFFERS);
         var mapObjectsPath = new File(root, "map-" + gm.id);
         if (!mapObjectsPath.isDirectory()) {
@@ -192,15 +192,13 @@ public class ImporterMapImage2DbApp {
 
     private static CompletionStage<ActorRef<Message>> createKnowledgeCache(Injector injector, ActorSystemProvider actor,
             ActorRef<Message> powerLoom) {
-        return KnowledgeJcsCacheActor
-                .create(injector, ofSeconds(10), actor.getObjectGetterAsync(PowerLoomKnowledgeActor.ID))
-                .whenComplete((ret, ex) -> {
-                    if (ex != null) {
-                        log.error("KnowledgeJcsCacheActor.create", ex);
-                    } else {
-                        log.debug("KnowledgeJcsCacheActor created");
-                    }
-                });
+        return KnowledgeJcsCacheActor.create(injector, ofSeconds(10)).whenComplete((ret, ex) -> {
+            if (ex != null) {
+                log.error("KnowledgeJcsCacheActor.create", ex);
+            } else {
+                log.debug("KnowledgeJcsCacheActor created");
+            }
+        });
     }
 
     private Void errorInit(Throwable ex) {

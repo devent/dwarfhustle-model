@@ -20,6 +20,8 @@ package com.anrisoftware.dwarfhustle.model.api.objects;
 import java.io.Serializable;
 import java.time.ZoneOffset;
 
+import com.google.auto.service.AutoService;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -34,6 +36,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Data
+@AutoService(StoredObject.class)
 public class GameMap extends GameObject implements StoredObject {
 
     /**

@@ -38,7 +38,7 @@ import org.evrete.KnowledgeService;
 import org.evrete.api.Knowledge;
 import org.evrete.util.CompilationException;
 
-import com.anrisoftware.dwarfhustle.model.api.map.ObjectType;
+import com.anrisoftware.dwarfhustle.model.api.map.BlockObject;
 import com.anrisoftware.dwarfhustle.model.api.materials.BlockMaterial;
 import com.anrisoftware.dwarfhustle.model.api.materials.Gas;
 import com.anrisoftware.dwarfhustle.model.api.materials.Liquid;
@@ -251,9 +251,9 @@ public class TerrainKnowledge {
                         }
                     });
                 }).toCompletableFuture(), //
-                ask.doAskAsync(ASK_TIMEOUT, ObjectType.TYPE).whenComplete((res, ex) -> {
+                ask.doAskAsync(ASK_TIMEOUT, BlockObject.TYPE).whenComplete((res, ex) -> {
                     knowledgeGet(res, IntLists.mutable.empty(), (o) -> {
-                        var ot = (ObjectType) o;
+                        var ot = (BlockObject) o;
                         switch (ot.getName()) {
                         case "BLOCK-RAMP-TRI-N":
                             objects.put(OBJECT_RAMP_TRI_N_NAME, o.getKid());

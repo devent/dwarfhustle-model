@@ -50,7 +50,7 @@ class GameObjectsLmbdStorageTest {
         gm.depth = 32
         wm.maps.add(gm.id)
         wm.currentMap = gm.id
-        def storage = new GameObjectsLmbdStorage(tmp, ObjectTypes.OBJECT_TYPES, TYPE_READ_BUFFERS)
+        def storage = new GameObjectsLmbdStorage(tmp, ObjectTypesProvider.OBJECT_TYPES, TYPE_READ_BUFFERS)
         storage.putObject(WorldMap.OBJECT_TYPE, wm.id, WorldMapBuffer.getSize(wm), { b ->
             WorldMapBuffer.setWorldMap(b, 0, wm)
         })

@@ -18,6 +18,8 @@
 package com.anrisoftware.dwarfhustle.model.api.vegetations;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
+import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
+import com.google.auto.service.AutoService;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -31,6 +33,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Data
+@AutoService(StoredObject.class)
 public class TreeLeaf extends Tree {
 
     public static final int OBJECT_TYPE = TreeLeaf.class.getSimpleName().hashCode();

@@ -26,8 +26,6 @@ import java.io.Serializable;
  */
 public interface StoredObject extends Serializable {
 
-    public static final String OBJECT_TYPE = StoredObject.class.getSimpleName();
-
     /**
      * Record ID set after the object was once stored in the backend.
      */

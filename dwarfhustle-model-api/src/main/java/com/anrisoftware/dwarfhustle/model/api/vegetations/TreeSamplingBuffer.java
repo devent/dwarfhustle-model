@@ -17,42 +17,37 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.vegetations;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
-import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
-import com.google.auto.service.AutoService;
-
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import org.agrona.DirectBuffer;
+import org.agrona.MutableDirectBuffer;
 
 /**
- * Trunk of the tree.
+ * Writes and reads {@link TreeSampling} in a byte buffer.
+ * 
+ * <ul>
+ * <li>@{code i} the KID;
+ * <li>@{code g} the growth;
+ * </ul>
+ * 
+ * <pre>
+ * int   0         1         2         3
+ * short 0    1    2    3    4    5    6
+ *       iiii iiii gggg
+ * </pre>
  */
-@NoArgsConstructor
-@ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
-@Data
-@AutoService(StoredObject.class)
-public class TreeTrunk extends Tree {
+public class TreeSamplingBuffer {
 
-    public static final int OBJECT_TYPE = TreeTrunk.class.getSimpleName().hashCode();
+    /**
+     * Size in bytes.
+     */
+    public static final int SIZE = VegetationBuffer.SIZE;
 
-    public TreeTrunk(byte[] idbuf) {
-        super(idbuf);
+    public static void setTreeSampling(MutableDirectBuffer b, int off, TreeSampling o) {
+        VegetationBuffer.writeObject(b, off, o);
     }
 
-    public TreeTrunk(long id, GameBlockPos pos) {
-        super(id, pos);
-    }
-
-    public TreeTrunk(byte[] idbuf, GameBlockPos pos) {
-        super(idbuf, pos);
-    }
-
-    @Override
-    public int getObjectType() {
-        return OBJECT_TYPE;
+    public static TreeSampling getTreeSampling(DirectBuffer b, int off, TreeSampling o) {
+        VegetationBuffer.readObject(b, off, o);
+        return o;
     }
 
 }
