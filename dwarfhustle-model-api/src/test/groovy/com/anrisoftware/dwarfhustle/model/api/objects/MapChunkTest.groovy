@@ -17,9 +17,6 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects
 
-import java.nio.file.Path
-
-import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
@@ -32,7 +29,7 @@ class MapChunkTest {
 
     static MapChunk createTestChunk(int cid = 0, parent = 0, int chunkSize = 2, def pos = new GameChunkPos(0, 0, 0, 4, 4, 4)) {
         def go = new MapChunk(cid, parent, chunkSize, pos)
-        go.updateCenterExtent(4, 4, 4)
+        go.updateCenterExtent(4, 4)
         (0..7).each { go.chunks.put(888, new GameChunkPos(it, it, it, it + 1, it + 1, it + 1)) }
         return go
     }
@@ -55,34 +52,5 @@ class MapChunkTest {
         def chunk = new MapChunk()
         chunk.pos = new GameChunkPos(sx, sy, sz, ex, ey, ez)
         assert chunk.isInside(new GameBlockPos(px, py, pz)) == expected
-    }
-
-    @TempDir
-    static Path tmp
-
-    @ParameterizedTest
-    @CsvSource([
-        "4,4,4,2,9,0,0,0,2,2,2,U,0,0,0,4,4,4",
-        "4,4,4,2,9,0,0,0,2,2,2,D,0,0,2,2,2,4",
-        "4,4,4,2,9,0,0,0,2,2,2,E,2,0,0,4,2,2",
-        "4,4,4,2,9,0,0,0,2,2,2,W,0,0,0,4,4,4",
-        "4,4,4,2,9,0,0,0,2,2,2,N,0,0,0,4,4,4",
-        "4,4,4,2,9,0,0,0,2,2,2,S,0,2,0,2,4,2",
-        //
-        "8,8,8,2,73,0,0,0,2,2,2,U,0,0,0,8,8,8",
-        "8,8,8,2,73,0,0,0,2,2,2,D,0,0,2,2,2,4",
-        "8,8,8,2,73,0,0,0,2,2,2,E,2,0,0,4,2,2",
-    ])
-    void getNeighbor_chunk(int w, int h, int d, int c, int n, int sx, int sy, int sz, int ex, int ey, int ez, String dir, int expectedSx, int expectedSy, int expectedSz, int expectedEx, int expectedEy, int expectedEz) {
-        def store = MapChunksStoreTest.createStore(tmp, "terrain_${w}_${h}_${d}_${c}_${n}", c, n)
-        def chunk = store.findChunk(new GameChunkPos(sx, sy, sz, ex, ey, ez))
-        int ncid = chunk.orElseThrow().getNeighbor(NeighboringDir.valueOf(dir))
-        def nchunk = store.getChunk(ncid)
-        assert nchunk.pos.x == expectedSx
-        assert nchunk.pos.y == expectedSy
-        assert nchunk.pos.z == expectedSz
-        assert nchunk.pos.ep.x == expectedEx
-        assert nchunk.pos.ep.y == expectedEy
-        assert nchunk.pos.ep.z == expectedEz
     }
 }

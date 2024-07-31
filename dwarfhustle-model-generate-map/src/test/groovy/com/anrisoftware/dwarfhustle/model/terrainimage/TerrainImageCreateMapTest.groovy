@@ -41,7 +41,7 @@ import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
-import com.anrisoftware.dwarfhustle.model.api.objects.MapChunksStore
+import com.anrisoftware.dwarfhustle.model.db.store.MapChunksStore
 import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustlePowerloomModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor

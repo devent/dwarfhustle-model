@@ -25,9 +25,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
-import com.anrisoftware.dwarfhustle.model.api.objects.GameMapBuffer
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap
-import com.anrisoftware.dwarfhustle.model.api.objects.WorldMapBuffer
+import com.anrisoftware.dwarfhustle.model.db.buffers.GameMapBuffer
+import com.anrisoftware.dwarfhustle.model.db.buffers.WorldMapBuffer
 
 import groovy.util.logging.Slf4j
 

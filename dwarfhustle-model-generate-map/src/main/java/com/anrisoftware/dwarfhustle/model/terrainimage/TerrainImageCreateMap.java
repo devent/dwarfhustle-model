@@ -17,6 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.terrainimage;
 
+import static com.anrisoftware.dwarfhustle.model.db.buffers.MapChunkBuffer.findChild;
 import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge.MATERIALS_GASES_NAME;
 import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge.MATERIALS_LIQUIDS_NAME;
 import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge.MATERIALS_SOLIDS_NAME;
@@ -38,8 +39,9 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameChunkPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
-import com.anrisoftware.dwarfhustle.model.api.objects.MapChunksStore;
 import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
+import com.anrisoftware.dwarfhustle.model.db.buffers.MapChunkBuffer;
+import com.anrisoftware.dwarfhustle.model.db.store.MapChunksStore;
 import com.anrisoftware.dwarfhustle.model.knowledge.evrete.BlockFact;
 import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge;
 import com.google.inject.assistedinject.Assisted;
@@ -194,7 +196,7 @@ public class TerrainImageCreateMap {
                         blocksCount++;
                         var mb = new MapBlock(chunk.cid, new GameBlockPos(xx, yy, zz));
                         updateTerrainBlock.updateMaterialBlock(mb, xx, yy, zz);
-                        chunk.setBlock(mb);
+                        MapChunkBuffer.setBlock(chunk, mb);
                     }
                 }
             }
@@ -262,7 +264,7 @@ public class TerrainImageCreateMap {
                     int b = 0;
                     for (NeighboringDir dir : NeighboringDir.values()) {
                         var dp = (GameChunkPos) chunk.pos.add(dir.pos.mul(gm.chunkSize));
-                        if ((b = mcRoot.findChild(dp.x, dp.y, dp.z, dp.ep.x, dp.ep.y, dp.ep.z, r)) != 0) {
+                        if ((b = findChild(mcRoot, dp.x, dp.y, dp.z, dp.ep.x, dp.ep.y, dp.ep.z, r)) != 0) {
                             neighbors[dir.ordinal()] = b;
                         }
                     }

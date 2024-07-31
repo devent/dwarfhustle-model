@@ -25,9 +25,9 @@ import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags.RAMP;
 
 import java.util.function.Function;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.MapBlockBuffer;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
+import com.anrisoftware.dwarfhustle.model.db.buffers.MapBlockBuffer;
 
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;

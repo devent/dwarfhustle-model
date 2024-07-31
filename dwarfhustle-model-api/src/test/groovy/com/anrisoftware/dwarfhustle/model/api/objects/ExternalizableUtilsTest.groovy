@@ -23,8 +23,6 @@ import org.eclipse.collections.api.factory.primitive.IntLongMaps
 import org.eclipse.collections.api.factory.primitive.LongObjectMaps
 import org.eclipse.collections.api.factory.primitive.ObjectLongMaps
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.CsvSource
 
 /**
  * @see ExternalizableUtils
@@ -68,34 +66,9 @@ class ExternalizableUtilsTest {
     void map_block_byte_size_objectstream() {
         def stream = new ByteArrayOutputStream(1024)
         def ostream = new ObjectOutputStream(stream)
-        def go = MapBlockTest.createTestBlock()
+        def go = MapBlockTest.createTestBlock(0)
         ostream.writeObject(go)
-        assert stream.size() == 458
-    }
-
-    @Test
-    void map_block_byte_size_stream_storage() {
-        def sout = new ByteArrayOutputStream(1024)
-        def bout = new DataOutputStream(sout)
-        def go = MapBlockTest.createTestBlock()
-        go.writeStream(bout)
-        sout.flush()
-        assert sout.size() == 376
-    }
-
-    @ParameterizedTest
-    @CsvSource([
-        "2,536",
-        "4,537",
-        "8,537"
-    ])
-    void map_chunk_byte_size_stream_storage(int chunkSize, int expectedSize) {
-        def sout = new ByteArrayOutputStream(1024)
-        def bout = new DataOutputStream(sout)
-        def go = MapChunkTest.createTestChunk(0, chunkSize)
-        go.writeStream(bout)
-        sout.flush()
-        assert sout.size() == expectedSize
+        assert stream.size() == 452
     }
 
     @Test

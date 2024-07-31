@@ -25,26 +25,26 @@ import org.eclipse.collections.api.map.primitive.IntObjectMap;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameMapBuffer;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
-import com.anrisoftware.dwarfhustle.model.api.objects.WorldMapBuffer;
 import com.anrisoftware.dwarfhustle.model.api.vegetations.Grass;
-import com.anrisoftware.dwarfhustle.model.api.vegetations.GrassBuffer;
 import com.anrisoftware.dwarfhustle.model.api.vegetations.Shrub;
-import com.anrisoftware.dwarfhustle.model.api.vegetations.ShrubBuffer;
 import com.anrisoftware.dwarfhustle.model.api.vegetations.Tree;
 import com.anrisoftware.dwarfhustle.model.api.vegetations.TreeBranch;
-import com.anrisoftware.dwarfhustle.model.api.vegetations.TreeBranchBuffer;
-import com.anrisoftware.dwarfhustle.model.api.vegetations.TreeBuffer;
 import com.anrisoftware.dwarfhustle.model.api.vegetations.TreeLeaf;
-import com.anrisoftware.dwarfhustle.model.api.vegetations.TreeLeafBuffer;
 import com.anrisoftware.dwarfhustle.model.api.vegetations.TreeRoot;
-import com.anrisoftware.dwarfhustle.model.api.vegetations.TreeRootBuffer;
 import com.anrisoftware.dwarfhustle.model.api.vegetations.TreeTrunk;
-import com.anrisoftware.dwarfhustle.model.api.vegetations.TreeTrunkBuffer;
 import com.anrisoftware.dwarfhustle.model.api.vegetations.TreeTwig;
-import com.anrisoftware.dwarfhustle.model.api.vegetations.TreeTwigBuffer;
+import com.anrisoftware.dwarfhustle.model.db.buffers.GameMapBuffer;
+import com.anrisoftware.dwarfhustle.model.db.buffers.GrassBuffer;
+import com.anrisoftware.dwarfhustle.model.db.buffers.ShrubBuffer;
+import com.anrisoftware.dwarfhustle.model.db.buffers.TreeBranchBuffer;
+import com.anrisoftware.dwarfhustle.model.db.buffers.TreeBuffer;
+import com.anrisoftware.dwarfhustle.model.db.buffers.TreeLeafBuffer;
+import com.anrisoftware.dwarfhustle.model.db.buffers.TreeRootBuffer;
+import com.anrisoftware.dwarfhustle.model.db.buffers.TreeTrunkBuffer;
+import com.anrisoftware.dwarfhustle.model.db.buffers.TreeTwigBuffer;
+import com.anrisoftware.dwarfhustle.model.db.buffers.WorldMapBuffer;
 
 /**
  * Provides the map of object type to read buffer functions.

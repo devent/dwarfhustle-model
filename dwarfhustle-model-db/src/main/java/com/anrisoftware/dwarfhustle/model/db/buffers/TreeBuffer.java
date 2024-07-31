@@ -15,22 +15,41 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api.objects
+package com.anrisoftware.dwarfhustle.model.db.buffers;
+
+import org.agrona.DirectBuffer;
+import org.agrona.MutableDirectBuffer;
+
+import com.anrisoftware.dwarfhustle.model.api.vegetations.Tree;
 
 /**
- * @see MapBlock
- *
- * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+ * Writes and reads {@link Tree} in a byte buffer.
+ * 
+ * <ul>
+ * <li>@{code i} the KID;
+ * <li>@{code g} the growth;
+ * </ul>
+ * 
+ * <pre>
+ * int   0         1         2         3
+ * short 0    1    2    3    4    5    6
+ *       iiii iiii gggg
+ * </pre>
  */
-class MapBlockTest {
+public class TreeBuffer {
 
-    static MapBlock createTestBlock(int parent, def pos = new GameBlockPos(10, 10, 10)) {
-        def go = new MapBlock(parent, pos)
-        go.pos = new GameBlockPos(10, 10, 10)
-        go.parent = 7777777
-        go.material = 8888888
-        go.setFloor(true)
-        go.setRoof(true)
-        return go
+    /**
+     * Size in bytes.
+     */
+    public static final int SIZE = VegetationBuffer.SIZE;
+
+    public static void setTree(MutableDirectBuffer b, int off, Tree o) {
+        VegetationBuffer.writeObject(b, off, o);
     }
+
+    public static Tree getTree(DirectBuffer b, int off, Tree o) {
+        VegetationBuffer.readObject(b, off, o);
+        return o;
+    }
+
 }
