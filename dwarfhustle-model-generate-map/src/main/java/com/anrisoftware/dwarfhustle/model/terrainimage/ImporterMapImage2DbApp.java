@@ -72,7 +72,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ImporterMapImage2DbApp {
 
-    private static final Duration IMPORT_IMAGE_TIMEOUT = Duration.ofMinutes(5);
+    private static final Duration IMPORT_IMAGE_TIMEOUT = Duration.ofMinutes(10);
 
     @Inject
     private ActorSystemProvider actor;
