@@ -17,10 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.lmbd
 
-import static com.anrisoftware.dwarfhustle.model.db.lmbd.TypeReadBuffers.TYPE_READ_BUFFERS
-
 import java.nio.file.Path
 
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
@@ -28,6 +27,9 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap
 import com.anrisoftware.dwarfhustle.model.db.buffers.GameMapBuffer
 import com.anrisoftware.dwarfhustle.model.db.buffers.WorldMapBuffer
+import com.anrisoftware.dwarfhustle.model.db.lmbd.GameObjectsLmbdStorage.GameObjectsLmbdStorageFactory
+import com.google.inject.Guice
+import com.google.inject.Injector
 
 import groovy.util.logging.Slf4j
 
@@ -36,6 +38,13 @@ import groovy.util.logging.Slf4j
  */
 @Slf4j
 class GameObjectsLmbdStorageTest {
+
+    static Injector injector
+
+    @BeforeAll
+    static void setupInjector() {
+        injector = Guice.createInjector(new DwarfhustleModelDbLmbdModule())
+    }
 
     @Test
     void putObject_test(@TempDir Path tmp) {
@@ -50,7 +59,7 @@ class GameObjectsLmbdStorageTest {
         gm.depth = 32
         wm.maps.add(gm.id)
         wm.currentMap = gm.id
-        def storage = new GameObjectsLmbdStorage(tmp, ObjectTypesProvider.OBJECT_TYPES, TYPE_READ_BUFFERS)
+        def storage = injector.getInstance(GameObjectsLmbdStorageFactory).create(tmp)
         storage.putObject(WorldMap.OBJECT_TYPE, wm.id, WorldMapBuffer.getSize(wm), { b ->
             WorldMapBuffer.setWorldMap(b, 0, wm)
         })
@@ -64,6 +73,6 @@ class GameObjectsLmbdStorageTest {
         assert that_wm.name == wm.name
         assert that_gm.id == gm.id
         assert that_gm.name == gm.name
-        Utils.listFiles log, tmp
+        TestUtils.listFiles log, tmp
     }
 }

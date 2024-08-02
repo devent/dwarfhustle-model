@@ -1,5 +1,5 @@
 /*
- * dwarfhustle-model-api - Manages the compile dependencies for the model.
+ * dwarfhustle-model-db - Manages the compile dependencies for the model.
  * Copyright © 2023 Erwin Müller (erwin.mueller@anrisoftware.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,9 @@ package com.anrisoftware.dwarfhustle.model.db.buffers;
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.vegetations.Grass;
+import com.google.auto.service.AutoService;
 
 /**
  * Writes and reads {@link Grass} in a byte buffer.
@@ -35,7 +37,8 @@ import com.anrisoftware.dwarfhustle.model.api.vegetations.Grass;
  *       iiii iiii iiii iiii
  * </pre>
  */
-public class GrassBuffer extends VegetationBuffer {
+@AutoService(StoredObjectBuffer.class)
+public class GrassBuffer extends VegetationBuffer implements StoredObjectBuffer {
 
     /**
      * Size in bytes.
@@ -49,6 +52,16 @@ public class GrassBuffer extends VegetationBuffer {
     public static Grass getGrass(DirectBuffer b, int off, Grass o) {
         VegetationBuffer.readObject(b, off, o);
         return o;
+    }
+
+    @Override
+    public GameObject read(DirectBuffer b) {
+        return GrassBuffer.getGrass(b, 0, new Grass());
+    }
+
+    @Override
+    public int getObjectType() {
+        return Grass.OBJECT_TYPE;
     }
 
 }

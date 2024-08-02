@@ -41,11 +41,23 @@ import org.lmdbjava.Txn;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
+import com.google.inject.assistedinject.Assisted;
+
+import jakarta.inject.Inject;
 
 /**
  * Store the object ID and object type for the (x,y,z) map block.
  */
 public class MapObjectsLmbdStorage implements AutoCloseable {
+
+    /**
+     * Factory to create the {@link MapObjectsLmbdStorage}.
+     * 
+     * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+     */
+    public interface MapObjectsLmbdStorageFactory {
+        MapObjectsLmbdStorage create(Path file, GameMap gm);
+    }
 
     private final Env<DirectBuffer> env;
 
@@ -66,7 +78,8 @@ public class MapObjectsLmbdStorage implements AutoCloseable {
     /**
      * Creates or opens the game map objects storage for the game map.
      */
-    public MapObjectsLmbdStorage(Path file, GameMap gm) {
+    @Inject
+    protected MapObjectsLmbdStorage(@Assisted Path file, @Assisted GameMap gm) {
         this.w = gm.width;
         this.h = gm.height;
         this.d = gm.depth;

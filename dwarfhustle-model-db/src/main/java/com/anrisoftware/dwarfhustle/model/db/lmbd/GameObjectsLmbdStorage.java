@@ -25,11 +25,11 @@ import static org.lmdbjava.DirectBufferProxy.PROXY_DB;
 import static org.lmdbjava.Env.create;
 
 import java.nio.file.Path;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
@@ -38,6 +38,8 @@ import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.map.primitive.IntObjectMap;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.eclipse.collections.api.set.primitive.IntSet;
+import org.lmdbjava.CursorIterable;
+import org.lmdbjava.CursorIterable.KeyVal;
 import org.lmdbjava.Dbi;
 import org.lmdbjava.Env;
 import org.lmdbjava.Txn;
@@ -46,11 +48,24 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsSetter;
+import com.anrisoftware.dwarfhustle.model.db.buffers.StoredObjectBuffer;
+import com.google.inject.assistedinject.Assisted;
+
+import jakarta.inject.Inject;
 
 /**
  * Stores {@link GameObject}(s).
  */
 public class GameObjectsLmbdStorage implements AutoCloseable, ObjectsGetter, ObjectsSetter {
+
+    /**
+     * Factory to create the {@link GameObjectsLmbdStorage}.
+     * 
+     * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+     */
+    public interface GameObjectsLmbdStorageFactory {
+        GameObjectsLmbdStorage create(Path file);
+    }
 
     private final Env<DirectBuffer> env;
 
@@ -60,14 +75,15 @@ public class GameObjectsLmbdStorage implements AutoCloseable, ObjectsGetter, Obj
 
     private final ThreadLocal<UnsafeBuffer> buff8;
 
-    private final IntObjectMap<Function<DirectBuffer, GameObject>> typeReadBuffers;
+    private final IntObjectMap<StoredObjectBuffer> readBuffers;
 
     /**
      * Creates or opens the game objects storage.
      */
-    public GameObjectsLmbdStorage(Path file, IntSet objectTypes,
-            IntObjectMap<Function<DirectBuffer, GameObject>> typeReadBuffers) {
-        this.typeReadBuffers = typeReadBuffers;
+    @Inject
+    protected GameObjectsLmbdStorage(@Assisted Path file, IntSet objectTypes,
+            IntObjectMap<StoredObjectBuffer> readBuffers) {
+        this.readBuffers = readBuffers;
         this.env = create(PROXY_DB).setMapSize((long) (10 * pow(10, 9))).setMaxDbs(20).open(file.toFile());
         MutableIntObjectMap<Dbi<DirectBuffer>> dbs = IntObjectMaps.mutable.withInitialCapacity(objectTypes.size());
         objectTypes.each((type) -> {
@@ -175,7 +191,7 @@ public class GameObjectsLmbdStorage implements AutoCloseable, ObjectsGetter, Obj
     }
 
     /**
-     * Retrieves the game map with the specific object ID from the database.
+     * Retrieves the game object with the specific object ID from the database.
      */
     @SuppressWarnings("unchecked")
     public <T extends GameObject> T getObject(int type, long id) {
@@ -184,10 +200,67 @@ public class GameObjectsLmbdStorage implements AutoCloseable, ObjectsGetter, Obj
             readTxn.renew();
             key.putLong(0, id);
             var val = dbs.get(type).get(readTxn, key);
-            return (T) typeReadBuffers.get(type).apply(val);
+            return (T) readBuffers.get(type).read(val);
         } finally {
             readTxn.reset();
         }
+    }
+
+    /**
+     * Retrieves all game objects with the specific object type.
+     */
+    public void getObjects(int type, Consumer<GameObject> consumer) {
+        try {
+            readTxn.renew();
+            var it = dbs.get(type).iterate(readTxn);
+            it.forEach((k) -> {
+                consumer.accept(readBuffers.get(type).read(k.val()));
+            });
+        } finally {
+            readTxn.reset();
+        }
+    }
+
+    /**
+     * Retrieves all game objects with the specific object type.
+     */
+    public Iterable<GameObject> getObjects(int type) {
+        try {
+            readTxn.renew();
+            var it = dbs.get(type).iterate(readTxn);
+            return new DbIterable(it, type);
+        } finally {
+            readTxn.reset();
+        }
+    }
+
+    private class DbIterable implements Iterable<GameObject>, Iterator<GameObject> {
+
+        private final Iterator<KeyVal<DirectBuffer>> it;
+
+        private final int type;
+
+        public DbIterable(CursorIterable<DirectBuffer> it, int type) {
+            this.it = it.iterator();
+            this.type = type;
+        }
+
+        @Override
+        public Iterator<GameObject> iterator() {
+            return this;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return it.hasNext();
+        }
+
+        @Override
+        public GameObject next() {
+            var kv = it.next();
+            return readBuffers.get(type).read(kv.val());
+        }
+
     }
 
     @SuppressWarnings("unchecked")

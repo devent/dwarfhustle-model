@@ -19,12 +19,14 @@ package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
 import com.anrisoftware.dwarfhustle.model.api.map.BlockObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
+import com.google.auto.service.AutoService;
 
 /**
  *
  * @see BlockObject
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
+@AutoService(GameObjectKnowledge.class)
 public class BlockObjectStorage extends AbstractObjectTypeStorage {
 
     @Override

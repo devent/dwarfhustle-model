@@ -1,5 +1,5 @@
 /*
- * dwarfhustle-model-api - Manages the compile dependencies for the model.
+ * dwarfhustle-model-db - Manages the compile dependencies for the model.
  * Copyright © 2023 Erwin Müller (erwin.mueller@anrisoftware.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,8 +20,10 @@ package com.anrisoftware.dwarfhustle.model.db.buffers;
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.vegetations.Tree;
 import com.anrisoftware.dwarfhustle.model.api.vegetations.TreeRoot;
+import com.google.auto.service.AutoService;
 
 /**
  * Writes and reads {@link TreeRoot} in a byte buffer.
@@ -37,7 +39,8 @@ import com.anrisoftware.dwarfhustle.model.api.vegetations.TreeRoot;
  *       iiii iiii gggg
  * </pre>
  */
-public class TreeRootBuffer {
+@AutoService(StoredObjectBuffer.class)
+public class TreeRootBuffer implements StoredObjectBuffer {
 
     /**
      * Size in bytes.
@@ -51,6 +54,16 @@ public class TreeRootBuffer {
     public static Tree getTreeRoot(DirectBuffer b, int off, TreeRoot o) {
         VegetationBuffer.readObject(b, off, o);
         return o;
+    }
+
+    @Override
+    public GameObject read(DirectBuffer b) {
+        return TreeRootBuffer.getTreeRoot(b, 0, new TreeRoot());
+    }
+
+    @Override
+    public int getObjectType() {
+        return TreeRoot.OBJECT_TYPE;
     }
 
 }

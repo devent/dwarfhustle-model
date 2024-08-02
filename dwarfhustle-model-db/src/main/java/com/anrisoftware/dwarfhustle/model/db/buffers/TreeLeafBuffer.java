@@ -1,5 +1,5 @@
 /*
- * dwarfhustle-model-api - Manages the compile dependencies for the model.
+ * dwarfhustle-model-db - Manages the compile dependencies for the model.
  * Copyright © 2023 Erwin Müller (erwin.mueller@anrisoftware.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,9 @@ package com.anrisoftware.dwarfhustle.model.db.buffers;
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.vegetations.TreeLeaf;
+import com.google.auto.service.AutoService;
 
 /**
  * Writes and reads {@link TreeLeaf} in a byte buffer.
@@ -36,7 +38,8 @@ import com.anrisoftware.dwarfhustle.model.api.vegetations.TreeLeaf;
  *       iiii iiii gggg
  * </pre>
  */
-public class TreeLeafBuffer {
+@AutoService(StoredObjectBuffer.class)
+public class TreeLeafBuffer implements StoredObjectBuffer {
 
     /**
      * Size in bytes.
@@ -52,4 +55,13 @@ public class TreeLeafBuffer {
         return o;
     }
 
+    @Override
+    public GameObject read(DirectBuffer b) {
+        return TreeLeafBuffer.getTreeLeaf(b, 0, new TreeLeaf());
+    }
+
+    @Override
+    public int getObjectType() {
+        return TreeLeaf.OBJECT_TYPE;
+    }
 }

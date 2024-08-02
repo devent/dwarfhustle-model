@@ -1,5 +1,5 @@
 /*
- * dwarfhustle-model-api - Manages the compile dependencies for the model.
+ * dwarfhustle-model-db - Manages the compile dependencies for the model.
  * Copyright © 2023 Erwin Müller (erwin.mueller@anrisoftware.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,8 +24,10 @@ import org.agrona.MutableDirectBuffer;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectBuffer;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapArea;
+import com.google.auto.service.AutoService;
 
 /**
  * Writes and reads {@link GameMap} in a byte buffer.
@@ -55,7 +57,8 @@ import com.anrisoftware.dwarfhustle.model.api.objects.MapArea;
  *       iiii iiii iiii iiii wwww wwww wwww wwww WWWW HHHH DDDD SSSS CCCC aaaa aaaa aaaa aaaa aaaa aaaa aaaa aaaa pppp pppp pppp pppp pppp pppp rrrr rrrr rrrr rrrr rrrr rrrr rrrr rrrr cccc cccc cccc ssss ssss ssss ssss ssss ssss tttt tttt nnnn nnnn ....
  * </pre>
  */
-public class GameMapBuffer extends GameObjectBuffer {
+@AutoService(StoredObjectBuffer.class)
+public class GameMapBuffer extends GameObjectBuffer implements StoredObjectBuffer {
 
     /**
      * Size in bytes.
@@ -283,4 +286,13 @@ public class GameMapBuffer extends GameObjectBuffer {
         return gm;
     }
 
+    @Override
+    public GameObject read(DirectBuffer b) {
+        return GameMapBuffer.getGameMap(b, 0, new GameMap());
+    }
+
+    @Override
+    public int getObjectType() {
+        return GameMap.OBJECT_TYPE;
+    }
 }

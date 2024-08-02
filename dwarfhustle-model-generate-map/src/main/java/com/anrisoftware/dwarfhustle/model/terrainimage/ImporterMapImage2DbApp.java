@@ -47,10 +47,9 @@ import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsSetter;
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
 import com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.db.lmbd.GameObjectsLmbdStorage;
+import com.anrisoftware.dwarfhustle.model.db.lmbd.GameObjectsLmbdStorage.GameObjectsLmbdStorageFactory;
 import com.anrisoftware.dwarfhustle.model.db.lmbd.MapObjectsLmbdStorage;
-import com.anrisoftware.dwarfhustle.model.db.lmbd.ObjectTypesProvider;
-import com.anrisoftware.dwarfhustle.model.db.lmbd.TypeReadBuffers;
-import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbMessage.DbErrorMessage;
+import com.anrisoftware.dwarfhustle.model.db.lmbd.MapObjectsLmbdStorage.MapObjectsLmbdStorageFactory;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.ImportImageErrorMessage;
@@ -80,6 +79,12 @@ public class ImporterMapImage2DbApp {
     @Inject
     @IdsObjects
     private IDGenerator gen;
+
+    @Inject
+    private GameObjectsLmbdStorageFactory gameObjectsFactory;
+
+    @Inject
+    private MapObjectsLmbdStorageFactory mapObjectsFactory;
 
     private GameObjectsLmbdStorage gameObjectsStorage;
 
@@ -144,13 +149,12 @@ public class ImporterMapImage2DbApp {
         if (!gameObjectsPath.isDirectory()) {
             gameObjectsPath.mkdir();
         }
-        this.gameObjectsStorage = new GameObjectsLmbdStorage(gameObjectsPath.toPath(), ObjectTypesProvider.OBJECT_TYPES,
-                TypeReadBuffers.TYPE_READ_BUFFERS);
+        this.gameObjectsStorage = gameObjectsFactory.create(gameObjectsPath.toPath());
         var mapObjectsPath = new File(root, "map-" + gm.id);
         if (!mapObjectsPath.isDirectory()) {
             mapObjectsPath.mkdir();
         }
-        this.mapObjectsStorage = new MapObjectsLmbdStorage(mapObjectsPath.toPath(), gm);
+        this.mapObjectsStorage = mapObjectsFactory.create(mapObjectsPath.toPath(), gm);
     }
 
     private CompletionStage<ActorRef<Message>> createImporter(Injector injector) {
@@ -238,8 +242,6 @@ public class ImporterMapImage2DbApp {
                 image, gm);
         ret.whenComplete((res, ex) -> {
             if (ex != null) {
-                logError("ImportImageMessage", ex);
-            } else if (res instanceof DbErrorMessage<?> rm) {
                 logError("ImportImageMessage", ex);
             } else if (res instanceof ImportImageSuccessMessage rm) {
                 log.info("ImportImageMessage Success");

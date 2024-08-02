@@ -15,25 +15,21 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.db.lmbd
+package com.anrisoftware.dwarfhustle.model.db.buffers;
 
-import static java.lang.Math.round
+import org.agrona.DirectBuffer;
 
-import java.nio.file.Files
-import java.nio.file.Path
-import java.util.stream.Collectors
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 
 /**
- * Utils.
+ * Returns the {@link StoredObject} buffer.
+ * 
+ * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-class Utils {
+public interface StoredObjectBuffer {
 
-    static void listFiles(def log, Path path) {
-        Files.list(path).withCloseable {
-            it.filter({file -> !Files.isDirectory(file)}).collect(Collectors.toSet()).each {
-                def size = it.toFile().size()
-                log.info "Size {} = {} B, {} KB, {} MB, {} GB.", it, size, round(size / 1024), round(size / 1024 / 1024), round(size / 1024 / 1024 / 1024)
-            }
-        }
-    }
+    GameObject read(DirectBuffer b);
+
+    int getObjectType();
 }

@@ -1,5 +1,5 @@
 /*
- * dwarfhustle-model-api - Manages the compile dependencies for the model.
+ * dwarfhustle-model-db - Manages the compile dependencies for the model.
  * Copyright © 2023 Erwin Müller (erwin.mueller@anrisoftware.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,8 +25,10 @@ import org.eclipse.collections.api.factory.primitive.LongSets;
 import org.eclipse.collections.api.set.primitive.LongSet;
 import org.eclipse.collections.api.set.primitive.MutableLongSet;
 
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectBuffer;
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
+import com.google.auto.service.AutoService;
 
 /**
  * Writes and reads {@link WorldMap} in a byte buffer.
@@ -52,7 +54,8 @@ import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
  *       iiii iiii iiii iiii dddd dddd DDDD DDDD YYYY MMMM DDDD hhhh mmmm ssss CCCC CCCC CCCC CCCC MMMM MMMM .... NNNN NNNN ....
  * </pre>
  */
-public class WorldMapBuffer extends GameObjectBuffer {
+@AutoService(StoredObjectBuffer.class)
+public class WorldMapBuffer extends GameObjectBuffer implements StoredObjectBuffer {
 
     /**
      * Minimum size in bytes.
@@ -226,6 +229,16 @@ public class WorldMapBuffer extends GameObjectBuffer {
                 getLocalDateTimeSecond(b, off));
         wm.currentMap = getCurrentMap(b, off);
         return wm;
+    }
+
+    @Override
+    public GameObject read(DirectBuffer b) {
+        return WorldMapBuffer.getWorldMap(b, 0, new WorldMap());
+    }
+
+    @Override
+    public int getObjectType() {
+        return WorldMap.OBJECT_TYPE;
     }
 
 }

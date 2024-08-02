@@ -19,12 +19,16 @@ package com.anrisoftware.dwarfhustle.model.db.lmbd
 
 import java.nio.file.Path
 
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
 import com.anrisoftware.dwarfhustle.model.api.vegetations.Grass
+import com.anrisoftware.dwarfhustle.model.db.lmbd.MapObjectsLmbdStorage.MapObjectsLmbdStorageFactory
+import com.google.inject.Guice
+import com.google.inject.Injector
 
 import groovy.util.logging.Slf4j
 
@@ -34,13 +38,20 @@ import groovy.util.logging.Slf4j
 @Slf4j
 class MapObjectsLmbdStorageTest {
 
+    static Injector injector
+
+    @BeforeAll
+    static void setupInjector() {
+        injector = Guice.createInjector(new DwarfhustleModelDbLmbdModule())
+    }
+
     @Test
     void putObject_benchmark(@TempDir Path tmp) {
         def gm = new GameMap(1)
         gm.width = 512
         gm.height = 512
         gm.depth = 512
-        def storage = new MapObjectsLmbdStorage(tmp, gm)
+        def storage = injector.getInstance(MapObjectsLmbdStorageFactory).create(tmp, gm)
         int zz = 32
         int yy = 256
         int xx = 256
@@ -63,7 +74,7 @@ class MapObjectsLmbdStorageTest {
         }
         storage.close()
         log.info "putObject_benchmark done in {}.", (System.currentTimeMillis() - timeNow) / 1000f
-        Utils.listFiles log, tmp
+        TestUtils.listFiles log, tmp
     }
 
     @Test
@@ -76,13 +87,13 @@ class MapObjectsLmbdStorageTest {
         gm.height = 512
         gm.depth = 512
         def objects = createObjects(gm, xx, yy, zz)
-        def storage = new MapObjectsLmbdStorage(tmp, gm)
+        def storage = injector.getInstance(MapObjectsLmbdStorageFactory).create(tmp, gm)
         log.info "putObjects_benchmark {} objects", objects.size()
         def timeNow = System.currentTimeMillis()
         storage.putObjects(objects)
         storage.close()
         log.info "putObjects_benchmark done in {}.", (System.currentTimeMillis() - timeNow) / 1000f
-        Utils.listFiles log, tmp
+        TestUtils.listFiles log, tmp
     }
 
     @Test
@@ -95,13 +106,13 @@ class MapObjectsLmbdStorageTest {
         gm.height = 512
         gm.depth = 512
         def objects = createObjects(gm, xx, yy, zz)
-        def storage = new MapObjectsLmbdStorage(tmp, gm)
+        def storage = injector.getInstance(MapObjectsLmbdStorageFactory).create(tmp, gm)
         log.info "putObjects_benchmark {} objects", objects.size()
         def timeNow = System.currentTimeMillis()
         storage.putObjects(objects)
         storage.close()
         log.info "putObjects_benchmark done in {}.", (System.currentTimeMillis() - timeNow) / 1000f
-        Utils.listFiles log, tmp
+        TestUtils.listFiles log, tmp
     }
 
     @Test
@@ -114,7 +125,7 @@ class MapObjectsLmbdStorageTest {
         gm.height = 512
         gm.depth = 512
         def objects = createObjects(gm, xx, yy, zz)
-        def storage = new MapObjectsLmbdStorage(tmp, gm)
+        def storage = injector.getInstance(MapObjectsLmbdStorageFactory).create(tmp, gm)
         storage.putObjects(objects)
         log.info "getObjects_benchmark {} objects", objects.size()
         def rnd = new Random()
@@ -149,7 +160,7 @@ class MapObjectsLmbdStorageTest {
         gm.height = 32
         gm.depth = 32
         def objects = createObjects(gm, xx, yy, zz)
-        def storage = new MapObjectsLmbdStorage(tmp, gm)
+        def storage = injector.getInstance(MapObjectsLmbdStorageFactory).create(tmp, gm)
         storage.putObjects(objects)
         def posObjectsIds = []
         def posObjectsTypes = []
