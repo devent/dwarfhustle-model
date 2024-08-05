@@ -141,14 +141,6 @@ public class GameMap extends GameObject implements StoredObject {
         return depth * height * width;
     }
 
-    /**
-     * Calculates the total count of {@link MapChunk} blocks for the specified
-     * width, height, depth and block size.
-     */
-    public int getBlocksCount() {
-        return calculateBlocksCount(width, height, depth, chunkSize);
-    }
-
     public void setCameraPos(float x, float y, float z) {
         this.cameraPos[0] = x;
         this.cameraPos[1] = y;

@@ -22,6 +22,13 @@ import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags.EMPTY
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags.FILLED;
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags.LIQUID;
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags.RAMP;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.D;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.E;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.N;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.S;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.SE;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.U;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.W;
 
 import java.util.function.Function;
 
@@ -331,6 +338,9 @@ public class BlockFact {
     }
 
     private boolean isNeighborFlag(MapChunk chunk, NeighboringDir dir, int flag) {
+        if (!isNeighborsExist(dir)) {
+            return false;
+        }
         int dx = x + dir.pos.x;
         int dy = y + dir.pos.y;
         int dz = z + dir.pos.z;
@@ -355,7 +365,7 @@ public class BlockFact {
             return isNeighborFlag(chunk, dir, flag);
         }
         if (dz >= chunk.pos.ep.z) {
-            chunk = retriever.apply(chunk.neighbors[NeighboringDir.D.ordinal()]);
+            chunk = retriever.apply(chunk.neighbors[D.ordinal()]);
             return isNeighborFlag(chunk, dir, flag);
         }
         return isProp(chunk, dx, dy, dz, flag);
@@ -382,4 +392,14 @@ public class BlockFact {
         return true;
     }
 
+    public boolean testCornerNw() {
+        boolean ret = z > 0;
+        ret &= isProp(FILLED.flag);
+        ret &= isNotEdge();
+        ret &= !isNeighborsFilled(U);
+        ret &= isNeighborsExist(N, SE, W, E, S);
+        ret &= isNeighborsEmpty(N, SE, W);
+        ret &= isNeighborsFilled(E, S);
+        return ret;
+    }
 }

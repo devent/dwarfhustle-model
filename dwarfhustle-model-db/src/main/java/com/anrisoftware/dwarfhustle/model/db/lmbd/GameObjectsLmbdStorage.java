@@ -223,18 +223,26 @@ public class GameObjectsLmbdStorage implements AutoCloseable, ObjectsGetter, Obj
 
     /**
      * Retrieves all game objects with the specific object type.
+     * <p>
+     * The returned {@link DbIterable} must be closed.
+     * 
+     * <pre>
+     * try (var it = storage.getObjects(WorldMap.OBJECT_TYPE)) {
+     * }
+     * </pre>
      */
-    public Iterable<GameObject> getObjects(int type) {
-        try {
-            readTxn.renew();
-            var it = dbs.get(type).iterate(readTxn);
-            return new DbIterable(it, type);
-        } finally {
-            readTxn.reset();
-        }
+    public DbIterable getObjects(int type) {
+        readTxn.renew();
+        var it = dbs.get(type).iterate(readTxn);
+        return new DbIterable(it, type);
     }
 
-    private class DbIterable implements Iterable<GameObject>, Iterator<GameObject> {
+    /**
+     * Iterable with {@link AutoCloseable}.
+     * 
+     * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+     */
+    public class DbIterable implements Iterable<GameObject>, Iterator<GameObject>, AutoCloseable {
 
         private final Iterator<KeyVal<DirectBuffer>> it;
 
@@ -259,6 +267,11 @@ public class GameObjectsLmbdStorage implements AutoCloseable, ObjectsGetter, Obj
         public GameObject next() {
             var kv = it.next();
             return readBuffers.get(type).read(kv.val());
+        }
+
+        @Override
+        public void close() throws Exception {
+            readTxn.reset();
         }
 
     }

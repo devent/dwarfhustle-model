@@ -68,11 +68,29 @@ class GameObjectsLmbdStorageTest {
         })
         def that_wm = storage.getObject(WorldMap.OBJECT_TYPE, wm.id)
         def that_gm = storage.get(GameMap.OBJECT_TYPE, gm.id)
+        test_getObjectsIterator(storage)
         storage.close()
         assert that_wm.id == wm.id
         assert that_wm.name == wm.name
         assert that_gm.id == gm.id
         assert that_gm.name == gm.name
         TestUtils.listFiles log, tmp
+    }
+
+    void test_getObjectsIterator(GameObjectsLmbdStorage storage) {
+        storage.getObjects(WorldMap.OBJECT_TYPE).withCloseable { ite ->
+            for (def go : ite) {
+                println go
+            }
+        }
+        storage.getObjects(WorldMap.OBJECT_TYPE).withCloseable { ite ->
+            assert ite.hasNext()
+            println ite.next()
+        }
+        storage.getObjects(GameMap.OBJECT_TYPE).withCloseable { ite ->
+            for (def go : ite) {
+                println go
+            }
+        }
     }
 }

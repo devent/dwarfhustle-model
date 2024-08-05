@@ -45,6 +45,8 @@ import com.anrisoftware.dwarfhustle.model.api.objects.MapArea;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsSetter;
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
+import com.anrisoftware.dwarfhustle.model.db.buffers.GameMapBuffer;
+import com.anrisoftware.dwarfhustle.model.db.buffers.WorldMapBuffer;
 import com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.db.lmbd.GameObjectsLmbdStorage;
 import com.anrisoftware.dwarfhustle.model.db.lmbd.GameObjectsLmbdStorage.GameObjectsLmbdStorageFactory;
@@ -100,7 +102,7 @@ public class ImporterMapImage2DbApp {
      * @param injector the {@link Injector} with external modules.
      */
     public CompletableFuture<Void> init(Injector injector, File root, WorldMap wm, GameMap gm) {
-        initStorage(root, gm);
+        initStorage(root, wm, gm);
         var childInjector = injector.createChildInjector(new AbstractModule() {
             @Override
             protected void configure() {
@@ -110,64 +112,28 @@ public class ImporterMapImage2DbApp {
         return CompletableFuture.allOf( //
                 createObjectsCacheStage(injector).thenAccept((a) -> {
                     this.cacheActor = a;
-                    createPowerLoom(injector, wm, gm);
+                    createKnowledge(injector, wm, gm);
+                    cacheMapWait(wm, gm);
                 }).toCompletableFuture(), //
                 createImporter(childInjector).toCompletableFuture()).toCompletableFuture()
                 .exceptionally(this::errorInit);
     }
 
     @SneakyThrows
-    private void createPowerLoom(Injector injector, WorldMap wm, GameMap gm) {
-        createPowerLoom(injector, actor).thenAccept((aa) -> {
-            createKnowledgeCache(injector, wm, gm, aa);
+    private void createKnowledge(Injector injector, WorldMap wm, GameMap gm) {
+        createKnowledgeCache(injector, actor).thenAccept((aa) -> {
+            createPowerLoomWait(injector);
         }).toCompletableFuture().get();
     }
 
     @SneakyThrows
-    private void createKnowledgeCache(Injector injector, WorldMap wm, GameMap gm, ActorRef<Message> aa) {
-        createKnowledgeCache(injector, actor, aa).thenRunAsync(() -> {
-            cacheMap0(wm, gm);
-        }).toCompletableFuture().get();
+    private void createPowerLoomWait(Injector injector) {
+        createPowerLoom(injector, actor).toCompletableFuture().get();
     }
 
     private CompletionStage<ActorRef<Message>> createObjectsCacheStage(Injector injector) {
         return createObjectsCache(injector, supplyAsync(() -> gameObjectsStorage),
                 supplyAsync(() -> gameObjectsStorage));
-    }
-
-    @SneakyThrows
-    private void cacheMap0(WorldMap wm, GameMap gm) {
-        askCachePut(cacheActor, actor.getScheduler(), ofSeconds(1), gm).toCompletableFuture().get();
-        askCachePut(cacheActor, actor.getScheduler(), ofSeconds(1), wm).toCompletableFuture().get();
-    }
-
-    /**
-     * Init storages.
-     */
-    private void initStorage(File root, GameMap gm) {
-        var gameObjectsPath = new File(root, "objects");
-        if (!gameObjectsPath.isDirectory()) {
-            gameObjectsPath.mkdir();
-        }
-        this.gameObjectsStorage = gameObjectsFactory.create(gameObjectsPath.toPath());
-        var mapObjectsPath = new File(root, "map-" + gm.id);
-        if (!mapObjectsPath.isDirectory()) {
-            mapObjectsPath.mkdir();
-        }
-        this.mapObjectsStorage = mapObjectsFactory.create(mapObjectsPath.toPath(), gm);
-    }
-
-    private CompletionStage<ActorRef<Message>> createImporter(Injector injector) {
-        return ImporterMapImage2DbActor
-                .create(injector, ofSeconds(1), actor.getObjectGetterAsync(StoredObjectsJcsCacheActor.ID))
-                .whenComplete((ret, ex) -> {
-                    if (ex != null) {
-                        log.error("ImporterMapImage2DbActor.create", ex);
-                    } else {
-                        this.importActor = ret;
-                        log.debug("ImporterMapImage2DbActor created");
-                    }
-                });
     }
 
     private static CompletionStage<ActorRef<Message>> createObjectsCache(Injector injector,
@@ -183,8 +149,7 @@ public class ImporterMapImage2DbApp {
     }
 
     private static CompletionStage<ActorRef<Message>> createPowerLoom(Injector injector, ActorSystemProvider actor) {
-        return PowerLoomKnowledgeActor
-                .create(injector, ofSeconds(1), actor.getActorAsync(StoredObjectsJcsCacheActor.ID))
+        return PowerLoomKnowledgeActor.create(injector, ofSeconds(1), actor.getActorAsync(KnowledgeJcsCacheActor.ID))
                 .whenComplete((ret, ex) -> {
                     if (ex != null) {
                         log.error("PowerLoomKnowledgeActor.create", ex);
@@ -194,8 +159,8 @@ public class ImporterMapImage2DbApp {
                 });
     }
 
-    private static CompletionStage<ActorRef<Message>> createKnowledgeCache(Injector injector, ActorSystemProvider actor,
-            ActorRef<Message> powerLoom) {
+    private static CompletionStage<ActorRef<Message>> createKnowledgeCache(Injector injector,
+            ActorSystemProvider actor) {
         return KnowledgeJcsCacheActor.create(injector, ofSeconds(10)).whenComplete((ret, ex) -> {
             if (ex != null) {
                 log.error("KnowledgeJcsCacheActor.create", ex);
@@ -203,6 +168,45 @@ public class ImporterMapImage2DbApp {
                 log.debug("KnowledgeJcsCacheActor created");
             }
         });
+    }
+
+    @SneakyThrows
+    private void cacheMapWait(WorldMap wm, GameMap gm) {
+        askCachePut(cacheActor, actor.getScheduler(), ofSeconds(1), gm).toCompletableFuture().get();
+        askCachePut(cacheActor, actor.getScheduler(), ofSeconds(1), wm).toCompletableFuture().get();
+    }
+
+    /**
+     * Init storages.
+     */
+    private void initStorage(File root, WorldMap wm, GameMap gm) {
+        var gameObjectsPath = new File(root, "objects");
+        if (!gameObjectsPath.isDirectory()) {
+            gameObjectsPath.mkdir();
+        }
+        this.gameObjectsStorage = gameObjectsFactory.create(gameObjectsPath.toPath());
+        var mapObjectsPath = new File(root, "map-" + gm.id);
+        if (!mapObjectsPath.isDirectory()) {
+            mapObjectsPath.mkdir();
+        }
+        this.mapObjectsStorage = mapObjectsFactory.create(mapObjectsPath.toPath(), gm);
+        gameObjectsStorage.putObject(WorldMap.OBJECT_TYPE, wm.id, WorldMapBuffer.getSize(wm),
+                (b) -> WorldMapBuffer.setWorldMap(b, 0, wm));
+        gameObjectsStorage.putObject(GameMap.OBJECT_TYPE, gm.id, GameMapBuffer.getSize(gm),
+                (b) -> GameMapBuffer.setGameMap(b, 0, gm));
+    }
+
+    private CompletionStage<ActorRef<Message>> createImporter(Injector injector) {
+        return ImporterMapImage2DbActor
+                .create(injector, ofSeconds(1), actor.getObjectGetterAsync(StoredObjectsJcsCacheActor.ID))
+                .whenComplete((ret, ex) -> {
+                    if (ex != null) {
+                        log.error("ImporterMapImage2DbActor.create", ex);
+                    } else {
+                        this.importActor = ret;
+                        log.debug("ImporterMapImage2DbActor created");
+                    }
+                });
     }
 
     private Void errorInit(Throwable ex) {

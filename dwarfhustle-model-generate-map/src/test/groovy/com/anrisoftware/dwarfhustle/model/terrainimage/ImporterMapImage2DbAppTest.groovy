@@ -95,6 +95,7 @@ class ImporterMapImage2DbAppTest {
         subtmp.mkdir()
         importer.init(injector, subtmp, wm, gm).get()
         importer.startImport(ImporterMapImage2DbAppTest.class.getResource(image.imageName), image.terrain, subtmp, gm.id)
+        importer.shutdownImporter()
         println "done"
     }
 }
