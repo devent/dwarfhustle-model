@@ -73,7 +73,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ImporterMapImage2DbApp {
 
-    private static final Duration IMPORT_IMAGE_TIMEOUT = Duration.ofMinutes(10);
+    private static final Duration IMPORT_IMAGE_TIMEOUT = Duration.ofMinutes(20);
 
     @Inject
     private ActorSystemProvider actor;
@@ -221,12 +221,19 @@ public class ImporterMapImage2DbApp {
     }
 
     /**
+     * Closes the storages.
+     */
+    public void close() {
+        gameObjectsStorage.close();
+        mapObjectsStorage.close();
+    }
+
+    /**
      * Shutdowns the importer.
      */
     @SneakyThrows
     public CompletionStage<Done> shutdownImporter() {
-        gameObjectsStorage.close();
-        mapObjectsStorage.close();
+        close();
         actor.getMainActor().tell(new ShutdownMessage());
         return actor.shutdown();
     }
