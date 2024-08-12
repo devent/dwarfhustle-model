@@ -60,10 +60,10 @@ class GameObjectsLmbdStorageTest {
         wm.maps.add(gm.id)
         wm.currentMap = gm.id
         def storage = injector.getInstance(GameObjectsLmbdStorageFactory).create(tmp)
-        storage.putObject(WorldMap.OBJECT_TYPE, wm.id, WorldMapBuffer.getSize(wm), { b ->
+        storage.putObject(WorldMap.OBJECT_TYPE, wm.id, WorldMapBuffer.calcSize(wm), { b ->
             WorldMapBuffer.setWorldMap(b, 0, wm)
         })
-        storage.putObject(GameMap.OBJECT_TYPE, gm.id, GameMapBuffer.getSize(gm), { b ->
+        storage.putObject(GameMap.OBJECT_TYPE, gm.id, GameMapBuffer.calcSize(gm), { b ->
             GameMapBuffer.setGameMap(b, 0, gm)
         })
         def that_wm = storage.getObject(WorldMap.OBJECT_TYPE, wm.id)

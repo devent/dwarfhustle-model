@@ -24,9 +24,8 @@ import org.agrona.MutableDirectBuffer;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectBuffer;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapArea;
+import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.google.auto.service.AutoService;
 
 /**
@@ -104,7 +103,7 @@ public class GameMapBuffer extends GameObjectBuffer implements StoredObjectBuffe
     /**
      * Calculates the size in bytes.
      */
-    public static int getSize(GameMap gm) {
+    public static int calcSize(GameMap gm) {
         return MIN_SIZE + BufferUtils.getSizeStringUtf8(gm.name);
     }
 
@@ -287,12 +286,22 @@ public class GameMapBuffer extends GameObjectBuffer implements StoredObjectBuffe
     }
 
     @Override
-    public GameObject read(DirectBuffer b) {
+    public StoredObject read(DirectBuffer b) {
         return GameMapBuffer.getGameMap(b, 0, new GameMap());
     }
 
     @Override
     public int getObjectType() {
         return GameMap.OBJECT_TYPE;
+    }
+
+    @Override
+    public int getSize(StoredObject go) {
+        return GameMapBuffer.calcSize((GameMap) go);
+    }
+
+    @Override
+    public void write(MutableDirectBuffer b, StoredObject go) {
+        GameMapBuffer.setGameMap(b, 0, (GameMap) go);
     }
 }

@@ -41,6 +41,8 @@ import org.lmdbjava.Txn;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapObjectsStorage;
+import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.google.inject.assistedinject.Assisted;
 
 import jakarta.inject.Inject;
@@ -48,7 +50,7 @@ import jakarta.inject.Inject;
 /**
  * Store the object ID and object type for the (x,y,z) map block.
  */
-public class MapObjectsLmbdStorage implements AutoCloseable {
+public class MapObjectsLmbdStorage implements MapObjectsStorage {
 
     /**
      * Factory to create the {@link MapObjectsLmbdStorage}.
@@ -103,6 +105,7 @@ public class MapObjectsLmbdStorage implements AutoCloseable {
     /**
      * Stores the game map object in the (x,y,z) block in the database.
      */
+    @Override
     public void putObject(int x, int y, int z, int type, long id) {
         int index = GameBlockPos.calcIndex(w, h, d, 0, 0, 0, x, y, z);
         try (Txn<DirectBuffer> txn = env.txnWrite()) {
@@ -120,7 +123,7 @@ public class MapObjectsLmbdStorage implements AutoCloseable {
 
         private static final long serialVersionUID = 1L;
 
-        public ObjectsListRecursiveAction(int max, int start, int end, List<GameMapObject> objects) {
+        public ObjectsListRecursiveAction(int max, int start, int end, List<? extends StoredObject> objects) {
             super(max, start, end, objects);
         }
 
@@ -132,9 +135,10 @@ public class MapObjectsLmbdStorage implements AutoCloseable {
                 final var val = buffval.get();
                 for (int i = start; i < end; i++) {
                     var o = objects.get(i);
-                    int index = GameBlockPos.calcIndex(w, h, d, 0, 0, 0, o.pos.x, o.pos.y, o.pos.z);
+                    var mo = (GameMapObject) o;
+                    int index = GameBlockPos.calcIndex(w, h, d, 0, 0, 0, mo.pos.x, mo.pos.y, mo.pos.z);
                     key.putInt(0, index);
-                    MapObjectValue.setId(val, 0, o.id);
+                    MapObjectValue.setId(val, 0, o.getId());
                     MapObjectValue.setType(val, 0, o.getObjectType());
                     c.put(key, val);
                 }
@@ -143,7 +147,8 @@ public class MapObjectsLmbdStorage implements AutoCloseable {
         }
 
         @Override
-        protected AbstractObjectsListRecursiveAction create(int max, int start, int end, List<GameMapObject> objects) {
+        protected AbstractObjectsListRecursiveAction create(int max, int start, int end,
+                List<? extends StoredObject> objects) {
             return new ObjectsListRecursiveAction(max, start, end, objects);
         }
     }
@@ -151,10 +156,11 @@ public class MapObjectsLmbdStorage implements AutoCloseable {
     /**
      * Mass storage for game map objects.
      */
-    public void putObjects(List<GameMapObject> objects) {
+    @Override
+    public void putObjects(List<? extends StoredObject> objects) {
         int max = 8192;
         if (objects.size() < max) {
-            putObjects((Iterable<GameMapObject>) objects);
+            putObjects(objects);
         } else {
             var pool = ForkJoinPool.commonPool();
             pool.invoke(new ObjectsListRecursiveAction(max, 0, objects.size(), objects));
@@ -164,6 +170,7 @@ public class MapObjectsLmbdStorage implements AutoCloseable {
     /**
      * Mass storage for game map objects.
      */
+    @Override
     public void putObjects(Iterable<GameMapObject> objects) {
         try (Txn<DirectBuffer> txn = env.txnWrite()) {
             final var c = db.openCursor(txn);
@@ -183,6 +190,7 @@ public class MapObjectsLmbdStorage implements AutoCloseable {
     /**
      * Retrieves the game map objects on the (x,y,z) block from the database.
      */
+    @Override
     public void getObjects(int x, int y, int z, BiConsumer<Integer, Long> consumer) {
         try {
             readTxn.renew();
@@ -209,6 +217,7 @@ public class MapObjectsLmbdStorage implements AutoCloseable {
      * Retrieves the game map objects from a range start (x,y,z) to end (x,y,z)
      * blocks from the database.
      */
+    @Override
     public void getObjectsRange(int sx, int sy, int sz, int ex, int ey, int ez, BiConsumer<Integer, Long> consumer) {
         final int xx = ex - sx;
         final int yy = ey - sy;

@@ -1,5 +1,5 @@
 /*
- * dwarfhustle-model-db - Manages the compile dependencies for the model.
+ * dwarfhustle-model-knowledge - Manages the compile dependencies for the model.
  * Copyright © 2023 Erwin Müller (erwin.mueller@anrisoftware.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,25 +15,32 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.db.buffers;
+package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
-import org.agrona.DirectBuffer;
-import org.agrona.MutableDirectBuffer;
-
-import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
+import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeTrunk;
+import com.google.auto.service.AutoService;
 
 /**
- * Returns the {@link StoredObject} buffer.
- * 
+ * @see KnowledgeTreeTrunk
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-public interface StoredObjectBuffer {
+@AutoService(GameObjectKnowledge.class)
+public class TreeTrunkStorage extends VegetationStorage {
 
-    int getObjectType();
+    @Override
+    public String getType() {
+        return KnowledgeTreeTrunk.TYPE;
+    }
 
-    int getSize(StoredObject go);
+    @Override
+    public KnowledgeObject retrieve(Object o, KnowledgeObject go) {
+        super.retrieve(o, go);
+        return go;
+    }
 
-    StoredObject read(DirectBuffer b);
-
-    void write(MutableDirectBuffer b, StoredObject go);
+    @Override
+    public KnowledgeObject create() {
+        return new KnowledgeTreeTrunk();
+    }
 }

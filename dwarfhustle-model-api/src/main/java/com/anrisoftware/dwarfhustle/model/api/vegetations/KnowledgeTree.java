@@ -17,8 +17,6 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.vegetations;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -32,7 +30,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @Data
-public class KnowledgeTree extends KnowledgeVegetation {
+public abstract class KnowledgeTree extends KnowledgeVegetation {
 
     public static final int OBJECT_TYPE = KnowledgeTree.class.getSimpleName().hashCode();
 
@@ -51,10 +49,4 @@ public class KnowledgeTree extends KnowledgeVegetation {
     public String getKnowledgeType() {
         return KnowledgeTree.TYPE;
     }
-
-    @Override
-    public GameObject createObject(byte[] id) {
-        return new Tree(id);
-    }
-
 }

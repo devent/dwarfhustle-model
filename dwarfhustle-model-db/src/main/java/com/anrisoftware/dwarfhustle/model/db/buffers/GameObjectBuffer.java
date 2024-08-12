@@ -15,10 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api.objects;
+package com.anrisoftware.dwarfhustle.model.db.buffers;
 
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
+
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 /**
  * Writes and reads {@link GameObject} in a byte buffer.

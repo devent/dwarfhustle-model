@@ -17,7 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.vegetations;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -25,32 +25,34 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
- * Plant with an elongated stem, or trunk, usually supporting branches and
- * leaves.
+ * Sampling of the tree.
  */
 @NoArgsConstructor
 @ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @Data
-public abstract class Tree extends Vegetation {
+public class KnowledgeTreeSampling extends KnowledgeTree {
 
-    public static final int OBJECT_TYPE = Tree.class.getSimpleName().hashCode();
+    public static final int OBJECT_TYPE = KnowledgeTreeSampling.class.getSimpleName().hashCode();
 
-    public Tree(byte[] idbuf) {
-        super(idbuf);
-    }
+    public static final String TYPE = "Tree-Sampling";
 
-    public Tree(long id, GameBlockPos pos) {
-        super(id, pos);
-    }
-
-    public Tree(byte[] idbuf, GameBlockPos pos) {
-        super(idbuf, pos);
+    public KnowledgeTreeSampling(int kid) {
+        super(kid);
     }
 
     @Override
     public int getObjectType() {
-        return OBJECT_TYPE;
+        return KnowledgeTreeSampling.OBJECT_TYPE;
     }
 
+    @Override
+    public String getKnowledgeType() {
+        return KnowledgeTreeSampling.TYPE;
+    }
+
+    @Override
+    public GameObject createObject(byte[] id) {
+        return new TreeSampling(id);
+    }
 }

@@ -25,8 +25,7 @@ import org.eclipse.collections.api.factory.primitive.LongSets;
 import org.eclipse.collections.api.set.primitive.LongSet;
 import org.eclipse.collections.api.set.primitive.MutableLongSet;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectBuffer;
+import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
 import com.google.auto.service.AutoService;
 
@@ -91,7 +90,7 @@ public class WorldMapBuffer extends GameObjectBuffer implements StoredObjectBuff
     /**
      * Calculates the size in bytes.
      */
-    public static int getSize(WorldMap wm) {
+    public static int calcSize(WorldMap wm) {
         return MIN_SIZE + wm.maps.size() * 8 + BufferUtils.getSizeStringUtf8(wm.name);
     }
 
@@ -232,13 +231,23 @@ public class WorldMapBuffer extends GameObjectBuffer implements StoredObjectBuff
     }
 
     @Override
-    public GameObject read(DirectBuffer b) {
+    public StoredObject read(DirectBuffer b) {
         return WorldMapBuffer.getWorldMap(b, 0, new WorldMap());
     }
 
     @Override
     public int getObjectType() {
         return WorldMap.OBJECT_TYPE;
+    }
+
+    @Override
+    public int getSize(StoredObject go) {
+        return calcSize((WorldMap) go);
+    }
+
+    @Override
+    public void write(MutableDirectBuffer b, StoredObject go) {
+        setWorldMap(b, 0, (WorldMap) go);
     }
 
 }

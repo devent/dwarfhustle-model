@@ -20,7 +20,7 @@ package com.anrisoftware.dwarfhustle.model.db.buffers;
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.anrisoftware.dwarfhustle.model.api.vegetations.Grass;
 import com.google.auto.service.AutoService;
 
@@ -55,13 +55,23 @@ public class GrassBuffer extends VegetationBuffer implements StoredObjectBuffer 
     }
 
     @Override
-    public GameObject read(DirectBuffer b) {
+    public StoredObject read(DirectBuffer b) {
         return GrassBuffer.getGrass(b, 0, new Grass());
     }
 
     @Override
     public int getObjectType() {
         return Grass.OBJECT_TYPE;
+    }
+
+    @Override
+    public int getSize(StoredObject go) {
+        return SIZE;
+    }
+
+    @Override
+    public void write(MutableDirectBuffer b, StoredObject go) {
+        setGrass(b, 0, (Grass) go);
     }
 
 }

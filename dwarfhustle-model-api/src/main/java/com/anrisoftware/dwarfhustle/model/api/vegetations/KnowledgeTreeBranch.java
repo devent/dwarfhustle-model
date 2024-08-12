@@ -19,9 +19,18 @@ package com.anrisoftware.dwarfhustle.model.api.vegetations;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+
 /**
  * Branch of the tree.
  */
+@NoArgsConstructor
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
+@Data
 public class KnowledgeTreeBranch extends KnowledgeTree {
 
     public static final int OBJECT_TYPE = KnowledgeTreeBranch.class.getSimpleName().hashCode();

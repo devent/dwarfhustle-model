@@ -22,7 +22,6 @@ import org.agrona.MutableDirectBuffer;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObjectBuffer;
 
 /**
  * Writes and reads {@link GameMapObject} in a byte buffer.

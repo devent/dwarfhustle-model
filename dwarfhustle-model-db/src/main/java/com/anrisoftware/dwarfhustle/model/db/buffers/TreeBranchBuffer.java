@@ -20,7 +20,7 @@ package com.anrisoftware.dwarfhustle.model.db.buffers;
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.anrisoftware.dwarfhustle.model.api.vegetations.TreeBranch;
 import com.google.auto.service.AutoService;
 
@@ -56,13 +56,23 @@ public class TreeBranchBuffer implements StoredObjectBuffer {
     }
 
     @Override
-    public GameObject read(DirectBuffer b) {
+    public StoredObject read(DirectBuffer b) {
         return TreeBranchBuffer.getTreeBranch(b, 0, new TreeBranch());
     }
 
     @Override
     public int getObjectType() {
         return TreeBranch.OBJECT_TYPE;
+    }
+
+    @Override
+    public int getSize(StoredObject go) {
+        return SIZE;
+    }
+
+    @Override
+    public void write(MutableDirectBuffer b, StoredObject go) {
+        setTreeBranch(b, 0, (TreeBranch) go);
     }
 
 }

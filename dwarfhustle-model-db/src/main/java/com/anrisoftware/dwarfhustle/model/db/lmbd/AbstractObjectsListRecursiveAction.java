@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 
 import lombok.RequiredArgsConstructor;
 
@@ -41,7 +41,7 @@ public abstract class AbstractObjectsListRecursiveAction extends RecursiveAction
 
     protected final int end;
 
-    protected final List<GameMapObject> objects;
+    protected final List<? extends StoredObject> objects;
 
     @Override
     protected void compute() {
@@ -62,6 +62,6 @@ public abstract class AbstractObjectsListRecursiveAction extends RecursiveAction
     protected abstract void processing();
 
     protected abstract AbstractObjectsListRecursiveAction create(int max, int start, int end,
-            List<GameMapObject> objects);
+            List<? extends StoredObject> objects);
 
 }

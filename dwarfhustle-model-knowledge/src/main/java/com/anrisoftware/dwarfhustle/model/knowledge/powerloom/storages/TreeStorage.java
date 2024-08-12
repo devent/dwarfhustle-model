@@ -19,14 +19,12 @@ package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTree;
-import com.google.auto.service.AutoService;
 
 /**
  * @see KnowledgeTree
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@AutoService(GameObjectKnowledge.class)
-public class TreeStorage extends VegetationStorage {
+public abstract class TreeStorage extends VegetationStorage {
 
     @Override
     public String getType() {
@@ -37,10 +35,5 @@ public class TreeStorage extends VegetationStorage {
     public KnowledgeObject retrieve(Object o, KnowledgeObject go) {
         super.retrieve(o, go);
         return go;
-    }
-
-    @Override
-    public KnowledgeObject create() {
-        return new KnowledgeTree();
     }
 }

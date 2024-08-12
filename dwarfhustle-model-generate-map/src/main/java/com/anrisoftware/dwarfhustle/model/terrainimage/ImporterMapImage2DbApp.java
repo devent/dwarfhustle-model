@@ -190,9 +190,9 @@ public class ImporterMapImage2DbApp {
             mapObjectsPath.mkdir();
         }
         this.mapObjectsStorage = mapObjectsFactory.create(mapObjectsPath.toPath(), gm);
-        gameObjectsStorage.putObject(WorldMap.OBJECT_TYPE, wm.id, WorldMapBuffer.getSize(wm),
+        gameObjectsStorage.putObject(WorldMap.OBJECT_TYPE, wm.id, WorldMapBuffer.calcSize(wm),
                 (b) -> WorldMapBuffer.setWorldMap(b, 0, wm));
-        gameObjectsStorage.putObject(GameMap.OBJECT_TYPE, gm.id, GameMapBuffer.getSize(gm),
+        gameObjectsStorage.putObject(GameMap.OBJECT_TYPE, gm.id, GameMapBuffer.calcSize(gm),
                 (b) -> GameMapBuffer.setGameMap(b, 0, gm));
     }
 
