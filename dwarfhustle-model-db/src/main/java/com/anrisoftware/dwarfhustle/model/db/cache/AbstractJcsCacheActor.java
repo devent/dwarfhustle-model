@@ -219,6 +219,7 @@ public abstract class AbstractJcsCacheActor implements ObjectsGetter, ObjectsSet
     protected void handleCacheMiss(@SuppressWarnings("rawtypes") CacheGetMessage m) {
         context.getSelf().tell(new CacheRetrieveFromBackendMessage(m, go -> {
             cache.put(m.key, go);
+            m.consumer.accept(go);
             m.replyTo.tell(new CacheGetSuccessMessage<>(m, go));
         }));
     }
