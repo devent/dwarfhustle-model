@@ -24,6 +24,7 @@ import java.time.Duration;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import org.eclipse.collections.api.list.ListIterable;
@@ -130,10 +131,20 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
         return askKnowledgeObjects(a, timeout, a.scheduler(), type);
     }
 
+    private final static Consumer<KnowledgeLoadedObject> NOP = (ko) -> {
+    };
+
     public final String type;
 
+    public final Consumer<KnowledgeLoadedObject> onSuccess;
+
     public KnowledgeGetMessage(ActorRef<T> replyTo, String type) {
+        this(replyTo, type, NOP);
+    }
+
+    public KnowledgeGetMessage(ActorRef<T> replyTo, String type, Consumer<KnowledgeLoadedObject> onSuccess) {
         super(replyTo);
         this.type = type;
+        this.onSuccess = onSuccess;
     }
 }

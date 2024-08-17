@@ -276,17 +276,19 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
     @SuppressWarnings("unchecked")
     @SneakyThrows
     private void cacheMiss(@SuppressWarnings("rawtypes") KnowledgeGetMessage m) {
-        var glo = retrieveKnowledgeLoadedObject(m.type);
-        cacheObjects(glo);
-        objectsCache.tell(new CachePutMessage<>(cacheResponseAdapter, glo));
-        m.replyTo.tell(new KnowledgeResponseSuccessMessage(glo));
+        var klo = retrieveKnowledgeLoadedObject(m.type);
+        cacheObjects(klo);
+        objectsCache.tell(new CachePutMessage<>(cacheResponseAdapter, klo));
+        m.replyTo.tell(new KnowledgeResponseSuccessMessage(klo));
+        m.onSuccess.accept(klo);
     }
 
     @SuppressWarnings("unchecked")
     private void cacheHit(@SuppressWarnings("rawtypes") KnowledgeGetMessage m, GameObject go) {
-        var ko = (KnowledgeLoadedObject) go;
-        cacheObjects(ko);
-        m.replyTo.tell(new KnowledgeResponseSuccessMessage(ko));
+        var klo = (KnowledgeLoadedObject) go;
+        cacheObjects(klo);
+        m.replyTo.tell(new KnowledgeResponseSuccessMessage(klo));
+        m.onSuccess.accept(klo);
     }
 
     private void cacheObjects(KnowledgeLoadedObject ko) {
