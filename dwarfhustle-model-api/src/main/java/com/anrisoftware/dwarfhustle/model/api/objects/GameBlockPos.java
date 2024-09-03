@@ -188,4 +188,16 @@ public class GameBlockPos implements Externalizable, StreamStorage {
         this.z = pos.z;
     }
 
+    public boolean canAddX(int v, int w) {
+        return x + v > -1 && x + v < w;
+    }
+
+    public boolean canAddY(int v, int h) {
+        return y + v > -1 && y + v < h;
+    }
+
+    public boolean canAddZ(int v, int d) {
+        return z + v > -1 && z + v < d;
+    }
+
 }
