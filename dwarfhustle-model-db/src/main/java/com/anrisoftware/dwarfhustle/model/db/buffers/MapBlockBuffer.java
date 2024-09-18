@@ -17,22 +17,16 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.buffers;
 
-import static com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos.calcIndex;
-import static com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos.calcX;
-import static com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos.calcY;
-import static com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos.calcZ;
-import static com.anrisoftware.dwarfhustle.model.db.buffers.BufferUtils.readInt;
-import static com.anrisoftware.dwarfhustle.model.db.buffers.BufferUtils.readShort;
-import static com.anrisoftware.dwarfhustle.model.db.buffers.BufferUtils.writeInt;
-import static com.anrisoftware.dwarfhustle.model.db.buffers.BufferUtils.writeShort;
+import static com.anrisoftware.dwarfhustle.model.db.buffers.BufferUtils.int2short;
+import static com.anrisoftware.dwarfhustle.model.db.buffers.BufferUtils.short2int;
 
 import java.nio.ByteBuffer;
-import java.util.function.Function;
+
+import org.agrona.DirectBuffer;
+import org.agrona.MutableDirectBuffer;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
-import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
-import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
 import com.anrisoftware.dwarfhustle.model.api.objects.PropertiesSet;
 
 /**
@@ -56,21 +50,21 @@ import com.anrisoftware.dwarfhustle.model.api.objects.PropertiesSet;
 public class MapBlockBuffer {
 
     /**
-     * Size in bytes.
+     * Size in bytes. 14 bytes.
      */
     public static final int SIZE = 4 + 2 + 2 + 2 + 2 + 2;
 
-    private static final int PARENT_INDEX = 2 * 2;
+    private static final int PARENT_BYTE = 2 * 2;
 
-    private static final int MATERIAL_INDEX = 3 * 2;
+    private static final int MATERIAL_BYTE = 3 * 2;
 
-    private static final int OBJECT_INDEX = 4 * 2;
+    private static final int OBJECT_BYTE = 4 * 2;
 
-    private static final int PROP_INDEX = 0 * 4;
+    private static final int PROP_BYTE = 0 * 4;
 
-    private static final int TEMP_INDEX = 5 * 2;
+    private static final int TEMP_BYTE = 5 * 2;
 
-    private static final int LUX_INDEX = 6 * 2;
+    private static final int LUX_BYTE = 6 * 2;
 
     /**
      * Returns the size of the {@link MapBlock}'s buffer for the chunk width, height
@@ -80,152 +74,86 @@ public class MapBlockBuffer {
         return SIZE * w * h * d;
     }
 
-    public static void setParent(ByteBuffer b, int off, int p) {
-        writeShort(b.position(PARENT_INDEX + off), (short) p);
+    public static void setParent(MutableDirectBuffer b, int off, int p) {
+        b.putShort(PARENT_BYTE + off, (short) p);
     }
 
-    public static int getParent(ByteBuffer b, int off) {
-        return readShort(b.position(PARENT_INDEX + off));
+    public static int getParent(DirectBuffer b, int off) {
+        return b.getShort(PARENT_BYTE + off);
     }
 
-    public static void setMaterial(ByteBuffer b, int off, int m) {
-        writeShort(b.position(MATERIAL_INDEX + off), (short) m);
+    public static void setMaterial(MutableDirectBuffer b, int off, int m) {
+        b.putShort(MATERIAL_BYTE + off, (short) m);
     }
 
-    public static int getMaterial(ByteBuffer b, int off) {
-        return readShort(b.position(MATERIAL_INDEX + off));
+    public static int getMaterial(DirectBuffer b, int off) {
+        return b.getShort(MATERIAL_BYTE + off);
     }
 
-    public static void setObject(ByteBuffer b, int off, int o) {
-        writeShort(b.position(OBJECT_INDEX + off), (short) o);
+    public static void setObject(MutableDirectBuffer b, int off, int o) {
+        b.putShort(OBJECT_BYTE + off, (short) o);
     }
 
-    public static int getObject(ByteBuffer b, int off) {
-        return readShort(b.position(OBJECT_INDEX + off));
+    public static int getObject(DirectBuffer b, int off) {
+        return b.getShort(OBJECT_BYTE + off);
     }
 
-    public static void setProp(ByteBuffer b, int off, int p) {
-        writeInt(b.position(PROP_INDEX + off), p);
+    public static void setProp(MutableDirectBuffer b, int off, int p) {
+        b.putInt(PROP_BYTE + off, p);
     }
 
-    public static int getProp(ByteBuffer b, int off) {
-        return readInt(b.position(PROP_INDEX + off));
+    public static int getProp(DirectBuffer b, int off) {
+        return b.getInt(PROP_BYTE + off);
     }
 
-    public static void setTemp(ByteBuffer b, int off, int t) {
-        writeShort(b.position(TEMP_INDEX + off), (short) (t - 32_768));
+    public static void setTemp(MutableDirectBuffer b, int off, int t) {
+        b.putShort(TEMP_BYTE + off, int2short(t));
     }
 
-    public static int getTemp(ByteBuffer b, int off) {
-        return readShort(b.position(TEMP_INDEX + off)) + 32_768;
+    public static int getTemp(DirectBuffer b, int off) {
+        return short2int(b.getShort(TEMP_BYTE + off));
     }
 
-    public static void setLux(ByteBuffer b, int off, int l) {
-        writeShort(b.position(LUX_INDEX + off), (short) (l - 32_768));
+    public static void setLux(MutableDirectBuffer b, int off, int l) {
+        b.putShort(LUX_BYTE + off, int2short(l));
     }
 
-    public static int getLux(ByteBuffer b, int off) {
-        return readShort(b.position(LUX_INDEX + off)) + 32_768;
+    public static int getLux(DirectBuffer b, int off) {
+        return short2int(b.getShort(LUX_BYTE + off));
     }
 
     /**
-     * Writes the {@link MapBlock} to the buffer at the block index.
+     * Writes the {@link MapBlock} to the buffer.
      * 
      * @param b      the output {@link ByteBuffer}.
      * @param offset the offset of the output buffer to write to.
      * @param block  the {@link MapBlock} to write.
-     * @param cw     the chunk width.
-     * @param ch     the chunk height.
-     * @param cd     the chunk depth.
-     * @param sx     the {@link MapChunk} position start X.
-     * @param sy     the {@link MapChunk} position start Y.
-     * @param sz     the {@link MapChunk} position start Z.
      */
-    public static void writeMapBlockIndex(ByteBuffer b, int offset, MapBlock block, int cw, int ch, int cd, int sx,
-            int sy, int sz) {
-        int index = calcIndex(cw, ch, cd, sx, sy, sz, block.pos.x, block.pos.y, block.pos.z);
-        b.position(offset + index * SIZE);
-        writeInt(b, block.p.bits);
-        writeShort(b, (short) block.parent);
-        writeShort(b, (short) block.material);
-        writeShort(b, (short) block.object);
-        writeShort(b, (short) (block.temp - 32_768));
-        writeShort(b, (short) (block.lux - 32_768));
+    public static void write(MutableDirectBuffer b, int offset, MapBlock block) {
+        b.putInt(PROP_BYTE + offset, block.p.bits);
+        b.putShort(PARENT_BYTE + offset, (short) block.parent);
+        b.putShort(MATERIAL_BYTE + offset, (short) block.material);
+        b.putShort(OBJECT_BYTE + offset, (short) block.object);
+        b.putShort(TEMP_BYTE + offset, (int2short(block.temp)));
+        b.putShort(LUX_BYTE + offset, (int2short(block.lux)));
     }
 
     /**
-     * Reads the {@link MapBlock} from the buffer at the block index.
+     * Reads the {@link MapBlock} from the buffer.
      * 
      * @param b      the source {@link ByteBuffer}.
      * @param offset the offset of the source buffer to read from.
-     * @param i      the index of the block in the buffer.
-     * @param cw     the chunk width.
-     * @param ch     the chunk height.
-     * @param sx     the {@link MapChunk} position start X.
-     * @param sy     the {@link MapChunk} position start Y.
-     * @param sz     the {@link MapChunk} position start Z.
      * @return the {@link MapBlock}.
      */
-    public static MapBlock readMapBlockIndex(ByteBuffer b, int offset, int i, int cw, int ch, int sx, int sy, int sz) {
-        var block = new MapBlock();
-        b.position(offset + i * SIZE);
-        block.pos = new GameBlockPos(calcX(i, cw, sx), calcY(i, cw, sy), calcZ(i, cw, ch, sz));
-        block.p = new PropertiesSet(readInt(b));
-        block.parent = readShort(b);
-        block.material = readShort(b);
-        block.object = readShort(b);
-        block.temp = readShort(b) + 32_768;
-        block.lux = readShort(b) + 32_768;
+    public static MapBlock read(DirectBuffer b, int offset, GameBlockPos pos) {
+        var block = new MapBlock(pos);
+        block.p = new PropertiesSet(b.getInt(PROP_BYTE + offset));
+        block.parent = b.getShort(PARENT_BYTE + offset);
+        block.material = b.getShort(MATERIAL_BYTE + offset);
+        block.object = b.getShort(OBJECT_BYTE + offset);
+        block.temp = short2int(b.getShort(TEMP_BYTE + offset));
+        block.lux = short2int(b.getShort(LUX_BYTE + offset));
         return block;
-    }
-
-    public static MapBlock getNeighbor(MapBlock mb, NeighboringDir dir, MapChunk chunk,
-            Function<Integer, MapChunk> retriever) {
-        var dirpos = mb.pos.add(dir.pos);
-        if (dirpos.isNegative()) {
-            return null;
-        }
-        if (chunk.isInside(dirpos)) {
-            return MapChunkBuffer.getBlock(chunk, dirpos);
-        } else {
-            var parent = retriever.apply(chunk.parent);
-            return MapChunkBuffer.findBlock(parent, dirpos, retriever);
-        }
-    }
-
-    public static MapBlock getNeighborNorth(MapBlock mb, MapChunk chunk, Function<Integer, MapChunk> retriever) {
-        return getNeighbor(mb, NeighboringDir.N, chunk, retriever);
-    }
-
-    public static MapBlock getNeighborSouth(MapBlock mb, MapChunk chunk, Function<Integer, MapChunk> retriever) {
-        return getNeighbor(mb, NeighboringDir.S, chunk, retriever);
-    }
-
-    public static MapBlock getNeighborEast(MapBlock mb, MapChunk chunk, Function<Integer, MapChunk> retriever) {
-        return getNeighbor(mb, NeighboringDir.E, chunk, retriever);
-    }
-
-    public static MapBlock getNeighborWest(MapBlock mb, MapChunk chunk, Function<Integer, MapChunk> retriever) {
-        return getNeighbor(mb, NeighboringDir.W, chunk, retriever);
-    }
-
-    public static MapBlock getNeighborUp(MapBlock mb, MapChunk chunk, Function<Integer, MapChunk> retriever) {
-        return getNeighbor(mb, NeighboringDir.U, chunk, retriever);
-    }
-
-    public static boolean isNeighborsUpEmptyContinuously(MapBlock mb, MapChunk chunk,
-            Function<Integer, MapChunk> retriever) {
-        MapBlock up = getNeighbor(mb, NeighboringDir.U, chunk, retriever);
-        while (up != null) {
-            if (!up.isEmpty()) {
-                return false;
-            }
-            if (mb.parent != up.parent) {
-                chunk = retriever.apply(up.parent);
-            }
-            up = getNeighbor(up, NeighboringDir.U, chunk, retriever);
-        }
-        return true;
     }
 
 }

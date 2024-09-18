@@ -119,11 +119,11 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage {
         }
     }
 
-    private class ObjectsListRecursiveAction extends AbstractObjectsListRecursiveAction {
+    private class ObjectsListRecursiveAction<T extends StoredObject> extends AbstractObjectsListRecursiveAction<T> {
 
         private static final long serialVersionUID = 1L;
 
-        public ObjectsListRecursiveAction(int max, int start, int end, List<? extends StoredObject> objects) {
+        public ObjectsListRecursiveAction(int max, int start, int end, List<T> objects) {
             super(max, start, end, objects);
         }
 
@@ -147,9 +147,8 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage {
         }
 
         @Override
-        protected AbstractObjectsListRecursiveAction create(int max, int start, int end,
-                List<? extends StoredObject> objects) {
-            return new ObjectsListRecursiveAction(max, start, end, objects);
+        protected AbstractObjectsListRecursiveAction<T> create(int max, int start, int end, List<T> objects) {
+            return new ObjectsListRecursiveAction<>(max, start, end, objects);
         }
     }
 
@@ -163,7 +162,7 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage {
             putObjects(objects);
         } else {
             var pool = ForkJoinPool.commonPool();
-            pool.invoke(new ObjectsListRecursiveAction(max, 0, objects.size(), objects));
+            pool.invoke(new ObjectsListRecursiveAction<>(max, 0, objects.size(), objects));
         }
     }
 

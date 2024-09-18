@@ -116,6 +116,10 @@ public class MapBlock implements Serializable {
         this.p = new PropertiesSet();
     }
 
+    public MapBlock(GameBlockPos pos) {
+        this.pos = pos;
+    }
+
     public MapBlock(int parent, GameBlockPos pos) {
         this.parent = parent;
         this.pos = pos;

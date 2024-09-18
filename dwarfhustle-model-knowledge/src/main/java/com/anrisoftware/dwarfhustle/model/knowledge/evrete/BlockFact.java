@@ -30,10 +30,10 @@ import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.SE;
 import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.U;
 import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.W;
 
-import java.util.function.Function;
-
+import com.anrisoftware.dwarfhustle.model.api.objects.GameChunkPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
+import com.anrisoftware.dwarfhustle.model.db.api.MapChunksStorage;
 import com.anrisoftware.dwarfhustle.model.db.buffers.MapBlockBuffer;
 
 import lombok.RequiredArgsConstructor;
@@ -47,6 +47,9 @@ import lombok.ToString;
 @RequiredArgsConstructor
 @ToString
 public class BlockFact {
+
+    @ToString.Exclude
+    public final MapChunksStorage storage;
 
     public final MapChunk chunk;
 
@@ -62,9 +65,6 @@ public class BlockFact {
 
     public final int d;
 
-    @ToString.Exclude
-    public final Function<Integer, MapChunk> retriever;
-
     public int getW1() {
         return w - 1;
     }
@@ -77,173 +77,190 @@ public class BlockFact {
         return d - 1;
     }
 
-    public static void setMaterial(MapChunk chunk, int x, int y, int z, int m) {
-        int off = getByteOffset(chunk, x, y, z);
-        MapBlockBuffer.setMaterial(chunk.getBlocksBuffer(), off, m);
+    public static void setMaterial(BlockFact fact, int x, int y, int z, int m) {
+        final int off = getByteOffset(fact.chunk.pos, x, y, z);
+        fact.storage.withBlockBuffer(fact.chunk, (b) -> MapBlockBuffer.setMaterial(b, off, m));
     }
 
     public void setMaterial(int x, int y, int z, int m) {
-        setMaterial(chunk, x, y, z, m);
+        setMaterial(this, x, y, z, m);
     }
 
     public void setMaterial(int m) {
         setMaterial(x, y, z, m);
     }
 
-    public static int getMaterial(MapChunk chunk, int x, int y, int z) {
-        int off = getByteOffset(chunk, x, y, z);
-        return MapBlockBuffer.getMaterial(chunk.getBlocksBuffer(), off);
+    public static int getMaterial(BlockFact fact, int x, int y, int z) {
+        final int off = getByteOffset(fact.chunk.pos, x, y, z);
+        return fact.storage.withBlockReadBuffer(fact.chunk, (b) -> MapBlockBuffer.getMaterial(b, off));
     }
 
     public int getMaterial(int x, int y, int z) {
-        return getMaterial(chunk, x, y, z);
+        return getMaterial(this, x, y, z);
     }
 
     public int getMaterial() {
         return getMaterial(x, y, z);
     }
 
+    public static void setObject(BlockFact fact, int x, int y, int z, int o) {
+        final int off = getByteOffset(fact.chunk.pos, x, y, z);
+        fact.storage.withBlockBuffer(fact.chunk, (b) -> MapBlockBuffer.setObject(b, off, o));
+    }
+
     public void setObject(int x, int y, int z, int o) {
-        int off = getByteOffset(x, y, z);
-        MapBlockBuffer.setObject(chunk.getBlocksBuffer(), off, o);
+        setObject(this, x, y, z, o);
     }
 
     public void setObject(int o) {
         setObject(x, y, z, o);
     }
 
+    public static int getObject(BlockFact fact, int x, int y, int z) {
+        final int off = getByteOffset(fact.chunk.pos, x, y, z);
+        return fact.storage.withBlockReadBuffer(fact.chunk, (b) -> MapBlockBuffer.getObject(b, off));
+    }
+
     public int getObject(int x, int y, int z) {
-        int off = getByteOffset(x, y, z);
-        return MapBlockBuffer.getObject(chunk.getBlocksBuffer(), off);
+        return getObject(this, x, y, z);
     }
 
     public int getObject() {
         return getObject(x, y, z);
     }
 
-    public static void setProp(MapChunk chunk, int x, int y, int z, int p) {
-        int off = getByteOffset(chunk, x, y, z);
-        MapBlockBuffer.setProp(chunk.getBlocksBuffer(), off, p);
+    public static void setProp(BlockFact fact, int x, int y, int z, int p) {
+        final int off = getByteOffset(fact.chunk.pos, x, y, z);
+        fact.storage.withBlockBuffer(fact.chunk, (b) -> MapBlockBuffer.setProp(b, off, p));
     }
 
     public void setProp(int x, int y, int z, int p) {
-        setProp(chunk, x, y, z, p);
+        setProp(this, x, y, z, p);
     }
 
     public void setProp(int p) {
         setProp(x, y, z, p);
     }
 
-    public static int getProp(MapChunk chunk, int x, int y, int z) {
-        int off = getByteOffset(chunk, x, y, z);
-        return MapBlockBuffer.getProp(chunk.getBlocksBuffer(), off);
+    public static int getProp(BlockFact fact, int x, int y, int z) {
+        final int off = getByteOffset(fact.chunk.pos, x, y, z);
+        return fact.storage.withBlockReadBuffer(fact.chunk, (b) -> MapBlockBuffer.getProp(b, off));
+    }
+
+    public static int getProp(MapChunksStorage storage, MapChunk chunk, int x, int y, int z) {
+        final int off = getByteOffset(chunk.pos, x, y, z);
+        return storage.withBlockReadBuffer(chunk, (b) -> MapBlockBuffer.getProp(b, off));
     }
 
     public int getProp(int x, int y, int z) {
-        return getProp(chunk, x, y, z);
+        return getProp(this, x, y, z);
     }
 
     public int getProp() {
         return getProp(x, y, z);
     }
 
-    public static boolean isProp(MapChunk chunk, int x, int y, int z, int flags) {
-        return (getProp(chunk, x, y, z) & flags) == flags;
+    public static boolean isProp(BlockFact fact, int x, int y, int z, int flags) {
+        return isFlag(getProp(fact, x, y, z), flags);
+    }
+
+    public static boolean isProp(MapChunksStorage storage, MapChunk chunk, int x, int y, int z, int flags) {
+        return isFlag(getProp(storage, chunk, x, y, z), flags);
+    }
+
+    private static boolean isFlag(int p, int flags) {
+        return (p & flags) == flags;
     }
 
     public boolean isProp(int x, int y, int z, int flags) {
-        return isProp(chunk, x, y, z, flags);
+        return isProp(this, x, y, z, flags);
     }
 
     public boolean isProp(int flags) {
         return isProp(x, y, z, flags);
     }
 
-    public static void addProp(MapChunk chunk, int x, int y, int z, int flags) {
-        int p = getProp(chunk, x, y, z);
-        setProp(chunk, x, y, z, p | flags);
+    public static void addProp(BlockFact fact, int x, int y, int z, int flags) {
+        int p = getProp(fact, x, y, z);
+        setProp(fact, x, y, z, p | flags);
     }
 
     public void addProp(int x, int y, int z, int flags) {
-        addProp(chunk, x, y, z, flags);
+        addProp(this, x, y, z, flags);
     }
 
     public void addProp(int flags) {
         addProp(x, y, z, flags);
     }
 
-    public static void removeProp(MapChunk chunk, int x, int y, int z, int flags) {
-        int p = getProp(chunk, x, y, z);
-        setProp(chunk, x, y, z, p & ~flags);
+    public static void removeProp(BlockFact fact, int x, int y, int z, int flags) {
+        int p = getProp(fact, x, y, z);
+        setProp(fact, x, y, z, p & ~flags);
     }
 
     public void removeProp(int x, int y, int z, int flags) {
-        removeProp(chunk, x, y, z, flags);
+        removeProp(this, x, y, z, flags);
     }
 
     public void removeProp(int flags) {
         removeProp(x, y, z, flags);
     }
 
-    public static void setTemp(MapChunk chunk, int x, int y, int z, int t) {
-        int off = getByteOffset(chunk, x, y, z);
-        MapBlockBuffer.setTemp(chunk.getBlocksBuffer(), off, t);
+    public static void setTemp(BlockFact fact, int x, int y, int z, int t) {
+        final int off = getByteOffset(fact.chunk.pos, x, y, z);
+        fact.storage.withBlockBuffer(fact.chunk, (b) -> MapBlockBuffer.setTemp(b, off, t));
     }
 
     public void setTemp(int x, int y, int z, int t) {
-        setTemp(chunk, x, y, z, t);
+        setTemp(this, x, y, z, t);
     }
 
     public void setTemp(int t) {
         setTemp(x, y, z, t);
     }
 
-    public static int getTemp(MapChunk chunk, int x, int y, int z) {
-        int off = getByteOffset(chunk, x, y, z);
-        return MapBlockBuffer.getTemp(chunk.getBlocksBuffer(), off);
+    public static int getTemp(BlockFact fact, int x, int y, int z) {
+        final int off = getByteOffset(fact.chunk.pos, x, y, z);
+        return fact.storage.withBlockReadBuffer(fact.chunk, (b) -> MapBlockBuffer.getTemp(b, off));
     }
 
     public int getTemp(int x, int y, int z) {
-        return getTemp(chunk, x, y, z);
+        return getTemp(this, x, y, z);
     }
 
     public int getTemp() {
         return getTemp(x, y, z);
     }
 
-    public static void setLux(MapChunk chunk, int x, int y, int z, int l) {
-        int off = getByteOffset(chunk, x, y, z);
-        MapBlockBuffer.setLux(chunk.getBlocksBuffer(), off, l);
+    public static void setLux(BlockFact fact, int x, int y, int z, int l) {
+        final int off = getByteOffset(fact.chunk.pos, x, y, z);
+        fact.storage.withBlockBuffer(fact.chunk, (b) -> MapBlockBuffer.setLux(b, off, l));
     }
 
     public void setLux(int x, int y, int z, int l) {
-        setLux(chunk, x, y, z, l);
+        setLux(this, x, y, z, l);
     }
 
     public void setLux(int l) {
         setLux(x, y, z, l);
     }
 
-    public static int getLux(MapChunk chunk, int x, int y, int z) {
-        int off = getByteOffset(chunk, x, y, z);
-        return MapBlockBuffer.getTemp(chunk.getBlocksBuffer(), off);
+    public static int getLux(BlockFact fact, int x, int y, int z) {
+        final int off = getByteOffset(fact.chunk.pos, x, y, z);
+        return fact.storage.withBlockReadBuffer(fact.chunk, (b) -> MapBlockBuffer.getLux(b, off));
     }
 
     public int getLux(int x, int y, int z) {
-        return getLux(chunk, x, y, z);
+        return getLux(this, x, y, z);
     }
 
     public int getLux() {
         return getLux(x, y, z);
     }
 
-    private static int getByteOffset(MapChunk chunk, int x, int y, int z) {
-        return calcIndex(chunk.pos.getSizeX(), chunk.pos.getSizeY(), chunk.pos.getSizeZ(), chunk.pos.x, chunk.pos.y,
-                chunk.pos.z, x, y, z) * MapBlockBuffer.SIZE;
-    }
-
-    private int getByteOffset(int x, int y, int z) {
-        return getByteOffset(chunk, x, y, z);
+    private static int getByteOffset(GameChunkPos pos, int x, int y, int z) {
+        return calcIndex(pos.getSizeX(), pos.getSizeY(), pos.getSizeZ(), pos.x, pos.y, pos.z, x, y, z)
+                * MapBlockBuffer.SIZE;
     }
 
     /**
@@ -345,30 +362,30 @@ public class BlockFact {
         int dy = y + dir.pos.y;
         int dz = z + dir.pos.z;
         if (dx < chunk.pos.x) {
-            chunk = retriever.apply(chunk.neighbors[NeighboringDir.W.ordinal()]);
+            chunk = storage.getChunk(chunk.neighbors[NeighboringDir.W.ordinal()]);
             return isNeighborFlag(chunk, dir, flag);
         }
         if (dy < chunk.pos.y) {
-            chunk = retriever.apply(chunk.neighbors[NeighboringDir.N.ordinal()]);
+            chunk = storage.getChunk(chunk.neighbors[NeighboringDir.N.ordinal()]);
             return isNeighborFlag(chunk, dir, flag);
         }
         if (dz < chunk.pos.z) {
-            chunk = retriever.apply(chunk.neighbors[NeighboringDir.U.ordinal()]);
+            chunk = storage.getChunk(chunk.neighbors[NeighboringDir.U.ordinal()]);
             return isNeighborFlag(chunk, dir, flag);
         }
         if (dx >= chunk.pos.ep.x) {
-            chunk = retriever.apply(chunk.neighbors[NeighboringDir.E.ordinal()]);
+            chunk = storage.getChunk(chunk.neighbors[NeighboringDir.E.ordinal()]);
             return isNeighborFlag(chunk, dir, flag);
         }
         if (dy >= chunk.pos.ep.y) {
-            chunk = retriever.apply(chunk.neighbors[NeighboringDir.S.ordinal()]);
+            chunk = storage.getChunk(chunk.neighbors[NeighboringDir.S.ordinal()]);
             return isNeighborFlag(chunk, dir, flag);
         }
         if (dz >= chunk.pos.ep.z) {
-            chunk = retriever.apply(chunk.neighbors[D.ordinal()]);
+            chunk = storage.getChunk(chunk.neighbors[D.ordinal()]);
             return isNeighborFlag(chunk, dir, flag);
         }
-        return isProp(chunk, dx, dy, dz, flag);
+        return isProp(storage, chunk, dx, dy, dz, flag);
     }
 
     /**
@@ -379,14 +396,15 @@ public class BlockFact {
         var c = chunk;
         for (int zz = z - 1; zz >= 0;) {
             if (c.isInside(x, y, zz)) {
-                if (!isProp(c, x, y, zz, EMPTY.flag) && !isProp(c, x, y, zz, LIQUID.flag)) {
+                final int p = getProp(storage, c, x, y, zz);
+                if (!isFlag(p, EMPTY.flag) && !isFlag(p, LIQUID.flag)) {
                     return false;
                 } else {
                     zz--;
                     continue;
                 }
             } else {
-                c = retriever.apply(c.neighbors[NeighboringDir.U.ordinal()]);
+                c = storage.getChunk(c.neighbors[NeighboringDir.U.ordinal()]);
             }
         }
         return true;

@@ -25,7 +25,6 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import org.eclipse.collections.api.factory.primitive.IntIntMaps;
 import org.eclipse.collections.api.factory.primitive.IntLists;
@@ -47,9 +46,8 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Stone;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags;
-import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
-import com.anrisoftware.dwarfhustle.model.db.store.MapChunksStore;
+import com.anrisoftware.dwarfhustle.model.db.api.MapChunksStorage;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -199,21 +197,20 @@ public class TerrainKnowledge {
     /**
      * Run the rules to update the terrain.
      */
-    public <T extends BlockFact> void runTerrainUpdateRules(MapChunksStore store, Knowledge knowledge, GameMap gm) {
+    public <T extends BlockFact> void runTerrainUpdateRules(MapChunksStorage storage, Knowledge knowledge, GameMap gm) {
         var session = knowledge.newStatefulSession();
-        store.forEachValue(chunk -> {
+        storage.forEachValue(chunk -> {
             if (chunk.isLeaf() && chunk.pos.ep.z < 128) {
                 chunk.changed = true;
             }
         });
-        Function<Integer, MapChunk> retriever = store::getChunk;
-        store.forEachValue(chunk -> {
+        storage.forEachValue(chunk -> {
             if (chunk.changed && chunk.isLeaf()) {
                 var pos = chunk.getPos();
                 for (int z = pos.z; z < pos.ep.z; z++) {
                     for (int y = pos.y; y < pos.ep.y; y++) {
                         for (int x = pos.x; x < pos.ep.x; x++) {
-                            session.insert(new BlockFact(chunk, x, y, z, gm.width, gm.height, gm.depth, retriever));
+                            session.insert(new BlockFact(storage, chunk, x, y, z, gm.width, gm.height, gm.depth));
                         }
                     }
                 }

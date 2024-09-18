@@ -117,7 +117,7 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
         }
     }
 
-    private class ObjectsListRecursiveAction extends AbstractObjectsListRecursiveAction {
+    private class ObjectsListRecursiveAction<T extends StoredObject> extends AbstractObjectsListRecursiveAction<T> {
 
         private static final long serialVersionUID = 1L;
 
@@ -127,8 +127,8 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
 
         protected final BiConsumer<StoredObject, MutableDirectBuffer> writeBuffer;
 
-        public ObjectsListRecursiveAction(int max, int start, int end, List<? extends StoredObject> objects, int size,
-                int type, BiConsumer<StoredObject, MutableDirectBuffer> writeBuffer) {
+        public ObjectsListRecursiveAction(int max, int start, int end, List<T> objects, int size, int type,
+                BiConsumer<StoredObject, MutableDirectBuffer> writeBuffer) {
             super(max, start, end, objects);
             this.size = size;
             this.type = type;
@@ -152,9 +152,8 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
         }
 
         @Override
-        protected AbstractObjectsListRecursiveAction create(int max, int start, int end,
-                List<? extends StoredObject> objects) {
-            return new ObjectsListRecursiveAction(max, start, end, objects, size, type, writeBuffer);
+        protected AbstractObjectsListRecursiveAction<T> create(int max, int start, int end, List<T> objects) {
+            return new ObjectsListRecursiveAction<>(max, start, end, objects, size, type, writeBuffer);
         }
     }
 
@@ -168,7 +167,7 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
             putObjects(type, size, objects, writeBuffer);
         } else {
             var pool = ForkJoinPool.commonPool();
-            pool.invoke(new ObjectsListRecursiveAction(max, 0, objects.size(), objects, size, type, writeBuffer));
+            pool.invoke(new ObjectsListRecursiveAction<>(max, 0, objects.size(), objects, size, type, writeBuffer));
         }
     }
 

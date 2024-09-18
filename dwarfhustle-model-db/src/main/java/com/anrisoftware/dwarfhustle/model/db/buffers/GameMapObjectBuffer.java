@@ -82,11 +82,11 @@ public class GameMapObjectBuffer extends GameObjectBuffer {
     }
 
     public static void setPos(MutableDirectBuffer b, int off, GameBlockPos pos) {
-        GameBlockPosBuffer.writeGameBlockPos(b, POS_BYTES + off, pos);
+        GameBlockPosBuffer.write(b, POS_BYTES + off, pos);
     }
 
     public static GameBlockPos getPos(DirectBuffer b, int off) {
-        return GameBlockPosBuffer.readGameBlockPos(b, POS_BYTES + off);
+        return GameBlockPosBuffer.read(b, POS_BYTES + off);
     }
 
     public static void writeObject(MutableDirectBuffer b, int off, GameMapObject o) {
@@ -98,7 +98,7 @@ public class GameMapObjectBuffer extends GameObjectBuffer {
     public static GameMapObject readObject(DirectBuffer b, int off, GameMapObject o) {
         GameObjectBuffer.readObject(b, off, o);
         o.map = getMap(b, off);
-        GameBlockPosBuffer.readGameBlockPos(b, POS_BYTES + off, o.pos);
+        GameBlockPosBuffer.read(b, POS_BYTES + off, o.pos);
         return o;
     }
 }

@@ -34,6 +34,7 @@ import org.eclipse.collections.api.set.primitive.MutableIntSet;
 import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.anrisoftware.dwarfhustle.model.db.buffers.StoredObjectBuffer;
 import com.anrisoftware.dwarfhustle.model.db.lmbd.GameObjectsLmbdStorage.GameObjectsLmbdStorageFactory;
+import com.anrisoftware.dwarfhustle.model.db.lmbd.MapChunksLmbdStorage.MapChunksLmbdStorageFactory;
 import com.anrisoftware.dwarfhustle.model.db.lmbd.MapObjectsLmbdStorage.MapObjectsLmbdStorageFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -44,6 +45,7 @@ import jakarta.inject.Singleton;
 /**
  * @see GameObjectsLmbdStorageFactory
  * @see MapObjectsLmbdStorageFactory
+ * @see MapChunksLmbdStorageFactory
  */
 public class DwarfhustleModelDbLmbdModule extends AbstractModule {
 
@@ -53,6 +55,8 @@ public class DwarfhustleModelDbLmbdModule extends AbstractModule {
                 .build(GameObjectsLmbdStorageFactory.class));
         install(new FactoryModuleBuilder().implement(MapObjectsLmbdStorage.class, MapObjectsLmbdStorage.class)
                 .build(MapObjectsLmbdStorageFactory.class));
+        install(new FactoryModuleBuilder().implement(MapChunksLmbdStorage.class, MapChunksLmbdStorage.class)
+                .build(MapChunksLmbdStorageFactory.class));
     }
 
     @Singleton

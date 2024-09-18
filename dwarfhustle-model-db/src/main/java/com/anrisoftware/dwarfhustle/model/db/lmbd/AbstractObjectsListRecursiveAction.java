@@ -23,15 +23,13 @@ import java.util.List;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
-
 import lombok.RequiredArgsConstructor;
 
 /**
  * Divides a list equally.
  */
 @RequiredArgsConstructor
-public abstract class AbstractObjectsListRecursiveAction extends RecursiveAction {
+public abstract class AbstractObjectsListRecursiveAction<T> extends RecursiveAction {
 
     private static final long serialVersionUID = 1L;
 
@@ -41,7 +39,7 @@ public abstract class AbstractObjectsListRecursiveAction extends RecursiveAction
 
     protected final int end;
 
-    protected final List<? extends StoredObject> objects;
+    protected final List<T> objects;
 
     @Override
     protected void compute() {
@@ -52,8 +50,8 @@ public abstract class AbstractObjectsListRecursiveAction extends RecursiveAction
         }
     }
 
-    private Collection<AbstractObjectsListRecursiveAction> createSubtasks() {
-        List<AbstractObjectsListRecursiveAction> dividedTasks = new ArrayList<>();
+    private Collection<AbstractObjectsListRecursiveAction<T>> createSubtasks() {
+        List<AbstractObjectsListRecursiveAction<T>> dividedTasks = new ArrayList<>();
         dividedTasks.add(create(max, start, start / 2 + end / 2, objects));
         dividedTasks.add(create(max, start / 2 + end / 2, end, objects));
         return dividedTasks;
@@ -61,7 +59,6 @@ public abstract class AbstractObjectsListRecursiveAction extends RecursiveAction
 
     protected abstract void processing();
 
-    protected abstract AbstractObjectsListRecursiveAction create(int max, int start, int end,
-            List<? extends StoredObject> objects);
+    protected abstract AbstractObjectsListRecursiveAction<T> create(int max, int start, int end, List<T> objects);
 
 }

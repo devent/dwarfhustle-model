@@ -17,10 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.buffers;
 
-import static com.anrisoftware.dwarfhustle.model.db.buffers.BufferUtils.readShort;
-import static com.anrisoftware.dwarfhustle.model.db.buffers.BufferUtils.writeShort;
-
-import java.nio.ByteBuffer;
+import org.agrona.DirectBuffer;
+import org.agrona.MutableDirectBuffer;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameChunkPos;
 
@@ -49,57 +47,24 @@ public class GameChunkPosBuffer extends GameBlockPosBuffer {
      */
     public static final int SIZE = 3 * 2 + GameBlockPosBuffer.SIZE;
 
-    private static final int EX_INDEX = 3 * 2;
+    private static final int EX_BYTE = 3 * 2;
 
-    private static final int EY_INDEX = 4 * 2;
+    private static final int EY_BYTE = 4 * 2;
 
-    private static final int EZ_INDEX = 5 * 2;
+    private static final int EZ_BYTE = 5 * 2;
 
-    public static void setEx(ByteBuffer b, int offset, int ex) {
-        writeShort(b.position(EX_INDEX + offset), (short) ex);
+    public static GameChunkPos read(DirectBuffer b, int offset) {
+        return new GameChunkPos(b.getShort(X_BYTE + offset), b.getShort(Y_BYTE + offset), b.getShort(Z_BYTE + offset),
+                b.getShort(EX_BYTE + offset), b.getShort(EY_BYTE + offset), b.getShort(EZ_BYTE + offset));
     }
 
-    public static int getEx(ByteBuffer b, int offset) {
-        return readShort(b.position(EX_INDEX + offset));
-    }
-
-    public static void setEy(ByteBuffer b, int offset, int ey) {
-        writeShort(b.position(EY_INDEX + offset), (short) ey);
-    }
-
-    public static int getEy(ByteBuffer b, int offset) {
-        return readShort(b.position(EY_INDEX + offset));
-    }
-
-    public static void setEz(ByteBuffer b, int offset, int ez) {
-        writeShort(b.position(EZ_INDEX + offset), (short) ez);
-    }
-
-    public static int getEz(ByteBuffer b, int offset) {
-        return readShort(b.position(EZ_INDEX + offset));
-    }
-
-    public static void writeGameChunkPos(ByteBuffer b, int offset, GameChunkPos p) {
-        b.position(offset);
-        putGameChunkPos(b, p);
-    }
-
-    public static void putGameChunkPos(ByteBuffer b, GameChunkPos p) {
-        writeShort(b, (short) p.x);
-        writeShort(b, (short) p.y);
-        writeShort(b, (short) p.z);
-        writeShort(b, (short) p.ep.x);
-        writeShort(b, (short) p.ep.y);
-        writeShort(b, (short) p.ep.z);
-    }
-
-    public static GameChunkPos readGameChunkPos(ByteBuffer b, int offset) {
-        b.position(offset);
-        return getGameChunkPos(b);
-    }
-
-    public static GameChunkPos getGameChunkPos(ByteBuffer b) {
-        return new GameChunkPos(readShort(b), readShort(b), readShort(b), readShort(b), readShort(b), readShort(b));
+    public static void write(MutableDirectBuffer b, int offset, GameChunkPos p) {
+        b.putShort(X_BYTE + offset, (short) p.x);
+        b.putShort(Y_BYTE + offset, (short) p.y);
+        b.putShort(Z_BYTE + offset, (short) p.z);
+        b.putShort(EX_BYTE + offset, (short) p.ep.x);
+        b.putShort(EY_BYTE + offset, (short) p.ep.y);
+        b.putShort(EZ_BYTE + offset, (short) p.ep.z);
     }
 
 }

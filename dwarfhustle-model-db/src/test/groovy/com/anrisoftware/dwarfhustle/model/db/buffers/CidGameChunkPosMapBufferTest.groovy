@@ -23,10 +23,9 @@ import static org.junit.jupiter.params.provider.Arguments.of
 import java.nio.ByteBuffer
 import java.util.stream.Stream
 
+import org.agrona.concurrent.UnsafeBuffer
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
-
-import com.anrisoftware.dwarfhustle.model.db.buffers.CidGameChunkPosMapBuffer
 
 /**
  * @see CidGameChunkPosMapBuffer
@@ -39,8 +38,9 @@ class CidGameChunkPosMapBufferTest {
         def args = []
         def entries = []
         def offset = 0
-        def b = ByteBuffer.allocate(offset + CidGameChunkPosMapBuffer.SIZE_MIN + CidGameChunkPosMapBuffer.SIZE_ENTRY * entries.size())
-        args << of(b, offset, entries.size(), entries, '0000')
+        def count = 1
+        def b = ByteBuffer.allocate(offset + CidGameChunkPosMapBuffer.SIZE * count)
+        args << of(b, offset, entries.size(), entries, '00000000 00000000 00000000 0000')
         //
         entries = [
             [
@@ -62,8 +62,9 @@ class CidGameChunkPosMapBufferTest {
                 12
             ]
         ]
-        b = ByteBuffer.allocate(offset + CidGameChunkPosMapBuffer.SIZE_MIN + CidGameChunkPosMapBuffer.SIZE_ENTRY * entries.size())
-        args << of(b, offset, entries.size(), entries, '00020001 00010002 00030004 00050006 00020007 00080009 000a000b 000c')
+        count = entries.size()
+        b = ByteBuffer.allocate(offset + CidGameChunkPosMapBuffer.SIZE * count)
+        args << of(b, offset, entries.size(), entries, '01000100 02000300 04000500 06000200 07000800 09000a00 0b000c00')
         //
         entries = [
             [
@@ -86,40 +87,28 @@ class CidGameChunkPosMapBufferTest {
             ]
         ]
         offset = 3
-        b = ByteBuffer.allocate(offset + CidGameChunkPosMapBuffer.SIZE_MIN + CidGameChunkPosMapBuffer.SIZE_ENTRY * entries.size())
-        args << of(b, offset, entries.size(), entries, '00000000 02000100 01000200 030004000500060002000700080009000a000b000c')
+        count = entries.size()
+        b = ByteBuffer.allocate(offset + CidGameChunkPosMapBuffer.SIZE * count)
+        args << of(b, offset, entries.size(), entries, '00000001 00010002 00030004 00050006 00020007 00080009 000a000b 000c00')
         //
         Stream.of(args as Object[])
     }
 
     @ParameterizedTest
     @MethodSource()
-    void set_get_x_y_z(ByteBuffer b, int offset, int count, List entry, def expected) {
-        CidGameChunkPosMapBuffer.setCount(b, offset, count)
-        entry.eachWithIndex { it, i ->
-            CidGameChunkPosMapBuffer.setEntry(b, offset as int, i, it as int[])
-        }
+    void set_get_x_y_z(ByteBuffer b, int offset, int count, List entries, def expected) {
+        CidGameChunkPosMapBuffer.write(new UnsafeBuffer(b), offset, count, entries.flatten() as int[])
         b.rewind()
         assert HexFormat.of().formatHex(b.array()) == replace(expected, " ", "")
-        assert CidGameChunkPosMapBuffer.getCount(b, offset) == count
-        entry.eachWithIndex { it, i ->
-            assert CidGameChunkPosMapBuffer.getCid(b, offset, i) == it[0]
-            assert CidGameChunkPosMapBuffer.getSx(b, offset, i) == it[1]
-            assert CidGameChunkPosMapBuffer.getSy(b, offset, i) == it[2]
-            assert CidGameChunkPosMapBuffer.getSz(b, offset, i) == it[3]
-            assert CidGameChunkPosMapBuffer.getEx(b, offset, i) == it[4]
-            assert CidGameChunkPosMapBuffer.getEy(b, offset, i) == it[5]
-            assert CidGameChunkPosMapBuffer.getEz(b, offset, i) == it[6]
-        }
-        int[] dest = CidGameChunkPosMapBuffer.getEntries(b, offset, null)
-        entry.eachWithIndex { it, i ->
-            assert dest[i * 7 + 0] == it[0]
-            assert dest[i * 7 + 1] == it[1]
-            assert dest[i * 7 + 2] == it[2]
-            assert dest[i * 7 + 3] == it[3]
-            assert dest[i * 7 + 4] == it[4]
-            assert dest[i * 7 + 5] == it[5]
-            assert dest[i * 7 + 6] == it[6]
+        def thatEntries = CidGameChunkPosMapBuffer.read(new UnsafeBuffer(b), offset, count, null)
+        entries.eachWithIndex { it, i ->
+            assert thatEntries[i * 7 + 0] == it[0]
+            assert thatEntries[i * 7 + 1] == it[1]
+            assert thatEntries[i * 7 + 2] == it[2]
+            assert thatEntries[i * 7 + 3] == it[3]
+            assert thatEntries[i * 7 + 4] == it[4]
+            assert thatEntries[i * 7 + 5] == it[5]
+            assert thatEntries[i * 7 + 6] == it[6]
         }
     }
 }

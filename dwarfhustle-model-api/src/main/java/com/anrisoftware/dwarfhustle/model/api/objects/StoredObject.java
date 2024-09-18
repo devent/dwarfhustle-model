@@ -36,7 +36,7 @@ public interface StoredObject extends Serializable {
      */
     Serializable getRid();
 
-    void setId(long property);
+    void setId(long id);
 
     long getId();
 

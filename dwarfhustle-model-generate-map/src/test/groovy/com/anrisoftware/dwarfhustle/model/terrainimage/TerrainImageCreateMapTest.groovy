@@ -41,7 +41,9 @@ import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
-import com.anrisoftware.dwarfhustle.model.db.store.MapChunksStore
+import com.anrisoftware.dwarfhustle.model.db.buffers.MapChunkBuffer
+import com.anrisoftware.dwarfhustle.model.db.lmbd.DwarfhustleModelDbLmbdModule
+import com.anrisoftware.dwarfhustle.model.db.lmbd.MapChunksLmbdStorage.MapChunksLmbdStorageFactory
 import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustlePowerloomModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor
@@ -73,7 +75,10 @@ class TerrainImageCreateMapTest {
     @BeforeAll
     static void setupActor() {
         this.injector = Guice.createInjector(
-                new DwarfhustleModelActorsModule(), new DwarfhustlePowerloomModule(), new DwarfhustleModelApiObjectsModule(),
+                new DwarfhustleModelActorsModule(),
+                new DwarfhustlePowerloomModule(),
+                new DwarfhustleModelApiObjectsModule(),
+                new DwarfhustleModelDbLmbdModule(),
                 new AbstractModule() {
                     @Override
                     protected void configure() {
@@ -100,16 +105,16 @@ class TerrainImageCreateMapTest {
 
     static Stream test_start_import_terrain() {
         def args = []
-        args << of(TerrainImage.terrain_4_4_4_2, true, new Terrain_4_4_4_2_blocks_expected().run())
-        args << of(TerrainImage.terrain_8_8_8_4, true, new Terrain_8_8_8_4_blocks_expected().run())
+        //args << of(TerrainImage.terrain_4_4_4_2, true, new Terrain_4_4_4_2_blocks_expected().run())
+        //args << of(TerrainImage.terrain_8_8_8_4, true, new Terrain_8_8_8_4_blocks_expected().run())
         //
-        //        args << of(TerrainImage.terrain_4_4_4_2, false, new Terrain_4_4_4_2_blocks_expected().run())
-        //        args << of(TerrainImage.terrain_8_8_8_4, false, new Terrain_8_8_8_4_blocks_expected().run())
-        //        args << of(TerrainImage.terrain_32_32_32_4, false, null)
-        //        args << of(TerrainImage.terrain_32_32_32_8, false, null)
+        args << of(TerrainImage.terrain_4_4_4_2, false, new Terrain_4_4_4_2_blocks_expected().run())
+        args << of(TerrainImage.terrain_8_8_8_4, false, new Terrain_8_8_8_4_blocks_expected().run())
+        args << of(TerrainImage.terrain_32_32_32_4, false, null)
+        args << of(TerrainImage.terrain_32_32_32_8, false, null)
         args << of(TerrainImage.terrain_512_512_128_16, false, null)
-        //        args << of(TerrainImage.terrain_512_512_128_32, false, null)
-        //        args << of(TerrainImage.terrain_512_512_128_64, false, null)
+        args << of(TerrainImage.terrain_512_512_128_32, false, null)
+        args << of(TerrainImage.terrain_512_512_128_64, false, null)
         //
         //        args << of(TerrainImage.terrain_128_128_128_16, false, null)
         //        args << of(TerrainImage.terrain_128_128_128_32, false, null)
@@ -133,17 +138,19 @@ class TerrainImageCreateMapTest {
         gm.width = terrain.width
         gm.height = terrain.height
         gm.depth = terrain.depth
-        def file = format("terrain_%d_%d_%d_%d_%d.map", gm.width, gm.height, gm.depth, gm.chunkSize, gm.chunksCount)
-        def store = new MapChunksStore(Path.of(tmp.absolutePath, file), gm.width, gm.height, gm.chunkSize, gm.chunksCount);
-        def createMap = injector.getInstance(TerrainImageCreateMapFactory).create(store, terrainKnowledge)
+        def file = format("terrain_%d_%d_%d_%d_%d", gm.width, gm.height, gm.depth, gm.chunkSize, gm.chunksCount)
+        def path = Path.of(tmp.absolutePath, file)
+        path.toFile().mkdir()
+        def storage = injector.getInstance(MapChunksLmbdStorageFactory).create(path, gm.chunkSize);
+        def createMap = injector.getInstance(TerrainImageCreateMapFactory).create(storage, terrainKnowledge)
         createMap.startImportMapping(TerrainImageCreateMapTest.class.getResource(image.imageName), terrain, gm)
-        store.close()
+        def root = storage.getChunk(0)
         if (printBlocks) {
             println "["
             for (int z = 0; z < terrain.depth; z++) {
                 for (int y = 0; y < terrain.height; y++) {
                     for (int x = 0; x < terrain.width; x++) {
-                        def b = store.findBlock(new GameBlockPos(x, y, z)).get().getTwo()
+                        def b = MapChunkBuffer.findBlock(root, new GameBlockPos(x, y, z), { chunk, pos -> storage.getBlock(chunk, pos) }, { storage.getChunk(it) })
                         println "[$b.pos.x,$b.pos.y,$b.pos.z,$b.parent,$b.material,$b.object,$b.temp,$b.lux,0b$b.p],"
                     }
                 }
@@ -155,7 +162,7 @@ class TerrainImageCreateMapTest {
             for (int z = 0; z < terrain.depth; z++) {
                 for (int y = 0; y < terrain.height; y++) {
                     for (int x = 0; x < terrain.width; x++) {
-                        def b = store.findBlock(new GameBlockPos(x, y, z)).get().getTwo()
+                        def b = MapChunkBuffer.findBlock(root, new GameBlockPos(x, y, z), { chunk, pos -> storage.getBlock(chunk, pos) }, { storage.getChunk(it) })
                         assert blocksExpected[i][0] == b.pos.x
                         assert blocksExpected[i][1] == b.pos.y
                         assert blocksExpected[i][2] == b.pos.z
@@ -174,6 +181,7 @@ class TerrainImageCreateMapTest {
         //        println "[$b.pos.x,$b.pos.y,$b.pos.z,$b.parent,$b.material,$b.object,$b.temp,$b.lux,0b$b.p],"
         //        b = store.findBlock(new GameBlockPos(21, 1, 9)).get().getTwo()
         //        println "[$b.pos.x,$b.pos.y,$b.pos.z,$b.parent,$b.material,$b.object,$b.temp,$b.lux,0b$b.p],"
+        storage.close()
         println "$image done"
     }
 }

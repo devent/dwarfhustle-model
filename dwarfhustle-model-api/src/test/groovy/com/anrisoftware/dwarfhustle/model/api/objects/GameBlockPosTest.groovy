@@ -77,6 +77,10 @@ class GameBlockPosTest {
         "2,2,2,2,2,2,3,2,3,5",
         "2,2,2,2,2,2,2,3,3,6",
         "2,2,2,2,2,2,3,3,3,7",
+        //
+        "16,16,16,0,0,0,0,0,0,0",
+        "16,16,16,0,0,0,1,0,0,1",
+        "16,16,16,0,0,0,0,0,1,256",
     ])
     void calculate_index_from_pos(int w, int h, int d, int sx, int sy, int sz, int x, int y, int z, int expected) {
         assert GameBlockPos.calcIndex(w, h, d, sx, sy, sz, x, y, z) == expected

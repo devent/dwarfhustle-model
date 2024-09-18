@@ -17,11 +17,6 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.buffers;
 
-import static com.anrisoftware.dwarfhustle.model.db.buffers.BufferUtils.readShort;
-import static com.anrisoftware.dwarfhustle.model.db.buffers.BufferUtils.writeShort;
-
-import java.nio.ByteBuffer;
-
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
@@ -55,14 +50,6 @@ public class GameBlockPosBuffer {
 
     protected static final int Z_BYTE = 2 * 2;
 
-    public static void setX(ByteBuffer b, int off, int x) {
-        writeShort(b.position(X_BYTE + off), (short) x);
-    }
-
-    public static int getX(ByteBuffer b, int off) {
-        return readShort(b.position(X_BYTE + off));
-    }
-
     public static void setXyz(MutableDirectBuffer b, int off, int x, int y, int z) {
         b.putShort(X_BYTE + off, (short) x);
         b.putShort(Y_BYTE + off, (short) y);
@@ -77,28 +64,12 @@ public class GameBlockPosBuffer {
         return b.getShort(X_BYTE + off);
     }
 
-    public static void setY(ByteBuffer b, int off, int y) {
-        writeShort(b.position(Y_BYTE + off), (short) y);
-    }
-
-    public static int getY(ByteBuffer b, int off) {
-        return readShort(b.position(Y_BYTE + off));
-    }
-
     public static void setY(MutableDirectBuffer b, int off, int y) {
         b.putShort(Y_BYTE + off, (short) y);
     }
 
     public static int getY(DirectBuffer b, int off) {
         return b.getShort(Y_BYTE + off);
-    }
-
-    public static void setZ(ByteBuffer b, int off, int z) {
-        writeShort(b.position(Z_BYTE + off), (short) z);
-    }
-
-    public static int getZ(ByteBuffer b, int off) {
-        return readShort(b.position(Z_BYTE + off));
     }
 
     public static void setZ(MutableDirectBuffer b, int off, int z) {
@@ -109,27 +80,15 @@ public class GameBlockPosBuffer {
         return b.getShort(Z_BYTE + off);
     }
 
-    public static void writeGameBlockPos(ByteBuffer b, int off, GameBlockPos p) {
-        b.position(off);
-        writeShort(b, (short) p.x);
-        writeShort(b, (short) p.y);
-        writeShort(b, (short) p.z);
-    }
-
-    public static GameBlockPos readGameBlockPos(ByteBuffer b, int off) {
-        b.position(off);
-        return new GameBlockPos(readShort(b), readShort(b), readShort(b));
-    }
-
-    public static void writeGameBlockPos(MutableDirectBuffer b, int off, GameBlockPos p) {
+    public static void write(MutableDirectBuffer b, int off, GameBlockPos p) {
         setXyz(b, off, p.x, p.y, p.z);
     }
 
-    public static GameBlockPos readGameBlockPos(DirectBuffer b, int off) {
-        return readGameBlockPos(b, off, new GameBlockPos());
+    public static GameBlockPos read(DirectBuffer b, int off) {
+        return read(b, off, new GameBlockPos());
     }
 
-    public static GameBlockPos readGameBlockPos(DirectBuffer b, int off, GameBlockPos pos) {
+    public static GameBlockPos read(DirectBuffer b, int off, GameBlockPos pos) {
         pos.x = b.getShort(X_BYTE + off);
         pos.y = b.getShort(Y_BYTE + off);
         pos.z = b.getShort(Z_BYTE + off);

@@ -17,9 +17,6 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import java.nio.ByteBuffer;
-import java.util.Optional;
-
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.map.primitive.IntObjectMap;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
@@ -43,15 +40,15 @@ public class MapChunk {
     /**
      * Returns the game object ID from the chunk ID.
      */
-    public static long cid2Id(long tid) {
-        return (tid << 32) | ID_FLAG;
+    public static long cid2Id(int cid) {
+        return (cid << 32) | ID_FLAG;
     }
 
     /**
      * Returns the chunk ID from the game object ID.
      */
-    public static long id2Cid(long id) {
-        return (id >> 32);
+    public static int id2Cid(long id) {
+        return (int) (id >> 32);
     }
 
     /**
@@ -79,12 +76,6 @@ public class MapChunk {
      * The {@link GameChunkPos} and CIDs of the children chunks.
      */
     private final MutableIntObjectMap<GameChunkPos> chunks = IntObjectMaps.mutable.empty();
-
-    /**
-     * Optionally, the {@link MapBlock}s {@link ByteBuffer} in the chunk if the
-     * chunk is a leaf.
-     */
-    public Optional<ByteBuffer> blocks = Optional.empty();
 
     /**
      * The chunk CIDs of {@link NeighboringDir} neighbors of this chunk.
@@ -136,13 +127,6 @@ public class MapChunk {
         this.centerExtent = new CenterExtent(centerx, centery, centerz, extentx, extenty, extentz);
     }
 
-    /**
-     * Returns the chunk ID.
-     */
-    public long getId() {
-        return cid2Id(cid);
-    }
-
     public boolean isRoot() {
         return parent == 0;
     }
@@ -172,24 +156,8 @@ public class MapChunk {
         return chunks.size();
     }
 
-    public ByteBuffer getBlocksBuffer() {
-        return blocks.orElseThrow();
-    }
-
     public boolean haveBlock(GameBlockPos p) {
         return getPos().contains(p);
-    }
-
-    public boolean isBlocksNotEmpty() {
-        return !blocks.isEmpty();
-    }
-
-    public boolean isBlocksEmpty() {
-        return blocks.isEmpty();
-    }
-
-    public void setBlocksBuffer(ByteBuffer buffer) {
-        this.blocks = Optional.of(buffer);
     }
 
     /**
@@ -211,5 +179,4 @@ public class MapChunk {
     public int getNeighborDown() {
         return getNeighbor(NeighboringDir.D);
     }
-
 }

@@ -102,4 +102,18 @@ public class BufferUtils {
         return bytes.length;
     }
 
+    /**
+     * Returns a short for the integer value between -32768 and +32767.
+     */
+    public static short int2short(int v) {
+        return (short) (v - 32_768);
+    }
+
+    /**
+     * Returns a integer for the short value between -32768 and +32767.
+     */
+    public static int short2int(short v) {
+        return v + 32_768;
+    }
+
 }
