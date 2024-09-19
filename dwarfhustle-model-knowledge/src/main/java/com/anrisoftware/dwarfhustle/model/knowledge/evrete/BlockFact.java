@@ -79,7 +79,7 @@ public class BlockFact {
 
     public static void setMaterial(BlockFact fact, int x, int y, int z, int m) {
         final int off = getByteOffset(fact.chunk.pos, x, y, z);
-        fact.storage.withBlockBuffer(fact.chunk, (b) -> MapBlockBuffer.setMaterial(b, off, m));
+        MapBlockBuffer.setMaterial(fact.chunk.getBlocks(), off, m);
     }
 
     public void setMaterial(int x, int y, int z, int m) {
@@ -92,7 +92,7 @@ public class BlockFact {
 
     public static int getMaterial(BlockFact fact, int x, int y, int z) {
         final int off = getByteOffset(fact.chunk.pos, x, y, z);
-        return fact.storage.withBlockReadBuffer(fact.chunk, (b) -> MapBlockBuffer.getMaterial(b, off));
+        return MapBlockBuffer.getMaterial(fact.chunk.getBlocks(), off);
     }
 
     public int getMaterial(int x, int y, int z) {
@@ -105,7 +105,7 @@ public class BlockFact {
 
     public static void setObject(BlockFact fact, int x, int y, int z, int o) {
         final int off = getByteOffset(fact.chunk.pos, x, y, z);
-        fact.storage.withBlockBuffer(fact.chunk, (b) -> MapBlockBuffer.setObject(b, off, o));
+        MapBlockBuffer.setObject(fact.chunk.getBlocks(), off, o);
     }
 
     public void setObject(int x, int y, int z, int o) {
@@ -118,7 +118,7 @@ public class BlockFact {
 
     public static int getObject(BlockFact fact, int x, int y, int z) {
         final int off = getByteOffset(fact.chunk.pos, x, y, z);
-        return fact.storage.withBlockReadBuffer(fact.chunk, (b) -> MapBlockBuffer.getObject(b, off));
+        return MapBlockBuffer.getObject(fact.chunk.getBlocks(), off);
     }
 
     public int getObject(int x, int y, int z) {
@@ -131,7 +131,7 @@ public class BlockFact {
 
     public static void setProp(BlockFact fact, int x, int y, int z, int p) {
         final int off = getByteOffset(fact.chunk.pos, x, y, z);
-        fact.storage.withBlockBuffer(fact.chunk, (b) -> MapBlockBuffer.setProp(b, off, p));
+        MapBlockBuffer.setProp(fact.chunk.getBlocks(), off, p);
     }
 
     public void setProp(int x, int y, int z, int p) {
@@ -144,12 +144,12 @@ public class BlockFact {
 
     public static int getProp(BlockFact fact, int x, int y, int z) {
         final int off = getByteOffset(fact.chunk.pos, x, y, z);
-        return fact.storage.withBlockReadBuffer(fact.chunk, (b) -> MapBlockBuffer.getProp(b, off));
+        return MapBlockBuffer.getProp(fact.chunk.getBlocks(), off);
     }
 
-    public static int getProp(MapChunksStorage storage, MapChunk chunk, int x, int y, int z) {
+    public static int getProp(MapChunk chunk, int x, int y, int z) {
         final int off = getByteOffset(chunk.pos, x, y, z);
-        return storage.withBlockReadBuffer(chunk, (b) -> MapBlockBuffer.getProp(b, off));
+        return MapBlockBuffer.getProp(chunk.getBlocks(), off);
     }
 
     public int getProp(int x, int y, int z) {
@@ -164,8 +164,8 @@ public class BlockFact {
         return isFlag(getProp(fact, x, y, z), flags);
     }
 
-    public static boolean isProp(MapChunksStorage storage, MapChunk chunk, int x, int y, int z, int flags) {
-        return isFlag(getProp(storage, chunk, x, y, z), flags);
+    public static boolean isProp(MapChunk chunk, int x, int y, int z, int flags) {
+        return isFlag(getProp(chunk, x, y, z), flags);
     }
 
     private static boolean isFlag(int p, int flags) {
@@ -208,7 +208,7 @@ public class BlockFact {
 
     public static void setTemp(BlockFact fact, int x, int y, int z, int t) {
         final int off = getByteOffset(fact.chunk.pos, x, y, z);
-        fact.storage.withBlockBuffer(fact.chunk, (b) -> MapBlockBuffer.setTemp(b, off, t));
+        MapBlockBuffer.setTemp(fact.chunk.getBlocks(), off, t);
     }
 
     public void setTemp(int x, int y, int z, int t) {
@@ -221,7 +221,7 @@ public class BlockFact {
 
     public static int getTemp(BlockFact fact, int x, int y, int z) {
         final int off = getByteOffset(fact.chunk.pos, x, y, z);
-        return fact.storage.withBlockReadBuffer(fact.chunk, (b) -> MapBlockBuffer.getTemp(b, off));
+        return MapBlockBuffer.getTemp(fact.chunk.getBlocks(), off);
     }
 
     public int getTemp(int x, int y, int z) {
@@ -234,7 +234,7 @@ public class BlockFact {
 
     public static void setLux(BlockFact fact, int x, int y, int z, int l) {
         final int off = getByteOffset(fact.chunk.pos, x, y, z);
-        fact.storage.withBlockBuffer(fact.chunk, (b) -> MapBlockBuffer.setLux(b, off, l));
+        MapBlockBuffer.setLux(fact.chunk.getBlocks(), off, l);
     }
 
     public void setLux(int x, int y, int z, int l) {
@@ -247,7 +247,7 @@ public class BlockFact {
 
     public static int getLux(BlockFact fact, int x, int y, int z) {
         final int off = getByteOffset(fact.chunk.pos, x, y, z);
-        return fact.storage.withBlockReadBuffer(fact.chunk, (b) -> MapBlockBuffer.getLux(b, off));
+        return MapBlockBuffer.getLux(fact.chunk.getBlocks(), off);
     }
 
     public int getLux(int x, int y, int z) {
@@ -385,7 +385,7 @@ public class BlockFact {
             chunk = storage.getChunk(chunk.neighbors[D.ordinal()]);
             return isNeighborFlag(chunk, dir, flag);
         }
-        return isProp(storage, chunk, dx, dy, dz, flag);
+        return isProp(chunk, dx, dy, dz, flag);
     }
 
     /**
@@ -396,7 +396,7 @@ public class BlockFact {
         var c = chunk;
         for (int zz = z - 1; zz >= 0;) {
             if (c.isInside(x, y, zz)) {
-                final int p = getProp(storage, c, x, y, zz);
+                final int p = getProp(c, x, y, zz);
                 if (!isFlag(p, EMPTY.flag) && !isFlag(p, LIQUID.flag)) {
                     return false;
                 } else {

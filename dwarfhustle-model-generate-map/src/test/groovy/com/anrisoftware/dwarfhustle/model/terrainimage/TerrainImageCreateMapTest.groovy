@@ -145,12 +145,13 @@ class TerrainImageCreateMapTest {
         def createMap = injector.getInstance(TerrainImageCreateMapFactory).create(storage, terrainKnowledge)
         createMap.startImportMapping(TerrainImageCreateMapTest.class.getResource(image.imageName), terrain, gm)
         def root = storage.getChunk(0)
+        def retriever = { storage.getChunk(it) }
         if (printBlocks) {
             println "["
             for (int z = 0; z < terrain.depth; z++) {
                 for (int y = 0; y < terrain.height; y++) {
                     for (int x = 0; x < terrain.width; x++) {
-                        def b = MapChunkBuffer.findBlock(root, new GameBlockPos(x, y, z), { chunk, pos -> storage.getBlock(chunk, pos) }, { storage.getChunk(it) })
+                        def b = MapChunkBuffer.findBlock(root, new GameBlockPos(x, y, z), retriever)
                         println "[$b.pos.x,$b.pos.y,$b.pos.z,$b.parent,$b.material,$b.object,$b.temp,$b.lux,0b$b.p],"
                     }
                 }
@@ -162,7 +163,7 @@ class TerrainImageCreateMapTest {
             for (int z = 0; z < terrain.depth; z++) {
                 for (int y = 0; y < terrain.height; y++) {
                     for (int x = 0; x < terrain.width; x++) {
-                        def b = MapChunkBuffer.findBlock(root, new GameBlockPos(x, y, z), { chunk, pos -> storage.getBlock(chunk, pos) }, { storage.getChunk(it) })
+                        def b = MapChunkBuffer.findBlock(root, new GameBlockPos(x, y, z), retriever)
                         assert blocksExpected[i][0] == b.pos.x
                         assert blocksExpected[i][1] == b.pos.y
                         assert blocksExpected[i][2] == b.pos.z

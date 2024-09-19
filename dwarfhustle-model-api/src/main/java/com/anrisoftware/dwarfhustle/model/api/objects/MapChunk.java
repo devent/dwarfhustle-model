@@ -17,6 +17,12 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import static java.nio.ByteBuffer.allocateDirect;
+
+import java.util.Optional;
+
+import org.agrona.MutableDirectBuffer;
+import org.agrona.concurrent.UnsafeBuffer;
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.map.primitive.IntObjectMap;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
@@ -93,18 +99,30 @@ public class MapChunk {
      */
     private CenterExtent centerExtent;
 
+    /**
+     * The {@link MapBlock}s {@link MutableDirectBuffer} in the chunk if the chunk
+     * is a leaf.
+     */
+    public Optional<MutableDirectBuffer> blocks;
+
     public boolean changed = false;
 
     public MapChunk() {
         this.pos = new GameChunkPos();
     }
 
-    public MapChunk(int cid, int parent, int chunkSize, GameChunkPos pos) {
+    public MapChunk(int cid, int parent, int cs, GameChunkPos pos) {
         this.cid = cid;
         this.parent = parent;
-        this.chunkSize = chunkSize;
+        this.chunkSize = cs;
         this.pos = pos;
         this.leaf = calcLeaf();
+        if (leaf) {
+            this.blocks = Optional
+                    .of(new UnsafeBuffer(allocateDirect(pos.getSizeX() * pos.getSizeY() * pos.getSizeZ() * 14)));
+        } else {
+            this.blocks = Optional.empty();
+        }
     }
 
     private boolean calcLeaf() {
@@ -158,6 +176,10 @@ public class MapChunk {
 
     public boolean haveBlock(GameBlockPos p) {
         return getPos().contains(p);
+    }
+
+    public MutableDirectBuffer getBlocks() {
+        return blocks.orElseThrow();
     }
 
     /**

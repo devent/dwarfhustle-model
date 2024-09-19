@@ -29,6 +29,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk
 import com.anrisoftware.dwarfhustle.model.api.objects.PropertiesSet
+import com.anrisoftware.dwarfhustle.model.db.buffers.MapBlockBuffer
 import com.anrisoftware.dwarfhustle.model.db.lmbd.MapChunksLmbdStorage.MapChunksLmbdStorageFactory
 import com.google.inject.Guice
 import com.google.inject.Injector
@@ -64,6 +65,22 @@ class MapChunksLmbdStorageTest {
         return chunks
     }
 
+    MapBlock createBlock(List chunks, int parent, int x, int y, int z) {
+        def block = new MapBlock()
+        block.parent = parent
+        block.pos = new GameBlockPos(x, y, z)
+        block.material = 200
+        block.object = 300
+        block.p = new PropertiesSet()
+        block.temp = 25
+        block.lux = 150
+        MapChunk chunk = chunks[block.parent]
+        int off = GameChunkPos.calcIndex(chunk.pos.getSizeX(), chunk.pos.getSizeY(), chunk.pos.getSizeZ(),
+                chunk.pos.x, chunk.pos.y, chunk.pos.z, x, y, z);
+        MapBlockBuffer.write(chunk.blocks, off, block)
+        return block
+    }
+
     @Test
     void putChunk_test(@TempDir Path tmp) {
         def gm = new GameMap(1)
@@ -73,6 +90,8 @@ class MapChunksLmbdStorageTest {
         int chunkSize = 16
         def storage = injector.getInstance(MapChunksLmbdStorageFactory).create(tmp, chunkSize)
         def chunks = createChunks()
+        createBlock chunks, 1, 0, 0, 0
+        createBlock chunks, 1, 0, 0, 1
         chunks.each {
             storage.putChunk(it)
         }
@@ -84,25 +103,13 @@ class MapChunksLmbdStorageTest {
             assert thatChunk.parent == it.parent
             assert thatChunk.chunkSize == it.chunkSize
             assert thatChunk.pos == it.pos
+            if (thatChunk.leaf) {
+                def thatBlock = MapBlockBuffer.read(thatChunk.blocks, 0, new GameBlockPos(0, 0, 0))
+                println thatBlock
+                thatBlock = MapBlockBuffer.read(thatChunk.blocks, 0, new GameBlockPos(0, 0, 1))
+                println thatBlock
+            }
         }
-        def block = new MapBlock()
-        block.parent = 2
-        block.pos = new GameBlockPos(0, 0, 0)
-        block.material = 200
-        block.object = 300
-        block.p = new PropertiesSet()
-        block.temp = 25
-        block.lux = 150
-        storage.putBlock(chunks[1], block)
-        block = new MapBlock()
-        block.parent = 2
-        block.pos = new GameBlockPos(1, 0, 0)
-        block.material = 200
-        block.object = 300
-        block.p = new PropertiesSet()
-        block.temp = 25
-        block.lux = 150
-        storage.putBlock(chunks[1], block)
         storage.close()
         TestUtils.listFiles log, tmp
     }
@@ -121,38 +128,5 @@ class MapChunksLmbdStorageTest {
         storage.forEachValue({ thatChunks << it })
         assert thatChunks.size() == chunks.size()
         storage.close()
-    }
-
-    @Test
-    void putBlocks_test(@TempDir Path tmp) {
-        def gm = new GameMap(1)
-        gm.width = 32
-        gm.height = 32
-        gm.depth = 32
-        int chunkSize = 16
-        def storage = injector.getInstance(MapChunksLmbdStorageFactory).create(tmp, chunkSize)
-        def chunks = createChunks()
-        chunks.each {
-            storage.putChunk(it)
-        }
-        def blocks = []
-        (0..15).each { x ->
-            (0..15).each { y ->
-                (0..15).each { z ->
-                    def block = new MapBlock()
-                    block.parent = 1
-                    block.pos = new GameBlockPos(x, y, z)
-                    block.material = 200
-                    block.object = 300
-                    block.p = new PropertiesSet()
-                    block.temp = 25
-                    block.lux = 150
-                    blocks << block
-                }
-            }
-        }
-        storage.putBlocks(chunks[1], blocks)
-        storage.close()
-        TestUtils.listFiles log, tmp
     }
 }

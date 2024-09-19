@@ -40,6 +40,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
+import com.anrisoftware.dwarfhustle.model.db.buffers.MapBlockBuffer;
 import com.anrisoftware.dwarfhustle.model.db.lmbd.MapChunksLmbdStorage;
 import com.anrisoftware.dwarfhustle.model.knowledge.evrete.BlockFact;
 import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge;
@@ -157,6 +158,7 @@ public class TerrainImageCreateMap {
             }
         }
         session.fire();
+        putObjectToBackend(chunk);
     }
 
     private int nextCid() {
@@ -194,7 +196,10 @@ public class TerrainImageCreateMap {
                         blocksCount++;
                         var mb = new MapBlock(chunk.cid, new GameBlockPos(xx, yy, zz));
                         updateTerrainBlock.updateMaterialBlock(mb, xx, yy, zz);
-                        storage.putBlock(chunk, mb);
+                        final int off = GameChunkPos.calcIndex(chunk.pos.getSizeX(), chunk.pos.getSizeY(),
+                                chunk.pos.getSizeZ(), chunk.pos.x, chunk.pos.y, chunk.pos.z, xx, yy, zz)
+                                * MapBlockBuffer.SIZE;
+                        MapBlockBuffer.write(chunk.getBlocks(), off, mb);
                     }
                 }
             }

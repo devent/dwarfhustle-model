@@ -17,14 +17,16 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.buffers;
 
+import static java.nio.ByteBuffer.allocateDirect;
+
 import java.util.function.Function;
 
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
+import org.agrona.concurrent.UnsafeBuffer;
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.BlockRetriever;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameChunkPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
@@ -40,13 +42,14 @@ import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
  * <li>@{code c} chunk size;
  * <li>@{code xyzXYZ} chunk position;
  * <li>@{code N} 26 CIDs of neighbors;
- * <li>@{code C} 8 {@link CidGameChunkPosMapBuffer};
+ * <li>@{code C} 9 {@link CidGameChunkPosMapBuffer};
+ * <li>@{code b} w*h*d times {@link MapBlockBuffer};
  * </ul>
  * 
  * <pre>
  * int   0         1         2         3
- * short 0    1    2    3    4    5    6    7    8    9         35       
- *       iiii PPPP cccc xxxx yyyy zzzz XXXX YYYY ZZZZ NNNN x26. CCCC x8..
+ * short 0    1    2    3    4    5    6    7    8    9         35        98        
+ *       iiii PPPP cccc xxxx yyyy zzzz XXXX YYYY ZZZZ NNNN x26. CCCC x9.. bbbb ....
  * </pre>
  */
 public class MapChunkBuffer {
@@ -54,9 +57,11 @@ public class MapChunkBuffer {
     private static final int CHUNKS_COUNT = 9;
 
     /**
-     * Size in bytes.
+     * Minimum size in bytes.
+     * 
+     * @see #getSize(MapChunk)
      */
-    public static final int SIZE = 2 + 2 + 2 + //
+    public static final int SIZE_MIN = 2 + 2 + 2 + //
             GameChunkPosBuffer.SIZE + //
             26 * 2 + //
             CHUNKS_COUNT * CidGameChunkPosMapBuffer.SIZE;
@@ -72,6 +77,16 @@ public class MapChunkBuffer {
     private static final int NEIGHBORS_BYTE = 9 * 2;
 
     private static final int CHUNKS_BYTE = 35 * 2;
+
+    private static final int BLOCKS_BYTE = 98 * 2;
+
+    public static MutableDirectBuffer createBlocks(int size) {
+        return new UnsafeBuffer(allocateDirect(size));
+    }
+
+    public static int getBlocksSize(int w, int h, int d) {
+        return w * h * d * MapBlockBuffer.SIZE;
+    }
 
     public static void write(MutableDirectBuffer b, int offset, MapChunk chunk) {
         b.putShort(ID_BYTE + offset, (short) chunk.cid);
@@ -95,6 +110,8 @@ public class MapChunkBuffer {
                 i++;
             }
             CidGameChunkPosMapBuffer.write(b, CHUNKS_BYTE + offset, 9, chunks);
+        } else {
+            b.putBytes(BLOCKS_BYTE + offset, chunk.getBlocks(), 0, chunk.getBlocks().capacity());
         }
     }
 
@@ -117,6 +134,8 @@ public class MapChunkBuffer {
                                 chunkEntries[i * 7 + 6]));
             }
             chunk.setChunks(chunks);
+        } else {
+            chunk.getBlocks().putBytes(0, b, BLOCKS_BYTE + offset, chunk.getBlocks().capacity());
         }
         return chunk;
     }
@@ -187,75 +206,72 @@ public class MapChunkBuffer {
         return 0;
     }
 
-    public static MapBlock findBlock(MapChunk mc, int x, int y, int z, BlockRetriever blockRetriever,
-            Function<Integer, MapChunk> retriever) {
-        return findBlock(mc, new GameBlockPos(x, y, z), blockRetriever, retriever);
+    public static MapBlock findBlock(MapChunk mc, int x, int y, int z, Function<Integer, MapChunk> retriever) {
+        return findBlock(mc, new GameBlockPos(x, y, z), retriever);
     }
 
-    public static MapBlock findBlock(MapChunk mc, GameBlockPos pos, BlockRetriever blockRetriever,
-            Function<Integer, MapChunk> retriever) {
-        if (!mc.isLeaf()) {
-            if (!mc.isInside(pos)) {
-                if (mc.cid == 0) {
+    public static MapBlock findBlock(MapChunk c, GameBlockPos pos, Function<Integer, MapChunk> retriever) {
+        if (!c.isLeaf()) {
+            if (!c.isInside(pos)) {
+                if (c.cid == 0) {
                     return null;
                 }
-                var parent = retriever.apply(mc.parent);
-                return findBlock(parent, pos, blockRetriever, retriever);
+                var parent = retriever.apply(c.parent);
+                return findBlock(parent, pos, retriever);
             }
-            for (var view : mc.getChunks().keyValuesView()) {
+            for (var view : c.getChunks().keyValuesView()) {
                 var b = view.getTwo();
                 if (b.contains(pos)) {
                     var foundChunk = retriever.apply(view.getOne());
-                    return findBlock(foundChunk, pos, blockRetriever, retriever);
+                    return findBlock(foundChunk, pos, retriever);
                 }
             }
             return null;
         }
-        return blockRetriever.getBlock(mc, pos);
+        final int off = GameChunkPos.calcIndex(c.pos.getSizeX(), c.pos.getSizeY(), c.pos.getSizeZ(), c.pos.x, c.pos.y,
+                c.pos.z, pos.x, pos.y, pos.z) * MapBlockBuffer.SIZE;
+        return MapBlockBuffer.read(c.getBlocks(), off, pos);
     }
 
-    public static MapBlock getNeighbor(MapBlock mb, NeighboringDir dir, MapChunk chunk, BlockRetriever blockRetriever,
+    public static MapBlock getNeighbor(MapBlock mb, NeighboringDir dir, MapChunk c,
             Function<Integer, MapChunk> retriever) {
         var dirpos = mb.pos.add(dir.pos);
         if (dirpos.isNegative()) {
             return null;
         }
-        if (chunk.isInside(dirpos)) {
-            return blockRetriever.getBlock(chunk, dirpos);
+        if (c.isInside(dirpos)) {
+            final int off = GameChunkPos.calcIndex(c.pos.getSizeX(), c.pos.getSizeY(), c.pos.getSizeZ(), c.pos.x,
+                    c.pos.y, c.pos.z, dirpos.x, dirpos.y, dirpos.z) * MapBlockBuffer.SIZE;
+            return MapBlockBuffer.read(c.getBlocks(), off, dirpos);
         } else {
-            var parent = retriever.apply(chunk.parent);
-            return findBlock(parent, dirpos, blockRetriever, retriever);
+            var parent = retriever.apply(c.parent);
+            return findBlock(parent, dirpos, retriever);
         }
     }
 
-    public static MapBlock getNeighborNorth(MapBlock mb, MapChunk chunk, BlockRetriever blockRetriever,
-            Function<Integer, MapChunk> retriever) {
-        return getNeighbor(mb, NeighboringDir.N, chunk, blockRetriever, retriever);
+    public static MapBlock getNeighborNorth(MapBlock mb, MapChunk chunk, Function<Integer, MapChunk> retriever) {
+        return getNeighbor(mb, NeighboringDir.N, chunk, retriever);
     }
 
-    public static MapBlock getNeighborSouth(MapBlock mb, MapChunk chunk, BlockRetriever blockRetriever,
-            Function<Integer, MapChunk> retriever) {
-        return getNeighbor(mb, NeighboringDir.S, chunk, blockRetriever, retriever);
+    public static MapBlock getNeighborSouth(MapBlock mb, MapChunk chunk, Function<Integer, MapChunk> retriever) {
+        return getNeighbor(mb, NeighboringDir.S, chunk, retriever);
     }
 
-    public static MapBlock getNeighborEast(MapBlock mb, MapChunk chunk, BlockRetriever blockRetriever,
-            Function<Integer, MapChunk> retriever) {
-        return getNeighbor(mb, NeighboringDir.E, chunk, blockRetriever, retriever);
+    public static MapBlock getNeighborEast(MapBlock mb, MapChunk chunk, Function<Integer, MapChunk> retriever) {
+        return getNeighbor(mb, NeighboringDir.E, chunk, retriever);
     }
 
-    public static MapBlock getNeighborWest(MapBlock mb, MapChunk chunk, BlockRetriever blockRetriever,
-            Function<Integer, MapChunk> retriever) {
-        return getNeighbor(mb, NeighboringDir.W, chunk, blockRetriever, retriever);
+    public static MapBlock getNeighborWest(MapBlock mb, MapChunk chunk, Function<Integer, MapChunk> retriever) {
+        return getNeighbor(mb, NeighboringDir.W, chunk, retriever);
     }
 
-    public static MapBlock getNeighborUp(MapBlock mb, MapChunk chunk, BlockRetriever blockRetriever,
-            Function<Integer, MapChunk> retriever) {
-        return getNeighbor(mb, NeighboringDir.U, chunk, blockRetriever, retriever);
+    public static MapBlock getNeighborUp(MapBlock mb, MapChunk chunk, Function<Integer, MapChunk> retriever) {
+        return getNeighbor(mb, NeighboringDir.U, chunk, retriever);
     }
 
-    public static boolean isNeighborsUpEmptyContinuously(MapBlock mb, MapChunk chunk, BlockRetriever blockRetriever,
+    public static boolean isNeighborsUpEmptyContinuously(MapBlock mb, MapChunk chunk,
             Function<Integer, MapChunk> retriever) {
-        MapBlock up = getNeighbor(mb, NeighboringDir.U, chunk, blockRetriever, retriever);
+        MapBlock up = getNeighbor(mb, NeighboringDir.U, chunk, retriever);
         while (up != null) {
             if (!up.isEmpty()) {
                 return false;
@@ -263,7 +279,7 @@ public class MapChunkBuffer {
             if (mb.parent != up.parent) {
                 chunk = retriever.apply(up.parent);
             }
-            up = getNeighbor(up, NeighboringDir.U, chunk, blockRetriever, retriever);
+            up = getNeighbor(up, NeighboringDir.U, chunk, retriever);
         }
         return true;
     }
