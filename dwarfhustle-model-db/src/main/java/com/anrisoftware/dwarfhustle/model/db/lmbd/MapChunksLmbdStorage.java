@@ -34,7 +34,6 @@ import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.lmdbjava.Dbi;
 import org.lmdbjava.Env;
-import org.lmdbjava.EnvFlags;
 import org.lmdbjava.Txn;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
@@ -71,8 +70,7 @@ public class MapChunksLmbdStorage implements MapChunksStorage {
      */
     @Inject
     protected MapChunksLmbdStorage(@Assisted Path file, @Assisted int csize) {
-        this.env = create(PROXY_DB).setMapSize((long) (10 * pow(10, 9))).setMaxDbs(2).open(file.toFile(),
-                EnvFlags.MDB_NOLOCK);
+        this.env = create(PROXY_DB).setMapSize((long) (10 * pow(10, 9))).setMaxDbs(2).open(file.toFile());
         this.chunksDb = env.openDbi("chunks", MDB_CREATE, MDB_INTEGERKEY);
         this.buffkey = ThreadLocal.withInitial(() -> new UnsafeBuffer(allocateDirect(4)));
         this.buffChunk = ThreadLocal.withInitial(() -> MapChunkBuffer.createBlocks(MapChunkBuffer.SIZE_MIN));

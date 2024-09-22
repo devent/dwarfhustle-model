@@ -34,7 +34,6 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock
 import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir
 import com.anrisoftware.dwarfhustle.model.api.objects.PropertiesSet
-import com.anrisoftware.dwarfhustle.model.db.store.MapChunksStoreTest
 
 /**
  * @see MapBlockBuffer

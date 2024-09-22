@@ -26,8 +26,13 @@ import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowled
 import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
@@ -109,6 +114,10 @@ public class TerrainImageCreateMap {
 
     private int chunkSize;
 
+    private AtomicInteger chunksDone;
+
+    private ScheduledExecutorService monitorExecutor;
+
     public void startImport(URL url, TerrainLoadImage image, GameMap gm) throws IOException, GeneratorException {
         startImport0(url, image, gm, this::updateMaterialBlock);
     }
@@ -127,7 +136,9 @@ public class TerrainImageCreateMap {
         this.gm = gm;
         this.chunksCount = 0;
         this.blocksCount = 0;
-        chunksCount++;
+        this.monitorExecutor = Executors.newSingleThreadScheduledExecutor();
+        this.chunksDone = new AtomicInteger(0);
+        this.chunksCount++;
         createMap(mcRoot, 0, 0, 0, gm.width, gm.height, gm.depth, updateTerrainBlock);
         createNeighbors(mcRoot);
         updateTerrain();
@@ -136,14 +147,27 @@ public class TerrainImageCreateMap {
         gm.blocksCount = blocksCount;
     }
 
-    private void updateTerrain() throws IOException {
+    @SneakyThrows
+    private void updateTerrain() {
         Function<Integer, MapChunk> retriever = storage::getChunk;
         var terrainBlockMaterialRules = terrainKnowledge.createTerrainUpdateRulesKnowledge();
-        storage.forEachValue((c) -> {
+        monitorExecutor.scheduleAtFixedRate(() -> {
+            log.info("Chunks {}/{}", chunksDone, chunksCount);
+        }, 3, 3, TimeUnit.SECONDS);
+        var customThreadPool = new ForkJoinPool(4);
+        customThreadPool.submit(() -> IntStream.range(0, chunksCount).parallel().forEach((i) -> {
+            var c = storage.getChunk(i);
             if (c.isLeaf()) {
                 updateTerrainBlocks(terrainBlockMaterialRules, c, retriever);
+                storage.putChunk(c);
             }
-        });
+            this.chunksDone.incrementAndGet();
+        })).get();
+        // for (int i = 0; i < chunksCount; i++) {
+        // log.info("{}/{}", i, chunksCount);
+        // }
+        customThreadPool.shutdown();
+        monitorExecutor.shutdown();
     }
 
     private void updateTerrainBlocks(Knowledge knowledge, MapChunk chunk, Function<Integer, MapChunk> retriever) {
@@ -158,7 +182,6 @@ public class TerrainImageCreateMap {
             }
         }
         session.fire();
-        putObjectToBackend(chunk);
     }
 
     private int nextCid() {

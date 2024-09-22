@@ -20,7 +20,6 @@ package com.anrisoftware.dwarfhustle.model.terrainimage;
 import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
 import static com.anrisoftware.dwarfhustle.model.api.objects.GameMap.getGameMap;
 import static com.anrisoftware.dwarfhustle.model.api.objects.WorldMap.getWorldMap;
-import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeGetMessage.askKnowledgeObjects;
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -36,8 +35,6 @@ import com.anrisoftware.dwarfhustle.model.actor.ShutdownMessage;
 import com.anrisoftware.dwarfhustle.model.api.objects.IdsObjectsProvider.IdsObjects;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractJcsCacheActor;
-import com.anrisoftware.dwarfhustle.model.db.store.MapChunksStore;
-import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.ImportImageErrorMessage;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.ImportImageSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.terrainimage.TerrainImageCreateMap.TerrainImageCreateMapFactory;
@@ -131,11 +128,14 @@ public class ImporterMapImage2DbActor {
             var gm = getGameMap(og, m.mapid);
             var wm = getWorldMap(og, gm.world);
             Path storeFile = Path.of(m.root, format("%d-%d.map", wm.id, gm.id));
-            var store = new MapChunksStore(storeFile, gm.width, gm.height, gm.chunkSize, gm.chunksCount);
-            var knowledge = new TerrainKnowledge(
-                    (timeout, type) -> askKnowledgeObjects(actor.getActorSystem(), timeout, type));
-            terrainImageCreateMap.create(store, knowledge).startImportMapping(m.url, m.image, gm);
-            store.close();
+            // var store = new MapChunksStore(storeFile, gm.width, gm.height, gm.chunkSize,
+            // gm.chunksCount);
+            // var knowledge = new TerrainKnowledge(
+            // (timeout, type) -> askKnowledgeObjects(actor.getActorSystem(), timeout,
+            // type));
+            // terrainImageCreateMap.create(store, knowledge).startImportMapping(m.url,
+            // m.image, gm);
+            // store.close();
             m.replyTo.tell(new ImportImageSuccessMessage());
         } catch (Exception e) {
             log.error("onImportImage", e);

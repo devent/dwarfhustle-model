@@ -135,7 +135,7 @@ public class TerrainKnowledge {
         this.objects = IntIntMaps.mutable.ofInitialCapacity(100);
         loadKnowledges(askKnowledge);
         this.conf = new Configuration();
-        conf.setProperty("evrete.core.parallelism", "4");
+        conf.setProperty("evrete.core.parallelism", "1");
         conf.addImport(NeighboringDir.class);
         for (var d : NeighboringDir.values()) {
             conf.addImport(String.format("static %s.%s", NeighboringDir.class.getName(), d.name()));
