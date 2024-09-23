@@ -46,8 +46,10 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Stone;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
-import com.anrisoftware.dwarfhustle.model.db.api.MapChunksStorage;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsSetter;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -197,28 +199,24 @@ public class TerrainKnowledge {
     /**
      * Run the rules to update the terrain.
      */
-    public <T extends BlockFact> void runTerrainUpdateRules(MapChunksStorage storage, Knowledge knowledge, GameMap gm) {
+    public <T extends BlockFact> void runTerrainUpdateRules(ObjectsGetter og, ObjectsSetter os, Knowledge knowledge,
+            GameMap gm) {
         var session = knowledge.newStatefulSession();
-        storage.forEachValue(chunk -> {
-            if (chunk.isLeaf() && chunk.pos.ep.z < 128) {
-                chunk.changed = true;
-            }
-        });
-        storage.forEachValue(chunk -> {
+        for (int i = 0; i < gm.chunksCount; i++) {
+            MapChunk chunk = og.get(MapChunk.OBJECT_TYPE, MapChunk.cid2Id(i));
             if (chunk.changed && chunk.isLeaf()) {
                 var pos = chunk.getPos();
                 for (int z = pos.z; z < pos.ep.z; z++) {
                     for (int y = pos.y; y < pos.ep.y; y++) {
                         for (int x = pos.x; x < pos.ep.x; x++) {
-                            session.insert(new BlockFact(storage, chunk, x, y, z, gm.width, gm.height, gm.depth));
+                            session.insert(new BlockFact(og, os, chunk, x, y, z, gm.width, gm.height, gm.depth));
                         }
                     }
                 }
                 session.fire();
                 session.clear();
             }
-        });
-        session.close();
+        }
     }
 
     @SneakyThrows

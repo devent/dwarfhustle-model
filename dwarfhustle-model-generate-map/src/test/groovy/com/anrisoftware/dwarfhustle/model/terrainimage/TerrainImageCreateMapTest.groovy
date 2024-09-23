@@ -42,6 +42,8 @@ import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjects
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
 import com.anrisoftware.dwarfhustle.model.db.buffers.MapChunkBuffer
+import com.anrisoftware.dwarfhustle.model.db.cache.DwarfhustleModelDbCacheModule
+import com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.db.lmbd.DwarfhustleModelDbLmbdModule
 import com.anrisoftware.dwarfhustle.model.db.lmbd.MapChunksLmbdStorage.MapChunksLmbdStorageFactory
 import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge
@@ -68,8 +70,6 @@ class TerrainImageCreateMapTest {
 
     static ActorRef<Message> knowledgeActor
 
-    static ActorRef<Message> cacheActor
-
     static TerrainKnowledge terrainKnowledge
 
     @BeforeAll
@@ -79,6 +79,7 @@ class TerrainImageCreateMapTest {
                 new DwarfhustlePowerloomModule(),
                 new DwarfhustleModelApiObjectsModule(),
                 new DwarfhustleModelDbLmbdModule(),
+                new DwarfhustleModelDbCacheModule(),
                 new AbstractModule() {
                     @Override
                     protected void configure() {
@@ -87,15 +88,17 @@ class TerrainImageCreateMapTest {
                     }
                 }
                 )
-        actor = injector.getInstance(ActorSystemProvider.class)
-        KnowledgeJcsCacheActor.create(injector, ofSeconds(1)).whenComplete({ it, ex ->
-            cacheActor = it
-        } ).get()
-        PowerLoomKnowledgeActor.create(injector, ofSeconds(1), supplyAsync({cacheActor})).whenComplete({ it, ex ->
-            knowledgeActor = it
+        this.actor = injector.getInstance(ActorSystemProvider.class)
+        KnowledgeJcsCacheActor.create(injector, ofSeconds(1)).whenComplete({ cache, ex ->
+            if (ex == null) {
+                PowerLoomKnowledgeActor.create(injector, ofSeconds(1), supplyAsync({cache})).whenComplete({ knowledge, pex ->
+                    knowledgeActor = knowledge
+                } ).get()
+            }
         } ).get()
         this.terrainKnowledge = new TerrainKnowledge({ timeout, type -> askKnowledgeObjects(actor.actorSystem, timeout, type) })
     }
+
 
     @AfterAll
     static void testsFinished() {
@@ -142,7 +145,14 @@ class TerrainImageCreateMapTest {
         def path = Path.of(tmp.absolutePath, file)
         path.toFile().mkdir()
         def storage = injector.getInstance(MapChunksLmbdStorageFactory).create(path, gm.chunkSize);
-        def createMap = injector.getInstance(TerrainImageCreateMapFactory).create(storage, terrainKnowledge)
+        ActorRef<Message> cacheActor
+        StoredObjectsJcsCacheActor.create(injector, ofSeconds(1), supplyAsync({ storage }), supplyAsync({ storage })).whenComplete({ cache, pex ->
+            cacheActor = cache
+        } ).get()
+        def createMap = injector.getInstance(TerrainImageCreateMapFactory).create(
+                actor.getObjectGetterAsync(StoredObjectsJcsCacheActor.ID).toCompletableFuture().get(),
+                actor.getObjectSetterAsync(StoredObjectsJcsCacheActor.ID).toCompletableFuture().get(),
+                terrainKnowledge)
         createMap.startImportMapping(TerrainImageCreateMapTest.class.getResource(image.imageName), terrain, gm)
         def root = storage.getChunk(0)
         def retriever = { storage.getChunk(it) }

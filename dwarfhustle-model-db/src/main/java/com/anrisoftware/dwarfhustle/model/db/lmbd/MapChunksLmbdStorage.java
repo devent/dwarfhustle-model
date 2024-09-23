@@ -36,7 +36,10 @@ import org.lmdbjava.Dbi;
 import org.lmdbjava.Env;
 import org.lmdbjava.Txn;
 
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsSetter;
 import com.anrisoftware.dwarfhustle.model.db.api.MapChunksStorage;
 import com.anrisoftware.dwarfhustle.model.db.buffers.MapChunkBuffer;
 import com.google.inject.assistedinject.Assisted;
@@ -46,7 +49,7 @@ import jakarta.inject.Inject;
 /**
  * Stores the {@link MapChunk}(s) of the map.
  */
-public class MapChunksLmbdStorage implements MapChunksStorage {
+public class MapChunksLmbdStorage implements MapChunksStorage, ObjectsGetter, ObjectsSetter {
 
     /**
      * Factory to create the {@link MapChunksLmbdStorage}.
@@ -130,7 +133,7 @@ public class MapChunksLmbdStorage implements MapChunksStorage {
                 for (int i = start; i < end; i++) {
                     final var o = objects.get(i);
                     final var val = createBuffBlocks(o);
-                    key.putInt(0, o.cid);
+                    key.putInt(0, o.getCid());
                     MapChunkBuffer.write(val, 0, o);
                     c.put(key, val);
                 }
@@ -169,7 +172,7 @@ public class MapChunksLmbdStorage implements MapChunksStorage {
             final var key = buffkey.get();
             for (final var o : chunks) {
                 final var val = createBuffBlocks(o);
-                key.putInt(0, o.cid);
+                key.putInt(0, o.getCid());
                 MapChunkBuffer.write(val, 0, o);
                 c.put(key, val);
             }
@@ -201,6 +204,23 @@ public class MapChunksLmbdStorage implements MapChunksStorage {
                 consumer.accept(MapChunkBuffer.read(k.val(), 0));
             });
         }
+    }
+
+    @Override
+    public void set(int type, GameObject go) throws ObjectsSetterException {
+        putChunk((MapChunk) go);
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Override
+    public void set(int type, Iterable<GameObject> values) throws ObjectsSetterException {
+        putChunks((List) values);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends GameObject> T get(int type, Object key) throws ObjectsGetterException {
+        return (T) getChunk(MapChunk.id2Cid((long) key));
     }
 
 }

@@ -17,6 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.buffers;
 
+import static com.anrisoftware.dwarfhustle.model.api.objects.MapChunk.cid2Id;
 import static java.nio.ByteBuffer.allocateDirect;
 
 import java.util.function.Function;
@@ -32,6 +33,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameChunkPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 
 /**
  * Writes and reads {@link MapChunk} in a byte buffer.
@@ -89,7 +91,7 @@ public class MapChunkBuffer {
     }
 
     public static void write(MutableDirectBuffer b, int offset, MapChunk chunk) {
-        b.putShort(ID_BYTE + offset, (short) chunk.cid);
+        b.putShort(ID_BYTE + offset, (short) chunk.getCid());
         b.putShort(PARENT_BYTE + offset, (short) chunk.parent);
         b.putShort(CHUNK_SIZE_BYTE + offset, (short) chunk.chunkSize);
         GameChunkPosBuffer.write(b, POS_BYTE + offset, chunk.pos);
@@ -116,7 +118,7 @@ public class MapChunkBuffer {
     }
 
     public static MapChunk read(DirectBuffer b, int offset) {
-        var chunk = new MapChunk(b.getShort(ID_BYTE + offset), b.getShort(PARENT_BYTE + offset),
+        var chunk = new MapChunk(cid2Id(b.getShort(ID_BYTE + offset)), b.getShort(PARENT_BYTE + offset),
                 b.getShort(CHUNK_SIZE_BYTE + offset), GameChunkPosBuffer.read(b, POS_BYTE + offset));
         for (int i = 0; i < 26; i++) {
             chunk.neighbors[i] = b.getShort(offset + NEIGHBORS_BYTE + i * 2);
@@ -169,8 +171,7 @@ public class MapChunkBuffer {
      *
      * @return the ID of the chunk or 0.
      */
-    public static int findChild(MapChunk mc, int x, int y, int z, int ex, int ey, int ez,
-            Function<Integer, MapChunk> retriever) {
+    public static int findChild(MapChunk mc, int x, int y, int z, int ex, int ey, int ez, ObjectsGetter getter) {
         if (x < 0 || y < 0 || z < 0) {
             return 0;
         }
@@ -189,8 +190,8 @@ public class MapChunkBuffer {
                 int eby = ep.getY();
                 int ebz = ep.getZ();
                 if (x >= bx && y >= by && z >= bz && x < ebx && y < eby && z < ebz) {
-                    var foundChunk = retriever.apply(view.getOne());
-                    return findChild(foundChunk, x, y, z, ex, ey, ez, retriever);
+                    MapChunk foundChunk = getter.get(MapChunk.OBJECT_TYPE, cid2Id(view.getOne()));
+                    return findChild(foundChunk, x, y, z, ex, ey, ez, getter);
                 }
             }
         }
@@ -213,7 +214,7 @@ public class MapChunkBuffer {
     public static MapBlock findBlock(MapChunk c, GameBlockPos pos, Function<Integer, MapChunk> retriever) {
         if (!c.isLeaf()) {
             if (!c.isInside(pos)) {
-                if (c.cid == 0) {
+                if (c.getCid() == 0) {
                     return null;
                 }
                 var parent = retriever.apply(c.parent);

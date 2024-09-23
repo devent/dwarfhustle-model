@@ -25,12 +25,15 @@ import java.io.ObjectOutput;
 import java.util.function.Supplier;
 
 import org.eclipse.collections.api.factory.primitive.IntLongMaps;
+import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.factory.primitive.LongObjectMaps;
 import org.eclipse.collections.api.factory.primitive.ObjectIntMaps;
 import org.eclipse.collections.api.factory.primitive.ObjectLongMaps;
 import org.eclipse.collections.api.map.primitive.IntLongMap;
+import org.eclipse.collections.api.map.primitive.IntObjectMap;
 import org.eclipse.collections.api.map.primitive.LongObjectMap;
 import org.eclipse.collections.api.map.primitive.MutableIntLongMap;
+import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.eclipse.collections.api.map.primitive.MutableLongObjectMap;
 import org.eclipse.collections.api.map.primitive.MutableObjectIntMap;
 import org.eclipse.collections.api.map.primitive.MutableObjectLongMap;
@@ -152,6 +155,34 @@ public class ExternalizableUtils {
         MutableLongObjectMap<T> map = LongObjectMaps.mutable.ofInitialCapacity(size);
         for (int i = 0; i < size; i++) {
             long key = in.readLong();
+            T value = supplier.get();
+            value.readStream(in);
+            map.put(key, value);
+        }
+        return map;
+    }
+
+    /**
+     * Writes the keys and values of the {@link IntObjectMap} to stream.
+     */
+    public static void writeStreamIntObjectMap(DataOutput out, IntObjectMap<? extends StreamStorage> map)
+            throws IOException {
+        out.writeInt(map.size());
+        for (var view : map.keyValuesView()) {
+            out.writeInt(view.getOne());
+            view.getTwo().writeStream(out);
+        }
+    }
+
+    /**
+     * Reads the keys and values of the {@link IntObjectMap} from stream.
+     */
+    public static <T extends StreamStorage> MutableIntObjectMap<T> readStreamIntObjectMap(DataInput in,
+            Supplier<T> supplier) throws IOException {
+        int size = in.readInt();
+        MutableIntObjectMap<T> map = IntObjectMaps.mutable.ofInitialCapacity(size);
+        for (int i = 0; i < size; i++) {
+            int key = in.readInt();
             T value = supplier.get();
             value.readStream(in);
             map.put(key, value);

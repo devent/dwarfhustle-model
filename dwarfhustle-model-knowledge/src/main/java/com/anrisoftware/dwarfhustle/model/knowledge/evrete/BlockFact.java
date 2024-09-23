@@ -22,6 +22,7 @@ import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags.EMPTY
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags.FILLED;
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags.LIQUID;
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags.RAMP;
+import static com.anrisoftware.dwarfhustle.model.api.objects.MapChunk.cid2Id;
 import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.D;
 import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.E;
 import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.N;
@@ -33,7 +34,8 @@ import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.W;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameChunkPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
-import com.anrisoftware.dwarfhustle.model.db.api.MapChunksStorage;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsSetter;
 import com.anrisoftware.dwarfhustle.model.db.buffers.MapBlockBuffer;
 
 import lombok.RequiredArgsConstructor;
@@ -49,7 +51,10 @@ import lombok.ToString;
 public class BlockFact {
 
     @ToString.Exclude
-    public final MapChunksStorage storage;
+    public final ObjectsGetter getter;
+
+    @ToString.Exclude
+    public final ObjectsSetter setter;
 
     public final MapChunk chunk;
 
@@ -362,27 +367,27 @@ public class BlockFact {
         int dy = y + dir.pos.y;
         int dz = z + dir.pos.z;
         if (dx < chunk.pos.x) {
-            chunk = storage.getChunk(chunk.neighbors[NeighboringDir.W.ordinal()]);
+            chunk = getter.get(MapChunk.OBJECT_TYPE, cid2Id(chunk.neighbors[NeighboringDir.W.ordinal()]));
             return isNeighborFlag(chunk, dir, flag);
         }
         if (dy < chunk.pos.y) {
-            chunk = storage.getChunk(chunk.neighbors[NeighboringDir.N.ordinal()]);
+            chunk = getter.get(MapChunk.OBJECT_TYPE, cid2Id(chunk.neighbors[NeighboringDir.N.ordinal()]));
             return isNeighborFlag(chunk, dir, flag);
         }
         if (dz < chunk.pos.z) {
-            chunk = storage.getChunk(chunk.neighbors[NeighboringDir.U.ordinal()]);
+            chunk = getter.get(MapChunk.OBJECT_TYPE, cid2Id(chunk.neighbors[NeighboringDir.U.ordinal()]));
             return isNeighborFlag(chunk, dir, flag);
         }
         if (dx >= chunk.pos.ep.x) {
-            chunk = storage.getChunk(chunk.neighbors[NeighboringDir.E.ordinal()]);
+            chunk = getter.get(MapChunk.OBJECT_TYPE, cid2Id(chunk.neighbors[NeighboringDir.E.ordinal()]));
             return isNeighborFlag(chunk, dir, flag);
         }
         if (dy >= chunk.pos.ep.y) {
-            chunk = storage.getChunk(chunk.neighbors[NeighboringDir.S.ordinal()]);
+            chunk = getter.get(MapChunk.OBJECT_TYPE, cid2Id(chunk.neighbors[NeighboringDir.S.ordinal()]));
             return isNeighborFlag(chunk, dir, flag);
         }
         if (dz >= chunk.pos.ep.z) {
-            chunk = storage.getChunk(chunk.neighbors[D.ordinal()]);
+            chunk = getter.get(MapChunk.OBJECT_TYPE, cid2Id(chunk.neighbors[D.ordinal()]));
             return isNeighborFlag(chunk, dir, flag);
         }
         return isProp(chunk, dx, dy, dz, flag);
@@ -404,7 +409,7 @@ public class BlockFact {
                     continue;
                 }
             } else {
-                c = storage.getChunk(c.neighbors[NeighboringDir.U.ordinal()]);
+                c = getter.get(MapChunk.OBJECT_TYPE, cid2Id(c.neighbors[NeighboringDir.U.ordinal()]));
             }
         }
         return true;

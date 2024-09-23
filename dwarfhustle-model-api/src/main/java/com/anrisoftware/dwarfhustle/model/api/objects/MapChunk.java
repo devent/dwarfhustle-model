@@ -19,6 +19,10 @@ package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import static java.nio.ByteBuffer.allocateDirect;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Optional;
 
 import org.agrona.MutableDirectBuffer;
@@ -36,18 +40,19 @@ import lombok.ToString;
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@ToString(onlyExplicitlyIncluded = true)
 @Data
-public class MapChunk {
+@EqualsAndHashCode(callSuper = true)
+public class MapChunk extends GameObject {
 
     public static final long ID_FLAG = 2;
+
+    public static final int OBJECT_TYPE = MapChunk.class.getSimpleName().hashCode();
 
     /**
      * Returns the game object ID from the chunk ID.
      */
     public static long cid2Id(int cid) {
-        return (cid << 32) | ID_FLAG;
+        return ((long) (cid) << 32) | ID_FLAG;
     }
 
     /**
@@ -56,14 +61,6 @@ public class MapChunk {
     public static int id2Cid(long id) {
         return (int) (id >> 32);
     }
-
-    /**
-     * Serial CID of the chunk, beginning with 0 for the root chunk and numbering
-     * the child chunks in clockwise order.
-     */
-    @EqualsAndHashCode.Include
-    @ToString.Include
-    public int cid;
 
     /**
      * CID of the parent chunk. 0 if this is the root chunk.
@@ -108,11 +105,12 @@ public class MapChunk {
     public boolean changed = false;
 
     public MapChunk() {
+        this.centerExtent = new CenterExtent();
         this.pos = new GameChunkPos();
     }
 
-    public MapChunk(int cid, int parent, int cs, GameChunkPos pos) {
-        this.cid = cid;
+    public MapChunk(long id, int parent, int cs, GameChunkPos pos) {
+        super(id);
         this.parent = parent;
         this.chunkSize = cs;
         this.pos = pos;
@@ -143,6 +141,10 @@ public class MapChunk {
         float extenty = pos.getSizeY();
         float extentz = pos.getSizeZ();
         this.centerExtent = new CenterExtent(centerx, centery, centerz, extentx, extenty, extentz);
+    }
+
+    public int getCid() {
+        return id2Cid(id);
     }
 
     public boolean isRoot() {
@@ -200,5 +202,51 @@ public class MapChunk {
 
     public int getNeighborDown() {
         return getNeighbor(NeighboringDir.D);
+    }
+
+    @Override
+    public int getObjectType() {
+        return OBJECT_TYPE;
+    }
+
+    @Override
+    public void writeStream(DataOutput out) throws IOException {
+        super.writeStream(out);
+        out.writeBoolean(changed);
+        out.writeInt(chunkSize);
+        ExternalizableUtils.writeStreamIntObjectMap(out, chunks);
+        for (int i = 0; i < 26; i++) {
+            out.writeInt(neighbors[i]);
+        }
+        out.writeBoolean(leaf);
+        centerExtent.writeStream(out);
+        if (isLeaf()) {
+            int size = blocks.get().capacity();
+            var buff = new byte[size];
+            blocks.get().getBytes(0, buff);
+            out.writeInt(size);
+            out.write(buff);
+        }
+    }
+
+    @Override
+    public void readStream(DataInput in) throws IOException {
+        super.readStream(in);
+        this.changed = in.readBoolean();
+        this.chunkSize = in.readInt();
+        ExternalizableUtils.readStreamIntObjectMap(in, GameChunkPos::new);
+        for (int i = 0; i < 26; i++) {
+            this.neighbors[i] = in.readInt();
+        }
+        this.leaf = in.readBoolean();
+        this.centerExtent.readStream(in);
+        if (isLeaf()) {
+            int size = in.readInt();
+            var buff = new byte[size];
+            in.readFully(buff);
+            var bb = ByteBuffer.allocateDirect(size);
+            bb.put(buff);
+            blocks = Optional.of(new UnsafeBuffer(bb));
+        }
     }
 }
