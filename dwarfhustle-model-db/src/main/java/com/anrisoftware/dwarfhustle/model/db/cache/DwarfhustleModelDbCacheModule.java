@@ -17,6 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.cache;
 
+import com.anrisoftware.dwarfhustle.model.db.cache.MapChunksJcsCacheActor.MapChunksJcsCacheActorFactory;
 import com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor.StoredObjectsJcsCacheActorFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
@@ -30,6 +31,8 @@ public class DwarfhustleModelDbCacheModule extends AbstractModule {
     protected void configure() {
         install(new FactoryModuleBuilder().implement(StoredObjectsJcsCacheActor.class, StoredObjectsJcsCacheActor.class)
                 .build(StoredObjectsJcsCacheActorFactory.class));
+        install(new FactoryModuleBuilder().implement(MapChunksJcsCacheActor.class, MapChunksJcsCacheActor.class)
+                .build(MapChunksJcsCacheActorFactory.class));
     }
 
 }

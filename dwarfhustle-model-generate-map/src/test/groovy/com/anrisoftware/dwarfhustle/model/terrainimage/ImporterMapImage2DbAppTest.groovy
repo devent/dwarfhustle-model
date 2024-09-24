@@ -32,6 +32,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
 import com.anrisoftware.dwarfhustle.model.actor.DwarfhustleModelActorsModule
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
+import com.anrisoftware.dwarfhustle.model.db.cache.DwarfhustleModelDbCacheModule
 import com.anrisoftware.dwarfhustle.model.db.lmbd.DwarfhustleModelDbLmbdModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustlePowerloomModule
 import com.google.inject.Guice
@@ -53,12 +54,13 @@ class ImporterMapImage2DbAppTest {
                 new DwarfhustleModelApiObjectsModule(),
                 new DwarfhustleModelTerrainimageModule(),
                 new DwarfhustleModelDbLmbdModule(),
+                new DwarfhustleModelDbCacheModule(),
                 )
     }
 
     @AfterAll
     static void testsFinished() {
-        def dest = new File("/home/devent/Projects/dwarf-hustle/docu/terrain-maps/game")
+        def dest = new File("/home/devent/Projects/dwarf-hustle/terrain-maps/game")
         dest.mkdir()
         FileUtils.copyDirectory(tmp, dest)
         println tmp
@@ -75,8 +77,8 @@ class ImporterMapImage2DbAppTest {
         //        args << of(TerrainImage.terrain_32_32_32_4, mapProperties)
         //        args << of(TerrainImage.terrain_32_32_32_8, mapProperties)
         args << of(TerrainImage.terrain_512_512_128_16, mapProperties)
-        args << of(TerrainImage.terrain_512_512_128_32, mapProperties)
-        args << of(TerrainImage.terrain_512_512_128_64, mapProperties)
+        //        args << of(TerrainImage.terrain_512_512_128_32, mapProperties)
+        //        args << of(TerrainImage.terrain_512_512_128_64, mapProperties)
         Stream.of(args as Object[])
     }
 

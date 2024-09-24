@@ -20,7 +20,10 @@ package com.anrisoftware.dwarfhustle.model.terrainimage;
 import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
 import static com.anrisoftware.dwarfhustle.model.api.objects.GameMap.getGameMap;
 import static com.anrisoftware.dwarfhustle.model.api.objects.WorldMap.getWorldMap;
+import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeGetMessage.askKnowledgeObjects;
 import static java.lang.String.format;
+import static java.time.Duration.ofSeconds;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.nio.file.Path;
@@ -35,6 +38,9 @@ import com.anrisoftware.dwarfhustle.model.actor.ShutdownMessage;
 import com.anrisoftware.dwarfhustle.model.api.objects.IdsObjectsProvider.IdsObjects;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractJcsCacheActor;
+import com.anrisoftware.dwarfhustle.model.db.cache.MapChunksJcsCacheActor;
+import com.anrisoftware.dwarfhustle.model.db.lmbd.MapChunksLmbdStorage.MapChunksLmbdStorageFactory;
+import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.ImportImageErrorMessage;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.ImportImageSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.terrainimage.TerrainImageCreateMap.TerrainImageCreateMapFactory;
@@ -78,7 +84,7 @@ public class ImporterMapImage2DbActor {
     public static Behavior<Message> create(Injector injector, ActorSystemProvider actor,
             ImporterMapImage2DbActorFactory actorFactory, CompletionStage<ObjectsGetter> og) {
         return Behaviors.setup(context -> {
-            return actorFactory.create(context, og.toCompletableFuture().get(15, SECONDS)).start();
+            return actorFactory.create(context, og.toCompletableFuture().get(15, SECONDS)).start(injector);
         });
     }
 
@@ -112,12 +118,18 @@ public class ImporterMapImage2DbActor {
     private IDGenerator gen;
 
     @Inject
+    private MapChunksLmbdStorageFactory storageFactory;
+
+    @Inject
     private TerrainImageCreateMapFactory terrainImageCreateMap;
+
+    private Injector injector;
 
     /**
      * @see #getInitialBehavior()
      */
-    public Behavior<Message> start() {
+    public Behavior<Message> start(Injector injector) {
+        this.injector = injector;
         return getInitialBehavior().build();
     }
 
@@ -127,15 +139,24 @@ public class ImporterMapImage2DbActor {
         try {
             var gm = getGameMap(og, m.mapid);
             var wm = getWorldMap(og, gm.world);
-            Path storeFile = Path.of(m.root, format("%d-%d.map", wm.id, gm.id));
-            // var store = new MapChunksStore(storeFile, gm.width, gm.height, gm.chunkSize,
-            // gm.chunksCount);
-            // var knowledge = new TerrainKnowledge(
-            // (timeout, type) -> askKnowledgeObjects(actor.getActorSystem(), timeout,
-            // type));
-            // terrainImageCreateMap.create(store, knowledge).startImportMapping(m.url,
-            // m.image, gm);
-            // store.close();
+            var path = Path.of(m.root, format("%d-%d", wm.id, gm.id));
+            path.toFile().mkdir();
+            var storage = storageFactory.create(path, gm.chunkSize);
+            MapChunksJcsCacheActor
+                    .create(injector, ofSeconds(1), supplyAsync(() -> storage), supplyAsync(() -> storage))
+                    .whenComplete((cache, ex) -> {
+                        if (ex != null) {
+                            log.error("MapChunksJcsCacheActor", ex);
+                        }
+                    }).toCompletableFuture().get();
+            var knowledge = new TerrainKnowledge(
+                    (timeout, type) -> askKnowledgeObjects(actor.getActorSystem(), timeout, type));
+            terrainImageCreateMap
+                    .create(actor.getObjectGetterAsync(MapChunksJcsCacheActor.ID).toCompletableFuture().get(),
+                            actor.getObjectSetterAsync(MapChunksJcsCacheActor.ID).toCompletableFuture().get(),
+                            knowledge)
+                    .startImportMapping(m.url, m.image, gm);
+            storage.close();
             m.replyTo.tell(new ImportImageSuccessMessage());
         } catch (Exception e) {
             log.error("onImportImage", e);

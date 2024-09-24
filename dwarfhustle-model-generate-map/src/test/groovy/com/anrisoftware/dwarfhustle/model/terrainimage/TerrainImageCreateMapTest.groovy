@@ -102,7 +102,7 @@ class TerrainImageCreateMapTest {
 
     @AfterAll
     static void testsFinished() {
-        FileUtils.copyDirectory(tmp, new File("/home/devent/Projects/dwarf-hustle/docu/terrain-maps/"))
+        FileUtils.copyDirectory(tmp, new File("/home/devent/Projects/dwarf-hustle/terrain-maps/"))
         println tmp
     }
 
@@ -116,7 +116,7 @@ class TerrainImageCreateMapTest {
         //        args << of(TerrainImage.terrain_32_32_32_4, false, null)
         //        args << of(TerrainImage.terrain_32_32_32_8, false, null)
         args << of(TerrainImage.terrain_512_512_128_16, false, null)
-        //        args << of(TerrainImage.terrain_512_512_128_32, false, null)
+        //args << of(TerrainImage.terrain_512_512_128_32, false, null)
         //        args << of(TerrainImage.terrain_512_512_128_64, false, null)
         //
         //        args << of(TerrainImage.terrain_128_128_128_16, false, null)
