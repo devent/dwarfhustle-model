@@ -129,7 +129,7 @@ public class MapChunksJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @Override
-    protected <T extends GameObject> T getValueFromBackend(int type, Object key) {
+    protected <T extends GameObject> T getValueFromBackend(int type, long key) {
         return og.get(type, key);
     }
 

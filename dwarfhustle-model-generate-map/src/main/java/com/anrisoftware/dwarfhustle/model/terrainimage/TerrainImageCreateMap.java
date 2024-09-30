@@ -18,6 +18,8 @@
 package com.anrisoftware.dwarfhustle.model.terrainimage;
 
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapChunk.cid2Id;
+import static com.anrisoftware.dwarfhustle.model.api.objects.MapChunk.getChunk;
+import static com.anrisoftware.dwarfhustle.model.api.objects.MapChunk.setChunk;
 import static com.anrisoftware.dwarfhustle.model.db.buffers.MapChunkBuffer.findChild;
 import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge.MATERIALS_GASES_NAME;
 import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge.MATERIALS_LIQUIDS_NAME;
@@ -34,8 +36,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
-import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
-import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
+import org.eclipse.collections.api.factory.primitive.LongObjectMaps;
+import org.eclipse.collections.api.map.primitive.MutableLongObjectMap;
 import org.evrete.api.Knowledge;
 import org.lable.oss.uniqueid.GeneratorException;
 
@@ -137,7 +139,7 @@ public class TerrainImageCreateMap {
         this.terrain = image.load(url);
         this.chunkSize = image.chunkSize;
         this.mcRoot = new MapChunk(nextId(), 0, chunkSize, new GameChunkPos(0, 0, 0, gm.width, gm.height, gm.depth));
-        setter.set(MapChunk.OBJECT_TYPE, mcRoot);
+        setChunk(setter, mcRoot);
         this.gm = gm;
         this.chunksCount = 0;
         this.blocksCount = 0;
@@ -160,10 +162,10 @@ public class TerrainImageCreateMap {
         }, 3, 3, TimeUnit.SECONDS);
         var customThreadPool = new ForkJoinPool(4);
         customThreadPool.submit(() -> IntStream.range(0, chunksCount).parallel().forEach((i) -> {
-            MapChunk c = getter.get(MapChunk.OBJECT_TYPE, MapChunk.cid2Id(i));
+            var c = getChunk(getter, MapChunk.cid2Id(i));
             if (c.isLeaf()) {
                 updateTerrainBlocks(terrainBlockMaterialRules, c);
-                setter.set(MapChunk.OBJECT_TYPE, c);
+                setChunk(setter, c);
             }
             this.chunksDone.incrementAndGet();
         })).get();
@@ -195,7 +197,7 @@ public class TerrainImageCreateMap {
     @SneakyThrows
     private void createMap(MapChunk chunk, int sx, int sy, int sz, int ex, int ey, int ez,
             UpdateTerrainBlock updateTerrainBlock) throws GeneratorException {
-        MutableIntObjectMap<GameChunkPos> chunks = IntObjectMaps.mutable.empty();
+        MutableLongObjectMap<GameChunkPos> chunks = LongObjectMaps.mutable.empty();
         int cx = (ex - sx) / 2;
         int cy = (ey - sy) / 2;
         int cz = ez - sz > chunkSize ? (ez - sz) / 2 : ez - sz;
@@ -207,11 +209,11 @@ public class TerrainImageCreateMap {
             }
         }
         chunk.setChunks(chunks);
-        setter.set(MapChunk.OBJECT_TYPE, chunk);
+        setChunk(setter, chunk);
     }
 
     @SneakyThrows
-    private void createChunk(MapChunk parent, MutableIntObjectMap<GameChunkPos> chunks, int x, int y, int z, int ex,
+    private void createChunk(MapChunk parent, MutableLongObjectMap<GameChunkPos> chunks, int x, int y, int z, int ex,
             int ey, int ez, UpdateTerrainBlock updateTerrainBlock) throws GeneratorException {
         var chunk = new MapChunk(nextId(), parent.getCid(), chunkSize, new GameChunkPos(x, y, z, ex, ey, ez));
         setter.set(MapChunk.OBJECT_TYPE, chunk);
@@ -231,11 +233,11 @@ public class TerrainImageCreateMap {
                 }
             }
         } else {
-            setter.set(MapChunk.OBJECT_TYPE, chunk);
+            setChunk(setter, chunk);
             createMap(chunk, x, y, z, ex, ey, ez, updateTerrainBlock);
         }
         chunks.put(chunk.getCid(), chunk.getPos());
-        setter.set(MapChunk.OBJECT_TYPE, chunk);
+        setChunk(setter, chunk);
     }
 
     private void updateMaterialBlock(MapBlock mb, int x, int y, int z) {
@@ -282,15 +284,15 @@ public class TerrainImageCreateMap {
         for (int x = pos.x; x < pos.ep.x; x += xs) {
             for (int y = pos.y; y < pos.ep.y; y += ys) {
                 for (int z = pos.z; z < pos.ep.z; z += zs) {
-                    int chunkid = rootc.getChunk(x, y, z, x + xs, y + ys, z + zs);
+                    long chunkid = rootc.getChunk(x, y, z, x + xs, y + ys, z + zs);
                     assert chunkid != 0;
                     MapChunk chunk = getter.get(MapChunk.OBJECT_TYPE, cid2Id(chunkid));
                     assert chunk != null;
                     if (xs > gm.chunkSize || ys > gm.chunkSize || zs > gm.chunkSize) {
                         createNeighbors(chunk);
                     }
-                    int[] neighbors = new int[NeighboringDir.values().length];
-                    int b = 0;
+                    long[] neighbors = new long[NeighboringDir.values().length];
+                    long b = 0;
                     for (NeighboringDir dir : NeighboringDir.values()) {
                         var dp = (GameChunkPos) chunk.pos.add(dir.pos.mul(gm.chunkSize));
                         if ((b = findChild(mcRoot, dp.x, dp.y, dp.z, dp.ep.x, dp.ep.y, dp.ep.z, getter)) != 0) {
@@ -298,7 +300,7 @@ public class TerrainImageCreateMap {
                         }
                     }
                     chunk.setNeighbors(neighbors);
-                    setter.set(MapChunk.OBJECT_TYPE, chunk);
+                    setChunk(setter, chunk);
                 }
             }
         }

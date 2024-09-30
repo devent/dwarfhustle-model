@@ -65,7 +65,7 @@ public class CacheGetMessage<T extends Message> extends CacheMessage<T> {
         }
     }
 
-    public static CompletionStage<CacheResponseMessage<?>> askCacheGet(ActorSystem<Message> a, int type, Object key,
+    public static CompletionStage<CacheResponseMessage<?>> askCacheGet(ActorSystem<Message> a, int type, long key,
             Duration timeout) {
         return AskPattern.ask(a, replyTo -> new CacheGetMessage<>(replyTo, type, key), timeout, a.scheduler());
     }
@@ -78,21 +78,21 @@ public class CacheGetMessage<T extends Message> extends CacheMessage<T> {
 
     public final int type;
 
-    public final Object key;
+    public final long key;
 
     public final Consumer<GameObject> consumer;
 
     public final Runnable onMiss;
 
-    public CacheGetMessage(ActorRef<T> replyTo, int type, Object key) {
+    public CacheGetMessage(ActorRef<T> replyTo, int type, long key) {
         this(replyTo, type, key, EMPTY_CONSUMER, EMPTY_ON_MISS);
     }
 
-    public CacheGetMessage(ActorRef<T> replyTo, int type, Object key, Consumer<GameObject> consumer) {
+    public CacheGetMessage(ActorRef<T> replyTo, int type, long key, Consumer<GameObject> consumer) {
         this(replyTo, type, key, consumer, EMPTY_ON_MISS);
     }
 
-    public CacheGetMessage(ActorRef<T> replyTo, int type, Object key, Consumer<GameObject> consumer, Runnable onMiss) {
+    public CacheGetMessage(ActorRef<T> replyTo, int type, long key, Consumer<GameObject> consumer, Runnable onMiss) {
         super(replyTo);
         this.type = type;
         this.key = key;

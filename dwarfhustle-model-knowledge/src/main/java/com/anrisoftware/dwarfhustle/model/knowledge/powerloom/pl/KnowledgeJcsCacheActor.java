@@ -132,7 +132,7 @@ public class KnowledgeJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @Override
-    protected <T extends GameObject> T getValueFromBackend(int type, Object key) {
+    protected <T extends GameObject> T getValueFromBackend(int type, long key) {
         throw new UnsupportedOperationException();
     }
 

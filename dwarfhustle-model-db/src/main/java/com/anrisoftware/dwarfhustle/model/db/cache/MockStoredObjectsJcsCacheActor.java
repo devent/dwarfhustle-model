@@ -133,9 +133,7 @@ public class MockStoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
 
     @Override
     protected void retrieveValueFromBackend(CacheGetMessage<?> m, Consumer<GameObject> consumer) {
-        if (m.key instanceof Long) {
-            retrieveGameObject(m.type, (long) m.key, consumer);
-        }
+        retrieveGameObject(m.type, m.key, consumer);
     }
 
     private void retrieveGameObject(int type, long id, Consumer<GameObject> consumer) {
@@ -143,7 +141,7 @@ public class MockStoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @Override
-    protected <T extends GameObject> T getValueFromBackend(int type, Object key) {
+    protected <T extends GameObject> T getValueFromBackend(int type, long key) {
         return og.get(type, key);
     }
 

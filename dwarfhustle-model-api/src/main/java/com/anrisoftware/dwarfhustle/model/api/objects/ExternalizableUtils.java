@@ -139,10 +139,14 @@ public class ExternalizableUtils {
      */
     public static void writeStreamLongObjectMap(DataOutput out, LongObjectMap<? extends StreamStorage> map)
             throws IOException {
-        out.writeInt(map.size());
-        for (var view : map.keyValuesView()) {
-            out.writeLong(view.getOne());
-            view.getTwo().writeStream(out);
+        if (map != null) {
+            out.writeInt(map.size());
+            for (var view : map.keyValuesView()) {
+                out.writeLong(view.getOne());
+                view.getTwo().writeStream(out);
+            }
+        } else {
+            out.writeInt(0);
         }
     }
 

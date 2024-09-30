@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.primitive.LongObjectMap;
 import org.eclipse.collections.impl.factory.Lists;
 import org.lable.oss.uniqueid.GeneratorException;
 import org.lable.oss.uniqueid.IDGenerator;
@@ -40,7 +41,6 @@ import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
-import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheGetMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CachePutMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CachePutsMessage;
@@ -64,6 +64,7 @@ import akka.actor.typed.receptionist.ServiceKey;
 import edu.isi.powerloom.PLI;
 import edu.isi.powerloom.logic.LogicObject;
 import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.ToString;
@@ -74,7 +75,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
-public class PowerLoomKnowledgeActor implements ObjectsGetter {
+public class PowerLoomKnowledgeActor {
 
     public static final ServiceKey<Message> KEY = ServiceKey.create(Message.class,
             PowerLoomKnowledgeActor.class.getSimpleName());
@@ -196,13 +197,15 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
     private ActorRef<Message> objectsCache;
 
     @Inject
+    @Named("knowledge-storages")
     private Map<String, GameObjectKnowledge> storages;
+
+    @Inject
+    @Named("knowledge-tidTypeMap")
+    private LongObjectMap<String> tidTypeMap;
 
     @SuppressWarnings("rawtypes")
     private ActorRef<CacheResponseMessage> cacheResponseAdapter;
-
-    @Inject
-    private ActorSystemProvider actor;
 
     @IdsKnowledge
     @Inject
@@ -218,7 +221,6 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
      */
     public Behavior<Message> start() {
         this.cacheResponseAdapter = context.messageAdapter(CacheResponseMessage.class, WrappedCacheResponse::new);
-        actor.registerObjectsGetter(ID, this);
         return Behaviors.receive(Message.class)//
                 .onMessage(InitialStateMessage.class, this::onInitialState)//
                 .onMessage(KnowledgeMessage.class, this::stashOtherCommand)//
@@ -265,7 +267,8 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
     @SneakyThrows
     private Behavior<Message> onKnowledgeGet(KnowledgeGetMessage<?> m) {
         log.debug("onKnowledgeGet {}", m);
-        objectsCache.tell(new CacheGetMessage<>(cacheResponseAdapter, KnowledgeLoadedObject.OBJECT_TYPE, m.type, go -> {
+        var tid = m.hashCode();
+        objectsCache.tell(new CacheGetMessage<>(cacheResponseAdapter, KnowledgeLoadedObject.OBJECT_TYPE, tid, go -> {
             cacheHit(m, go);
         }, () -> {
             cacheMiss(m);
@@ -320,13 +323,6 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
         ;
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    @SneakyThrows
-    public <T extends GameObject> T get(int type, Object key) throws ObjectsGetterException {
-        return (T) retrieveKnowledgeLoadedObject((String) key);
-    }
-
     private KnowledgeLoadedObject retrieveKnowledgeLoadedObject(String type) throws GeneratorException {
         var sb = new StringBuilder();
         sb.append("all (");
@@ -344,7 +340,7 @@ public class PowerLoomKnowledgeActor implements ObjectsGetter {
                 list.add(go);
             }
         }
-        return new KnowledgeLoadedObject(ids.generate(), type, list.asUnmodifiable());
+        return new KnowledgeLoadedObject(ids.generate(), type.hashCode(), list.asUnmodifiable());
     }
 
 }

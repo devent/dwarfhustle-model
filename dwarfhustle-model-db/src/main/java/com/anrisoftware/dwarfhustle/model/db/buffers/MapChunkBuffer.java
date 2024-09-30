@@ -18,15 +18,18 @@
 package com.anrisoftware.dwarfhustle.model.db.buffers;
 
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapChunk.cid2Id;
+import static com.anrisoftware.dwarfhustle.model.api.objects.MapChunk.getChunk;
+import static com.anrisoftware.dwarfhustle.model.db.buffers.MapBlockBuffer.readMapBlockIndex;
 import static java.nio.ByteBuffer.allocateDirect;
 
-import java.util.function.Function;
+import java.util.Iterator;
+import java.util.function.Consumer;
 
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
-import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
-import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
+import org.eclipse.collections.api.factory.primitive.LongObjectMaps;
+import org.eclipse.collections.api.map.primitive.MutableLongObjectMap;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameChunkPos;
@@ -34,6 +37,8 @@ import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * Writes and reads {@link MapChunk} in a byte buffer.
@@ -101,15 +106,17 @@ public class MapChunkBuffer {
         int[] chunks = new int[9 * 7];
         if (!chunk.isLeaf()) {
             int i = 0;
-            for (var pair : chunk.getChunks().keyValuesView()) {
-                chunks[i * 7 + 0] = pair.getOne();
-                chunks[i * 7 + 1] = pair.getTwo().x;
-                chunks[i * 7 + 2] = pair.getTwo().y;
-                chunks[i * 7 + 3] = pair.getTwo().z;
-                chunks[i * 7 + 4] = pair.getTwo().ep.x;
-                chunks[i * 7 + 5] = pair.getTwo().ep.y;
-                chunks[i * 7 + 6] = pair.getTwo().ep.z;
-                i++;
+            if (chunk.getChunks() != null) {
+                for (var pair : chunk.getChunks().keyValuesView()) {
+                    chunks[i * 7 + 0] = (int) pair.getOne();
+                    chunks[i * 7 + 1] = pair.getTwo().x;
+                    chunks[i * 7 + 2] = pair.getTwo().y;
+                    chunks[i * 7 + 3] = pair.getTwo().z;
+                    chunks[i * 7 + 4] = pair.getTwo().ep.x;
+                    chunks[i * 7 + 5] = pair.getTwo().ep.y;
+                    chunks[i * 7 + 6] = pair.getTwo().ep.z;
+                    i++;
+                }
             }
             CidGameChunkPosMapBuffer.write(b, CHUNKS_BYTE + offset, 9, chunks);
         } else {
@@ -125,7 +132,8 @@ public class MapChunkBuffer {
         }
         if (!chunk.isLeaf()) {
             var chunkEntries = CidGameChunkPosMapBuffer.read(b, CHUNKS_BYTE + offset, CHUNKS_COUNT, null);
-            MutableIntObjectMap<GameChunkPos> chunks = IntObjectMaps.mutable.ofInitialCapacity(chunkEntries.length / 7);
+            MutableLongObjectMap<GameChunkPos> chunks = LongObjectMaps.mutable
+                    .ofInitialCapacity(chunkEntries.length / 7);
             for (int i = 0; i < chunkEntries.length / 7; i++) {
                 chunks.put(chunkEntries[i * 7 + 0], //
                         new GameChunkPos(chunkEntries[i * 7 + 1], //
@@ -142,11 +150,11 @@ public class MapChunkBuffer {
         return chunk;
     }
 
-    public static MapChunk findChunk(MapChunk mc, GameBlockPos pos, Function<Integer, MapChunk> retriever) {
-        return findChunk(mc, pos.x, pos.y, pos.z, retriever);
+    public static MapChunk findChunk(MapChunk mc, GameBlockPos pos, ObjectsGetter og) {
+        return findChunk(mc, pos.x, pos.y, pos.z, og);
     }
 
-    public static MapChunk findChunk(MapChunk mc, int x, int y, int z, Function<Integer, MapChunk> retriever) {
+    public static MapChunk findChunk(MapChunk mc, int x, int y, int z, ObjectsGetter og) {
         if (!mc.isLeaf()) {
             for (var view : mc.getChunks().keyValuesView()) {
                 var b = view.getTwo();
@@ -158,8 +166,8 @@ public class MapChunkBuffer {
                 int eby = ep.getY();
                 int ebz = ep.getZ();
                 if (x >= bx && y >= by && z >= bz && x < ebx && y < eby && z < ebz) {
-                    var foundChunk = retriever.apply(view.getOne());
-                    return findChunk(foundChunk, x, y, z, retriever);
+                    var foundChunk = getChunk(og, view.getOne());
+                    return findChunk(foundChunk, x, y, z, og);
                 }
             }
         }
@@ -171,12 +179,12 @@ public class MapChunkBuffer {
      *
      * @return the ID of the chunk or 0.
      */
-    public static int findChild(MapChunk mc, int x, int y, int z, int ex, int ey, int ez, ObjectsGetter getter) {
+    public static long findChild(MapChunk mc, int x, int y, int z, int ex, int ey, int ez, ObjectsGetter getter) {
         if (x < 0 || y < 0 || z < 0) {
             return 0;
         }
         if (!mc.isLeaf()) {
-            int id = findChunk(mc, x, y, z, ex, ey, ez);
+            long id = findChunk(mc, x, y, z, ex, ey, ez);
             if (id != 0) {
                 return id;
             }
@@ -198,7 +206,7 @@ public class MapChunkBuffer {
         return 0;
     }
 
-    private static int findChunk(MapChunk mc, int x, int y, int z, int ex, int ey, int ez) {
+    private static long findChunk(MapChunk mc, int x, int y, int z, int ex, int ey, int ez) {
         for (var view : mc.getChunks().keyValuesView()) {
             if (view.getTwo().equals(x, y, z, ex, ey, ez)) {
                 return view.getOne();
@@ -207,24 +215,24 @@ public class MapChunkBuffer {
         return 0;
     }
 
-    public static MapBlock findBlock(MapChunk mc, int x, int y, int z, Function<Integer, MapChunk> retriever) {
-        return findBlock(mc, new GameBlockPos(x, y, z), retriever);
+    public static MapBlock findBlock(MapChunk mc, int x, int y, int z, ObjectsGetter og) {
+        return findBlock(mc, new GameBlockPos(x, y, z), og);
     }
 
-    public static MapBlock findBlock(MapChunk c, GameBlockPos pos, Function<Integer, MapChunk> retriever) {
+    public static MapBlock findBlock(MapChunk c, GameBlockPos pos, ObjectsGetter og) {
         if (!c.isLeaf()) {
             if (!c.isInside(pos)) {
                 if (c.getCid() == 0) {
                     return null;
                 }
-                var parent = retriever.apply(c.parent);
-                return findBlock(parent, pos, retriever);
+                var parent = getChunk(og, c.parent);
+                return findBlock(parent, pos, og);
             }
             for (var view : c.getChunks().keyValuesView()) {
                 var b = view.getTwo();
                 if (b.contains(pos)) {
-                    var foundChunk = retriever.apply(view.getOne());
-                    return findBlock(foundChunk, pos, retriever);
+                    var foundChunk = getChunk(og, view.getOne());
+                    return findBlock(foundChunk, pos, og);
                 }
             }
             return null;
@@ -234,8 +242,56 @@ public class MapChunkBuffer {
         return MapBlockBuffer.read(c.getBlocks(), off, pos);
     }
 
-    public static MapBlock getNeighbor(MapBlock mb, NeighboringDir dir, MapChunk c,
-            Function<Integer, MapChunk> retriever) {
+    /**
+     * Returns an {@link Iterable} over the {@link MapBlock} of this
+     * {@link MapChunk}.
+     */
+    public static Iterable<MapBlock> getBlocks(MapChunk mc) {
+        int cw = mc.pos.getSizeX();
+        int ch = mc.pos.getSizeY();
+        int sx = mc.pos.x;
+        int sy = mc.pos.y;
+        int sz = mc.pos.z;
+        var b = mc.blocks.orElseThrow();
+        return () -> new Itr(cw, ch, sx, sy, sz, b, b.capacity() / MapBlockBuffer.SIZE);
+    }
+
+    @RequiredArgsConstructor
+    private static class Itr implements Iterator<MapBlock> {
+        final int cw;
+        final int ch;
+        final int sx;
+        final int sy;
+        final int sz;
+        final DirectBuffer b;
+        final int size;
+        int i = 0;
+
+        @Override
+        public MapBlock next() {
+            return readMapBlockIndex(b, 0, i++, cw, ch, sx, sy, sz);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return i < size;
+        }
+    }
+
+    public static void forEachBlocks(MapChunk mc, Consumer<MapBlock> consumer) {
+        int cw = mc.pos.getSizeX();
+        int ch = mc.pos.getSizeY();
+        int sx = mc.pos.x;
+        int sy = mc.pos.y;
+        int sz = mc.pos.z;
+        mc.blocks.ifPresent((b) -> {
+            for (int i = 0; i < b.capacity() / MapBlockBuffer.SIZE; i++) {
+                consumer.accept(readMapBlockIndex(b, 0, i, cw, ch, sx, sy, sz));
+            }
+        });
+    }
+
+    public static MapBlock getNeighbor(MapBlock mb, NeighboringDir dir, MapChunk c, ObjectsGetter og) {
         var dirpos = mb.pos.add(dir.pos);
         if (dirpos.isNegative()) {
             return null;
@@ -245,42 +301,41 @@ public class MapChunkBuffer {
                     c.pos.y, c.pos.z, dirpos.x, dirpos.y, dirpos.z) * MapBlockBuffer.SIZE;
             return MapBlockBuffer.read(c.getBlocks(), off, dirpos);
         } else {
-            var parent = retriever.apply(c.parent);
-            return findBlock(parent, dirpos, retriever);
+            var parent = getChunk(og, c.parent);
+            return findBlock(parent, dirpos, og);
         }
     }
 
-    public static MapBlock getNeighborNorth(MapBlock mb, MapChunk chunk, Function<Integer, MapChunk> retriever) {
-        return getNeighbor(mb, NeighboringDir.N, chunk, retriever);
+    public static MapBlock getNeighborNorth(MapBlock mb, MapChunk chunk, ObjectsGetter og) {
+        return getNeighbor(mb, NeighboringDir.N, chunk, og);
     }
 
-    public static MapBlock getNeighborSouth(MapBlock mb, MapChunk chunk, Function<Integer, MapChunk> retriever) {
-        return getNeighbor(mb, NeighboringDir.S, chunk, retriever);
+    public static MapBlock getNeighborSouth(MapBlock mb, MapChunk chunk, ObjectsGetter og) {
+        return getNeighbor(mb, NeighboringDir.S, chunk, og);
     }
 
-    public static MapBlock getNeighborEast(MapBlock mb, MapChunk chunk, Function<Integer, MapChunk> retriever) {
-        return getNeighbor(mb, NeighboringDir.E, chunk, retriever);
+    public static MapBlock getNeighborEast(MapBlock mb, MapChunk chunk, ObjectsGetter og) {
+        return getNeighbor(mb, NeighboringDir.E, chunk, og);
     }
 
-    public static MapBlock getNeighborWest(MapBlock mb, MapChunk chunk, Function<Integer, MapChunk> retriever) {
-        return getNeighbor(mb, NeighboringDir.W, chunk, retriever);
+    public static MapBlock getNeighborWest(MapBlock mb, MapChunk chunk, ObjectsGetter og) {
+        return getNeighbor(mb, NeighboringDir.W, chunk, og);
     }
 
-    public static MapBlock getNeighborUp(MapBlock mb, MapChunk chunk, Function<Integer, MapChunk> retriever) {
-        return getNeighbor(mb, NeighboringDir.U, chunk, retriever);
+    public static MapBlock getNeighborUp(MapBlock mb, MapChunk chunk, ObjectsGetter og) {
+        return getNeighbor(mb, NeighboringDir.U, chunk, og);
     }
 
-    public static boolean isNeighborsUpEmptyContinuously(MapBlock mb, MapChunk chunk,
-            Function<Integer, MapChunk> retriever) {
-        MapBlock up = getNeighbor(mb, NeighboringDir.U, chunk, retriever);
+    public static boolean isNeighborsUpEmptyContinuously(MapBlock mb, MapChunk chunk, ObjectsGetter og) {
+        MapBlock up = getNeighbor(mb, NeighboringDir.U, chunk, og);
         while (up != null) {
             if (!up.isEmpty()) {
                 return false;
             }
             if (mb.parent != up.parent) {
-                chunk = retriever.apply(up.parent);
+                chunk = getChunk(og, up.parent);
             }
-            up = getNeighbor(up, NeighboringDir.U, chunk, retriever);
+            up = getNeighbor(up, NeighboringDir.U, chunk, og);
         }
         return true;
     }

@@ -40,7 +40,7 @@ public class KnowledgeLoadedObject extends GameObject {
 
     public static final int OBJECT_TYPE = KnowledgeLoadedObject.class.getSimpleName().hashCode();
 
-    public String type;
+    public long tid;
 
     public ListIterable<KnowledgeObject> objects;
 
@@ -52,9 +52,9 @@ public class KnowledgeLoadedObject extends GameObject {
         super(id);
     }
 
-    public KnowledgeLoadedObject(byte[] idbuf, String type, ListIterable<KnowledgeObject> objects) {
+    public KnowledgeLoadedObject(byte[] idbuf, long tid, ListIterable<KnowledgeObject> objects) {
         this(idbuf);
-        this.type = type;
+        this.tid = tid;
         this.objects = objects;
     }
 

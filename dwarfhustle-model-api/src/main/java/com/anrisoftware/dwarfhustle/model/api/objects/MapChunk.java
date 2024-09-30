@@ -24,12 +24,12 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
-import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
-import org.eclipse.collections.api.map.primitive.IntObjectMap;
-import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
+import org.eclipse.collections.api.factory.primitive.LongObjectMaps;
+import org.eclipse.collections.api.map.primitive.LongObjectMap;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -48,11 +48,23 @@ public class MapChunk extends GameObject {
 
     public static final int OBJECT_TYPE = MapChunk.class.getSimpleName().hashCode();
 
+    public static Function<Long, MapChunk> getMapChunkRetriever(ObjectsGetter og) {
+        return (id) -> og.get(OBJECT_TYPE, id);
+    }
+
+    public static MapChunk getChunk(ObjectsGetter og, long id) {
+        return og.get(MapChunk.OBJECT_TYPE, id);
+    }
+
+    public static void setChunk(ObjectsSetter os, MapChunk chunk) {
+        os.set(MapChunk.OBJECT_TYPE, chunk);
+    }
+
     /**
      * Returns the game object ID from the chunk ID.
      */
-    public static long cid2Id(int cid) {
-        return ((long) (cid) << 32) | ID_FLAG;
+    public static long cid2Id(long cid) {
+        return (cid << 32) | ID_FLAG;
     }
 
     /**
@@ -65,7 +77,7 @@ public class MapChunk extends GameObject {
     /**
      * CID of the parent chunk. 0 if this is the root chunk.
      */
-    public int parent;
+    public long parent;
 
     /**
      * The {@link GameChunkPos} of the chunk.
@@ -78,12 +90,12 @@ public class MapChunk extends GameObject {
     /**
      * The {@link GameChunkPos} and CIDs of the children chunks.
      */
-    private final MutableIntObjectMap<GameChunkPos> chunks = IntObjectMaps.mutable.empty();
+    private LongObjectMap<GameChunkPos> chunks;
 
     /**
      * The chunk CIDs of {@link NeighboringDir} neighbors of this chunk.
      */
-    public int[] neighbors = new int[NeighboringDir.values().length];
+    public long[] neighbors = new long[NeighboringDir.values().length];
 
     /**
      * True if the chunk is a leaf with blocks.
@@ -159,7 +171,7 @@ public class MapChunk extends GameObject {
         return x >= pos.x && y >= pos.y && z >= pos.z && x < pos.ep.x && y < pos.ep.y && z < pos.ep.z;
     }
 
-    public int getChunk(int x, int y, int z, int ex, int ey, int ez) {
+    public long getChunk(int x, int y, int z, int ex, int ey, int ez) {
         for (var view : chunks.keyValuesView()) {
             if (view.getTwo().equals(x, y, z, ex, ey, ez)) {
                 return view.getOne();
@@ -168,8 +180,8 @@ public class MapChunk extends GameObject {
         return 0;
     }
 
-    public void setChunks(IntObjectMap<GameChunkPos> chunks) {
-        this.chunks.putAll(chunks);
+    public void setChunks(LongObjectMap<GameChunkPos> chunks) {
+        this.chunks = LongObjectMaps.immutable.ofAll(chunks);
     }
 
     public int getChunksCount() {
@@ -188,19 +200,19 @@ public class MapChunk extends GameObject {
      * Returns the CID of the {@link MapChunk} in the direction of the
      * {@link NeighboringDir} or 0.
      */
-    public int getNeighbor(NeighboringDir dir) {
+    public long getNeighbor(NeighboringDir dir) {
         return neighbors[dir.ordinal()];
     }
 
-    public int getNeighborEast() {
+    public long getNeighborEast() {
         return getNeighbor(NeighboringDir.E);
     }
 
-    public int getNeighborSouth() {
+    public long getNeighborSouth() {
         return getNeighbor(NeighboringDir.S);
     }
 
-    public int getNeighborDown() {
+    public long getNeighborDown() {
         return getNeighbor(NeighboringDir.D);
     }
 
@@ -214,9 +226,9 @@ public class MapChunk extends GameObject {
         super.writeStream(out);
         out.writeBoolean(changed);
         out.writeInt(chunkSize);
-        ExternalizableUtils.writeStreamIntObjectMap(out, chunks);
+        ExternalizableUtils.writeStreamLongObjectMap(out, chunks);
         for (int i = 0; i < 26; i++) {
-            out.writeInt(neighbors[i]);
+            out.writeInt((int) neighbors[i]);
         }
         out.writeBoolean(leaf);
         centerExtent.writeStream(out);
@@ -234,7 +246,7 @@ public class MapChunk extends GameObject {
         super.readStream(in);
         this.changed = in.readBoolean();
         this.chunkSize = in.readInt();
-        ExternalizableUtils.readStreamIntObjectMap(in, GameChunkPos::new);
+        this.chunks = ExternalizableUtils.readStreamLongObjectMap(in, GameChunkPos::new);
         for (int i = 0; i < 26; i++) {
             this.neighbors[i] = in.readInt();
         }

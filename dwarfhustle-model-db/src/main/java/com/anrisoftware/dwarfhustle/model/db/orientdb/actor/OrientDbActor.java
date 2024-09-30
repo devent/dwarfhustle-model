@@ -580,7 +580,7 @@ public class OrientDbActor implements ObjectsGetter {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends GameObject> T get(int type, Object key) {
+    public <T extends GameObject> T get(int type, long key) {
         try (var db = orientdb.get().open(database, user, password)) {
             var query = "SELECT * from ? where objecttype = ? and objectid = ? limit 1";
             var rs = db.query(query, type, type, key);

@@ -18,11 +18,13 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl
 
 import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomTestUtils.spawnListKnowledgeActor
+import static com.google.inject.name.Names.named
 import static java.time.Duration.ofSeconds
 import static java.util.Locale.ENGLISH
 import static java.util.concurrent.CompletableFuture.supplyAsync
 
 import org.apache.commons.lang3.RegExUtils
+import org.eclipse.collections.api.map.primitive.LongObjectMap
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -58,6 +60,8 @@ import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeShrub
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTree
 import com.google.inject.Guice
 import com.google.inject.Injector
+import com.google.inject.Key
+import com.google.inject.TypeLiteral
 
 import akka.actor.typed.ActorRef
 import groovy.util.logging.Slf4j
@@ -77,10 +81,13 @@ class ListKnowledges {
 
     static ActorRef<Message> cacheActor
 
+    static LongObjectMap<String> tidType
+
     @BeforeAll
     static void setupActor() {
         injector = Guice.createInjector(new DwarfhustleModelActorsModule(), new DwarfhustlePowerloomModule(), new DwarfhustleModelApiObjectsModule())
-        actor = injector.getInstance(ActorSystemProvider.class)
+        actor = injector.getInstance(ActorSystemProvider)
+        tidType = injector.getInstance(Key.get(new TypeLiteral<LongObjectMap<String>>(){}, named("knowledge-tidTypeMap")))
         KnowledgeJcsCacheActor.create(injector, ofSeconds(1)).whenComplete({ it, ex ->
             cacheActor = it
         } ).get()
@@ -99,7 +106,7 @@ class ListKnowledges {
     void "list knowledge top level"() {
         def ko = []
         def ret = spawnListKnowledgeActor(actor, {
-            println it.response.go.type
+            println tidType.get(it.response.go.tid)
             it.response.go.objects.each {
                 println "${it.name},${it.kid}"
                 ko << it
@@ -123,9 +130,9 @@ class ListKnowledges {
     void "print model-map"() {
         def komap = [:]
         def ret = spawnListKnowledgeActor(actor, {
-            komap[it.response.go.type] = []
+            komap[tidType.get(it.response.go.tid)] = []
             it.response.go.objects.each { o ->
-                komap[it.response.go.type] << o
+                komap[tidType.get(it.response.go.tid)] << o
             }
         })
         def knowledgeResponseAdapter = ret[1]
@@ -169,7 +176,7 @@ class ListKnowledges {
         def ko = [:]
         println "rid = [:]"
         def ret = spawnListKnowledgeActor(actor, {
-            ko["${it.response.go.type}"] = it.response.go.objects
+            ko["${tidType.get(it.response.go.tid)}"] = it.response.go.objects
         })
         def knowledgeResponseAdapter = ret[1]
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Clay.TYPE))
@@ -199,7 +206,7 @@ class ListKnowledges {
     void "list knowledge low level"() {
         def ko = []
         def ret = spawnListKnowledgeActor(actor, {
-            println "## ${it.response.go.type}"
+            println "## ${tidType.get(it.response.go.tid)}"
             it.response.go.objects.each {
                 println "${it.name},${it.kid}"
                 ko << it
@@ -221,7 +228,7 @@ class ListKnowledges {
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, RoofType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ObjectType.TYPE))
-        while (ko.size() != 107) {
+        while (ko.size() != 108) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
         }
@@ -235,7 +242,7 @@ class ListKnowledges {
     void "list knowledges"(String type, int size) {
         def ko = []
         def ret = spawnListKnowledgeActor(actor, {
-            println "## ${it.response.go.type}"
+            println "## ${tidType.get(it.response.go.tid)}"
             it.response.go.objects.each {
                 println "${it.name},${it.kid}"
                 ko << it

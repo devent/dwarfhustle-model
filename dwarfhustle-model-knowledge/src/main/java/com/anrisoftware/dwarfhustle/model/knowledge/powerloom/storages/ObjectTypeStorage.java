@@ -1,5 +1,5 @@
 /*
- * dwarfhustle-model-api - Manages the compile dependencies for the model.
+ * dwarfhustle-model-knowledge - Manages the compile dependencies for the model.
  * Copyright © 2023 Erwin Müller (erwin.mueller@anrisoftware.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,45 +15,34 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api.map;
+package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
+import com.anrisoftware.dwarfhustle.model.api.map.BlockObject;
+import com.anrisoftware.dwarfhustle.model.api.map.ObjectType;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
-
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import com.google.auto.service.AutoService;
 
 /**
- * Object type.
  *
+ * @see ObjectType
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@NoArgsConstructor
-@ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
-@Getter
-@Setter
-public abstract class ObjectType extends KnowledgeObject {
-
-    public static final int OBJECT_TYPE = ObjectType.class.getSimpleName().hashCode();
-
-    public static final String TYPE = "ObjectType";
-
-    private String name;
-
-    public ObjectType(int kid) {
-        super(kid);
-    }
+@AutoService(GameObjectKnowledge.class)
+public class ObjectTypeStorage extends AbstractObjectTypeStorage {
 
     @Override
-    public int getObjectType() {
-        return ObjectType.OBJECT_TYPE;
-    }
-
-    @Override
-    public String getKnowledgeType() {
+    public String getType() {
         return ObjectType.TYPE;
+    }
+
+    @Override
+    public KnowledgeObject retrieve(Object o, KnowledgeObject go) {
+        super.retrieve(o, go);
+        return go;
+    }
+
+    @Override
+    public KnowledgeObject create() {
+        return new BlockObject();
     }
 }

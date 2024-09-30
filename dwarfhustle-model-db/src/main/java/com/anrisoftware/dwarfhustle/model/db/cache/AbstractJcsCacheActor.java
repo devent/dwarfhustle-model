@@ -330,7 +330,7 @@ public abstract class AbstractJcsCacheActor implements ObjectsGetter, ObjectsSet
      * return ret.value;
      * </pre>
      */
-    protected abstract <T extends GameObject> T getValueFromBackend(int type, Object key);
+    protected abstract <T extends GameObject> T getValueFromBackend(int type, long key);
 
     /**
      * Returns the value for the key directly from the cache without sending of
@@ -338,11 +338,11 @@ public abstract class AbstractJcsCacheActor implements ObjectsGetter, ObjectsSet
      */
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends GameObject> T get(int type, Object key) {
+    public <T extends GameObject> T get(int type, long key) {
         return (T) cache.get(key, () -> supplyValue(type, key));
     }
 
-    private GameObject supplyValue(int type, Object key) {
+    private GameObject supplyValue(int type, long key) {
         return getValueFromBackend(type, key);
     }
 

@@ -184,10 +184,10 @@ public class MapChunksLmbdStorage implements MapChunksStorage, ObjectsGetter, Ob
      * Returns the {@link MapChunk} with the chunk ID.
      */
     @Override
-    public MapChunk getChunk(int cid) {
+    public MapChunk getChunk(long cid) {
         try (final var t = env.txnRead()) {
             final var key = buffkey.get();
-            key.putInt(0, cid);
+            key.putInt(0, (int) cid);
             var val = chunksDb.get(t, key);
             return MapChunkBuffer.read(val, 0);
         }
@@ -219,8 +219,8 @@ public class MapChunksLmbdStorage implements MapChunksStorage, ObjectsGetter, Ob
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends GameObject> T get(int type, Object key) throws ObjectsGetterException {
-        return (T) getChunk(MapChunk.id2Cid((long) key));
+    public <T extends GameObject> T get(int type, long key) throws ObjectsGetterException {
+        return (T) getChunk(MapChunk.id2Cid(key));
     }
 
 }

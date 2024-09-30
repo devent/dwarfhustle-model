@@ -48,7 +48,7 @@ public interface ObjectsGetter {
     static CompletionStage<ObjectsGetter> EMPTY = CompletableFuture.supplyAsync(() -> new ObjectsGetter() {
 
         @Override
-        public <T extends GameObject> T get(int type, Object key) throws ObjectsGetterException {
+        public <T extends GameObject> T get(int type, long key) throws ObjectsGetterException {
             return null;
         }
     });
@@ -56,6 +56,6 @@ public interface ObjectsGetter {
     /**
      * Returns the {@link GameObject}.
      */
-    <T extends GameObject> T get(int type, Object key) throws ObjectsGetterException;
+    <T extends GameObject> T get(int type, long key) throws ObjectsGetterException;
 
 }

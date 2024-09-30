@@ -128,7 +128,7 @@ public class ImporterObjectsJcsCacheActor extends AbstractJcsCacheActor {
 
     @Override
     protected void retrieveValueFromBackend(CacheGetMessage<?> m, Consumer<GameObject> consumer) {
-        retrieveGameObject(m.type, (long) m.key, consumer);
+        retrieveGameObject(m.type, m.key, consumer);
     }
 
     @SuppressWarnings({ "rawtypes" })
@@ -137,7 +137,7 @@ public class ImporterObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     @Override
-    protected <T extends GameObject> T getValueFromBackend(int type, Object key) {
+    protected <T extends GameObject> T getValueFromBackend(int type, long key) {
         // nothing to do
         return null;
     }

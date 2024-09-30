@@ -239,7 +239,7 @@ public class GenerateMapActor {
             generateMap.get().replyTo.tell(new GenerateErrorMessage(generateMap.get(), em.error));
             return Behaviors.stopped();
         } else if (m.response instanceof KnowledgeResponseSuccessMessage rm) {
-            materials.put(rm.go.type, rm.go.objects);
+            // materials.put(rm.go.type, rm.go.objects);
             if (materials.size() == 7) {
                 context.getSelf().tell(new MaterialsLoadSuccessMessage());
             }

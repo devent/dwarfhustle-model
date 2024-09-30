@@ -17,6 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.buffers;
 
+import static com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos.calcX;
+import static com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos.calcY;
+import static com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos.calcZ;
 import static com.anrisoftware.dwarfhustle.model.db.buffers.BufferUtils.int2short;
 import static com.anrisoftware.dwarfhustle.model.db.buffers.BufferUtils.short2int;
 
@@ -154,6 +157,16 @@ public class MapBlockBuffer {
         block.temp = short2int(b.getShort(TEMP_BYTE + offset));
         block.lux = short2int(b.getShort(LUX_BYTE + offset));
         return block;
+    }
+
+    /**
+     * Reads the {@link MapBlock} from the buffer with the specified index.
+     */
+    public static MapBlock readMapBlockIndex(DirectBuffer b, int offset, int i, int cw, int ch, int sx, int sy,
+            int sz) {
+        var pos = new GameBlockPos(calcX(i, cw, sx), calcY(i, cw, sy), calcZ(i, cw, ch, sz));
+        var off = offset + GameBlockPos.calcIndex(cw, ch, ch, sx, sy, sz, pos.x, pos.y, pos.z);
+        return read(b, off, pos);
     }
 
 }

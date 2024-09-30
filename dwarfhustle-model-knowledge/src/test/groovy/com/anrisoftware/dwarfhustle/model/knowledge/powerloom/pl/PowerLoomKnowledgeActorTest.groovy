@@ -151,11 +151,11 @@ class PowerLoomKnowledgeActorTest {
 
     @ParameterizedTest
     @CsvSource([
-        "Sedimentary,11",
-        "Shrub,1",
-        "BlockObject,26"
+        "Sedimentary,11,1708874227",
+        "Shrub,1,79863786",
+        "BlockObject,26,-1873633780"
     ])
-    void "KnowledgeGetMessage test retrieve"(String type, int size) {
+    void "KnowledgeGetMessage test retrieve"(String type, int size, long tid) {
         def result =
                 AskPattern.ask(
                 knowledgeActor, { replyTo ->
@@ -179,7 +179,7 @@ class PowerLoomKnowledgeActorTest {
             lock.countDown()
         })
         lock.await()
-        assert go.type == type
+        assert go.tid == tid
         assert go.objects.size() == size
     }
 }

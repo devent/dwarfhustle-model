@@ -277,8 +277,8 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends GameObject> T get(int type, Object key) {
-        return (T) getObject(type, (long) key);
+    public <T extends GameObject> T get(int type, long key) {
+        return (T) getObject(type, key);
     }
 
     @Override

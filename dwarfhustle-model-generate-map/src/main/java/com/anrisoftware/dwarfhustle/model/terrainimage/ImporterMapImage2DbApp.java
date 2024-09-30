@@ -243,7 +243,8 @@ public class ImporterMapImage2DbApp {
      *
      * @param url   the {@link URL} to the image resource.
      * @param image the {@link TerrainLoadImage} that loads the image.
-     * @param map   the ID of the {@link GameMap}.
+     * @param root  the {@link File} of the root directory.
+     * @param gm    the ID of the {@link GameMap}.
      */
     @SuppressWarnings("unused")
     @SneakyThrows

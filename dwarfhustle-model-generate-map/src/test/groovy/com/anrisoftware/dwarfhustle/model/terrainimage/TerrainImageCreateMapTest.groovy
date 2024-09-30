@@ -116,7 +116,7 @@ class TerrainImageCreateMapTest {
         //        args << of(TerrainImage.terrain_32_32_32_4, false, null)
         //        args << of(TerrainImage.terrain_32_32_32_8, false, null)
         args << of(TerrainImage.terrain_512_512_128_16, false, null)
-        //args << of(TerrainImage.terrain_512_512_128_32, false, null)
+        //        args << of(TerrainImage.terrain_512_512_128_32, false, null)
         //        args << of(TerrainImage.terrain_512_512_128_64, false, null)
         //
         //        args << of(TerrainImage.terrain_128_128_128_16, false, null)
@@ -155,7 +155,7 @@ class TerrainImageCreateMapTest {
                 terrainKnowledge)
         createMap.startImportMapping(TerrainImageCreateMapTest.class.getResource(image.imageName), terrain, gm)
         def root = storage.getChunk(0)
-        def retriever = { storage.getChunk(it) }
+        def retriever = { type, id -> storage.getChunk(id) }
         if (printBlocks) {
             println "["
             for (int z = 0; z < terrain.depth; z++) {

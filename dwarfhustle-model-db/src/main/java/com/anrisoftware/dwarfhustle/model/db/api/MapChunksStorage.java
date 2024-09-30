@@ -45,7 +45,7 @@ public interface MapChunksStorage extends AutoCloseable {
     /**
      * Returns the {@link MapChunk} with the chunk ID.
      */
-    MapChunk getChunk(int cid);
+    MapChunk getChunk(long cid);
 
     /**
      * Retrieves all {@link MapChunk} chunks.
