@@ -71,7 +71,7 @@ public class MapChunksJcsCacheActor extends AbstractJcsCacheActor {
                 ObjectsSetter os);
     }
 
-    public static Behavior<Message> create(Injector injector, MapChunksJcsCacheActorFactory actorFactory,
+    private static Behavior<Message> create(Injector injector, MapChunksJcsCacheActorFactory actorFactory,
             CompletionStage<ObjectsGetter> og, CompletionStage<ObjectsSetter> os,
             CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
         return AbstractJcsCacheActor.create(injector, actorFactory, og, os, initCacheAsync);
@@ -79,12 +79,25 @@ public class MapChunksJcsCacheActor extends AbstractJcsCacheActor {
 
     /**
      * Creates the {@link MapChunksJcsCacheActor}.
-     *
-     * @param injector the {@link Injector} injector.
-     * @param timeout  the {@link Duration} timeout.
      */
     public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout,
             CompletionStage<ObjectsGetter> og, CompletionStage<ObjectsSetter> os) {
+        var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
+        var actorFactory = injector.getInstance(MapChunksJcsCacheActorFactory.class);
+        var initCache = createInitCacheAsync();
+        return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, actorFactory, og, os, initCache));
+    }
+
+    private static Behavior<Message> create(Injector injector, MapChunksJcsCacheActorFactory actorFactory,
+            ObjectsGetter og, ObjectsSetter os, CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
+        return AbstractJcsCacheActor.create(injector, actorFactory, og, os, initCacheAsync);
+    }
+
+    /**
+     * Creates the {@link MapChunksJcsCacheActor}.
+     */
+    public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout, ObjectsGetter og,
+            ObjectsSetter os) {
         var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
         var actorFactory = injector.getInstance(MapChunksJcsCacheActorFactory.class);
         var initCache = createInitCacheAsync();

@@ -85,7 +85,7 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage {
         this.w = gm.width;
         this.h = gm.height;
         this.d = gm.depth;
-        this.env = create(PROXY_DB).setMapSize((long) (10 * pow(10, 9))).setMaxDbs(2).open(file.toFile());
+        this.env = create(PROXY_DB).setMapSize((long) (10 * pow(10, 9))).setMaxDbs(1).open(file.toFile());
         this.db = env.openDbi("pos-ids", MDB_CREATE, MDB_DUPSORT, MDB_DUPFIXED, MDB_INTEGERDUP);
         this.readTxn = env.txnRead();
         this.buffkey = ThreadLocal.withInitial(() -> new UnsafeBuffer(allocateDirect(4)));

@@ -83,8 +83,19 @@ public abstract class AbstractJcsCacheActor implements ObjectsGetter, ObjectsSet
             CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
         return Behaviors.withStash(100, stash -> Behaviors.setup(context -> {
             initCache(context, initCacheAsync);
-            return actorFactory.create(context, stash, og.toCompletableFuture().get(15, SECONDS),
-                    os.toCompletableFuture().get(15, SECONDS)).start();
+            var og0 = og.toCompletableFuture().get(15, SECONDS);
+            var os0 = os.toCompletableFuture().get(15, SECONDS);
+            return actorFactory.create(context, stash, og0, os0).start();
+        }));
+    }
+
+    public static Behavior<Message> create(Injector injector, AbstractJcsCacheActorFactory actorFactory,
+            ObjectsGetter og, ObjectsSetter os, CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
+        assert og != null : "og is null";
+        assert os != null : "os is null";
+        return Behaviors.withStash(100, stash -> Behaviors.setup(context -> {
+            initCache(context, initCacheAsync);
+            return actorFactory.create(context, stash, og, os).start();
         }));
     }
 

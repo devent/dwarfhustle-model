@@ -157,6 +157,9 @@ public class MapChunkBuffer {
     public static MapChunk findChunk(MapChunk mc, int x, int y, int z, ObjectsGetter og) {
         if (!mc.isLeaf()) {
             for (var view : mc.getChunks().keyValuesView()) {
+                if (view.getOne() == 0) {
+                    continue;
+                }
                 var b = view.getTwo();
                 int bx = b.getX();
                 int by = b.getY();
@@ -166,7 +169,7 @@ public class MapChunkBuffer {
                 int eby = ep.getY();
                 int ebz = ep.getZ();
                 if (x >= bx && y >= by && z >= bz && x < ebx && y < eby && z < ebz) {
-                    var foundChunk = getChunk(og, view.getOne());
+                    var foundChunk = getChunk(og, cid2Id(view.getOne()));
                     return findChunk(foundChunk, x, y, z, og);
                 }
             }
