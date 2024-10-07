@@ -71,6 +71,8 @@ public class JcsCacheConfig {
         def region = "jcs.region.${params.cache_name}"
         if (params.have_file_aux) {
             config["${region}"] = "${params.cache_name}_file"
+        } else {
+            config["${region}"] = ""
         }
         config["${region}.cacheattributes"] = "org.apache.commons.jcs3.engine.CompositeCacheAttributes"
         config["${region}.cacheattributes.MaxObjects"] = "${params.max_objects}"

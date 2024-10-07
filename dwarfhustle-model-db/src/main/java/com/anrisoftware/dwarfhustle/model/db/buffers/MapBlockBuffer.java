@@ -162,10 +162,10 @@ public class MapBlockBuffer {
     /**
      * Reads the {@link MapBlock} from the buffer with the specified index.
      */
-    public static MapBlock readMapBlockIndex(DirectBuffer b, int offset, int i, int cw, int ch, int sx, int sy,
+    public static MapBlock readMapBlockIndex(DirectBuffer b, int offset, int i, int cw, int ch, int cd, int sx, int sy,
             int sz) {
         var pos = new GameBlockPos(calcX(i, cw, sx), calcY(i, cw, sy), calcZ(i, cw, ch, sz));
-        var off = offset + GameBlockPos.calcIndex(cw, ch, ch, sx, sy, sz, pos.x, pos.y, pos.z);
+        var off = offset + GameBlockPos.calcIndex(cw, ch, cd, sx, sy, sz, pos.x, pos.y, pos.z) * SIZE;
         return read(b, off, pos);
     }
 

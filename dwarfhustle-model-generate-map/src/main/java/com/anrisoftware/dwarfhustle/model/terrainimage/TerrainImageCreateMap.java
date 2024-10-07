@@ -31,7 +31,6 @@ import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
@@ -123,8 +122,6 @@ public class TerrainImageCreateMap {
 
     private AtomicInteger chunksDone;
 
-    private ScheduledExecutorService monitorExecutor;
-
     public void startImport(URL url, TerrainLoadImage image, GameMap gm) throws IOException, GeneratorException {
         startImport0(url, image, gm, this::updateMaterialBlock);
     }
@@ -138,12 +135,12 @@ public class TerrainImageCreateMap {
         this.cidCounter = new AtomicInteger(0);
         this.terrain = image.load(url);
         this.chunkSize = image.chunkSize;
-        this.mcRoot = new MapChunk(nextId(), 0, chunkSize, new GameChunkPos(0, 0, 0, gm.width, gm.height, gm.depth));
+        this.mcRoot = new MapChunk(nextId(), 0, chunkSize, gm.width, gm.height,
+                new GameChunkPos(0, 0, 0, gm.width, gm.height, gm.depth));
         setChunk(setter, mcRoot);
         this.gm = gm;
         this.chunksCount = 0;
         this.blocksCount = 0;
-        this.monitorExecutor = Executors.newSingleThreadScheduledExecutor();
         this.chunksDone = new AtomicInteger(0);
         this.chunksCount++;
         createMap(mcRoot, 0, 0, 0, gm.width, gm.height, gm.depth, updateTerrainBlock);
@@ -157,23 +154,37 @@ public class TerrainImageCreateMap {
     @SneakyThrows
     private void updateTerrain() {
         var terrainBlockMaterialRules = terrainKnowledge.createTerrainUpdateRulesKnowledge();
+        var monitorExecutor = Executors.newSingleThreadScheduledExecutor();
         monitorExecutor.scheduleAtFixedRate(() -> {
             log.info("Chunks {}/{}", chunksDone, chunksCount);
         }, 3, 3, TimeUnit.SECONDS);
-        var customThreadPool = new ForkJoinPool(4);
-        customThreadPool.submit(() -> IntStream.range(0, chunksCount).parallel().forEach((i) -> {
+        try {
+            updateTerrainParallel(terrainBlockMaterialRules);
+        } finally {
+            monitorExecutor.shutdown();
+        }
+    }
+
+    @SneakyThrows
+    private void updateTerrainParallel(Knowledge rules) {
+        var pool = new ForkJoinPool(4);
+        try {
+            updateTerrainParallelAllChunks(rules, pool);
+        } finally {
+            pool.shutdown();
+        }
+    }
+
+    @SneakyThrows
+    private void updateTerrainParallelAllChunks(Knowledge rules, ForkJoinPool pool) {
+        pool.submit(() -> IntStream.range(0, chunksCount).parallel().forEach((i) -> {
             var c = getChunk(getter, MapChunk.cid2Id(i));
             if (c.isLeaf()) {
-                updateTerrainBlocks(terrainBlockMaterialRules, c);
+                updateTerrainBlocks(rules, c);
                 setChunk(setter, c);
             }
             this.chunksDone.incrementAndGet();
         })).get();
-        // for (int i = 0; i < chunksCount; i++) {
-        // log.info("{}/{}", i, chunksCount);
-        // }
-        customThreadPool.shutdown();
-        monitorExecutor.shutdown();
     }
 
     private void updateTerrainBlocks(Knowledge knowledge, MapChunk chunk) {
@@ -215,7 +226,8 @@ public class TerrainImageCreateMap {
     @SneakyThrows
     private void createChunk(MapChunk parent, MutableLongObjectMap<GameChunkPos> chunks, int x, int y, int z, int ex,
             int ey, int ez, UpdateTerrainBlock updateTerrainBlock) throws GeneratorException {
-        var chunk = new MapChunk(nextId(), parent.getCid(), chunkSize, new GameChunkPos(x, y, z, ex, ey, ez));
+        var chunk = new MapChunk(nextId(), parent.getCid(), chunkSize, gm.width, gm.height,
+                new GameChunkPos(x, y, z, ex, ey, ez));
         setter.set(MapChunk.OBJECT_TYPE, chunk);
         chunksCount++;
         if (chunk.isLeaf()) {

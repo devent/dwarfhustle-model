@@ -66,12 +66,6 @@ class TerrainImageCreateMapTest {
 
     static Injector injector
 
-    static ActorSystemProvider actor
-
-    static ActorRef<Message> knowledgeActor
-
-    static TerrainKnowledge terrainKnowledge
-
     @BeforeAll
     static void setupActor() {
         this.injector = Guice.createInjector(
@@ -88,15 +82,6 @@ class TerrainImageCreateMapTest {
                     }
                 }
                 )
-        this.actor = injector.getInstance(ActorSystemProvider.class)
-        KnowledgeJcsCacheActor.create(injector, ofSeconds(1)).whenComplete({ cache, ex ->
-            if (ex == null) {
-                PowerLoomKnowledgeActor.create(injector, ofSeconds(1), supplyAsync({cache})).whenComplete({ knowledge, pex ->
-                    knowledgeActor = knowledge
-                } ).get()
-            }
-        } ).get()
-        this.terrainKnowledge = new TerrainKnowledge({ timeout, type -> askKnowledgeObjects(actor.actorSystem, timeout, type) })
     }
 
 
@@ -109,13 +94,13 @@ class TerrainImageCreateMapTest {
     static Stream test_start_import_terrain() {
         def args = []
         //        args << of(TerrainImage.terrain_4_4_4_2, true, new Terrain_4_4_4_2_blocks_expected().run())
-        //        args << of(TerrainImage.terrain_8_8_8_4, true, new Terrain_8_8_8_4_blocks_expected().run())
+        args << of(TerrainImage.terrain_8_8_8_4, true, new Terrain_8_8_8_4_blocks_expected().run())
         //
         //        args << of(TerrainImage.terrain_4_4_4_2, false, new Terrain_4_4_4_2_blocks_expected().run())
         //        args << of(TerrainImage.terrain_8_8_8_4, false, new Terrain_8_8_8_4_blocks_expected().run())
         //        args << of(TerrainImage.terrain_32_32_32_4, false, null)
         //        args << of(TerrainImage.terrain_32_32_32_8, false, null)
-        args << of(TerrainImage.terrain_512_512_128_16, false, null)
+        //        args << of(TerrainImage.terrain_512_512_128_16, false, null)
         //        args << of(TerrainImage.terrain_512_512_128_32, false, null)
         //        args << of(TerrainImage.terrain_512_512_128_64, false, null)
         //
@@ -134,6 +119,14 @@ class TerrainImageCreateMapTest {
     @MethodSource()
     @Timeout(value = 60, unit = TimeUnit.MINUTES)
     void test_start_import_terrain(TerrainImage image, boolean printBlocks, List blocksExpected) {
+        def actor = injector.getInstance(ActorSystemProvider.class)
+        KnowledgeJcsCacheActor.create(injector, ofSeconds(1)).whenComplete({ cache, ex ->
+            if (ex == null) {
+                PowerLoomKnowledgeActor.create(injector, ofSeconds(1), supplyAsync({cache})).whenComplete({ knowledge, pex ->
+                } ).get()
+            }
+        } ).get()
+        def terrainKnowledge = new TerrainKnowledge({ timeout, type -> askKnowledgeObjects(actor.actorSystem, timeout, type) })
         def terrain = image.terrain
         def gm = new GameMap(1)
         gm.chunkSize = image.chunkSize

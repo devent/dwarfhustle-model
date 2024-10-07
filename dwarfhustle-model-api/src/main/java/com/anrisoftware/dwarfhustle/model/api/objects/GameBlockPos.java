@@ -150,8 +150,8 @@ public class GameBlockPos implements Externalizable, StreamStorage {
         return x < 0 || y < 0 || z < 0;
     }
 
-    public boolean isOutBounds(int size) {
-        return x >= size || y >= size || z >= size;
+    public boolean isOutBounds(int w, int h, int d) {
+        return x >= w || y >= h || z >= d;
     }
 
     @Override

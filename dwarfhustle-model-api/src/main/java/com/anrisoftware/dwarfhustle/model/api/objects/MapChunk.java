@@ -88,6 +88,16 @@ public class MapChunk extends GameObject {
     public int chunkSize;
 
     /**
+     * Map width, used to calculate the center-extend.
+     */
+    public int width;
+
+    /**
+     * Map height, used to calculate the center-extend.
+     */
+    public int height;
+
+    /**
      * The {@link GameChunkPos} and CIDs of the children chunks.
      */
     private LongObjectMap<GameChunkPos> chunks;
@@ -121,11 +131,14 @@ public class MapChunk extends GameObject {
         this.pos = new GameChunkPos();
     }
 
-    public MapChunk(long id, int parent, int cs, GameChunkPos pos) {
+    public MapChunk(long id, int parent, int cs, int w, int h, GameChunkPos pos) {
         super(id);
         this.parent = parent;
         this.chunkSize = cs;
+        this.width = w;
+        this.height = h;
         this.pos = pos;
+        updateCenterExtent(w, h);
         this.leaf = calcLeaf();
         if (leaf) {
             this.blocks = Optional
@@ -226,6 +239,8 @@ public class MapChunk extends GameObject {
         super.writeStream(out);
         out.writeBoolean(changed);
         out.writeInt(chunkSize);
+        out.writeInt(width);
+        out.writeInt(height);
         ExternalizableUtils.writeStreamLongObjectMap(out, chunks);
         for (int i = 0; i < 26; i++) {
             out.writeInt((int) neighbors[i]);
@@ -246,6 +261,8 @@ public class MapChunk extends GameObject {
         super.readStream(in);
         this.changed = in.readBoolean();
         this.chunkSize = in.readInt();
+        this.width = in.readInt();
+        this.height = in.readInt();
         this.chunks = ExternalizableUtils.readStreamLongObjectMap(in, GameChunkPos::new);
         for (int i = 0; i < 26; i++) {
             this.neighbors[i] = in.readInt();

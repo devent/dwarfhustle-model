@@ -23,7 +23,6 @@ import static com.anrisoftware.dwarfhustle.model.api.objects.WorldMap.getWorldMa
 import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeGetMessage.askKnowledgeObjects;
 import static java.lang.String.format;
 import static java.time.Duration.ofSeconds;
-import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.nio.file.Path;
@@ -54,6 +53,7 @@ import akka.actor.typed.javadsl.BehaviorBuilder;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.receptionist.ServiceKey;
 import jakarta.inject.Inject;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -137,33 +137,36 @@ public class ImporterMapImage2DbActor {
     private Behavior<Message> onImportImage(ImportImageMessage m) {
         log.debug("onImportImage {}", m);
         try {
-            var gm = getGameMap(og, m.mapid);
-            var wm = getWorldMap(og, gm.world);
-            var path = Path.of(m.root, format("%d-%d", wm.id, gm.id));
-            path.toFile().mkdir();
-            var storage = storageFactory.create(path, gm.chunkSize);
-            MapChunksJcsCacheActor
-                    .create(injector, ofSeconds(1), supplyAsync(() -> storage), supplyAsync(() -> storage))
-                    .whenComplete((cache, ex) -> {
-                        if (ex != null) {
-                            log.error("MapChunksJcsCacheActor", ex);
-                        }
-                    }).toCompletableFuture().get();
-            var knowledge = new TerrainKnowledge(
-                    (timeout, type) -> askKnowledgeObjects(actor.getActorSystem(), timeout, type));
-            terrainImageCreateMap
-                    .create(actor.getObjectGetterAsync(MapChunksJcsCacheActor.ID).toCompletableFuture().get(),
-                            actor.getObjectSetterAsync(MapChunksJcsCacheActor.ID).toCompletableFuture().get(),
-                            knowledge)
-                    .startImportMapping(m.url, m.image, gm);
-            storage.close();
-            m.replyTo.tell(new ImportImageSuccessMessage());
+            importImage(m);
         } catch (Exception e) {
             log.error("onImportImage", e);
             m.replyTo.tell(new ImportImageErrorMessage(e));
             return Behaviors.stopped();
         }
         return Behaviors.same();
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SneakyThrows
+    private void importImage(ImportImageMessage m) {
+        var gm = getGameMap(og, m.mapid);
+        var wm = getWorldMap(og, gm.world);
+        var path = Path.of(m.root, format("%d-%d", wm.id, gm.id));
+        path.toFile().mkdir();
+        var storage = storageFactory.create(path, gm.chunkSize);
+        MapChunksJcsCacheActor.create(injector, ofSeconds(1), storage, storage).whenComplete((cache, ex) -> {
+            if (ex != null) {
+                log.error("MapChunksJcsCacheActor", ex);
+            }
+        }).toCompletableFuture().get();
+        var knowledge = new TerrainKnowledge(
+                (timeout, type) -> askKnowledgeObjects(actor.getActorSystem(), timeout, type));
+        terrainImageCreateMap
+                .create(actor.getObjectGetterAsync(MapChunksJcsCacheActor.ID).toCompletableFuture().get(),
+                        actor.getObjectSetterAsync(MapChunksJcsCacheActor.ID).toCompletableFuture().get(), knowledge)
+                .startImportMapping(m.url, m.image, gm);
+        storage.close();
+        m.replyTo.tell(new ImportImageSuccessMessage());
     }
 
     /**
