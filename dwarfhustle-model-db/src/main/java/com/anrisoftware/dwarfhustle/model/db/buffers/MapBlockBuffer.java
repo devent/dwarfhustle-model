@@ -109,6 +109,10 @@ public class MapBlockBuffer {
         return b.getInt(PROP_BYTE + off);
     }
 
+    public static boolean haveProp(DirectBuffer b, int off, int pos) {
+        return PropertiesSet.get(getProp(b, off), pos);
+    }
+
     public static void setTemp(MutableDirectBuffer b, int off, int t) {
         b.putShort(TEMP_BYTE + off, int2short(t));
     }

@@ -48,10 +48,38 @@ public class GameBlockPos implements Externalizable, StreamStorage {
     private static final long serialVersionUID = 1L;
 
     /**
+     * Creates a new {@link GameBlockPos} from index.
+     */
+    public static GameBlockPos fromIndex(int index, MapChunk chunk) {
+        return new GameBlockPos(calcX(index, chunk), calcY(index, chunk), calcZ(index, chunk));
+    }
+
+    /**
+     * Returns the index from the x/y/z position.
+     */
+    public static int calcIndex(MapChunk chunk, int x, int y, int z) {
+        final int cw = chunk.pos.getSizeX();
+        final int ch = chunk.pos.getSizeY();
+        final int cd = chunk.pos.getSizeZ();
+        final int sx = chunk.pos.x;
+        final int sy = chunk.pos.y;
+        final int sz = chunk.pos.z;
+        return calcIndex(cw, ch, cd, sx, sy, sz, x, y, z);
+    }
+
+    /**
      * Returns the index from the x/y/z position.
      */
     public static int calcIndex(int w, int h, int d, int sx, int sy, int sz, int x, int y, int z) {
         return (z - sz) * w * h + (y - sy) * w + x - sx;
+    }
+
+    /**
+     * Returns the X position from the index.
+     */
+    public static int calcX(int i, MapChunk chunk) {
+        final var pos = chunk.getPos();
+        return calcX(i, pos.getSizeX(), chunk.getPos().getX());
     }
 
     /**
@@ -64,8 +92,24 @@ public class GameBlockPos implements Externalizable, StreamStorage {
     /**
      * Returns the Y position from the index.
      */
+    public static int calcY(int i, MapChunk chunk) {
+        final var pos = chunk.getPos();
+        return calcY(i, pos.getSizeX(), chunk.getPos().getY());
+    }
+
+    /**
+     * Returns the Y position from the index.
+     */
     public static int calcY(int i, int w, int sy) {
         return Math.floorMod(i / w, w) + sy;
+    }
+
+    /**
+     * Returns the Z position from the index.
+     */
+    public static int calcZ(int i, MapChunk chunk) {
+        final var pos = chunk.getPos();
+        return calcZ(i, pos.getSizeX(), chunk.getPos().getSizeY(), chunk.getPos().getZ());
     }
 
     /**

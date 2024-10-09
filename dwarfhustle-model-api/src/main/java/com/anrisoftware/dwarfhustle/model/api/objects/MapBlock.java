@@ -35,27 +35,27 @@ public class MapBlock implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private static final int VISIBLE_POS = 0;
+    public static final int VISIBLE_POS = 0;
 
-    private static final int FILLED_POS = 1;
+    public static final int FILLED_POS = 1;
 
-    private static final int EMPTY_POS = 2;
+    public static final int EMPTY_POS = 2;
 
-    private static final int LIQUID_POS = 3;
+    public static final int LIQUID_POS = 3;
 
-    private static final int RAMP_POS = 4;
+    public static final int RAMP_POS = 4;
 
-    private static final int FLOOR_POS = 5;
+    public static final int FLOOR_POS = 5;
 
-    private static final int ROOF_POS = 6;
+    public static final int ROOF_POS = 6;
 
-    private static final int DISCOVERED_POS = 7;
+    public static final int DISCOVERED_POS = 7;
 
-    private static final int HAVE_CEILING_POS = 8;
+    public static final int HAVE_CEILING_POS = 8;
 
-    private static final int HAVE_FLOOR_POS = 9;
+    public static final int HAVE_FLOOR_POS = 9;
 
-    private static final int HAVE_NATURAL_LIGHT_POS = 10;
+    public static final int HAVE_NATURAL_LIGHT_POS = 10;
 
     public static final String OBJECT_TYPE = MapBlock.class.getSimpleName();
 

@@ -17,8 +17,12 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.buffers;
 
+import static com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos.calcIndex;
+import static com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos.fromIndex;
+import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlock.EMPTY_POS;
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapChunk.cid2Id;
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapChunk.getChunk;
+import static com.anrisoftware.dwarfhustle.model.db.buffers.MapBlockBuffer.getProp;
 import static com.anrisoftware.dwarfhustle.model.db.buffers.MapBlockBuffer.readMapBlockIndex;
 import static java.nio.ByteBuffer.allocateDirect;
 
@@ -37,7 +41,9 @@ import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
+import com.anrisoftware.dwarfhustle.model.api.objects.PropertiesSet;
 
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -74,6 +80,27 @@ public class MapChunkBuffer {
             GameChunkPosBuffer.SIZE + //
             26 * 2 + //
             2 + CHUNKS_COUNT * CidGameChunkPosMapBuffer.SIZE;
+
+    /**
+     * Contains the {@link MapChunk} and the {@link MapBlock} index.
+     * 
+     * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+     */
+    @Data
+    public static class MapBlockResult {
+
+        public final MapChunk c;
+
+        public final int index;
+
+        public int getOff() {
+            return index * MapBlockBuffer.SIZE;
+        }
+
+        public boolean isValid() {
+            return index > 0;
+        }
+    }
 
     private static final int ID_BYTE = 0 * 2;
 
@@ -232,23 +259,33 @@ public class MapChunkBuffer {
     }
 
     public static MapBlock findBlock(MapChunk c, GameBlockPos pos, ObjectsGetter og) {
+        final var res = findBlockIndex(c, pos, og);
+        if (res.isValid()) {
+            return MapBlockBuffer.read(res.c.getBlocks(), res.getOff(), pos);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Finds the block index
+     */
+    public static MapBlockResult findBlockIndex(MapChunk c, GameBlockPos pos, ObjectsGetter og) {
         if (!c.isLeaf()) {
             if (!c.isInside(pos)) {
                 var parent = getChunk(og, cid2Id(c.parent));
-                return findBlock(parent, pos, og);
+                return findBlockIndex(parent, pos, og);
             }
             for (var view : c.getChunks().keyValuesView()) {
                 var b = view.getTwo();
                 if (b.contains(pos)) {
                     var foundChunk = getChunk(og, cid2Id(view.getOne()));
-                    return findBlock(foundChunk, pos, og);
+                    return findBlockIndex(foundChunk, pos, og);
                 }
             }
-            return null;
+            return new MapBlockResult(c, -1);
         }
-        final int off = GameChunkPos.calcIndex(c.pos.getSizeX(), c.pos.getSizeY(), c.pos.getSizeZ(), c.pos.x, c.pos.y,
-                c.pos.z, pos.x, pos.y, pos.z) * MapBlockBuffer.SIZE;
-        return MapBlockBuffer.read(c.getBlocks(), off, pos);
+        return new MapBlockResult(c, calcIndex(c, pos.x, pos.y, pos.z));
     }
 
     /**
@@ -313,8 +350,7 @@ public class MapChunkBuffer {
             return null;
         }
         if (c.isInside(dirpos)) {
-            final int off = GameChunkPos.calcIndex(c.pos.getSizeX(), c.pos.getSizeY(), c.pos.getSizeZ(), c.pos.x,
-                    c.pos.y, c.pos.z, dirpos.x, dirpos.y, dirpos.z) * MapBlockBuffer.SIZE;
+            final int off = GameChunkPos.calcIndex(c, dirpos.x, dirpos.y, dirpos.z) * MapBlockBuffer.SIZE;
             return MapBlockBuffer.read(c.getBlocks(), off, dirpos);
         } else {
             var parent = getChunk(og, cid2Id(c.parent));
@@ -353,6 +389,62 @@ public class MapChunkBuffer {
                 chunk = getChunk(og, cid2Id(up.parent));
             }
             up = getNeighbor(up, NeighboringDir.U, chunk, w, h, d, og);
+        }
+        return true;
+    }
+
+    public static MapBlockResult getNeighbor(int index, NeighboringDir dir, MapChunk c, int w, int h, int d,
+            ObjectsGetter og) {
+        var dirpos = fromIndex(index, c).add(dir.pos);
+        if (dirpos.isNegative()) {
+            return new MapBlockResult(c, -1);
+        }
+        if (dirpos.isOutBounds(w, h, d)) {
+            return new MapBlockResult(c, -1);
+        }
+        if (c.isInside(dirpos)) {
+            index = calcIndex(c, dirpos.x, dirpos.y, dirpos.z);
+            return new MapBlockResult(c, index);
+        } else {
+            final var parent = getChunk(og, cid2Id(c.parent));
+            final var res = findBlockIndex(parent, dirpos, og);
+            return new MapBlockResult(res.c, res.index);
+        }
+    }
+
+    public static MapBlockResult getNeighborNorth(int index, MapChunk chunk, int w, int h, int d, ObjectsGetter og) {
+        return getNeighbor(index, NeighboringDir.N, chunk, w, h, d, og);
+    }
+
+    public static MapBlockResult getNeighborSouth(int index, MapChunk chunk, int w, int h, int d, ObjectsGetter og) {
+        return getNeighbor(index, NeighboringDir.S, chunk, w, h, d, og);
+    }
+
+    public static MapBlockResult getNeighborEast(int index, MapChunk chunk, int w, int h, int d, ObjectsGetter og) {
+        return getNeighbor(index, NeighboringDir.E, chunk, w, h, d, og);
+    }
+
+    public static MapBlockResult getNeighborWest(int index, MapChunk chunk, int w, int h, int d, ObjectsGetter og) {
+        return getNeighbor(index, NeighboringDir.W, chunk, w, h, d, og);
+    }
+
+    public static MapBlockResult getNeighborUp(int index, MapChunk chunk, int w, int h, int d, ObjectsGetter og) {
+        return getNeighbor(index, NeighboringDir.U, chunk, w, h, d, og);
+    }
+
+    public static boolean isNeighborsUpEmptyContinuously(int index, MapChunk chunk, int w, int h, int d,
+            ObjectsGetter og) {
+        var up = getNeighbor(index, NeighboringDir.U, chunk, w, h, d, og);
+        while (up.isValid()) {
+            if (!(PropertiesSet.get(getProp(up.c.getBlocks(), up.getOff()), EMPTY_POS))) {
+                return false;
+            }
+            int mbparent = MapBlockBuffer.getParent(chunk.getBlocks(), index * MapBlockBuffer.SIZE);
+            int upparent = MapBlockBuffer.getParent(up.c.getBlocks(), up.getOff());
+            if (mbparent != upparent) {
+                chunk = getChunk(og, cid2Id(upparent));
+            }
+            up = getNeighbor(up.index, NeighboringDir.U, chunk, w, h, d, og);
         }
         return true;
     }
