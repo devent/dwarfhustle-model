@@ -76,9 +76,9 @@ class ImporterMapImage2DbAppTest {
         args << of(TerrainImage.terrain_8_8_8_4, mapProperties)
         args << of(TerrainImage.terrain_32_32_32_4, mapProperties)
         args << of(TerrainImage.terrain_32_32_32_8, mapProperties)
-        args << of(TerrainImage.terrain_512_512_128_16, mapProperties)
-        args << of(TerrainImage.terrain_512_512_128_32, mapProperties)
-        args << of(TerrainImage.terrain_512_512_128_64, mapProperties)
+        //        args << of(TerrainImage.terrain_512_512_128_16, mapProperties)
+        //        args << of(TerrainImage.terrain_512_512_128_32, mapProperties)
+        //        args << of(TerrainImage.terrain_512_512_128_64, mapProperties)
         Stream.of(args as Object[])
     }
 

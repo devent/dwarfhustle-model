@@ -30,7 +30,6 @@ import static org.lmdbjava.GetOp.MDB_SET;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
-import java.util.function.BiConsumer;
 
 import org.agrona.DirectBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
@@ -42,6 +41,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapObjectsStorage;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsConsumer;
 import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.google.inject.assistedinject.Assisted;
 
@@ -190,7 +190,7 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage {
      * Retrieves the game map objects on the (x,y,z) block from the database.
      */
     @Override
-    public void getObjects(int x, int y, int z, BiConsumer<Integer, Long> consumer) {
+    public synchronized void getObjects(int x, int y, int z, ObjectsConsumer consumer) {
         try {
             readTxn.renew();
             final var key = buffkey.get();
@@ -204,7 +204,7 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage {
                 var val = c.val();
                 long id = MapObjectValue.getId(val, 0);
                 int type = MapObjectValue.getType(val, 0);
-                consumer.accept(type, id);
+                consumer.accept(type, id, x, y, z);
                 c.next();
             }
         } finally {
@@ -217,27 +217,24 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage {
      * blocks from the database.
      */
     @Override
-    public void getObjectsRange(int sx, int sy, int sz, int ex, int ey, int ez, BiConsumer<Integer, Long> consumer) {
-        final int xx = ex - sx;
-        final int yy = ey - sy;
-        final int zz = ez - sz;
+    public synchronized void getObjectsRange(int sx, int sy, int sz, int ex, int ey, int ez, ObjectsConsumer consumer) {
         try {
             readTxn.renew();
             final var key = buffkey.get();
             final var c = db.openCursor(readTxn);
-            for (int x = sx; x < xx; x++) {
-                for (int y = sy; y < yy; y++) {
-                    for (int z = sz; z < zz; z++) {
+            for (int x = sx; x < ex; x++) {
+                for (int y = sy; y < ey; y++) {
+                    for (int z = sz; z < ez; z++) {
                         final int index = GameBlockPos.calcIndex(w, h, d, 0, 0, 0, x, y, z);
                         key.putInt(0, index);
                         if (!c.get(key, MDB_SET)) {
-                            return;
+                            continue;
                         }
                         for (int i = 0; i < c.count(); i++) {
                             var val = c.val();
                             long id = MapObjectValue.getId(val, 0);
                             int type = MapObjectValue.getType(val, 0);
-                            consumer.accept(type, id);
+                            consumer.accept(type, id, x, y, z);
                             c.next();
                         }
                     }
@@ -245,6 +242,20 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage {
             }
         } finally {
             readTxn.reset();
+        }
+    }
+
+    @Override
+    public void removeObject(int x, int y, int z, int type, long id) {
+        int index = GameBlockPos.calcIndex(w, h, d, 0, 0, 0, x, y, z);
+        try (Txn<DirectBuffer> txn = env.txnWrite()) {
+            final var key = buffkey.get();
+            final var val = buffval.get();
+            key.putInt(0, index);
+            MapObjectValue.setId(val, 0, id);
+            MapObjectValue.setType(val, 0, type);
+            db.delete(txn, key, val);
+            txn.commit();
         }
     }
 }

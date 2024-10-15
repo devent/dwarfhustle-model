@@ -58,6 +58,8 @@ public abstract class GameMapObject extends GameObject {
      */
     public GameBlockPos pos = new GameBlockPos();
 
+    public long model;
+
     public GameMapObject(long id) {
         super(id);
     }
@@ -95,6 +97,7 @@ public abstract class GameMapObject extends GameObject {
         super.writeStream(out);
         out.writeLong(map);
         getPos().writeStream(out);
+        out.writeLong(model);
     }
 
     @Override
@@ -102,6 +105,7 @@ public abstract class GameMapObject extends GameObject {
         super.readStream(in);
         this.map = in.readLong();
         getPos().readStream(in);
+        this.model = in.readLong();
     }
 
 }
