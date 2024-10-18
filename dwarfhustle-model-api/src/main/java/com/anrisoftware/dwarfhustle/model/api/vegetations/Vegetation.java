@@ -43,11 +43,6 @@ public abstract class Vegetation extends GameMapObject implements StoredObject {
     public Serializable rid;
 
     /**
-     * {@link KnowledgeVegetation} RID.
-     */
-    public int kid;
-
-    /**
      * Status of growth from 0.0 (seedling) to 1.0 (adult plant).
      */
     public float growth;

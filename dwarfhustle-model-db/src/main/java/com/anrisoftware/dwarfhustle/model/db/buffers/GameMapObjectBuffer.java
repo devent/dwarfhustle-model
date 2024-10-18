@@ -27,15 +27,19 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
  * Writes and reads {@link GameMapObject} in a byte buffer.
  * 
  * <ul>
- * <li>@{code i} the KID;
- * <li>@{code g} the growth;
+ * <li>@{code i} the object ID;
+ * <li>@{code k} the knowledge ID;
+ * <li>@{code m} the map ID;
+ * <li>@{code x} the X position on the map;
+ * <li>@{code y} the Y position on the map;
+ * <li>@{code z} the Z position on the map;
  * </ul>
  * 
  * <pre>
- * long  0                   1                   2
- * int   0         1         2         3         4         5
- * short 0    1    2    3    4    5    6    7    8    9    10
- *       iiii iiii iiii iiii mmmm mmmm mmmm mmmm xxxx yyyy zzzz
+ * long  0                   1                   2                   3
+ * int   0         1         2         3         4         5         6         7
+ * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14
+ *       iiii iiii iiii iiii kkkk kkkk kkkk kkkk mmmm mmmm mmmm mmmm xxxx yyyy zzzz
  * </pre>
  */
 public class GameMapObjectBuffer extends GameObjectBuffer {
@@ -43,11 +47,21 @@ public class GameMapObjectBuffer extends GameObjectBuffer {
     /**
      * Size in bytes.
      */
-    public static final int SIZE = GameObjectBuffer.SIZE + 8 + GameBlockPosBuffer.SIZE;
+    public static final int SIZE = GameObjectBuffer.SIZE + 8 + 8 + GameBlockPosBuffer.SIZE;
 
-    private static final int MAP_BYTES = 1 * 8;
+    private static final int KID_BYTES = 1 * 8;
 
-    private static final int POS_BYTES = 8 * 2;
+    private static final int MAP_BYTES = 2 * 8;
+
+    private static final int POS_BYTES = 3 * 8;
+
+    public static void setKid(MutableDirectBuffer b, int off, long id) {
+        b.putLong(KID_BYTES + off, id);
+    }
+
+    public static long getKid(DirectBuffer b, int off) {
+        return b.getLong(KID_BYTES + off);
+    }
 
     public static void setMap(MutableDirectBuffer b, int off, long id) {
         b.putLong(MAP_BYTES + off, id);
@@ -91,13 +105,15 @@ public class GameMapObjectBuffer extends GameObjectBuffer {
 
     public static void writeObject(MutableDirectBuffer b, int off, GameMapObject o) {
         GameObjectBuffer.writeObject(b, off, o);
+        setKid(b, off, o.kid);
         setMap(b, off, o.map);
         setPos(b, off, o.pos);
     }
 
     public static GameMapObject readObject(DirectBuffer b, int off, GameMapObject o) {
         GameObjectBuffer.readObject(b, off, o);
-        o.map = getMap(b, off);
+        o.setKid(getKid(b, off));
+        o.setMap(getMap(b, off));
         GameBlockPosBuffer.read(b, POS_BYTES + off, o.pos);
         return o;
     }
