@@ -98,7 +98,7 @@ public class MapChunkBuffer {
         }
 
         public boolean isValid() {
-            return index > 0;
+            return index > -1;
         }
     }
 
@@ -272,10 +272,6 @@ public class MapChunkBuffer {
      */
     public static MapBlockResult findBlockIndex(MapChunk c, GameBlockPos pos, ObjectsGetter og) {
         if (!c.isLeaf()) {
-            if (!c.isInside(pos)) {
-                var parent = getChunk(og, cid2Id(c.parent));
-                return findBlockIndex(parent, pos, og);
-            }
             for (var view : c.getChunks().keyValuesView()) {
                 var b = view.getTwo();
                 if (b.contains(pos)) {
@@ -285,7 +281,12 @@ public class MapChunkBuffer {
             }
             return new MapBlockResult(c, -1);
         }
-        return new MapBlockResult(c, calcIndex(c, pos.x, pos.y, pos.z));
+        if (c.isInside(pos)) {
+            return new MapBlockResult(c, calcIndex(c, pos.x, pos.y, pos.z));
+        } else {
+            var parent = getChunk(og, cid2Id(c.parent));
+            return findBlockIndex(parent, pos, og);
+        }
     }
 
     /**
