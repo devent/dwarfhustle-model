@@ -30,6 +30,7 @@ import org.agrona.MutableDirectBuffer;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.PropertiesSet;
 
 /**
@@ -75,6 +76,13 @@ public class MapBlockBuffer {
      */
     public static int calcMapBufferSize(int w, int h, int d) {
         return SIZE * w * h * d;
+    }
+
+    /**
+     * Calculates the offset for the {@link MapChunk} and x/y/z position.
+     */
+    public static int calcOff(MapChunk chunk, int x, int y, int z) {
+        return GameBlockPos.calcIndex(chunk, x, y, z) * SIZE;
     }
 
     public static void setParent(MutableDirectBuffer b, int off, int p) {
