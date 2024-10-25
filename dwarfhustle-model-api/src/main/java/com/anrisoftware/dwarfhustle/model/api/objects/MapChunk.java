@@ -82,7 +82,6 @@ public class MapChunk extends GameObject {
     /**
      * The {@link GameChunkPos} of the chunk.
      */
-    @ToString.Include
     public GameChunkPos pos;
 
     public int chunkSize;
@@ -100,28 +99,31 @@ public class MapChunk extends GameObject {
     /**
      * The {@link GameChunkPos} and CIDs of the children chunks.
      */
+    @ToString.Exclude
     private LongObjectMap<GameChunkPos> chunks;
 
     /**
      * The chunk CIDs of {@link NeighboringDir} neighbors of this chunk.
      */
+    @ToString.Exclude
     public long[] neighbors = new long[NeighboringDir.values().length];
 
     /**
      * True if the chunk is a leaf with blocks.
      */
-    @ToString.Include
     private boolean leaf;
 
     /**
      * Pre-calculated {@link CenterExtent} based on the chunks position.
      */
+    @ToString.Exclude
     private CenterExtent centerExtent;
 
     /**
      * The {@link MapBlock}s {@link MutableDirectBuffer} in the chunk if the chunk
      * is a leaf.
      */
+    @ToString.Exclude
     public Optional<MutableDirectBuffer> blocks;
 
     public boolean changed = false;
