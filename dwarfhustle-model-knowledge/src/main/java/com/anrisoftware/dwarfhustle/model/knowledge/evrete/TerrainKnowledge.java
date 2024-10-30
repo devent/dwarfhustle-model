@@ -59,7 +59,7 @@ public class TerrainKnowledge extends AbstractKnowledge {
         var session = knowledge.newStatefulSession();
         for (int i = 0; i < gm.chunksCount; i++) {
             MapChunk chunk = og.get(MapChunk.OBJECT_TYPE, MapChunk.cid2Id(i));
-            if (chunk.changed && chunk.isLeaf()) {
+            if (chunk.isLeaf()) {
                 var pos = chunk.getPos();
                 for (int z = pos.z; z < pos.ep.z; z++) {
                     for (int y = pos.y; y < pos.ep.y; y++) {

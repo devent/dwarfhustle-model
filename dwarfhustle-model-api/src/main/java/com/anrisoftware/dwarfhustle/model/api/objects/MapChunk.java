@@ -126,8 +126,6 @@ public class MapChunk extends GameObject {
     @ToString.Exclude
     public Optional<MutableDirectBuffer> blocks;
 
-    public boolean changed = false;
-
     public MapChunk() {
         this.centerExtent = new CenterExtent();
         this.pos = new GameChunkPos();
@@ -239,7 +237,6 @@ public class MapChunk extends GameObject {
     @Override
     public void writeStream(DataOutput out) throws IOException {
         super.writeStream(out);
-        out.writeBoolean(changed);
         out.writeInt(chunkSize);
         out.writeInt(width);
         out.writeInt(height);
@@ -261,7 +258,6 @@ public class MapChunk extends GameObject {
     @Override
     public void readStream(DataInput in) throws IOException {
         super.readStream(in);
-        this.changed = in.readBoolean();
         this.chunkSize = in.readInt();
         this.width = in.readInt();
         this.height = in.readInt();

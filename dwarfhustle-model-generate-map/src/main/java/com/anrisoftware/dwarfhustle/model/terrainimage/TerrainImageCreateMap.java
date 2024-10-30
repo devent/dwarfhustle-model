@@ -189,7 +189,6 @@ public class TerrainImageCreateMap {
     }
 
     private void updateTerrainBlocks(Knowledge knowledge, MapChunk chunk) {
-        chunk.changed = true;
         var session = knowledge.newStatelessSession();
         var pos = chunk.getPos();
         for (int z = pos.z; z < pos.ep.z; z++) {
