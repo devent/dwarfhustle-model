@@ -17,21 +17,19 @@
 (clear-module "DWARFHUSTLE-VEGETATION-TREES")
 (reset-features)
 
-(assert (Tree Pine)) :documentation "Pinus nigra, black pine."
+(assert (Tree Pine)) :documentation "Pinus ponderosa, western yellow-pine."
 (assert (growing-climate Pine Boreal-dry-scrub))
 (assert (growing-climate Pine Boreal-moist-forest))
 (assert (growing-climate Pine Boreal-wet-forest))
 (assert (growing-climate Pine Boreal-rain-forest))
 (assert (growing-climate Pine Cool-temperate-moist-forest))
 (assert (growing-climate Pine Subtropical-moist-forest))
-(assert (Tree-Sampling Pine-Sampling)) :documentation "Pinus nigra, black pine."
-(assert (Tree-Root Pine-Root)) :documentation "Pinus nigra, black pine."
-(assert (Tree-Root Pine-Root)) :documentation "Pinus nigra, black pine."
-(assert (Tree-Trunk Pine-Trunk)) :documentation "Pinus nigra, black pine."
-(assert (Tree-Branch Pine-Branch)) :documentation "Pinus nigra, black pine."
-(assert (Tree-Twig Pine-Twig)) :documentation "Pinus nigra, black pine."
-(assert (Tree-Leaf Pine-Leaf)) :documentation "Pinus nigra, black pine."
-(assert (growing-season Pine Winter))
+(assert (Tree-Sampling Pine-Sampling)) :documentation "Pinus ponderosa, western yellow-pine."
+(assert (Tree-Root Pine-Root)) :documentation "Pinus ponderosa, western yellow-pine."
+(assert (Tree-Trunk Pine-Trunk)) :documentation "Pinus ponderosa, western yellow-pine."
+(assert (Tree-Branch Pine-Branch)) :documentation "Pinus ponderosa, western yellow-pine."
+(assert (Tree-Twig Pine-Twig)) :documentation "Pinus ponderosa, western yellow-pine."
+(assert (Tree-Leaf Pine-Leaf)) :documentation "Pinus ponderosa, western yellow-pine."
 (assert (growing-season Pine Spring))
 (assert (growing-season Pine Summer))
 (assert (growing-season Pine Autumn))
@@ -39,11 +37,11 @@
 (assert (= (growing-min-temp Pine) 10.0))
 (assert (= (growing-max-temp Pine) 50.0))
 (assert (= (growing-opt-temp Pine) 15.0))
-(assert (growing-soil Pine Clay))
-(assert (growing-soil Pine Clay-Loam))
-(assert (growing-soil Pine Sandy-Clay))
-(assert (growing-soil Pine Silty-Clay))
-(assert (growing-soil Pine Fire-Clay))
+(assert (= (growing-max-size Pine) 7))
+(assert (= (root-max-size Pine) 2))
+(assert (= (width-max Pine) 5))
+(assert (= (height-max Pine) 5))
+(assert (= (depth-max Pine) 10))
 (assert (growing-soil Pine Loam))
 (assert (growing-soil Pine Loamy-Sand))
 (assert (growing-soil Pine Peat))
@@ -52,3 +50,36 @@
 (assert (growing-soil Pine Silt))
 (assert (growing-soil Pine Silty-Clay-Loam))
 (assert (growing-soil Pine Silt-Loam))
+
+(assert (Tree Birch)) :documentation "Betula pendula, silver birch."
+(assert (growing-climate Birch Boreal-dry-scrub))
+(assert (growing-climate Birch Boreal-moist-forest))
+(assert (growing-climate Birch Boreal-wet-forest))
+(assert (growing-climate Birch Boreal-rain-forest))
+(assert (growing-climate Birch Cool-temperate-moist-forest))
+(assert (growing-climate Birch Subtropical-moist-forest))
+(assert (Tree-Sampling Birch-Sampling)) :documentation "Betula pendula, silver birch."
+(assert (Tree-Root Birch-Root)) :documentation "Betula pendula, silver birch."
+(assert (Tree-Trunk Birch-Trunk)) :documentation "Betula pendula, silver birch."
+(assert (Tree-Branch Birch-Branch)) :documentation "Betula pendula, silver birch."
+(assert (Tree-Twig Birch-Twig)) :documentation "Betula pendula, silver birch."
+(assert (Tree-Leaf Birch-Leaf)) :documentation "Betula pendula, silver birch."
+(assert (growing-season Birch Spring))
+(assert (growing-season Birch Summer))
+(assert (= (growing-speed Birch) 0.2739))
+(assert (= (growing-min-temp Birch) 10.0))
+(assert (= (growing-max-temp Birch) 50.0))
+(assert (= (growing-opt-temp Birch) 15.0))
+(assert (= (growing-max-size Birch) 5))
+(assert (= (root-max-size Birch) 2))
+(assert (= (width-max Birch) 7))
+(assert (= (height-max Birch) 7))
+(assert (= (depth-max Birch) 8))
+(assert (growing-soil Birch Loam))
+(assert (growing-soil Birch Loamy-Sand))
+(assert (growing-soil Birch Peat))
+(assert (growing-soil Birch Sandy-Clay-Loam))
+(assert (growing-soil Birch Sandy-Loam))
+(assert (growing-soil Birch Silt))
+(assert (growing-soil Birch Silty-Clay-Loam))
+(assert (growing-soil Birch Silt-Loam))

@@ -85,6 +85,13 @@ public class MapBlockBuffer {
         return GameBlockPos.calcIndex(chunk, x, y, z) * SIZE;
     }
 
+    /**
+     * Calculates the offset for the block index.
+     */
+    public static int calcOff(int index) {
+        return index * SIZE;
+    }
+
     public static void setParent(MutableDirectBuffer b, int off, int p) {
         b.putShort(PARENT_BYTE + off, (short) p);
     }

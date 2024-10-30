@@ -18,6 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
 import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.PowerLoomUtils.retrieveFloat;
+import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.PowerLoomUtils.retrieveInt;
 import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.PowerLoomUtils.retrieveIntSet;
 
 import org.eclipse.collections.api.factory.primitive.IntSets;
@@ -54,6 +55,10 @@ public abstract class VegetationStorage extends AbstractObjectTypeStorage {
         m.growingSoil = retrieveIntSet("growing-soil", m.getName(), IntSets.mutable.empty());
         m.floweringMonths = retrieveIntSet("flowering-months", m.getName(), IntSets.mutable.empty());
         m.growingClimate = retrieveIntSet("growing-climate", m.getName(), IntSets.mutable.empty());
+        m.rootMaxSize = retrieveInt("root-max-size", m.getName());
+        m.widthMax = retrieveInt("width-max", m.getName());
+        m.heightMax = retrieveInt("height-max", m.getName());
+        m.depthMax = retrieveInt("depth-max", m.getName());
         return go;
     }
 }

@@ -93,13 +93,18 @@ public class MapChunkBuffer {
 
         public final int index;
 
-        public int getOff() {
-            return index * MapBlockBuffer.SIZE;
+        public final int off;
+
+        public MapBlockResult(MapChunk c, int index) {
+            this.c = c;
+            this.index = index;
+            this.off = index * MapBlockBuffer.SIZE;
         }
 
         public boolean isValid() {
             return index > -1;
         }
+
     }
 
     private static final int ID_BYTE = 0 * 2;
@@ -190,12 +195,13 @@ public class MapChunkBuffer {
         return findChunk(mc, pos.x, pos.y, pos.z, og);
     }
 
-    public static MapChunk findChunk(MapChunk mc, int x, int y, int z, ObjectsGetter og) {
-        if (!mc.isLeaf()) {
-            for (var view : mc.getChunks().keyValuesView()) {
-                if (view.getOne() == 0) {
-                    continue;
-                }
+    public static MapChunk findChunk(MapChunk c, int x, int y, int z, ObjectsGetter og) {
+        if (!c.isInside(x, y, z)) {
+            c = getChunk(og, c.getParent());
+            return findChunk(c, x, y, z, og);
+        }
+        if (!c.isLeaf()) {
+            for (var view : c.getChunks().keyValuesView()) {
                 var b = view.getTwo();
                 int bx = b.getX();
                 int by = b.getY();
@@ -210,7 +216,7 @@ public class MapChunkBuffer {
                 }
             }
         }
-        return mc;
+        return c;
     }
 
     /**
@@ -245,8 +251,8 @@ public class MapChunkBuffer {
         return 0;
     }
 
-    private static long findChunk(MapChunk mc, int x, int y, int z, int ex, int ey, int ez) {
-        for (var view : mc.getChunks().keyValuesView()) {
+    private static long findChunk(MapChunk c, int x, int y, int z, int ex, int ey, int ez) {
+        for (var view : c.getChunks().keyValuesView()) {
             if (view.getTwo().equals(x, y, z, ex, ey, ez)) {
                 return view.getOne();
             }
@@ -254,8 +260,8 @@ public class MapChunkBuffer {
         return 0;
     }
 
-    public static MapBlock findBlock(MapChunk mc, int x, int y, int z, ObjectsGetter og) {
-        return findBlock(mc, new GameBlockPos(x, y, z), og);
+    public static MapBlock findBlock(MapChunk c, int x, int y, int z, ObjectsGetter og) {
+        return findBlock(c, new GameBlockPos(x, y, z), og);
     }
 
     public static MapBlock findBlock(MapChunk c, GameBlockPos pos, ObjectsGetter og) {
@@ -271,6 +277,10 @@ public class MapChunkBuffer {
      * Finds the block index
      */
     public static MapBlockResult findBlockIndex(MapChunk c, GameBlockPos pos, ObjectsGetter og) {
+        if (!c.isInside(pos)) {
+            var parent = getChunk(og, cid2Id(c.parent));
+            return findBlockIndex(parent, pos, og);
+        }
         if (!c.isLeaf()) {
             for (var view : c.getChunks().keyValuesView()) {
                 var b = view.getTwo();
@@ -281,12 +291,7 @@ public class MapChunkBuffer {
             }
             return new MapBlockResult(c, -1);
         }
-        if (c.isInside(pos)) {
-            return new MapBlockResult(c, calcIndex(c, pos.x, pos.y, pos.z));
-        } else {
-            var parent = getChunk(og, cid2Id(c.parent));
-            return findBlockIndex(parent, pos, og);
-        }
+        return new MapBlockResult(c, calcIndex(c, pos.x, pos.y, pos.z));
     }
 
     /**

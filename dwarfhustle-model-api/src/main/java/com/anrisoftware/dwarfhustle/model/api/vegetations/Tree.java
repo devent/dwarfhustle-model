@@ -32,7 +32,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Data
-public abstract class Tree extends Vegetation {
+public class Tree extends Vegetation {
 
     public static final int OBJECT_TYPE = Tree.class.getSimpleName().hashCode();
 

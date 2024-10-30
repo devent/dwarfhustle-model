@@ -159,8 +159,8 @@ public class ImporterMapImage2DbActor {
                 log.error("MapChunksJcsCacheActor", ex);
             }
         }).toCompletableFuture().get();
-        var knowledge = new TerrainKnowledge(
-                (timeout, type) -> askKnowledgeObjects(actor.getActorSystem(), timeout, type));
+        var knowledge = new TerrainKnowledge();
+        knowledge.loadKnowledges((timeout, type) -> askKnowledgeObjects(actor.getActorSystem(), timeout, type));
         terrainImageCreateMap
                 .create(actor.getObjectGetterAsync(MapChunksJcsCacheActor.ID).toCompletableFuture().get(),
                         actor.getObjectSetterAsync(MapChunksJcsCacheActor.ID).toCompletableFuture().get(), knowledge)

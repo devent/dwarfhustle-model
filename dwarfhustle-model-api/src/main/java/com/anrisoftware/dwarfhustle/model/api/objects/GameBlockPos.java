@@ -170,6 +170,10 @@ public class GameBlockPos implements Externalizable, StreamStorage {
         return new GameBlockPos(x + p.x, y + p.y, z + p.z);
     }
 
+    public GameBlockPos add(int x, int y, int z) {
+        return new GameBlockPos(this.x + x, this.y + y, this.z + z);
+    }
+
     public GameBlockPos addX(int n) {
         return new GameBlockPos(x + n, y, z);
     }

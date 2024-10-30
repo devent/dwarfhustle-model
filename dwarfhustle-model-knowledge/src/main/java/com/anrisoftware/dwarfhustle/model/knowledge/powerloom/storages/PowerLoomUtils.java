@@ -25,6 +25,7 @@ import org.eclipse.collections.api.set.primitive.MutableIntSet;
 import edu.isi.powerloom.PLI;
 import edu.isi.powerloom.logic.LogicObject;
 import edu.isi.stella.FloatWrapper;
+import edu.isi.stella.IntegerWrapper;
 import edu.isi.stella.List;
 import edu.isi.stella.Stella_Object;
 
@@ -47,6 +48,24 @@ public class PowerLoomUtils {
         FloatWrapper next;
         while ((next = (FloatWrapper) answer.pop()) != null) {
             return (float) next.wrapperValue;
+        }
+        return -1;
+    }
+
+    /**
+     * Retrieves a Integer.
+     */
+    public static int retrieveInt(String function, String name) {
+        var buff = new StringBuilder();
+        buff.append("?x (");
+        buff.append(function);
+        buff.append(" ");
+        buff.append(name);
+        buff.append(" ?x)");
+        var answer = PLI.sRetrieve(buff.toString(), WORKING_MODULE, null);
+        IntegerWrapper next;
+        while ((next = (IntegerWrapper) answer.pop()) != null) {
+            return next.wrapperValue;
         }
         return -1;
     }

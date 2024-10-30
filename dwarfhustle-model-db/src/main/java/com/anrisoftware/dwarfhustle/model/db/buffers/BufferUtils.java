@@ -74,6 +74,9 @@ public class BufferUtils {
         return value;
     }
 
+    /**
+     * Returns a string representation of the {@link DirectBuffer}.
+     */
     public static String toHex(DirectBuffer b) {
         var array = new byte[b.capacity()];
         b.getBytes(0, array);

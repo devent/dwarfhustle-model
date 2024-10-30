@@ -31,7 +31,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @Data
-public class KnowledgeTreeRoot extends KnowledgeTree {
+public class KnowledgeTreeRoot extends KnowledgeVegetation {
 
     public static final int OBJECT_TYPE = KnowledgeTreeRoot.class.getSimpleName().hashCode();
 
@@ -43,12 +43,12 @@ public class KnowledgeTreeRoot extends KnowledgeTree {
 
     @Override
     public int getObjectType() {
-        return KnowledgeTreeRoot.OBJECT_TYPE;
+        return OBJECT_TYPE;
     }
 
     @Override
     public String getKnowledgeType() {
-        return KnowledgeTreeRoot.TYPE;
+        return TYPE;
     }
 
     @Override

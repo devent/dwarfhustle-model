@@ -21,7 +21,6 @@ import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
-import com.anrisoftware.dwarfhustle.model.api.vegetations.Tree;
 import com.anrisoftware.dwarfhustle.model.api.vegetations.TreeRoot;
 import com.google.auto.service.AutoService;
 
@@ -51,7 +50,7 @@ public class TreeRootBuffer implements StoredObjectBuffer {
         VegetationBuffer.writeObject(b, off, o);
     }
 
-    public static Tree getTreeRoot(DirectBuffer b, int off, TreeRoot o) {
+    public static TreeRoot getTreeRoot(DirectBuffer b, int off, TreeRoot o) {
         VegetationBuffer.readObject(b, off, o);
         return o;
     }

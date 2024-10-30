@@ -80,6 +80,26 @@ public abstract class KnowledgeVegetation extends ObjectType {
      */
     public IntSet growingClimate;
 
+    /**
+     * The maximum size of roots in blocks.
+     */
+    public int rootMaxSize;
+
+    /**
+     * The maximum width of the vegetation in blocks.
+     */
+    public int widthMax;
+
+    /**
+     * The maximum height of the vegetation in blocks.
+     */
+    public int heightMax;
+
+    /**
+     * The maximum depth of the vegetation in blocks.
+     */
+    public int depthMax;
+
     public KnowledgeVegetation(int kid) {
         super(kid);
     }

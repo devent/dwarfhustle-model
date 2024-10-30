@@ -22,11 +22,6 @@ import org.evrete.dsl.annotation.MethodPredicate;
  */
 public class TerrainUpdateRules extends AbstractTerrainRules {
 
-    @Rule(salience = 1)
-    public void chunk_done(BlockFact $f, RhsContext ctx) {
-        $f.chunk.changed = false;
-    }
-
     //
     // Block hidden or visible based on neighbors.
     //

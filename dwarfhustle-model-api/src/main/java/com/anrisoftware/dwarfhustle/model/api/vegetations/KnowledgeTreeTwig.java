@@ -31,7 +31,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @Data
-public class KnowledgeTreeTwig extends KnowledgeTree {
+public class KnowledgeTreeTwig extends KnowledgeVegetation {
 
     public static final int OBJECT_TYPE = KnowledgeTreeTwig.class.getSimpleName().hashCode();
 

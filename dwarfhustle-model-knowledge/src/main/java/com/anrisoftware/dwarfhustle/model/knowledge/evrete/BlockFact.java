@@ -22,6 +22,7 @@ import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags.FILLE
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags.LIQUID;
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags.RAMP;
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapChunk.cid2Id;
+import static com.anrisoftware.dwarfhustle.model.api.objects.MapChunk.setChunk;
 import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.D;
 import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.E;
 import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.N;
@@ -32,6 +33,7 @@ import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.W;
 import static com.anrisoftware.dwarfhustle.model.db.buffers.MapBlockBuffer.calcOff;
 import static com.anrisoftware.dwarfhustle.model.db.buffers.MapChunkBuffer.findChunk;
 
+import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
@@ -72,6 +74,14 @@ public class BlockFact {
 
     public final int d;
 
+    public GameBlockPos getPos() {
+        return new GameBlockPos(x, y, z);
+    }
+
+    public MapChunk getChunk() {
+        return findChunk(root, x, y, z, getter);
+    }
+
     public int getW1() {
         return w - 1;
     }
@@ -84,200 +94,153 @@ public class BlockFact {
         return d - 1;
     }
 
-    private MapChunk getCorrectChunk(MapChunk chunk, int x, int y, int z) {
-        if (!chunk.isInside(x, y, z)) {
-            chunk = findChunk(chunk, x, y, z, getter);
-        }
-        return chunk;
-    }
-
-    private void setMaterialDirect(MapChunk chunk, int x, int y, int z, int m) {
-        final int off = calcOff(chunk, x, y, z);
-        MapBlockBuffer.setMaterial(chunk.getBlocks(), off, m);
-    }
-
     public void setMaterial(int x, int y, int z, int m) {
         var chunk = findChunk(root, x, y, z, getter);
-        setMaterialDirect(chunk, x, y, z, m);
+        final int off = calcOff(chunk, x, y, z);
+        MapBlockBuffer.setMaterial(chunk.getBlocks(), off, m);
+        setChunk(setter, chunk);
     }
 
     public void setMaterial(int m) {
         setMaterial(x, y, z, m);
     }
 
-    private int getMaterialDirect(MapChunk chunk, int x, int y, int z) {
+    public int getMaterial(int x, int y, int z) {
+        var chunk = findChunk(root, x, y, z, getter);
         final int off = calcOff(chunk, x, y, z);
         return MapBlockBuffer.getMaterial(chunk.getBlocks(), off);
     }
 
-    public int getMaterial(MapChunk chunk, int x, int y, int z) {
-        chunk = getCorrectChunk(chunk, x, y, z);
-        return getMaterialDirect(chunk, x, y, z);
-    }
-
     public int getMaterial() {
-        return getMaterialDirect(chunk, x, y, z);
+        return getMaterial(x, y, z);
     }
 
-    private void setObjectDirect(MapChunk chunk, int x, int y, int z, int o) {
+    public void setObject(int x, int y, int z, int o) {
+        var chunk = findChunk(root, x, y, z, getter);
         final int off = calcOff(chunk, x, y, z);
         MapBlockBuffer.setObject(chunk.getBlocks(), off, o);
-    }
-
-    public void setObject(MapChunk chunk, int x, int y, int z, int o) {
-        chunk = getCorrectChunk(chunk, x, y, z);
-        setObjectDirect(chunk, x, y, z, o);
+        setChunk(setter, chunk);
     }
 
     public void setObject(int o) {
-        setObjectDirect(chunk, x, y, z, o);
+        setObject(x, y, z, o);
     }
 
-    private int getObjectDirect(MapChunk chunk, int x, int y, int z) {
+    public int getObject(int x, int y, int z) {
+        var chunk = findChunk(root, x, y, z, getter);
         final int off = calcOff(chunk, x, y, z);
         return MapBlockBuffer.getObject(chunk.getBlocks(), off);
     }
 
-    public int getObject(MapChunk chunk, int x, int y, int z) {
-        chunk = getCorrectChunk(chunk, x, y, z);
-        return getObjectDirect(chunk, x, y, z);
-    }
-
     public int getObject() {
-        return getObjectDirect(chunk, x, y, z);
+        return getObject(x, y, z);
     }
 
-    private void setPropDirect(MapChunk chunk, int x, int y, int z, int p) {
+    public void setProp(int x, int y, int z, int p) {
+        var chunk = findChunk(root, x, y, z, getter);
+        setProp(x, y, z, p, chunk);
+    }
+
+    private void setProp(int x, int y, int z, int p, MapChunk chunk) {
         final int off = calcOff(chunk, x, y, z);
         MapBlockBuffer.setProp(chunk.getBlocks(), off, p);
-    }
-
-    public void setProp(MapChunk chunk, int x, int y, int z, int p) {
-        chunk = getCorrectChunk(chunk, x, y, z);
-        setPropDirect(chunk, x, y, z, p);
+        setChunk(setter, chunk);
     }
 
     public void setProp(int p) {
-        setPropDirect(chunk, x, y, z, p);
+        setProp(x, y, z, p);
     }
 
-    private int getPropDirect(MapChunk chunk, int x, int y, int z) {
+    public int getProp(int x, int y, int z) {
+        var chunk = findChunk(root, x, y, z, getter);
+        return getProp(x, y, z, chunk);
+    }
+
+    private int getProp(int x, int y, int z, MapChunk chunk) {
         final int off = calcOff(chunk, x, y, z);
         return MapBlockBuffer.getProp(chunk.getBlocks(), off);
     }
 
-    public int getProp(MapChunk chunk, int x, int y, int z) {
-        chunk = getCorrectChunk(chunk, x, y, z);
-        return getPropDirect(chunk, x, y, z);
-    }
-
     public int getProp() {
-        return getPropDirect(chunk, x, y, z);
-    }
-
-    private boolean isPropDirect(MapChunk chunk, int x, int y, int z, int flags) {
-        return isFlag(getProp(chunk, x, y, z), flags);
+        return getProp(x, y, z);
     }
 
     private boolean isFlag(int p, int flags) {
         return (p & flags) == flags;
     }
 
-    public boolean isProp(MapChunk chunk, int x, int y, int z, int flags) {
-        chunk = getCorrectChunk(chunk, x, y, z);
-        return isPropDirect(chunk, x, y, z, flags);
+    public boolean isProp(int x, int y, int z, int flags) {
+        return isFlag(getProp(x, y, z), flags);
     }
 
-    public boolean isProp(int x, int y, int z, int flags) {
-        return isPropDirect(chunk, x, y, z, flags);
+    public boolean isProp(int x, int y, int z, int flags, MapChunk chunk) {
+        return isFlag(getProp(x, y, z, chunk), flags);
     }
 
     public boolean isProp(int flags) {
         return isProp(x, y, z, flags);
     }
 
-    private void addPropDirect(MapChunk chunk, int x, int y, int z, int flags) {
-        int p = getPropDirect(chunk, x, y, z);
-        setPropDirect(chunk, x, y, z, p | flags);
-    }
-
-    public void addProp(MapChunk chunk, int x, int y, int z, int flags) {
-        chunk = getCorrectChunk(chunk, x, y, z);
-        addPropDirect(chunk, x, y, z, flags);
+    public void addProp(int x, int y, int z, int flags) {
+        var chunk = findChunk(root, x, y, z, getter);
+        int p = getProp(x, y, z, chunk);
+        setProp(x, y, z, p | flags, chunk);
     }
 
     public void addProp(int flags) {
-        addPropDirect(chunk, x, y, z, flags);
+        addProp(x, y, z, flags);
     }
 
-    private void removePropDirect(MapChunk chunk, int x, int y, int z, int flags) {
-        int p = getPropDirect(chunk, x, y, z);
-        setPropDirect(chunk, x, y, z, p & ~flags);
-    }
-
-    public void removeProp(MapChunk chunk, int x, int y, int z, int flags) {
-        chunk = getCorrectChunk(chunk, x, y, z);
-        removePropDirect(chunk, x, y, z, flags);
+    public void removeProp(int x, int y, int z, int flags) {
+        var chunk = findChunk(root, x, y, z, getter);
+        int p = getProp(x, y, z, chunk);
+        setProp(x, y, z, p & ~flags, chunk);
     }
 
     public void removeProp(int flags) {
-        removePropDirect(chunk, x, y, z, flags);
+        removeProp(x, y, z, flags);
     }
 
-    private void setTempDirect(MapChunk chunk, int x, int y, int z, int t) {
+    public void setTemp(int x, int y, int z, int t) {
+        var chunk = findChunk(root, x, y, z, getter);
         final int off = calcOff(chunk, x, y, z);
         MapBlockBuffer.setTemp(chunk.getBlocks(), off, t);
-    }
-
-    public void setTemp(MapChunk chunk, int x, int y, int z, int t) {
-        chunk = getCorrectChunk(chunk, x, y, z);
-        setTempDirect(chunk, x, y, z, t);
+        setChunk(setter, chunk);
     }
 
     public void setTemp(int t) {
-        setTempDirect(chunk, x, y, z, t);
+        setTemp(x, y, z, t);
     }
 
-    private int getTempDirect(MapChunk chunk, int x, int y, int z) {
+    public int getTemp(int x, int y, int z) {
+        var chunk = findChunk(root, x, y, z, getter);
         final int off = calcOff(chunk, x, y, z);
         return MapBlockBuffer.getTemp(chunk.getBlocks(), off);
     }
 
-    public int getTemp(MapChunk chunk, int x, int y, int z) {
-        chunk = getCorrectChunk(chunk, x, y, z);
-        return getTempDirect(chunk, x, y, z);
-    }
-
     public int getTemp() {
-        return getTempDirect(chunk, x, y, z);
+        return getTemp(x, y, z);
     }
 
-    private void setLuxDirect(MapChunk chunk, int x, int y, int z, int l) {
+    public void setLux(int x, int y, int z, int l) {
+        var chunk = findChunk(root, x, y, z, getter);
         final int off = calcOff(chunk, x, y, z);
         MapBlockBuffer.setLux(chunk.getBlocks(), off, l);
-    }
-
-    public void setLux(MapChunk chunk, int x, int y, int z, int l) {
-        chunk = getCorrectChunk(chunk, x, y, z);
-        setLuxDirect(chunk, x, y, z, l);
+        setChunk(setter, chunk);
     }
 
     public void setLux(int l) {
-        setLuxDirect(chunk, x, y, z, l);
+        setLux(x, y, z, l);
     }
 
-    private int getLuxDirect(MapChunk chunk, int x, int y, int z) {
+    public int getLux(int x, int y, int z) {
+        var chunk = findChunk(root, x, y, z, getter);
         final int off = calcOff(chunk, x, y, z);
         return MapBlockBuffer.getLux(chunk.getBlocks(), off);
     }
 
-    public int getLux(MapChunk chunk, int x, int y, int z) {
-        chunk = getCorrectChunk(chunk, x, y, z);
-        return getLuxDirect(chunk, x, y, z);
-    }
-
     public int getLux() {
-        return getLuxDirect(chunk, x, y, z);
+        return getLux(x, y, z);
     }
 
     /**
@@ -342,6 +305,7 @@ public class BlockFact {
     }
 
     private boolean isNeighborsFlag(int flag, NeighboringDir... dirs) {
+        var chunk = findChunk(root, x, y, z, getter);
         for (var dir : dirs) {
             if (!isNeighborFlag(chunk, dir, flag)) {
                 return false;
@@ -402,7 +366,7 @@ public class BlockFact {
             chunk = getter.get(MapChunk.OBJECT_TYPE, cid2Id(chunk.neighbors[D.ordinal()]));
             return isNeighborFlag(chunk, dir, flag);
         }
-        return isProp(chunk, dx, dy, dz, flag);
+        return isProp(dx, dy, dz, flag, chunk);
     }
 
     /**
@@ -410,10 +374,11 @@ public class BlockFact {
      * natural light above the fact block.
      */
     public boolean isLineOfSightUp() {
+        var chunk = findChunk(root, x, y, z, getter);
         var c = chunk;
         for (int zz = z - 1; zz >= 0;) {
             if (c.isInside(x, y, zz)) {
-                final int p = getProp(c, x, y, zz);
+                final int p = getProp(x, y, zz, c);
                 if (!isFlag(p, EMPTY.flag) && !isFlag(p, LIQUID.flag)) {
                     return false;
                 } else {

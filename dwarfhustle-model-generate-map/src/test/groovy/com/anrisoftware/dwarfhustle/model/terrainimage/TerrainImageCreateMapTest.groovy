@@ -41,6 +41,7 @@ import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
+import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk
 import com.anrisoftware.dwarfhustle.model.db.buffers.MapChunkBuffer
 import com.anrisoftware.dwarfhustle.model.db.cache.DwarfhustleModelDbCacheModule
 import com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor
@@ -93,12 +94,12 @@ class TerrainImageCreateMapTest {
 
     static Stream test_start_import_terrain() {
         def args = []
-        //        args << of(TerrainImage.terrain_4_4_4_2, true, new Terrain_4_4_4_2_blocks_expected().run())
+        //args << of(TerrainImage.terrain_4_4_4_2, true, new Terrain_4_4_4_2_blocks_expected().run())
         args << of(TerrainImage.terrain_8_8_8_4, true, new Terrain_8_8_8_4_blocks_expected().run())
         //
         //        args << of(TerrainImage.terrain_4_4_4_2, false, new Terrain_4_4_4_2_blocks_expected().run())
         //        args << of(TerrainImage.terrain_8_8_8_4, false, new Terrain_8_8_8_4_blocks_expected().run())
-        //        args << of(TerrainImage.terrain_32_32_32_4, false, null)
+        //args << of(TerrainImage.terrain_32_32_32_4, false, null)
         //        args << of(TerrainImage.terrain_32_32_32_8, false, null)
         //        args << of(TerrainImage.terrain_512_512_128_16, false, null)
         //        args << of(TerrainImage.terrain_512_512_128_32, false, null)
@@ -126,7 +127,8 @@ class TerrainImageCreateMapTest {
                 } ).get()
             }
         } ).get()
-        def terrainKnowledge = new TerrainKnowledge({ timeout, type -> askKnowledgeObjects(actor.actorSystem, timeout, type) })
+        def terrainKnowledge = new TerrainKnowledge()
+        terrainKnowledge.loadKnowledges({ timeout, type -> askKnowledgeObjects(actor.actorSystem, timeout, type) })
         def terrain = image.terrain
         def gm = new GameMap(1)
         gm.chunkSize = image.chunkSize
@@ -148,7 +150,7 @@ class TerrainImageCreateMapTest {
                 terrainKnowledge)
         createMap.startImportMapping(TerrainImageCreateMapTest.class.getResource(image.imageName), terrain, gm)
         def root = storage.getChunk(0)
-        def retriever = { type, id -> storage.getChunk(id) }
+        def retriever = { type, id -> storage.getChunk(MapChunk.id2Cid(id)) }
         if (printBlocks) {
             println "["
             for (int z = 0; z < terrain.depth; z++) {

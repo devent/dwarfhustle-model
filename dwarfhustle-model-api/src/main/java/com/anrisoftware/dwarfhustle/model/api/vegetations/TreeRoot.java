@@ -34,7 +34,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @AutoService(StoredObject.class)
-public class TreeRoot extends Tree {
+public class TreeRoot extends Vegetation {
 
     public static final int OBJECT_TYPE = TreeRoot.class.getSimpleName().hashCode();
 

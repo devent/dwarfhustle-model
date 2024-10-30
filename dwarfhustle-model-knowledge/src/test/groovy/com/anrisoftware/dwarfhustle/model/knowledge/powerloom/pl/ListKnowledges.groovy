@@ -37,7 +37,6 @@ import com.anrisoftware.dwarfhustle.model.actor.DwarfhustleModelActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.api.map.BlockObject
 import com.anrisoftware.dwarfhustle.model.api.map.BlockType
-import com.anrisoftware.dwarfhustle.model.api.map.ClimateZone
 import com.anrisoftware.dwarfhustle.model.api.map.FloorType
 import com.anrisoftware.dwarfhustle.model.api.map.LightType
 import com.anrisoftware.dwarfhustle.model.api.map.ObjectType
@@ -228,7 +227,7 @@ class ListKnowledges {
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, RoofType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ObjectType.TYPE))
-        while (ko.size() != 108) {
+        while (ko.size() != 104) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
         }
@@ -237,6 +236,7 @@ class ListKnowledges {
     @ParameterizedTest
     @CsvSource([
         "Climate-Zone,38",
+        "Tree,2",
     ])
     @Timeout(20l)
     void "list knowledges"(String type, int size) {
@@ -249,10 +249,13 @@ class ListKnowledges {
             }
         })
         def knowledgeResponseAdapter = ret[1]
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ClimateZone.TYPE))
-        while (ko.size() != 38) {
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, type))
+        while (ko.size() != size) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
+        }
+        ko.each {
+            println it
         }
     }
 }
