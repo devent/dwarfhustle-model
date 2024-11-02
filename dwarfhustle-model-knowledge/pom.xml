@@ -86,11 +86,6 @@
 		    <artifactId>evrete-dsl-java</artifactId>
 		    <version>3.2.00</version>
 		</dependency>
-		<dependency>
-		  <groupId>it.carmelolagamba</groupId>
-		  <artifactId>jcal</artifactId>
-		  <version>1.0.0.alpha</version>
-		</dependency>
         
         <!-- Own modules dependencies -->
         <dependency>
