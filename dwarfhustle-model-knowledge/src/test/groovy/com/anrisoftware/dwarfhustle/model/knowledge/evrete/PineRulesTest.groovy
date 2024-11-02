@@ -19,6 +19,7 @@ import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
 import com.anrisoftware.dwarfhustle.model.actor.DwarfhustleModelActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
+import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTree
@@ -30,6 +31,7 @@ import com.anrisoftware.dwarfhustle.model.db.lmbd.MapChunksLmbdStorage.MapChunks
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustlePowerloomModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor
+import com.anrisoftware.dwarfhustle.model.trees.VegetationLoadKnowledges
 import com.google.inject.Guice
 import com.google.inject.Injector
 
@@ -81,6 +83,8 @@ class PineRulesTest {
 
     Path terrainPath
 
+    GameMap gm
+
     @BeforeEach
     void setUp() {
         def terrain = "terrain_32_32_32_4_585"
@@ -88,22 +92,18 @@ class PineRulesTest {
         def tmp = tmpdir.resolve(terrain)
         FileUtils.copyDirectory(path.toFile(), tmp.toFile())
         terrainPath = tmp
+        gm = new GameMap(1)
+        gm.width = 32
+        gm.height = 32
+        gm.depth = 32
     }
 
     @Test
     void pine_rules() {
         def chunks = chunksLmbdStorageFactory.create(terrainPath, 4)
-        def vkn = new VegetationKnowledge()
-        def k = vkn.createKnowledgeService()
-        vkn.loadKnowledges(askKnowledge)
-        def knowledge = vkn.createRulesKnowledgeFromSource(k, "PineRules.java")
-        def gm = new GameMap(1)
-        gm.width = 32
-        gm.height = 32
-        gm.depth = 32
         Vegetation v
         KnowledgeVegetation kv
-        askKnowledge.doAskAsync(ofSeconds(1), KnowledgeTree.TYPE).whenComplete({ it, ex ->
+        askKnowledge.doAskAsync(ofSeconds(10), KnowledgeTree.TYPE).whenComplete({ it, ex ->
             kv = it.find { it.name == "PINE" }
         } ).get()
         v = kv.createObject(generator.generate())
@@ -111,12 +111,24 @@ class PineRulesTest {
         v.pos.x = 11
         v.pos.y = 15
         v.pos.z = 9
-        println v
+        def loaded = new VegetationLoadKnowledges(kv)
+        loaded.loadKnowledges(askKnowledge)
+        def vkn = new VegetationKnowledge()
+        def k = vkn.createKnowledgeService()
+        vkn.setLoadedKnowledges(loaded)
+        def knowledge = vkn.createRulesKnowledgeFromSource(k, "PineRules.java")
         def root = MapChunk.getChunk(chunks, 0)
         def block = MapChunkBuffer.findBlock(root, 11, 15, 9, chunks)
-        println block
-        println block.isEmpty()
         vkn.run(askKnowledge, knowledge, v, kv, chunks, chunks, gm)
+        int r = 2
+        for (int zz = v.pos.z - r; zz < v.pos.z + r; zz++) {
+            for (int yy = v.pos.y - r; yy < v.pos.y + r; yy++) {
+                for (int xx = v.pos.x - r; xx < v.pos.x + r; xx++) {
+                    def b = MapChunkBuffer.findBlock(root, new GameBlockPos(xx, yy, zz), chunks)
+                    println "[$b.pos.x,$b.pos.y,$b.pos.z,$b.parent,$b.material,$b.object,$b.temp,$b.lux,0b$b.p],"
+                }
+            }
+        }
         chunks.close()
     }
 }

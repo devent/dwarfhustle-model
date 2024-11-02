@@ -21,10 +21,10 @@ import static com.anrisoftware.dwarfhustle.model.api.objects.MapChunk.cid2Id;
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapChunk.getChunk;
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapChunk.setChunk;
 import static com.anrisoftware.dwarfhustle.model.db.buffers.MapChunkBuffer.findChild;
-import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.AbstractKnowledge.MATERIALS_GASES_NAME;
-import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.AbstractKnowledge.MATERIALS_LIQUIDS_NAME;
-import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.AbstractKnowledge.MATERIALS_SOLIDS_NAME;
-import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.AbstractKnowledge.MATERIAL_OXYGEN_NAME;
+import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DefaultLoadKnowledges.MATERIALS_GASES_NAME;
+import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DefaultLoadKnowledges.MATERIALS_LIQUIDS_NAME;
+import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DefaultLoadKnowledges.MATERIALS_SOLIDS_NAME;
+import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DefaultLoadKnowledges.MATERIAL_OXYGEN_NAME;
 
 import java.io.IOException;
 import java.net.URL;

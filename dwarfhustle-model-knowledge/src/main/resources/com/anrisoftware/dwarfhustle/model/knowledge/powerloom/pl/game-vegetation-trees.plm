@@ -50,6 +50,8 @@
 (assert (growing-soil Pine Silt))
 (assert (growing-soil Pine Silty-Clay-Loam))
 (assert (growing-soil Pine Silt-Loam))
+(assert (Wood Pine-Wood)) :documentation "Pinus ponderosa, western yellow-pine."
+(assert (= (melting-point-material Pine-Wood) 300.00))
 
 (assert (Tree Birch)) :documentation "Betula pendula, silver birch."
 (assert (growing-climate Birch Boreal-dry-scrub))
@@ -83,3 +85,5 @@
 (assert (growing-soil Birch Silt))
 (assert (growing-soil Birch Silty-Clay-Loam))
 (assert (growing-soil Birch Silt-Loam))
+(assert (Wood Birch-Wood)) :documentation "Betula pendula, silver birch."
+(assert (= (melting-point-material Birch-Wood) 300.00))

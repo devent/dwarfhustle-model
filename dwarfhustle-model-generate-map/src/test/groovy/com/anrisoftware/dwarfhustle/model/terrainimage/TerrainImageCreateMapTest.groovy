@@ -48,6 +48,7 @@ import com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.db.lmbd.DwarfhustleModelDbLmbdModule
 import com.anrisoftware.dwarfhustle.model.db.lmbd.MapChunksLmbdStorage.MapChunksLmbdStorageFactory
 import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DefaultLoadKnowledges
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustlePowerloomModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor
@@ -67,9 +68,11 @@ class TerrainImageCreateMapTest {
 
     static Injector injector
 
+    static MapChunksLmbdStorageFactory chunksStorageFactory
+
     @BeforeAll
     static void setupActor() {
-        this.injector = Guice.createInjector(
+        injector = Guice.createInjector(
                 new DwarfhustleModelActorsModule(),
                 new DwarfhustlePowerloomModule(),
                 new DwarfhustleModelApiObjectsModule(),
@@ -83,6 +86,7 @@ class TerrainImageCreateMapTest {
                     }
                 }
                 )
+        chunksStorageFactory = injector.getInstance(MapChunksLmbdStorageFactory)
     }
 
 
@@ -94,8 +98,8 @@ class TerrainImageCreateMapTest {
 
     static Stream test_start_import_terrain() {
         def args = []
-        //args << of(TerrainImage.terrain_4_4_4_2, true, new Terrain_4_4_4_2_blocks_expected().run())
-        args << of(TerrainImage.terrain_8_8_8_4, true, new Terrain_8_8_8_4_blocks_expected().run())
+        args << of(TerrainImage.terrain_4_4_4_2, true, new Terrain_4_4_4_2_blocks_expected().run())
+        //args << of(TerrainImage.terrain_8_8_8_4, true, new Terrain_8_8_8_4_blocks_expected().run())
         //
         //        args << of(TerrainImage.terrain_4_4_4_2, false, new Terrain_4_4_4_2_blocks_expected().run())
         //        args << of(TerrainImage.terrain_8_8_8_4, false, new Terrain_8_8_8_4_blocks_expected().run())
@@ -128,7 +132,9 @@ class TerrainImageCreateMapTest {
             }
         } ).get()
         def terrainKnowledge = new TerrainKnowledge()
-        terrainKnowledge.loadKnowledges({ timeout, type -> askKnowledgeObjects(actor.actorSystem, timeout, type) })
+        def loaded = new DefaultLoadKnowledges();
+        loaded.loadKnowledges({ timeout, type -> askKnowledgeObjects(actor.actorSystem, timeout, type) })
+        terrainKnowledge.setLoadedKnowledges(loaded)
         def terrain = image.terrain
         def gm = new GameMap(1)
         gm.chunkSize = image.chunkSize
@@ -139,7 +145,7 @@ class TerrainImageCreateMapTest {
         def file = format("terrain_%d_%d_%d_%d_%d", gm.width, gm.height, gm.depth, gm.chunkSize, gm.chunksCount)
         def path = Path.of(tmp.absolutePath, file)
         path.toFile().mkdir()
-        def storage = injector.getInstance(MapChunksLmbdStorageFactory).create(path, gm.chunkSize);
+        def storage = chunksStorageFactory.create(path, gm.chunkSize);
         ActorRef<Message> cacheActor
         StoredObjectsJcsCacheActor.create(injector, ofSeconds(1), supplyAsync({ storage }), supplyAsync({ storage })).whenComplete({ cache, pex ->
             cacheActor = cache

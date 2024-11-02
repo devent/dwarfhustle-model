@@ -40,6 +40,7 @@ import com.anrisoftware.dwarfhustle.model.db.cache.AbstractJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.db.cache.MapChunksJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.db.lmbd.MapChunksLmbdStorage.MapChunksLmbdStorageFactory;
 import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DefaultLoadKnowledges;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.ImportImageErrorMessage;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.ImportImageSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.terrainimage.TerrainImageCreateMap.TerrainImageCreateMapFactory;
@@ -160,7 +161,9 @@ public class ImporterMapImage2DbActor {
             }
         }).toCompletableFuture().get();
         var knowledge = new TerrainKnowledge();
-        knowledge.loadKnowledges((timeout, type) -> askKnowledgeObjects(actor.getActorSystem(), timeout, type));
+        var loaded = new DefaultLoadKnowledges();
+        loaded.loadKnowledges((timeout, type) -> askKnowledgeObjects(actor.getActorSystem(), timeout, type));
+        knowledge.setLoadedKnowledges(loaded);
         terrainImageCreateMap
                 .create(actor.getObjectGetterAsync(MapChunksJcsCacheActor.ID).toCompletableFuture().get(),
                         actor.getObjectSetterAsync(MapChunksJcsCacheActor.ID).toCompletableFuture().get(), knowledge)

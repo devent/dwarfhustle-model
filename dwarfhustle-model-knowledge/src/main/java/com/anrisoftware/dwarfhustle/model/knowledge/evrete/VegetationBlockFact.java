@@ -45,4 +45,11 @@ public class VegetationBlockFact extends BlockFact {
         this.objects = objects;
     }
 
+    public boolean isOnVegetationBlock() {
+        return x == v.pos.x && y == v.pos.y && z == v.pos.z;
+    }
+
+    public boolean isOnVegetationNeighbor(int dx, int dy, int dz) {
+        return x == v.pos.x + dx && y == v.pos.y + dy && z == v.pos.z + dz;
+    }
 }

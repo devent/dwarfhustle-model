@@ -128,6 +128,24 @@ public class MapBlockBuffer {
         return PropertiesSet.get(getProp(b, off), pos);
     }
 
+    private static boolean isFlag(int p, int flags) {
+        return (p & flags) == flags;
+    }
+
+    public static boolean isProp(DirectBuffer b, int off, int flags) {
+        return isFlag(getProp(b, off), flags);
+    }
+
+    public static void addProp(MutableDirectBuffer b, int off, int flags) {
+        int p = getProp(b, off);
+        setProp(b, off, p | flags);
+    }
+
+    public static void removeProp(MutableDirectBuffer b, int off, int flags) {
+        int p = getProp(b, off);
+        setProp(b, off, p & ~flags);
+    }
+
     public static void setTemp(MutableDirectBuffer b, int off, int t) {
         b.putShort(TEMP_BYTE + off, int2short(t));
     }

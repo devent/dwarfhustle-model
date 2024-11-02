@@ -85,3 +85,6 @@
 
 (defconcept Tree-Leaf (?t Vegetation))
   :documentation "Leaves of the tree."
+
+(defconcept Wood (?material Material)
+  :documentation "Plant material from tree trunks and branches.")
