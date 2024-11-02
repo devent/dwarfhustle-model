@@ -24,6 +24,8 @@ import static com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags.RAMP;
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapChunk.cid2Id;
 import static com.anrisoftware.dwarfhustle.model.api.objects.MapChunk.setChunk;
 import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.D;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.DIRS_PERPENDICULAR_SAME_LEVEL;
+import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.DIRS_SAME_LEVEL;
 import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.E;
 import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.N;
 import static com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir.S;
@@ -34,6 +36,7 @@ import static com.anrisoftware.dwarfhustle.model.db.buffers.MapBlockBuffer.calcO
 import static com.anrisoftware.dwarfhustle.model.db.buffers.MapChunkBuffer.findChunk;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapBlockFlags;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
@@ -181,6 +184,10 @@ public class BlockFact {
         return isProp(x, y, z, flags);
     }
 
+    public boolean isProp(MapBlockFlags flags) {
+        return isProp(x, y, z, flags.flag);
+    }
+
     public void addProp(int x, int y, int z, int flags) {
         var chunk = findChunk(root, x, y, z, getter);
         int p = getProp(x, y, z, chunk);
@@ -191,6 +198,10 @@ public class BlockFact {
         addProp(x, y, z, flags);
     }
 
+    public void addProp(MapBlockFlags flags) {
+        addProp(x, y, z, flags.flag);
+    }
+
     public void removeProp(int x, int y, int z, int flags) {
         var chunk = findChunk(root, x, y, z, getter);
         int p = getProp(x, y, z, chunk);
@@ -199,6 +210,10 @@ public class BlockFact {
 
     public void removeProp(int flags) {
         removeProp(x, y, z, flags);
+    }
+
+    public void removeProp(MapBlockFlags flags) {
+        removeProp(x, y, z, flags.flag);
     }
 
     public void setTemp(int x, int y, int z, int t) {
@@ -269,11 +284,11 @@ public class BlockFact {
     }
 
     public boolean isNeighborsSameLevelExist() {
-        return isNeighborsExist(NeighboringDir.DIRS_SAME_LEVEL);
+        return isNeighborsExist(DIRS_SAME_LEVEL);
     }
 
     public boolean isNeighborsSameLevelPerpExist() {
-        return isNeighborsExist(NeighboringDir.DIRS_PERPENDICULAR_SAME_LEVEL);
+        return isNeighborsExist(DIRS_PERPENDICULAR_SAME_LEVEL);
     }
 
     /**
@@ -318,21 +333,21 @@ public class BlockFact {
      * Returns true if the neighbors on the same level are empty.
      */
     public boolean isNeighborsSameLevelEmpty() {
-        return isNeighborsFlag(EMPTY.flag, NeighboringDir.DIRS_SAME_LEVEL);
+        return isNeighborsFlag(EMPTY.flag, DIRS_SAME_LEVEL);
     }
 
     /**
      * Returns true if the perpendicular neighbors on the same level are empty.
      */
     public boolean isNeighborsSameLevelPerpEmpty() {
-        return isNeighborsFlag(EMPTY.flag, NeighboringDir.DIRS_PERPENDICULAR_SAME_LEVEL);
+        return isNeighborsFlag(EMPTY.flag, DIRS_PERPENDICULAR_SAME_LEVEL);
     }
 
     /**
      * Returns true if the neighbors on the same level are filled.
      */
     public boolean isNeighborsSameLevelFilled() {
-        return isNeighborsFlag(FILLED.flag, NeighboringDir.DIRS_SAME_LEVEL);
+        return isNeighborsFlag(FILLED.flag, DIRS_SAME_LEVEL);
     }
 
     private boolean isNeighborFlag(MapChunk chunk, NeighboringDir dir, int flag) {
@@ -343,23 +358,23 @@ public class BlockFact {
         int dy = y + dir.pos.y;
         int dz = z + dir.pos.z;
         if (dx < chunk.pos.x) {
-            chunk = getter.get(MapChunk.OBJECT_TYPE, cid2Id(chunk.neighbors[NeighboringDir.W.ordinal()]));
+            chunk = getter.get(MapChunk.OBJECT_TYPE, cid2Id(chunk.neighbors[W.ordinal()]));
             return isNeighborFlag(chunk, dir, flag);
         }
         if (dy < chunk.pos.y) {
-            chunk = getter.get(MapChunk.OBJECT_TYPE, cid2Id(chunk.neighbors[NeighboringDir.N.ordinal()]));
+            chunk = getter.get(MapChunk.OBJECT_TYPE, cid2Id(chunk.neighbors[N.ordinal()]));
             return isNeighborFlag(chunk, dir, flag);
         }
         if (dz < chunk.pos.z) {
-            chunk = getter.get(MapChunk.OBJECT_TYPE, cid2Id(chunk.neighbors[NeighboringDir.U.ordinal()]));
+            chunk = getter.get(MapChunk.OBJECT_TYPE, cid2Id(chunk.neighbors[U.ordinal()]));
             return isNeighborFlag(chunk, dir, flag);
         }
         if (dx >= chunk.pos.ep.x) {
-            chunk = getter.get(MapChunk.OBJECT_TYPE, cid2Id(chunk.neighbors[NeighboringDir.E.ordinal()]));
+            chunk = getter.get(MapChunk.OBJECT_TYPE, cid2Id(chunk.neighbors[E.ordinal()]));
             return isNeighborFlag(chunk, dir, flag);
         }
         if (dy >= chunk.pos.ep.y) {
-            chunk = getter.get(MapChunk.OBJECT_TYPE, cid2Id(chunk.neighbors[NeighboringDir.S.ordinal()]));
+            chunk = getter.get(MapChunk.OBJECT_TYPE, cid2Id(chunk.neighbors[S.ordinal()]));
             return isNeighborFlag(chunk, dir, flag);
         }
         if (dz >= chunk.pos.ep.z) {
@@ -386,7 +401,7 @@ public class BlockFact {
                     continue;
                 }
             } else {
-                c = getter.get(MapChunk.OBJECT_TYPE, cid2Id(c.neighbors[NeighboringDir.U.ordinal()]));
+                c = getter.get(MapChunk.OBJECT_TYPE, cid2Id(c.neighbors[U.ordinal()]));
             }
         }
         return true;
