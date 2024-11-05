@@ -172,8 +172,16 @@ public class BlockFact {
         return (p & flags) == flags;
     }
 
+    public boolean isProp(int x, int y, int z, MapBlockFlags flags) {
+        return isFlag(getProp(x, y, z), flags.flag);
+    }
+
     public boolean isProp(int x, int y, int z, int flags) {
         return isFlag(getProp(x, y, z), flags);
+    }
+
+    public boolean isProp(int x, int y, int z, MapBlockFlags flags, MapChunk chunk) {
+        return isFlag(getProp(x, y, z, chunk), flags.flag);
     }
 
     public boolean isProp(int x, int y, int z, int flags, MapChunk chunk) {

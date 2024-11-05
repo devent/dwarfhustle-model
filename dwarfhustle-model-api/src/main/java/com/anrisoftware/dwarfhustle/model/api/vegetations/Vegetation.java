@@ -47,6 +47,11 @@ public abstract class Vegetation extends GameMapObject implements StoredObject {
      */
     public float growth;
 
+    /**
+     * Status of growth step from 0 to however steps it takes to full plant.
+     */
+    public int growthStep;
+
     public Vegetation(long id) {
         super(id);
     }

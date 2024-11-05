@@ -24,6 +24,8 @@ import static org.apache.commons.math3.util.FastMath.floor;
 import static org.apache.commons.math3.util.FastMath.max;
 import static org.apache.commons.math3.util.FastMath.min;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.evrete.Configuration;
 import org.evrete.api.Knowledge;
 
@@ -60,18 +62,33 @@ public class VegetationKnowledge extends AbstractKnowledge {
         final int y0 = max(y - hh, 0), y1 = min(y + hh, gm.height - 1);
         final int z0 = max(z - k.getDepthMax(), 0), z1 = min(v.getPos().getZ() + k.rootMaxSize, gm.depth - 1);
         var chunk = findChunk(root, x0, y0, z0, og);
-        for (int zz = z0; zz < z1; zz++) {
-            for (int yy = y0; yy < y1; yy++) {
-                for (int xx = x0; xx < x1; xx++) {
-                    if (!chunk.isInside(xx, yy, zz)) {
-                        chunk = findChunk(root, xx, yy, zz, og);
+        final var done = new AtomicBoolean(false);
+        int radius = 1, x0r, y0r, z0r, x1r, y1r, z1r;
+        do {
+            x0r = max(x - radius, x0);
+            y0r = max(y - radius, y0);
+            z0r = max(z - radius, z0);
+            x1r = min(x + radius, x1);
+            y1r = min(y + radius, y1);
+            z1r = min(z + radius, z1);
+            done.set(true);
+            for (int zz = z0r; zz <= z1r; zz++) {
+                for (int yy = y0r; yy <= y1r; yy++) {
+                    for (int xx = x0r; xx <= x1r; xx++) {
+                        if (!chunk.isInside(xx, yy, zz)) {
+                            chunk = findChunk(root, xx, yy, zz, og);
+                        }
+                        session.insert(new VegetationBlockFact(done, v, k, getObjects(), og, os, root, xx, yy, zz,
+                                gm.width, gm.height, gm.depth));
                     }
-                    session.insert(new VegetationBlockFact(v, k, getObjects(), og, os, root, xx, yy, zz, gm.width,
-                            gm.height, gm.depth));
                 }
             }
-        }
-        session.fire();
-        session.clear();
+            session.fire();
+            radius++;
+            if (x0r == x0 && y0r == y0 && z0r == z0) {
+                break;
+            }
+        } while (!done.get());
+        v.setGrowthStep(v.getGrowthStep() + 1);
     }
 }

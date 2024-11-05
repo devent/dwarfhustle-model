@@ -129,6 +129,16 @@ class PineRulesTest {
                 }
             }
         }
+        println "##### $v"
+        vkn.run(askKnowledge, knowledge, v, kv, chunks, chunks, gm)
+        for (int zz = v.pos.z - r; zz < v.pos.z + r; zz++) {
+            for (int yy = v.pos.y - r; yy < v.pos.y + r; yy++) {
+                for (int xx = v.pos.x - r; xx < v.pos.x + r; xx++) {
+                    def b = MapChunkBuffer.findBlock(root, new GameBlockPos(xx, yy, zz), chunks)
+                    println "[$b.pos.x,$b.pos.y,$b.pos.z,$b.parent,$b.material,$b.object,$b.temp,$b.lux,0b$b.p],"
+                }
+            }
+        }
         chunks.close()
     }
 }

@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.evrete;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.eclipse.collections.api.map.primitive.IntIntMap;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
@@ -37,12 +39,19 @@ public class VegetationBlockFact extends BlockFact {
     @ToString.Exclude
     public final IntIntMap objects;
 
-    public VegetationBlockFact(Vegetation v, KnowledgeVegetation k, IntIntMap objects, ObjectsGetter og,
-            ObjectsSetter os, MapChunk chunk, int x, int y, int z, int w, int h, int d) {
+    private final AtomicBoolean done;
+
+    public VegetationBlockFact(AtomicBoolean done, Vegetation v, KnowledgeVegetation k, IntIntMap objects,
+            ObjectsGetter og, ObjectsSetter os, MapChunk chunk, int x, int y, int z, int w, int h, int d) {
         super(og, os, chunk, x, y, z, w, h, d);
+        this.done = done;
         this.v = v;
         this.k = k;
         this.objects = objects;
+    }
+
+    public void setChanged() {
+        done.set(false);
     }
 
     public boolean isOnVegetationBlock() {
@@ -51,5 +60,25 @@ public class VegetationBlockFact extends BlockFact {
 
     public boolean isOnVegetationNeighbor(int dx, int dy, int dz) {
         return x == v.pos.x + dx && y == v.pos.y + dy && z == v.pos.z + dz;
+    }
+
+    public void setObject(int x, int y, int z, VegetationKnowledgeObjects o) {
+        setObject(x, y, z, objects.get(o.hash));
+    }
+
+    public void setObject(VegetationKnowledgeObjects o) {
+        setObject(objects.get(o.hash));
+    }
+
+    public boolean isObject(VegetationKnowledgeObjects o) {
+        return getObject() == objects.get(o.hash);
+    }
+
+    public boolean isObject(int x, int y, int z, VegetationKnowledgeObjects o) {
+        return getObject(x, y, z) == objects.get(o.hash);
+    }
+
+    public boolean isNotOnMapEdge() {
+        return x > 0 && y > 0 && z > 0 && x < w && y < h && z < d;
     }
 }
