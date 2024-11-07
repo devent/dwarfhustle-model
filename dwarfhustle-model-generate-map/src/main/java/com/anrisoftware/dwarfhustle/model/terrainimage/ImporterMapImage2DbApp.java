@@ -138,7 +138,7 @@ public class ImporterMapImage2DbApp {
 
     private static CompletionStage<ActorRef<Message>> createObjectsCache(Injector injector,
             CompletionStage<ObjectsGetter> og, CompletionStage<ObjectsSetter> os) {
-        var task = ImporterObjectsJcsCacheActor.create(injector, Duration.ofSeconds(30), og, os);
+        var task = StoredObjectsJcsCacheActor.create(injector, Duration.ofSeconds(30), og, os);
         return task.whenComplete((ret, ex) -> {
             if (ex != null) {
                 log.error("ObjectsJcsCacheActor.create", ex);

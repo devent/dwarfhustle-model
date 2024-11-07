@@ -56,7 +56,12 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Topsoil
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeGrass
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeShrub
-import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTree
+import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeBranch
+import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeLeaf
+import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeRoot
+import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeSampling
+import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeTrunk
+import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeTwig
 import com.google.inject.Guice
 import com.google.inject.Injector
 import com.google.inject.Key
@@ -136,10 +141,15 @@ class ListKnowledges {
         })
         def knowledgeResponseAdapter = ret[1]
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockObject.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTree.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeShrub.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeGrass.TYPE))
-        while (komap.size() != 4) {
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeShrub.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeBranch.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeLeaf.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeRoot.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeSampling.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeTrunk.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeTwig.TYPE))
+        while (komap.size() != 9) {
             log.info("Knowledge objects loaded {}", komap.size())
             Thread.sleep(500)
         }

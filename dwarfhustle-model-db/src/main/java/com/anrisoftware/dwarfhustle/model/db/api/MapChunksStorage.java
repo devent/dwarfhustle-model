@@ -21,11 +21,12 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsSetter;
 
 /**
  * Stores the {@link MapChunk}(s) of the map.
  */
-public interface MapChunksStorage extends AutoCloseable {
+public interface MapChunksStorage extends AutoCloseable, ObjectsSetter {
 
     /**
      * Stores the {@link MapChunk} in the database.

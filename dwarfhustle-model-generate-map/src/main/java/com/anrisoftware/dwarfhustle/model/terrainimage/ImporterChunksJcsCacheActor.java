@@ -18,9 +18,9 @@
 package com.anrisoftware.dwarfhustle.model.terrainimage;
 
 import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
-import static com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor.ID;
-import static com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor.KEY;
-import static com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor.NAME;
+import static com.anrisoftware.dwarfhustle.model.db.cache.MapChunksJcsCacheActor.ID;
+import static com.anrisoftware.dwarfhustle.model.db.cache.MapChunksJcsCacheActor.KEY;
+import static com.anrisoftware.dwarfhustle.model.db.cache.MapChunksJcsCacheActor.NAME;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import java.time.Duration;
@@ -55,17 +55,17 @@ import lombok.extern.slf4j.Slf4j;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
-public class ImporterObjectsJcsCacheActor extends AbstractJcsCacheActor {
+public class ImporterChunksJcsCacheActor extends AbstractJcsCacheActor {
 
     /**
-     * Factory to create {@link ImporterObjectsJcsCacheActor}.
+     * Factory to create {@link ImporterChunksJcsCacheActor}.
      *
      * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
      */
-    public interface ImporterObjectsJcsCacheActorFactory extends AbstractJcsCacheActorFactory {
+    public interface ImporterChunksJcsCacheActorFactory extends AbstractJcsCacheActorFactory {
 
         @Override
-        ImporterObjectsJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, ObjectsGetter og,
+        ImporterChunksJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, ObjectsGetter og,
                 ObjectsSetter os);
     }
 
@@ -76,7 +76,7 @@ public class ImporterObjectsJcsCacheActor extends AbstractJcsCacheActor {
     }
 
     /**
-     * Creates the {@link ImporterObjectsJcsCacheActor}.
+     * Creates the {@link ImporterChunksJcsCacheActor}.
      *
      * @param injector the {@link Injector} injector.
      * @param timeout  the {@link Duration} timeout.
@@ -84,7 +84,21 @@ public class ImporterObjectsJcsCacheActor extends AbstractJcsCacheActor {
     public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout,
             CompletionStage<ObjectsGetter> og, CompletionStage<ObjectsSetter> os) {
         var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
-        var actorFactory = injector.getInstance(ImporterObjectsJcsCacheActorFactory.class);
+        var actorFactory = injector.getInstance(ImporterChunksJcsCacheActorFactory.class);
+        var initCache = createInitCacheAsync();
+        return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, actorFactory, og, os, initCache));
+    }
+
+    /**
+     * Creates the {@link ImporterChunksJcsCacheActor}.
+     *
+     * @param injector the {@link Injector} injector.
+     * @param timeout  the {@link Duration} timeout.
+     */
+    public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout, ObjectsGetter og,
+            ObjectsSetter os) {
+        var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
+        var actorFactory = injector.getInstance(ImporterChunksJcsCacheActorFactory.class);
         var initCache = createInitCacheAsync();
         return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, actorFactory, og, os, initCache));
     }
@@ -128,18 +142,12 @@ public class ImporterObjectsJcsCacheActor extends AbstractJcsCacheActor {
 
     @Override
     protected void retrieveValueFromBackend(CacheGetMessage<?> m, Consumer<GameObject> consumer) {
-        retrieveGameObject(m.type, m.key, consumer);
-    }
-
-    @SuppressWarnings({ "rawtypes" })
-    private void retrieveGameObject(int type, long id, Consumer consumer) {
-        // nothing to do
+        consumer.accept(og.get(m.type, m.key));
     }
 
     @Override
     protected <T extends GameObject> T getValueFromBackend(int type, long key) {
-        // nothing to do
-        return null;
+        return og.get(type, key);
     }
 
     @Override

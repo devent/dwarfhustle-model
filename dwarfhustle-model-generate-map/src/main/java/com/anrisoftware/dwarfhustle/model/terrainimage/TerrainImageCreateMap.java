@@ -48,6 +48,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsSetter;
+import com.anrisoftware.dwarfhustle.model.db.api.MapChunksStorage;
 import com.anrisoftware.dwarfhustle.model.db.buffers.MapBlockBuffer;
 import com.anrisoftware.dwarfhustle.model.knowledge.evrete.BlockFact;
 import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge;
@@ -72,7 +73,8 @@ public class TerrainImageCreateMap {
      */
     public interface TerrainImageCreateMapFactory {
 
-        TerrainImageCreateMap create(ObjectsGetter getter, ObjectsSetter setter, TerrainKnowledge terrainKnowledge);
+        TerrainImageCreateMap create(ObjectsGetter getter, ObjectsSetter setter, MapChunksStorage storage,
+                TerrainKnowledge terrainKnowledge);
     }
 
     private static final Map<Integer, Integer> terrainImageMapping;
@@ -100,7 +102,7 @@ public class TerrainImageCreateMap {
 
     @Inject
     @Assisted
-    private ObjectsSetter setter;
+    private MapChunksStorage storage;
 
     @Inject
     @Assisted
@@ -122,6 +124,10 @@ public class TerrainImageCreateMap {
 
     private AtomicInteger chunksDone;
 
+    @Inject
+    @Assisted
+    private ObjectsSetter setter;
+
     public void startImport(URL url, TerrainLoadImage image, GameMap gm) throws IOException, GeneratorException {
         startImport0(url, image, gm, this::updateMaterialBlock);
     }
@@ -137,7 +143,7 @@ public class TerrainImageCreateMap {
         this.chunkSize = image.chunkSize;
         this.mcRoot = new MapChunk(nextId(), 0, chunkSize, gm.width, gm.height,
                 new GameChunkPos(0, 0, 0, gm.width, gm.height, gm.depth));
-        setChunk(setter, mcRoot);
+        setChunk(storage, mcRoot);
         this.gm = gm;
         this.chunksCount = 0;
         this.blocksCount = 0;
@@ -182,7 +188,7 @@ public class TerrainImageCreateMap {
             var c = getChunk(getter, MapChunk.cid2Id(i));
             if (c.isLeaf()) {
                 updateTerrainBlocks(rules, c);
-                setChunk(setter, c);
+                setChunk(storage, c);
             }
             this.chunksDone.incrementAndGet();
         })).get();
@@ -220,7 +226,7 @@ public class TerrainImageCreateMap {
             }
         }
         chunk.setChunks(chunks);
-        setChunk(setter, chunk);
+        setChunk(storage, chunk);
     }
 
     @SneakyThrows
@@ -228,7 +234,7 @@ public class TerrainImageCreateMap {
             int ey, int ez, UpdateTerrainBlock updateTerrainBlock) throws GeneratorException {
         var chunk = new MapChunk(nextId(), parent.getCid(), chunkSize, gm.width, gm.height,
                 new GameChunkPos(x, y, z, ex, ey, ez));
-        setter.set(MapChunk.OBJECT_TYPE, chunk);
+        storage.set(MapChunk.OBJECT_TYPE, chunk);
         chunksCount++;
         if (chunk.isLeaf()) {
             for (int xx = x; xx < ex; xx++) {
@@ -245,11 +251,11 @@ public class TerrainImageCreateMap {
                 }
             }
         } else {
-            setChunk(setter, chunk);
+            setChunk(storage, chunk);
             createMap(chunk, x, y, z, ex, ey, ez, updateTerrainBlock);
         }
         chunks.put(chunk.getCid(), chunk.getPos());
-        setChunk(setter, chunk);
+        setChunk(storage, chunk);
     }
 
     private void updateMaterialBlock(MapBlock mb, int x, int y, int z) {
@@ -312,7 +318,7 @@ public class TerrainImageCreateMap {
                         }
                     }
                     chunk.setNeighbors(neighbors);
-                    setChunk(setter, chunk);
+                    setChunk(storage, chunk);
                 }
             }
         }

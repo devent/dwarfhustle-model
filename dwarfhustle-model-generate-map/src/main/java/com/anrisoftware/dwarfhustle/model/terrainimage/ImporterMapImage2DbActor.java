@@ -155,18 +155,17 @@ public class ImporterMapImage2DbActor {
         var path = Path.of(m.root, format("%d-%d", wm.id, gm.id));
         path.toFile().mkdir();
         var storage = storageFactory.create(path, gm.chunkSize);
-        MapChunksJcsCacheActor.create(injector, ofSeconds(1), storage, storage).whenComplete((cache, ex) -> {
+        ImporterChunksJcsCacheActor.create(injector, ofSeconds(1), storage, storage).whenComplete((cache, ex) -> {
             if (ex != null) {
-                log.error("MapChunksJcsCacheActor", ex);
+                log.error("ChunksJcsCacheActor", ex);
             }
         }).toCompletableFuture().get();
         var knowledge = new TerrainKnowledge();
         var loaded = new DefaultLoadKnowledges();
         loaded.loadKnowledges((timeout, type) -> askKnowledgeObjects(actor.getActorSystem(), timeout, type));
         knowledge.setLoadedKnowledges(loaded);
-        terrainImageCreateMap
-                .create(actor.getObjectGetterAsync(MapChunksJcsCacheActor.ID).toCompletableFuture().get(),
-                        actor.getObjectSetterAsync(MapChunksJcsCacheActor.ID).toCompletableFuture().get(), knowledge)
+        terrainImageCreateMap.create(actor.getObjectGetterAsync(MapChunksJcsCacheActor.ID).toCompletableFuture().get(),
+                actor.getObjectSetterAsync(MapChunksJcsCacheActor.ID).toCompletableFuture().get(), storage, knowledge)
                 .startImportMapping(m.url, m.image, gm);
         storage.close();
         m.replyTo.tell(new ImportImageSuccessMessage());
