@@ -43,7 +43,7 @@ import lombok.SneakyThrows;
 import lombok.ToString;
 
 /**
- * Message to retrieve knowledge. Replies with a
+ * Message to retrieve {@link KnowledgeLoadedObject}(s). Replies with a
  * {@link KnowledgeResponseSuccessMessage} on success or with
  * {@link KnowledgeResponseErrorMessage} on error.
  *

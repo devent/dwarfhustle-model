@@ -53,7 +53,7 @@ public class IdsKnowledgeProvider implements Provider<IDGenerator> {
 
     public static final int CLUSTER_ID = 2;
 
-    private IDGenerator generator;
+    private final IDGenerator generator;
 
     public IdsKnowledgeProvider() {
         this.generator = LocalUniqueIDGeneratorFactory.generatorFor(GENERATOR_ID, CLUSTER_ID, Mode.SPREAD);

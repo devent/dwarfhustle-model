@@ -27,7 +27,8 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
- * Stores loaded knowledge.
+ * Stores loaded knowledge. The ID is generated from the
+ * {@link KnowledgeObject#getKnowledgeType()}.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
@@ -40,21 +41,14 @@ public class KnowledgeLoadedObject extends GameObject {
 
     public static final int OBJECT_TYPE = KnowledgeLoadedObject.class.getSimpleName().hashCode();
 
-    public long tid;
-
     public ListIterable<KnowledgeObject> objects;
-
-    public KnowledgeLoadedObject(byte[] idbuf) {
-        super(idbuf);
-    }
 
     public KnowledgeLoadedObject(long id) {
         super(id);
     }
 
-    public KnowledgeLoadedObject(byte[] idbuf, long tid, ListIterable<KnowledgeObject> objects) {
-        this(idbuf);
-        this.tid = tid;
+    public KnowledgeLoadedObject(long id, ListIterable<KnowledgeObject> objects) {
+        super(id);
         this.objects = objects;
     }
 

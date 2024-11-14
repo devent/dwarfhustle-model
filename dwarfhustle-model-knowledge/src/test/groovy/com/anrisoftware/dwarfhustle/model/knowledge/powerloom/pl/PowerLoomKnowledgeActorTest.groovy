@@ -155,7 +155,7 @@ class PowerLoomKnowledgeActorTest {
         "Shrub,1,79863786",
         "BlockObject,26,-1873633780"
     ])
-    void "KnowledgeGetMessage test retrieve"(String type, int size, long tid) {
+    void "KnowledgeGetMessage test retrieve"(String type, int size, long id) {
         def result =
                 AskPattern.ask(
                 knowledgeActor, { replyTo ->
@@ -179,7 +179,65 @@ class PowerLoomKnowledgeActorTest {
             lock.countDown()
         })
         lock.await()
-        assert go.tid == tid
+        assert go.id == id
+        assert go.objects.size() == size
+    }
+
+    @ParameterizedTest
+    @CsvSource([
+        "Sedimentary,11,1708874227",
+        "Shrub,1,79863786",
+        "BlockObject,26,-1873633780"
+    ])
+    void "KnowledgeGetMessage test retrieve from cache"(String type, int size, long id) {
+        def result =
+                AskPattern.ask(
+                knowledgeActor, { replyTo ->
+                    new KnowledgeGetMessage(replyTo, type)
+                },
+                Duration.ofSeconds(600),
+                actor.scheduler)
+        KnowledgeLoadedObject go
+        def lock = new CountDownLatch(1)
+        result.whenComplete( { reply, failure ->
+            log.info "Command reply ${reply} failure ${failure}"
+            if (failure == null) {
+                switch (reply) {
+                    case KnowledgeResponseSuccessMessage:
+                        go = reply.go
+                        break
+                    case KnowledgeCommandErrorMessage:
+                        break
+                }
+            }
+            lock.countDown()
+        })
+        lock.await()
+        assert go.id == id
+        assert go.objects.size() == size
+        result =
+                AskPattern.ask(
+                knowledgeActor, { replyTo ->
+                    new KnowledgeGetMessage(replyTo, type)
+                },
+                Duration.ofSeconds(600),
+                actor.scheduler)
+        lock = new CountDownLatch(1)
+        result.whenComplete( { reply, failure ->
+            log.info "Command reply ${reply} failure ${failure}"
+            if (failure == null) {
+                switch (reply) {
+                    case KnowledgeResponseSuccessMessage:
+                        go = reply.go
+                        break
+                    case KnowledgeCommandErrorMessage:
+                        break
+                }
+            }
+            lock.countDown()
+        })
+        lock.await()
+        assert go.id == id
         assert go.objects.size() == size
     }
 }
