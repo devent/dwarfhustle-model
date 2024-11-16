@@ -1,5 +1,5 @@
 /*
- * dwarfhustle-model-knowledge - Manages the compile dependencies for the model.
+ * dwarfhustle-model-api - Manages the compile dependencies for the model.
  * Copyright © 2023 Erwin Müller (erwin.mueller@anrisoftware.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,12 +15,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl;
+package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import org.eclipse.collections.api.list.ListIterable;
-
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
-import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;

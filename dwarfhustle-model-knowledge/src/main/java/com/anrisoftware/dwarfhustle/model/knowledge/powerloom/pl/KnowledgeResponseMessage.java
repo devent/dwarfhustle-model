@@ -18,6 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeLoadedObject;
 
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;

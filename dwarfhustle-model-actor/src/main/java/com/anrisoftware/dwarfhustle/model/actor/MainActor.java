@@ -22,6 +22,7 @@ import static java.time.Duration.ofSeconds;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ForkJoinPool;
 
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
@@ -103,9 +104,12 @@ public class MainActor extends MessageActor<Message> {
 
     private final MutableIntObjectMap<ActorRef<? extends Message>> actors;
 
+    private final ForkJoinPool pool;
+
     @Inject
     MainActor(@Assisted ActorContext<Message> context) {
         super(context);
+        this.pool = new ForkJoinPool(4);
         this.actors = new SynchronizedIntObjectMap<>(IntObjectMaps.mutable.empty());
     }
 
@@ -121,7 +125,7 @@ public class MainActor extends MessageActor<Message> {
                 log.error("getActorAsync", e);
             }
             return getActor(id);
-        });
+        }, pool);
     }
 
     public synchronized void waitActor(int id) throws InterruptedException {
@@ -136,9 +140,6 @@ public class MainActor extends MessageActor<Message> {
 
     public void putActor(int id, ActorRef<? extends Message> actor) {
         actors.put(id, actor);
-        synchronized (this) {
-            notify();
-        }
     }
 
     public MainActor tell(Message m) {
@@ -159,6 +160,7 @@ public class MainActor extends MessageActor<Message> {
     private Behavior<Message> onShutdown(ShutdownMessage m) {
         log.debug("onShutdown {}", m);
         forwardMessage(m);
+        pool.shutdown();
         getContext().getSystem().terminate();
         return this;
     }

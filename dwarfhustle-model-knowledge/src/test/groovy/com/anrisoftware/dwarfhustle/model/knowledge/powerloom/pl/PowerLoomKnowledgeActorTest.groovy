@@ -34,6 +34,7 @@ import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
 import com.anrisoftware.dwarfhustle.model.actor.DwarfhustleModelActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeLoadedObject
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandErrorMessage
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandSuccessMessage
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseSuccessMessage
@@ -62,7 +63,10 @@ class PowerLoomKnowledgeActorTest {
 
     @BeforeAll
     static void setupActor() {
-        injector = Guice.createInjector(new DwarfhustleModelActorsModule(), new DwarfhustlePowerloomModule(), new DwarfhustleModelApiObjectsModule())
+        injector = Guice.createInjector(
+                new DwarfhustleModelActorsModule(),
+                new DwarfhustlePowerloomModule(),
+                new DwarfhustleModelApiObjectsModule())
         actor = injector.getInstance(ActorSystemProvider.class)
         KnowledgeJcsCacheActor.create(injector, Duration.ofSeconds(1)).whenComplete({ it, ex ->
             cacheActor = it
@@ -223,6 +227,33 @@ class PowerLoomKnowledgeActorTest {
                 Duration.ofSeconds(600),
                 actor.scheduler)
         lock = new CountDownLatch(1)
+        result.whenComplete( { reply, failure ->
+            log.info "Command reply ${reply} failure ${failure}"
+            if (failure == null) {
+                switch (reply) {
+                    case KnowledgeResponseSuccessMessage:
+                        go = reply.go
+                        break
+                    case KnowledgeCommandErrorMessage:
+                        break
+                }
+            }
+            lock.countDown()
+        })
+        lock.await()
+        assert go.id == id
+        assert go.objects.size() == size
+    }
+
+    @ParameterizedTest
+    @CsvSource([
+        "Sedimentary,11,1708874227",
+        "Shrub,1,79863786",
+        "BlockObject,26,-1873633780"
+    ])
+    void "KnowledgeGetMessage test getter"(String type, int size, long id) {
+        KnowledgeLoadedObject go
+        def lock = new CountDownLatch(1)
         result.whenComplete( { reply, failure ->
             log.info "Command reply ${reply} failure ${failure}"
             if (failure == null) {

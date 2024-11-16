@@ -149,8 +149,8 @@ public class ImporterMapImage2DbApp {
     }
 
     private static CompletionStage<ActorRef<Message>> createPowerLoom(Injector injector, ActorSystemProvider actor) {
-        return PowerLoomKnowledgeActor.create(injector, ofSeconds(1), actor.getActorAsync(KnowledgeJcsCacheActor.ID))
-                .whenComplete((ret, ex) -> {
+        return PowerLoomKnowledgeActor.create(injector, ofSeconds(1), actor.getActorAsync(KnowledgeJcsCacheActor.ID),
+                actor.getObjectGetterAsync(KnowledgeJcsCacheActor.ID)).whenComplete((ret, ex) -> {
                     if (ex != null) {
                         log.error("PowerLoomKnowledgeActor.create", ex);
                     } else {

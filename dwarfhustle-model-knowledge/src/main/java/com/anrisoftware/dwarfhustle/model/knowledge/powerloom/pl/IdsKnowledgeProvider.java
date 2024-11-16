@@ -29,6 +29,7 @@ import org.lable.oss.uniqueid.IDGenerator;
 import org.lable.oss.uniqueid.LocalUniqueIDGeneratorFactory;
 import org.lable.oss.uniqueid.bytes.Mode;
 
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeLoadedObject;
 import com.google.inject.BindingAnnotation;
 
 import jakarta.inject.Provider;

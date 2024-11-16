@@ -40,7 +40,10 @@ import org.lable.oss.uniqueid.IDGenerator;
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeGetter;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeLoadedObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheGetMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CachePutMessage;
 import com.anrisoftware.dwarfhustle.model.db.cache.CacheResponseMessage;
@@ -74,7 +77,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
-public class PowerLoomKnowledgeActor {
+public class PowerLoomKnowledgeActor implements KnowledgeGetter {
 
     public static final ServiceKey<Message> KEY = ServiceKey.create(Message.class,
             PowerLoomKnowledgeActor.class.getSimpleName());
@@ -146,14 +149,27 @@ public class PowerLoomKnowledgeActor {
     public interface PowerLoomKnowledgeActorFactory {
 
         PowerLoomKnowledgeActor create(ActorContext<Message> context, StashBuffer<Message> stash,
-                @Assisted("knowledgesCache") ActorRef<Message> knowledgesCache);
+                @Assisted("knowledgesCache") ActorRef<Message> knowledgesCache,
+                @Assisted("knowledgesGetter") ObjectsGetter knowledgesGetter);
     }
 
-    public static Behavior<Message> create(Injector injector, CompletionStage<ActorRef<Message>> knowledgesCache) {
+    public static Behavior<Message> create(Injector injector, CompletionStage<ActorRef<Message>> knowledgesCache,
+            ObjectsGetter knowledgesGetter) {
         return Behaviors.withStash(100, stash -> Behaviors.setup(context -> {
             loadKnowledgeBase(injector, context);
             var kc = knowledgesCache.toCompletableFuture().get(15, TimeUnit.SECONDS);
-            return injector.getInstance(PowerLoomKnowledgeActorFactory.class).create(context, stash, kc).start();
+            return injector.getInstance(PowerLoomKnowledgeActorFactory.class)
+                    .create(context, stash, kc, knowledgesGetter).start();
+        }));
+    }
+
+    public static Behavior<Message> create(Injector injector, CompletionStage<ActorRef<Message>> knowledgesCache,
+            CompletionStage<ObjectsGetter> knowledgesGetter) {
+        return Behaviors.withStash(100, stash -> Behaviors.setup(context -> {
+            loadKnowledgeBase(injector, context);
+            var kc = knowledgesCache.toCompletableFuture().get(15, TimeUnit.SECONDS);
+            var kg = knowledgesGetter.toCompletableFuture().get(15, TimeUnit.SECONDS);
+            return injector.getInstance(PowerLoomKnowledgeActorFactory.class).create(context, stash, kc, kg).start();
         }));
     }
 
@@ -178,9 +194,18 @@ public class PowerLoomKnowledgeActor {
      * Creates the {@link PowerLoomKnowledgeActor}.
      */
     public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout,
-            CompletionStage<ActorRef<Message>> knowledgesCache) {
+            CompletionStage<ActorRef<Message>> knowledgesCache, ObjectsGetter objectsGetter) {
         var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
-        return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, knowledgesCache));
+        return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, knowledgesCache, objectsGetter));
+    }
+
+    /**
+     * Creates the {@link PowerLoomKnowledgeActor}.
+     */
+    public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout,
+            CompletionStage<ActorRef<Message>> knowledgesCache, CompletionStage<ObjectsGetter> objectsGetter) {
+        var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
+        return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, knowledgesCache, objectsGetter));
     }
 
     @Inject
@@ -196,12 +221,19 @@ public class PowerLoomKnowledgeActor {
     private ActorRef<Message> knowledgesCache;
 
     @Inject
+    @Assisted("knowledgesGetter")
+    private ObjectsGetter knowledgesGetter;
+
+    @Inject
     @Named("knowledge-storages")
     private Map<String, GameObjectKnowledge> storages;
 
     @Inject
     @Named("knowledge-tidTypeMap")
     private LongObjectMap<String> tidTypeMap;
+
+    @Inject
+    private ActorSystemProvider actor;
 
     @SuppressWarnings("rawtypes")
     private ActorRef<CacheResponseMessage> cacheResponseAdapter;
@@ -219,6 +251,7 @@ public class PowerLoomKnowledgeActor {
      * </ul>
      */
     public Behavior<Message> start() {
+        actor.registerKnowledgeGetter(ID, this);
         this.cacheResponseAdapter = context.messageAdapter(CacheResponseMessage.class, WrappedCacheResponse::new);
         return Behaviors.receive(Message.class)//
                 .onMessage(InitialStateMessage.class, this::onInitialState)//
@@ -280,7 +313,6 @@ public class PowerLoomKnowledgeActor {
     private void cacheMiss(@SuppressWarnings("rawtypes") KnowledgeGetMessage m) {
         var klo = retrieveKnowledgeLoadedObject(m.type);
         cacheObjects(klo);
-        knowledgesCache.tell(new CachePutMessage<>(cacheResponseAdapter, klo));
         m.replyTo.tell(new KnowledgeResponseSuccessMessage(klo));
         m.onSuccess.accept(klo);
     }
@@ -341,4 +373,10 @@ public class PowerLoomKnowledgeActor {
         return new KnowledgeLoadedObject(type.hashCode(), list.asUnmodifiable());
     }
 
+    @Override
+    public KnowledgeLoadedObject get(String type) {
+        var tid = type.hashCode();
+        var klo = (KnowledgeLoadedObject) knowledgesGetter.get(KnowledgeLoadedObject.OBJECT_TYPE, tid);
+        return klo;
+    }
 }

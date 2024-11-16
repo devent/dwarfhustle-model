@@ -42,6 +42,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjects
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter
 import com.anrisoftware.dwarfhustle.model.db.buffers.MapChunkBuffer
 import com.anrisoftware.dwarfhustle.model.db.cache.DwarfhustleModelDbCacheModule
 import com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor
@@ -89,7 +90,6 @@ class TerrainImageCreateMapTest {
         chunksStorageFactory = injector.getInstance(MapChunksLmbdStorageFactory)
     }
 
-
     @AfterAll
     static void testsFinished() {
         FileUtils.copyDirectory(tmp, new File("/home/devent/Projects/dwarf-hustle/terrain-maps/"))
@@ -127,8 +127,11 @@ class TerrainImageCreateMapTest {
         def actor = injector.getInstance(ActorSystemProvider.class)
         KnowledgeJcsCacheActor.create(injector, ofSeconds(1)).whenComplete({ cache, ex ->
             if (ex == null) {
-                PowerLoomKnowledgeActor.create(injector, ofSeconds(1), supplyAsync({cache})).whenComplete({ knowledge, pex ->
-                } ).get()
+                PowerLoomKnowledgeActor.create(
+                        injector, ofSeconds(1), supplyAsync({cache}),
+                        supplyAsync({ { type, key -> } as ObjectsGetter })).
+                        whenComplete({ knowledge, pex ->
+                        } ).get()
             }
         } ).get()
         def terrainKnowledge = new TerrainKnowledge()
@@ -153,6 +156,7 @@ class TerrainImageCreateMapTest {
         def createMap = injector.getInstance(TerrainImageCreateMapFactory).create(
                 actor.getObjectGetterAsync(StoredObjectsJcsCacheActor.ID).toCompletableFuture().get(),
                 actor.getObjectSetterAsync(StoredObjectsJcsCacheActor.ID).toCompletableFuture().get(),
+                storage,
                 terrainKnowledge)
         createMap.startImportMapping(TerrainImageCreateMapTest.class.getResource(image.imageName), terrain, gm)
         def root = storage.getChunk(0)

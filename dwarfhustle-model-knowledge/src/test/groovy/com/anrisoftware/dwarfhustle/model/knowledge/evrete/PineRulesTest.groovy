@@ -81,10 +81,12 @@ class PineRulesTest {
         KnowledgeJcsCacheActor.create(injector, ofSeconds(1)).whenComplete({ it, ex ->
             log.debug("KnowledgeJcsCacheActor {} {}", it, ex)
         } ).get()
-        PowerLoomKnowledgeActor.create(injector, ofSeconds(1), actor.getActorAsync(KnowledgeJcsCacheActor.ID)).whenComplete({ it, ex ->
-            log.debug("PowerLoomKnowledgeActor {} {}", it, ex)
-            knowledgeActor = it
-        } ).get()
+        PowerLoomKnowledgeActor.create(injector, ofSeconds(1),
+                actor.getActorAsync(KnowledgeJcsCacheActor.ID),
+                actor.getObjectGetterAsync(KnowledgeJcsCacheActor.ID)).whenComplete({ it, ex ->
+                    log.debug("PowerLoomKnowledgeActor {} {}", it, ex)
+                    knowledgeActor = it
+                } ).get()
         askKnowledge = { timeout, type -> askKnowledgeObjects(actor.actorSystem, timeout, type) }
         chunksLmbdStorageFactory = injector.getInstance(MapChunksLmbdStorageFactory)
         generator = LocalUniqueIDGeneratorFactory.generatorFor(0, 0, Mode.SPREAD);
