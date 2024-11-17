@@ -56,7 +56,7 @@ import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DbTestUtils
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.DwarfhustleModelDbOrientdbModule
 import com.anrisoftware.dwarfhustle.model.db.orientdb.actor.OrientDbActor
 import com.anrisoftware.dwarfhustle.model.generate.GenerateMapMessage.GenerateProgressMessage
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustlePowerloomModule
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustleModelKnowledgePowerloomPlModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor
 import com.anrisoftware.globalpom.threads.properties.internal.PropertiesThreadsModule
@@ -127,7 +127,7 @@ class GenerateMap {
         cacheFile = new File(parentDir, "dwarfhustle_jcs_swap_${mapParams.game_name}_mapBlocksCache_0_file")
         injector = Guice.createInjector(
                 new DwarfhustleModelActorsModule(),
-                new DwarfhustlePowerloomModule(),
+                new DwarfhustleModelKnowledgePowerloomPlModule(),
                 new DwarfhustleModelGenerateModule(),
                 new DwarfhustleModelDbOrientdbModule(),
                 new DwarfhustleModelApiObjectsModule(),

@@ -117,6 +117,12 @@ public class KnowledgeJcsCacheActor extends AbstractJcsCacheActor {
         m.replyTo.tell(new CacheGetMissMessage<>(m));
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends GameObject> T get(int type, long key) {
+        return (T) cache.get(key);
+    }
+
     @Override
     protected void retrieveValueFromBackend(CacheGetMessage<?> m, Consumer<GameObject> consumer) {
         // nop

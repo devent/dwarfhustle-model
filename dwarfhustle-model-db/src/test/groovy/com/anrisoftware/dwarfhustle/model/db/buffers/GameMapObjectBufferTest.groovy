@@ -41,16 +41,16 @@ class GameMapObjectBufferTest {
         def args = []
         int offset = 0
         def b = ByteBuffer.allocate(offset + GameMapObjectBuffer.SIZE)
-        args << of(b, offset, 1, 2, 3, 10, 20, 30, "01000000 00000000 02000000 00000000 03000000 00000000 0a001400 1e00")
+        args << of(b, offset, 1, 2, 3, 4, 10, 20, 30, "01000000 00000000 02000000 03000000 04000000 00000000 0a001400 1e00")
         offset = 3
         b = ByteBuffer.allocate(offset + GameMapObjectBuffer.SIZE)
-        args << of(b, offset, 1, 2, 3, 10, 20, 30, "000000 01000000 00000000 02000000 00000000 03000000 00000000 0a001400 1e00")
+        args << of(b, offset, 1, 2, 3, 4, 10, 20, 30, "000000 01000000 00000000 02000000 03000000 04000000 00000000 0a001400 1e00")
         Stream.of(args as Object[])
     }
 
     @ParameterizedTest
     @MethodSource()
-    void write_read_gamemapobject(ByteBuffer b, int offset, long id, long kid, long map, int x, int y, int z, def expected) {
+    void write_read_gamemapobject(ByteBuffer b, int offset, long id, int kid, int oid, long map, int x, int y, int z, def expected) {
         def o = new GameMapObject(id, new GameBlockPos(x, y, z)) {
 
                     @Override
@@ -59,6 +59,7 @@ class GameMapObjectBufferTest {
                     }
                 }
         o.kid = kid
+        o.oid = oid
         o.map = map
         GameMapObjectBuffer.writeObject(new UnsafeBuffer(b), offset, o)
         assert HexFormat.of().formatHex(b.array()) == replace(expected, " ", "")
@@ -72,6 +73,7 @@ class GameMapObjectBufferTest {
         GameMapObjectBuffer.readObject(new UnsafeBuffer(b), offset, thato)
         assert thato.id == id
         assert thato.kid == kid
+        assert thato.oid == oid
         assert thato.map == map
         assert thato.pos.x == x
         assert thato.pos.y == y

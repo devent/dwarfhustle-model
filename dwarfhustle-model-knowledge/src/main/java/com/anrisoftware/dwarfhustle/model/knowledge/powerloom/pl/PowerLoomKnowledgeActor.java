@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.primitive.LongObjectMap;
+import org.eclipse.collections.api.map.primitive.IntObjectMap;
 import org.eclipse.collections.impl.factory.Lists;
 import org.lable.oss.uniqueid.GeneratorException;
 import org.lable.oss.uniqueid.IDGenerator;
@@ -156,21 +156,24 @@ public class PowerLoomKnowledgeActor implements KnowledgeGetter {
     public static Behavior<Message> create(Injector injector, CompletionStage<ActorRef<Message>> knowledgesCache,
             ObjectsGetter knowledgesGetter) {
         return Behaviors.withStash(100, stash -> Behaviors.setup(context -> {
-            loadKnowledgeBase(injector, context);
             var kc = knowledgesCache.toCompletableFuture().get(15, TimeUnit.SECONDS);
-            return injector.getInstance(PowerLoomKnowledgeActorFactory.class)
-                    .create(context, stash, kc, knowledgesGetter).start();
+            return create(injector, stash, context, kc, knowledgesGetter);
         }));
     }
 
     public static Behavior<Message> create(Injector injector, CompletionStage<ActorRef<Message>> knowledgesCache,
             CompletionStage<ObjectsGetter> knowledgesGetter) {
         return Behaviors.withStash(100, stash -> Behaviors.setup(context -> {
-            loadKnowledgeBase(injector, context);
             var kc = knowledgesCache.toCompletableFuture().get(15, TimeUnit.SECONDS);
             var kg = knowledgesGetter.toCompletableFuture().get(15, TimeUnit.SECONDS);
-            return injector.getInstance(PowerLoomKnowledgeActorFactory.class).create(context, stash, kc, kg).start();
+            return create(injector, stash, context, kc, kg);
         }));
+    }
+
+    private static Behavior<Message> create(Injector injector, StashBuffer<Message> stash,
+            ActorContext<Message> context, ActorRef<Message> kc, ObjectsGetter kg) {
+        loadKnowledgeBase(injector, context);
+        return injector.getInstance(PowerLoomKnowledgeActorFactory.class).create(context, stash, kc, kg).start();
     }
 
     private static void loadKnowledgeBase(Injector injector, ActorContext<Message> context) {
@@ -230,7 +233,7 @@ public class PowerLoomKnowledgeActor implements KnowledgeGetter {
 
     @Inject
     @Named("knowledge-tidTypeMap")
-    private LongObjectMap<String> tidTypeMap;
+    private IntObjectMap<String> tidTypeMap;
 
     @Inject
     private ActorSystemProvider actor;
@@ -251,7 +254,6 @@ public class PowerLoomKnowledgeActor implements KnowledgeGetter {
      * </ul>
      */
     public Behavior<Message> start() {
-        actor.registerKnowledgeGetter(ID, this);
         this.cacheResponseAdapter = context.messageAdapter(CacheResponseMessage.class, WrappedCacheResponse::new);
         return Behaviors.receive(Message.class)//
                 .onMessage(InitialStateMessage.class, this::onInitialState)//
@@ -270,7 +272,7 @@ public class PowerLoomKnowledgeActor implements KnowledgeGetter {
     }
 
     private Behavior<Message> onInitialState(InitialStateMessage m) {
-        log.debug("onInitialState");
+        actor.registerKnowledgeGetter(ID, this);
         return buffer.unstashAll(getInitialBehavior()//
                 .build());
     }
@@ -374,9 +376,14 @@ public class PowerLoomKnowledgeActor implements KnowledgeGetter {
     }
 
     @Override
-    public KnowledgeLoadedObject get(String type) {
-        var tid = type.hashCode();
+    @SneakyThrows
+    public KnowledgeLoadedObject get(int tid) {
         var klo = (KnowledgeLoadedObject) knowledgesGetter.get(KnowledgeLoadedObject.OBJECT_TYPE, tid);
+        if (klo == null) {
+            String type = tidTypeMap.get(tid);
+            klo = retrieveKnowledgeLoadedObject(type);
+            cacheObjects(klo);
+        }
         return klo;
     }
 }

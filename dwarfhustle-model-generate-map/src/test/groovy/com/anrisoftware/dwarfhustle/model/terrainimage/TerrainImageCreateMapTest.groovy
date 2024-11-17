@@ -50,7 +50,7 @@ import com.anrisoftware.dwarfhustle.model.db.lmbd.DwarfhustleModelDbLmbdModule
 import com.anrisoftware.dwarfhustle.model.db.lmbd.MapChunksLmbdStorage.MapChunksLmbdStorageFactory
 import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DefaultLoadKnowledges
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustlePowerloomModule
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustleModelKnowledgePowerloomPlModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor
 import com.anrisoftware.dwarfhustle.model.terrainimage.TerrainImageCreateMap.TerrainImageCreateMapFactory
@@ -75,7 +75,7 @@ class TerrainImageCreateMapTest {
     static void setupActor() {
         injector = Guice.createInjector(
                 new DwarfhustleModelActorsModule(),
-                new DwarfhustlePowerloomModule(),
+                new DwarfhustleModelKnowledgePowerloomPlModule(),
                 new DwarfhustleModelApiObjectsModule(),
                 new DwarfhustleModelDbLmbdModule(),
                 new DwarfhustleModelDbCacheModule(),

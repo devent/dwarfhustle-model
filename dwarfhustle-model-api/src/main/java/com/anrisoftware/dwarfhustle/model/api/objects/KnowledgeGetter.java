@@ -24,5 +24,5 @@ package com.anrisoftware.dwarfhustle.model.api.objects;
  */
 public interface KnowledgeGetter {
 
-    KnowledgeLoadedObject get(String type);
+    KnowledgeLoadedObject get(int tid);
 }

@@ -89,7 +89,7 @@ class ListKnowledges {
 
     @BeforeAll
     static void setupActor() {
-        injector = Guice.createInjector(new DwarfhustleModelActorsModule(), new DwarfhustlePowerloomModule(), new DwarfhustleModelApiObjectsModule())
+        injector = Guice.createInjector(new DwarfhustleModelActorsModule(), new DwarfhustleModelKnowledgePowerloomPlModule(), new DwarfhustleModelApiObjectsModule())
         actor = injector.getInstance(ActorSystemProvider)
         tidType = injector.getInstance(Key.get(new TypeLiteral<LongObjectMap<String>>(){}, named("knowledge-tidTypeMap")))
         KnowledgeJcsCacheActor.create(injector, ofSeconds(1)).whenComplete({ it, ex ->

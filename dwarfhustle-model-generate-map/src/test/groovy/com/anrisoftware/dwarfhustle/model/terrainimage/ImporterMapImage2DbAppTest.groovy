@@ -34,7 +34,7 @@ import com.anrisoftware.dwarfhustle.model.actor.DwarfhustleModelActorsModule
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
 import com.anrisoftware.dwarfhustle.model.db.cache.DwarfhustleModelDbCacheModule
 import com.anrisoftware.dwarfhustle.model.db.lmbd.DwarfhustleModelDbLmbdModule
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustlePowerloomModule
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustleModelKnowledgePowerloomPlModule
 import com.google.inject.Guice
 import com.google.inject.Injector
 
@@ -50,7 +50,7 @@ class ImporterMapImage2DbAppTest {
     static void setupActor() {
         this.injector = Guice.createInjector(
                 new DwarfhustleModelActorsModule(),
-                new DwarfhustlePowerloomModule(),
+                new DwarfhustleModelKnowledgePowerloomPlModule(),
                 new DwarfhustleModelApiObjectsModule(),
                 new DwarfhustleModelTerrainimageModule(),
                 new DwarfhustleModelDbLmbdModule(),

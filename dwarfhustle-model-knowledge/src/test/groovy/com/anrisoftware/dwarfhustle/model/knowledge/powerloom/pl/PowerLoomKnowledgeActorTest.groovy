@@ -18,6 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl
 
 import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomTestUtils.*
+import static java.time.Duration.ofSeconds
 import static java.util.concurrent.CompletableFuture.supplyAsync
 
 import java.time.Duration
@@ -34,6 +35,7 @@ import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
 import com.anrisoftware.dwarfhustle.model.actor.DwarfhustleModelActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeGetter
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeLoadedObject
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandErrorMessage
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandSuccessMessage
@@ -65,15 +67,18 @@ class PowerLoomKnowledgeActorTest {
     static void setupActor() {
         injector = Guice.createInjector(
                 new DwarfhustleModelActorsModule(),
-                new DwarfhustlePowerloomModule(),
+                new DwarfhustleModelKnowledgePowerloomPlModule(),
                 new DwarfhustleModelApiObjectsModule())
         actor = injector.getInstance(ActorSystemProvider.class)
-        KnowledgeJcsCacheActor.create(injector, Duration.ofSeconds(1)).whenComplete({ it, ex ->
+        KnowledgeJcsCacheActor.create(injector, ofSeconds(1)).whenComplete({ it, ex ->
             cacheActor = it
         } ).get()
-        PowerLoomKnowledgeActor.create(injector, Duration.ofSeconds(1), supplyAsync({cacheActor})).whenComplete({ it, ex ->
-            knowledgeActor = it
-        } ).get()
+        PowerLoomKnowledgeActor.create(injector, ofSeconds(1),
+                supplyAsync({cacheActor}),
+                actor.getObjectGetterAsync(KnowledgeJcsCacheActor.ID)).
+                whenComplete({ it, ex ->
+                    knowledgeActor = it
+                } ).get()
     }
 
     @AfterAll
@@ -249,26 +254,14 @@ class PowerLoomKnowledgeActorTest {
     @CsvSource([
         "Sedimentary,11,1708874227",
         "Shrub,1,79863786",
-        "BlockObject,26,-1873633780"
+        "BlockObject,26,-1873633780",
+        "Tree-Sampling,2,1492165942"
     ])
-    void "KnowledgeGetMessage test getter"(String type, int size, long id) {
-        KnowledgeLoadedObject go
-        def lock = new CountDownLatch(1)
-        result.whenComplete( { reply, failure ->
-            log.info "Command reply ${reply} failure ${failure}"
-            if (failure == null) {
-                switch (reply) {
-                    case KnowledgeResponseSuccessMessage:
-                        go = reply.go
-                        break
-                    case KnowledgeCommandErrorMessage:
-                        break
-                }
-            }
-            lock.countDown()
-        })
-        lock.await()
+    void "KnowledgeGetMessage test getter"(String type, int size, int id) {
+        KnowledgeGetter kg = actor.getKnowledgeGetterAsync(PowerLoomKnowledgeActor.ID).get()
+        KnowledgeLoadedObject go = kg.get(id)
         assert go.id == id
         assert go.objects.size() == size
+        println go.objects
     }
 }

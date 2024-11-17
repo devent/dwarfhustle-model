@@ -45,7 +45,7 @@ import com.anrisoftware.dwarfhustle.model.api.vegetations.Vegetation
 import com.anrisoftware.dwarfhustle.model.db.buffers.MapChunkBuffer
 import com.anrisoftware.dwarfhustle.model.db.lmbd.DwarfhustleModelDbLmbdModule
 import com.anrisoftware.dwarfhustle.model.db.lmbd.MapChunksLmbdStorage.MapChunksLmbdStorageFactory
-import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustlePowerloomModule
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustleModelKnowledgePowerloomPlModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor
 import com.anrisoftware.dwarfhustle.model.trees.VegetationLoadKnowledges
@@ -74,7 +74,7 @@ class PineRulesTest {
     static void setupActor() {
         injector = Guice.createInjector(
                 new DwarfhustleModelActorsModule(),
-                new DwarfhustlePowerloomModule(),
+                new DwarfhustleModelKnowledgePowerloomPlModule(),
                 new DwarfhustleModelApiObjectsModule(),
                 new DwarfhustleModelDbLmbdModule())
         actor = injector.getInstance(ActorSystemProvider.class)

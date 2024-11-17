@@ -61,7 +61,12 @@ public abstract class GameMapObject extends GameObject {
     /**
      * Knowledge ID.
      */
-    public long kid;
+    public int kid;
+
+    /**
+     * Knowledge object ID.
+     */
+    public int oid;
 
     public GameMapObject(long id) {
         super(id);
@@ -100,7 +105,8 @@ public abstract class GameMapObject extends GameObject {
         super.writeStream(out);
         out.writeLong(map);
         getPos().writeStream(out);
-        out.writeLong(kid);
+        out.writeInt(kid);
+        out.writeInt(oid);
     }
 
     @Override
@@ -108,7 +114,8 @@ public abstract class GameMapObject extends GameObject {
         super.readStream(in);
         this.map = in.readLong();
         getPos().readStream(in);
-        this.kid = in.readLong();
+        this.kid = in.readInt();
+        this.oid = in.readInt();
     }
 
 }

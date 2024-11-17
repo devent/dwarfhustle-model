@@ -26,9 +26,9 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.stream.StreamSupport;
 
-import org.eclipse.collections.api.factory.primitive.LongObjectMaps;
-import org.eclipse.collections.api.map.primitive.LongObjectMap;
-import org.eclipse.collections.api.map.primitive.MutableLongObjectMap;
+import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
+import org.eclipse.collections.api.map.primitive.IntObjectMap;
+import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.lable.oss.uniqueid.IDGenerator;
 
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractJcsCacheActor;
@@ -46,13 +46,13 @@ import jakarta.inject.Singleton;
 /**
  * @author Erwin Müller
  */
-public class DwarfhustlePowerloomModule extends AbstractModule {
+public class DwarfhustleModelKnowledgePowerloomPlModule extends AbstractModule {
 
     private final Map<String, GameObjectKnowledge> storages;
 
-    private final LongObjectMap<String> tidType;
+    private final IntObjectMap<String> tidType;
 
-    public DwarfhustlePowerloomModule() {
+    public DwarfhustleModelKnowledgePowerloomPlModule() {
         this.storages = loadStorages();
         this.tidType = loadTidType(storages);
     }
@@ -67,8 +67,8 @@ public class DwarfhustlePowerloomModule extends AbstractModule {
         return map;
     }
 
-    private LongObjectMap<String> loadTidType(Map<String, GameObjectKnowledge> storages) {
-        MutableLongObjectMap<String> map = LongObjectMaps.mutable.empty();
+    private IntObjectMap<String> loadTidType(Map<String, GameObjectKnowledge> storages) {
+        MutableIntObjectMap<String> map = IntObjectMaps.mutable.empty();
         for (GameObjectKnowledge val : storages.values()) {
             map.put(val.getType().hashCode(), val.getType());
         }
@@ -93,13 +93,12 @@ public class DwarfhustlePowerloomModule extends AbstractModule {
     }
 
     /**
-     * Returns a map from the type-ID to the named type. This is needed because the
-     * cache can
+     * Returns a map from the type-ID to the named type.
      */
     @Singleton
     @Provides
     @Named("knowledge-tidTypeMap")
-    public LongObjectMap<String> getTidTypeMap() {
+    public IntObjectMap<String> getTidTypeMap() {
         return tidType;
     }
 
