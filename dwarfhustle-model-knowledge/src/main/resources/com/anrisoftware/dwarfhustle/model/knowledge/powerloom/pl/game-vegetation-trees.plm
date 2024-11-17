@@ -8,7 +8,13 @@
 (defmodule "DWARFHUSTLE-VEGETATION-TREES"
   :documentation "Plant with an elongated stem, or trunk, usually supporting branches and leaves."
   :includes ("PL-USER")
-  :uses ("LOGIC" "STELLA" "DWARFHUSTLE-GAME-MAP" "DWARFHUSTLE-OBJECTS-VEGETATION" "DWARFHUSTLE-MATERIALS" "DWARFHUSTLE-MATERIALS-CLAYS" "DWARFHUSTLE-MATERIALS-TOPSOILS")
+  :uses ("LOGIC" "STELLA" 
+    "DWARFHUSTLE-GAME-MAP"
+    "DWARFHUSTLE-GAME-MAP-OBJECTS"
+    "DWARFHUSTLE-OBJECTS-VEGETATION" 
+    "DWARFHUSTLE-MATERIALS" 
+    "DWARFHUSTLE-MATERIALS-CLAYS" 
+    "DWARFHUSTLE-MATERIALS-TOPSOILS")
   )
 
 (in-module "DWARFHUSTLE-VEGETATION-TREES")
@@ -25,11 +31,17 @@
 (assert (growing-climate Pine Cool-temperate-moist-forest))
 (assert (growing-climate Pine Subtropical-moist-forest))
 (assert (Tree-Sampling Pine-Sampling)) :documentation "Pinus ponderosa, western yellow-pine."
+(assert (object-properties Pine-Sampling Pine)) :documentation "Pinus ponderosa, western yellow-pine."
 (assert (Tree-Root Pine-Root)) :documentation "Pinus ponderosa, western yellow-pine."
+(assert (object-properties Pine-Root Pine)) :documentation "Pinus ponderosa, western yellow-pine."
 (assert (Tree-Trunk Pine-Trunk)) :documentation "Pinus ponderosa, western yellow-pine."
+(assert (object-properties Pine-Trunk Pine)) :documentation "Pinus ponderosa, western yellow-pine."
 (assert (Tree-Branch Pine-Branch)) :documentation "Pinus ponderosa, western yellow-pine."
+(assert (object-properties Pine-Branch Pine)) :documentation "Pinus ponderosa, western yellow-pine."
 (assert (Tree-Twig Pine-Twig)) :documentation "Pinus ponderosa, western yellow-pine."
+(assert (object-properties Pine-Twig Pine)) :documentation "Pinus ponderosa, western yellow-pine."
 (assert (Tree-Leaf Pine-Leaf)) :documentation "Pinus ponderosa, western yellow-pine."
+(assert (object-properties Pine-Leaf Pine)) :documentation "Pinus ponderosa, western yellow-pine."
 (assert (growing-season Pine Spring))
 (assert (growing-season Pine Summer))
 (assert (growing-season Pine Autumn))
