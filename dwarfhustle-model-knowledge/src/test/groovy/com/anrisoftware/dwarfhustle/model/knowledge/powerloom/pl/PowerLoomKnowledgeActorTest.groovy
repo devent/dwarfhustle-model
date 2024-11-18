@@ -98,6 +98,8 @@ class PowerLoomKnowledgeActorTest {
         "all (melting-point-material Aluminium ?t)",
         "all (melting-point-material Something ?t)",
         "all (BlockObject ?x)",
+        "all (object-properties Pine-Sampling ?x ?y)",
+        "all (Tree ?x)",
     ])
     @Timeout(10l)
     void "askKnowledgeCommand test retrieve"(String retrieve) {
@@ -263,5 +265,25 @@ class PowerLoomKnowledgeActorTest {
         assert go.id == id
         assert go.objects.size() == size
         println go.objects
+    }
+
+    @ParameterizedTest
+    @CsvSource([
+        "Tree-Sampling,2,1492165942"
+    ])
+    void "KnowledgeGetMessage test getter with parent object-properties"(String type, int size, int id) {
+        KnowledgeGetter kg = actor.getKnowledgeGetterAsync(PowerLoomKnowledgeActor.ID).get()
+        KnowledgeLoadedObject go = kg.get(id)
+        assert go.id == id
+        assert go.objects.size() == size
+        println go.objects
+        def pineSampling = go.objects.detect({ it.name == "PINE-SAMPLING" })
+        if (pineSampling) {
+            assert pineSampling.name == "PINE-SAMPLING"
+            assert pineSampling.growingMinTemp == 10.0f
+            assert pineSampling.widthMax == 5
+            assert pineSampling.heightMax == 5
+            assert pineSampling.depthMax == 10
+        }
     }
 }

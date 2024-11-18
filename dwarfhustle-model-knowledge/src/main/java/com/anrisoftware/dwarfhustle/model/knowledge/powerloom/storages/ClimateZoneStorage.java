@@ -30,7 +30,7 @@ import edu.isi.powerloom.logic.LogicObject;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @AutoService(GameObjectKnowledge.class)
-public class ClimateZoneStorage extends AbstractStorage {
+public class ClimateZoneStorage extends AbstractMaterialStorage {
 
     @Override
     public String getType() {

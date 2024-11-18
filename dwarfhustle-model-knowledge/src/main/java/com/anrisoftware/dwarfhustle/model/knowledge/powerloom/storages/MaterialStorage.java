@@ -23,8 +23,6 @@ import com.anrisoftware.dwarfhustle.model.api.materials.BlockMaterial;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.google.auto.service.AutoService;
 
-import edu.isi.powerloom.logic.LogicObject;
-
 /**
  * Storage for {@link BlockMaterial}.
  *
@@ -32,7 +30,7 @@ import edu.isi.powerloom.logic.LogicObject;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @AutoService(GameObjectKnowledge.class)
-public class MaterialStorage extends AbstractStorage {
+public class MaterialStorage extends AbstractMaterialStorage {
 
     @Override
     public String getType() {
@@ -42,9 +40,7 @@ public class MaterialStorage extends AbstractStorage {
     @Override
     public KnowledgeObject retrieve(Object o, KnowledgeObject go) {
         super.retrieve(o, go);
-        var next = (LogicObject) o;
         var m = (BlockMaterial) go;
-        m.setName(next.surrogateValueInverse.symbolName);
         m.setMeltingPoint(retrieveFloat("melting-point-material", m.getName()));
         m.setDensity(retrieveFloat("density-of-material", m.getName()));
         m.setSpecificHeatCapacity(retrieveFloat("specific-heat-capacity-of-material", m.getName()));

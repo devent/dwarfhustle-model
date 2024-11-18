@@ -23,7 +23,7 @@
 (defconcept BlockObject (?t ObjectType)
   :documentation "Object type.")
 
-(defrelation object-properties ((?a ObjectType) (?b ObjectType)))
+(defrelation object-properties (?a ?b ?c))
   :documentation "Load object properties for the child type a from the parent type b."
 
 (assert (BlockObject block-normal)) :documentation "Not mined out block block."

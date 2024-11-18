@@ -26,8 +26,6 @@ import org.eclipse.collections.api.factory.primitive.IntSets;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeVegetation;
 
-import edu.isi.powerloom.logic.LogicObject;
-
 /**
  * Grasses, shrubs, trees.
  *
@@ -44,21 +42,31 @@ public abstract class VegetationStorage extends AbstractObjectTypeStorage {
     @Override
     public KnowledgeObject retrieve(Object o, KnowledgeObject go) {
         super.retrieve(o, go);
-        var next = (LogicObject) o;
         var m = (KnowledgeVegetation) go;
-        m.setName(next.surrogateValueInverse.symbolName);
-        m.growingSeason = retrieveIntSet("growing-season", m.getName(), IntSets.mutable.empty());
-        m.growingSpeed = retrieveFloat("growing-speed", m.getName());
-        m.growingMinTemp = retrieveFloat("growing-min-temp", m.getName());
-        m.growingMaxTemp = retrieveFloat("growing-max-temp", m.getName());
-        m.growingOptTemp = retrieveFloat("growing-opt-temp", m.getName());
-        m.growingSoil = retrieveIntSet("growing-soil", m.getName(), IntSets.mutable.empty());
-        m.floweringMonths = retrieveIntSet("flowering-months", m.getName(), IntSets.mutable.empty());
-        m.growingClimate = retrieveIntSet("growing-climate", m.getName(), IntSets.mutable.empty());
-        m.rootMaxSize = retrieveInt("root-max-size", m.getName());
-        m.widthMax = retrieveInt("width-max", m.getName());
-        m.heightMax = retrieveInt("height-max", m.getName());
-        m.depthMax = retrieveInt("depth-max", m.getName());
+        retrieveProperties(m, m.getName());
         return go;
+    }
+
+    @Override
+    public KnowledgeObject overrideProperties(String parent, KnowledgeObject go) {
+        super.overrideProperties(parent, go);
+        var m = (KnowledgeVegetation) go;
+        retrieveProperties(m, parent);
+        return go;
+    }
+
+    private void retrieveProperties(KnowledgeVegetation m, String name) {
+        m.growingSeason = retrieveIntSet("growing-season", name, IntSets.mutable.empty());
+        m.growingSpeed = retrieveFloat("growing-speed", name);
+        m.growingMinTemp = retrieveFloat("growing-min-temp", name);
+        m.growingMaxTemp = retrieveFloat("growing-max-temp", name);
+        m.growingOptTemp = retrieveFloat("growing-opt-temp", name);
+        m.growingSoil = retrieveIntSet("growing-soil", name, IntSets.mutable.empty());
+        m.floweringMonths = retrieveIntSet("flowering-months", name, IntSets.mutable.empty());
+        m.growingClimate = retrieveIntSet("growing-climate", name, IntSets.mutable.empty());
+        m.rootMaxSize = retrieveInt("root-max-size", name);
+        m.widthMax = retrieveInt("width-max", name);
+        m.heightMax = retrieveInt("height-max", name);
+        m.depthMax = retrieveInt("depth-max", name);
     }
 }

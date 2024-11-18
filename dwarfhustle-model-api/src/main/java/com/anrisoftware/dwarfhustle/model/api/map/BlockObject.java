@@ -41,8 +41,6 @@ public class BlockObject extends ObjectType {
 
     public static final String TYPE = BlockObject.class.getSimpleName();
 
-    private String name;
-
     public BlockObject(int kid) {
         super(kid);
     }

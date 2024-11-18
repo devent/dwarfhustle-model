@@ -65,6 +65,7 @@ import akka.actor.typed.javadsl.StashOverflowException;
 import akka.actor.typed.receptionist.ServiceKey;
 import edu.isi.powerloom.PLI;
 import edu.isi.powerloom.logic.LogicObject;
+import edu.isi.stella.Cons;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import lombok.RequiredArgsConstructor;
@@ -369,10 +370,24 @@ public class PowerLoomKnowledgeActor implements KnowledgeGetter {
             } else {
                 var s = storages.get(type);
                 var go = s.retrieve(next, s.create());
+                retrieveObjectPropertiesFromParent(s, go, type);
                 list.add(go);
             }
         }
         return new KnowledgeLoadedObject(type.hashCode(), list.asUnmodifiable());
+    }
+
+    private void retrieveObjectPropertiesFromParent(GameObjectKnowledge s, KnowledgeObject go, String type) {
+        var sb = new StringBuilder();
+        sb.append("all (object-properties ");
+        sb.append(go.getName());
+        sb.append(" ?x ?y)");
+        var answer = PLI.sRetrieve(sb.toString(), WORKING_MODULE, null);
+        Cons next;
+        while ((next = (Cons) answer.pop()) != null) {
+            var parentName = ((LogicObject) (next.value)).surrogateValueInverse.symbolName;
+            s.overrideProperties(parentName, go);
+        }
     }
 
     @Override

@@ -38,8 +38,6 @@ public class ClimateZone extends KnowledgeObject {
 
     public static final String TYPE = "Climate-Zone";
 
-    public String name;
-
     public ClimateZone(int kid) {
         super(kid);
     }

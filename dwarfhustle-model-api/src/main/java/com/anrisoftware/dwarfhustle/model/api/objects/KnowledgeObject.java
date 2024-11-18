@@ -54,6 +54,8 @@ public abstract class KnowledgeObject extends GameObject {
      */
     public int kid;
 
+    public String name;
+
     public KnowledgeObject(int kid) {
         super(kid2Id(kid));
         this.kid = kid;

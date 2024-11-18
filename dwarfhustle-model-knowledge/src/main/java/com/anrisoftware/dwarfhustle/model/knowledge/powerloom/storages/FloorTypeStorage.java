@@ -21,15 +21,13 @@ import com.anrisoftware.dwarfhustle.model.api.map.FloorType;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.google.auto.service.AutoService;
 
-import edu.isi.powerloom.logic.LogicObject;
-
 /**
  *
  * @see FloorType
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @AutoService(GameObjectKnowledge.class)
-public class FloorTypeStorage implements GameObjectKnowledge {
+public class FloorTypeStorage extends AbstractObjectTypeStorage {
 
     @Override
     public String getType() {
@@ -38,11 +36,7 @@ public class FloorTypeStorage implements GameObjectKnowledge {
 
     @Override
     public KnowledgeObject retrieve(Object o, KnowledgeObject go) {
-        var next = (LogicObject) o;
-        var ko = (FloorType) go;
-        ko.setKid(next.surrogateValueInverse.symbolId);
-        ko.setName(next.surrogateValueInverse.symbolName);
-        return ko;
+        return super.retrieve(o, go);
     }
 
     @Override

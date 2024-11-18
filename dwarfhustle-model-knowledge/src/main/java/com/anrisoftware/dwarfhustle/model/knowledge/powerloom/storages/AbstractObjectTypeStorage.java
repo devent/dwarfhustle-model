@@ -42,4 +42,9 @@ public abstract class AbstractObjectTypeStorage implements GameObjectKnowledge {
         ko.setName(next.surrogateValueInverse.symbolName);
         return ko;
     }
+
+    @Override
+    public KnowledgeObject overrideProperties(String parent, KnowledgeObject go) {
+        return go;
+    }
 }

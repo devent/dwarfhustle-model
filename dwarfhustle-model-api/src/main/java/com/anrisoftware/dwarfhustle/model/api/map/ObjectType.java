@@ -41,8 +41,6 @@ public abstract class ObjectType extends KnowledgeObject {
 
     public static final String TYPE = "ObjectType";
 
-    private String name;
-
     public ObjectType(int kid) {
         super(kid);
     }

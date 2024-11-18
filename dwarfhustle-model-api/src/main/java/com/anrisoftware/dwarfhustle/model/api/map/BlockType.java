@@ -42,8 +42,6 @@ public class BlockType extends KnowledgeObject {
 
     public static final String TYPE = "BlockType";
 
-    private String name;
-
     public BlockType(int kid) {
         super(kid);
     }

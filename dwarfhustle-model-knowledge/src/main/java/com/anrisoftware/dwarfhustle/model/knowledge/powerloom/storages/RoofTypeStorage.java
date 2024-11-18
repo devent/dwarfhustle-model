@@ -21,15 +21,13 @@ import com.anrisoftware.dwarfhustle.model.api.map.RoofType;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.google.auto.service.AutoService;
 
-import edu.isi.powerloom.logic.LogicObject;
-
 /**
  *
  * @see RoofType
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @AutoService(GameObjectKnowledge.class)
-public class RoofTypeStorage implements GameObjectKnowledge {
+public class RoofTypeStorage extends AbstractObjectTypeStorage {
 
     @Override
     public String getType() {
@@ -38,11 +36,7 @@ public class RoofTypeStorage implements GameObjectKnowledge {
 
     @Override
     public KnowledgeObject retrieve(Object o, KnowledgeObject go) {
-        var next = (LogicObject) o;
-        var ko = (RoofType) go;
-        ko.setKid(next.surrogateValueInverse.symbolId);
-        ko.setName(next.surrogateValueInverse.symbolName);
-        return ko;
+        return super.retrieve(o, go);
     }
 
     @Override

@@ -42,8 +42,6 @@ public class LightType extends KnowledgeObject {
 
     public static final String TYPE = "LightType";
 
-    private String name;
-
     public LightType(int kid) {
         super(kid);
     }

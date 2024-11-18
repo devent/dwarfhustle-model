@@ -28,7 +28,7 @@ import edu.isi.powerloom.logic.LogicObject;
  * @see KnowledgeObject
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-public abstract class AbstractStorage implements GameObjectKnowledge {
+public abstract class AbstractMaterialStorage implements GameObjectKnowledge {
 
     @Override
     public String getType() {
@@ -40,7 +40,13 @@ public abstract class AbstractStorage implements GameObjectKnowledge {
         var next = (LogicObject) o;
         var m = go;
         m.setKid(next.surrogateValueInverse.symbolId);
+        m.setName(next.surrogateValueInverse.symbolName);
         return m;
+    }
+
+    @Override
+    public KnowledgeObject overrideProperties(String parent, KnowledgeObject go) {
+        return go;
     }
 
     @Override

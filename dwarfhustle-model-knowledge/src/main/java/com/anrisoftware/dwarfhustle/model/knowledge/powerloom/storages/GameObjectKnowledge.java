@@ -32,6 +32,11 @@ public interface GameObjectKnowledge {
     KnowledgeObject retrieve(Object o, KnowledgeObject go);
 
     /**
+     * Overrides properties from the parent knowledge object.
+     */
+    KnowledgeObject overrideProperties(String parent, KnowledgeObject go);
+
+    /**
      * Returns a new {@link KnowledgeObject}.
      */
     KnowledgeObject create();
@@ -40,4 +45,5 @@ public interface GameObjectKnowledge {
      * Returns the knowledge object type.
      */
     String getType();
+
 }
