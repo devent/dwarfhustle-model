@@ -18,7 +18,6 @@
 package com.anrisoftware.dwarfhustle.model.api.map;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
-import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -32,7 +31,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @Data
-public class ClimateZone extends KnowledgeObject {
+public class ClimateZone extends ObjectType {
 
     public static final int OBJECT_TYPE = ClimateZone.class.getSimpleName().hashCode();
 

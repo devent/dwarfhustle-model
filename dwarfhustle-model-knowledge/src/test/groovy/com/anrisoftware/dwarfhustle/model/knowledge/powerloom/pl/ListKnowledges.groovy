@@ -24,7 +24,7 @@ import static java.util.Locale.ENGLISH
 import static java.util.concurrent.CompletableFuture.supplyAsync
 
 import org.apache.commons.lang3.RegExUtils
-import org.eclipse.collections.api.map.primitive.LongObjectMap
+import org.eclipse.collections.api.map.primitive.IntObjectMap
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -59,7 +59,7 @@ import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeShrub
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeBranch
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeLeaf
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeRoot
-import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeSampling
+import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeSapling
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeTrunk
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeTwig
 import com.google.inject.Guice
@@ -85,19 +85,21 @@ class ListKnowledges {
 
     static ActorRef<Message> cacheActor
 
-    static LongObjectMap<String> tidType
+    static IntObjectMap<String> tidType
 
     @BeforeAll
     static void setupActor() {
         injector = Guice.createInjector(new DwarfhustleModelActorsModule(), new DwarfhustleModelKnowledgePowerloomPlModule(), new DwarfhustleModelApiObjectsModule())
         actor = injector.getInstance(ActorSystemProvider)
-        tidType = injector.getInstance(Key.get(new TypeLiteral<LongObjectMap<String>>(){}, named("knowledge-tidTypeMap")))
+        tidType = injector.getInstance(Key.get(new TypeLiteral<IntObjectMap<String>>(){}, named("knowledge-tidTypeMap")))
         KnowledgeJcsCacheActor.create(injector, ofSeconds(1)).whenComplete({ it, ex ->
             cacheActor = it
         } ).get()
-        PowerLoomKnowledgeActor.create(injector, ofSeconds(1), supplyAsync({cacheActor})).whenComplete({ it, ex ->
-            knowledgeActor = it
-        } ).get()
+        PowerLoomKnowledgeActor.create(injector, ofSeconds(1),
+                supplyAsync({cacheActor}), actor.getObjectGetterAsync(KnowledgeJcsCacheActor.ID)).
+                whenComplete({ it, ex ->
+                    knowledgeActor = it
+                } ).get()
     }
 
     @AfterAll
@@ -110,7 +112,8 @@ class ListKnowledges {
     void "list knowledge top level"() {
         def ko = []
         def ret = spawnListKnowledgeActor(actor, {
-            println tidType.get(it.response.go.tid)
+            def name = tidType.get(it.response.go.id as int)
+            println name
             it.response.go.objects.each {
                 println "${it.name},${it.kid}"
                 ko << it
@@ -134,9 +137,10 @@ class ListKnowledges {
     void "print model-map"() {
         def komap = [:]
         def ret = spawnListKnowledgeActor(actor, {
-            komap[tidType.get(it.response.go.tid)] = []
+            def name = tidType.get(it.response.go.id as int)
+            komap[name] = []
             it.response.go.objects.each { o ->
-                komap[tidType.get(it.response.go.tid)] << o
+                komap[name] << o
             }
         })
         def knowledgeResponseAdapter = ret[1]
@@ -146,7 +150,7 @@ class ListKnowledges {
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeBranch.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeLeaf.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeRoot.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeSampling.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeSapling.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeTrunk.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeTwig.TYPE))
         while (komap.size() != 9) {
@@ -185,7 +189,8 @@ class ListKnowledges {
         def ko = [:]
         println "rid = [:]"
         def ret = spawnListKnowledgeActor(actor, {
-            ko["${tidType.get(it.response.go.tid)}"] = it.response.go.objects
+            def name = tidType.get(it.response.go.id as int)
+            ko[name] = it.response.go.objects
         })
         def knowledgeResponseAdapter = ret[1]
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Clay.TYPE))
@@ -215,7 +220,8 @@ class ListKnowledges {
     void "list knowledge low level"() {
         def ko = []
         def ret = spawnListKnowledgeActor(actor, {
-            println "## ${tidType.get(it.response.go.tid)}"
+            def name = tidType.get(it.response.go.id as int)
+            println "## ${name}"
             it.response.go.objects.each {
                 println "${it.name},${it.kid}"
                 ko << it
@@ -237,7 +243,7 @@ class ListKnowledges {
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, RoofType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ObjectType.TYPE))
-        while (ko.size() != 104) {
+        while (ko.size() != 115) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
         }
@@ -252,7 +258,8 @@ class ListKnowledges {
     void "list knowledges"(String type, int size) {
         def ko = []
         def ret = spawnListKnowledgeActor(actor, {
-            println "## ${tidType.get(it.response.go.tid)}"
+            def name = tidType.get(it.response.go.id as int)
+            println "## ${name}"
             it.response.go.objects.each {
                 println "${it.name},${it.kid}"
                 ko << it

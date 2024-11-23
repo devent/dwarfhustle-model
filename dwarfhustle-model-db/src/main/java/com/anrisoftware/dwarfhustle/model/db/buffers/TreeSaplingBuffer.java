@@ -21,11 +21,11 @@ import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
-import com.anrisoftware.dwarfhustle.model.api.vegetations.TreeSampling;
+import com.anrisoftware.dwarfhustle.model.api.vegetations.TreeSapling;
 import com.google.auto.service.AutoService;
 
 /**
- * Writes and reads {@link TreeSampling} in a byte buffer.
+ * Writes and reads {@link TreeSapling} in a byte buffer.
  * 
  * <ul>
  * <li>@{code i} the KID;
@@ -39,30 +39,30 @@ import com.google.auto.service.AutoService;
  * </pre>
  */
 @AutoService(StoredObjectBuffer.class)
-public class TreeSamplingBuffer implements StoredObjectBuffer {
+public class TreeSaplingBuffer implements StoredObjectBuffer {
 
     /**
      * Size in bytes.
      */
     public static final int SIZE = VegetationBuffer.SIZE;
 
-    public static void setTreeSampling(MutableDirectBuffer b, int off, TreeSampling o) {
+    public static void setTreeSapling(MutableDirectBuffer b, int off, TreeSapling o) {
         VegetationBuffer.writeObject(b, off, o);
     }
 
-    public static TreeSampling getTreeSampling(DirectBuffer b, int off, TreeSampling o) {
+    public static TreeSapling getTreeSapling(DirectBuffer b, int off, TreeSapling o) {
         VegetationBuffer.readObject(b, off, o);
         return o;
     }
 
     @Override
     public StoredObject read(DirectBuffer b) {
-        return TreeSamplingBuffer.getTreeSampling(b, 0, new TreeSampling());
+        return TreeSaplingBuffer.getTreeSapling(b, 0, new TreeSapling());
     }
 
     @Override
     public int getObjectType() {
-        return TreeSampling.OBJECT_TYPE;
+        return TreeSapling.OBJECT_TYPE;
     }
 
     @Override
@@ -72,7 +72,7 @@ public class TreeSamplingBuffer implements StoredObjectBuffer {
 
     @Override
     public void write(MutableDirectBuffer b, StoredObject go) {
-        setTreeSampling(b, 0, (TreeSampling) go);
+        setTreeSapling(b, 0, (TreeSapling) go);
     }
 
 }

@@ -59,6 +59,9 @@
 (defrelation flowering-months ((?v Vegetation) (?month Month)))
   :documentation "Month(s) of the flowering period."
 
+(defrelation grows-into ((?v Vegetation) (?c Vegetation)))
+  :documentation "The name of the tree that his sampling grows into."
+
 (defconcept Grass (?v Vegetation))
   :documentation "Cereal grasses, bamboos, the grasses of natural grassland and species cultivated in lawns and pasture."
 
@@ -68,8 +71,8 @@
 (defconcept Tree (?v Vegetation))
   :documentation "Plant with an elongated stem, or trunk, usually supporting branches and leaves."
 
-(defconcept Tree-Sampling (?t Vegetation))
-  :documentation "Tree sampling."
+(defconcept Tree-Sapling (?t Vegetation))
+  :documentation "Tree sapling."
 
 (defconcept Tree-Root (?t Vegetation))
   :documentation "Root of the tree."

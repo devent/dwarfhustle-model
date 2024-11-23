@@ -17,30 +17,34 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
+import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.PowerLoomUtils.retrieveString;
+
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
-import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeSampling;
+import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeSapling;
 import com.google.auto.service.AutoService;
 
 /**
- * @see KnowledgeTreeSampling
+ * @see KnowledgeTreeSapling
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @AutoService(GameObjectKnowledge.class)
-public class TreeSamplingStorage extends VegetationStorage {
+public class TreeSaplingStorage extends VegetationStorage {
 
     @Override
     public String getType() {
-        return KnowledgeTreeSampling.TYPE;
+        return KnowledgeTreeSapling.TYPE;
     }
 
     @Override
     public KnowledgeObject retrieve(Object o, KnowledgeObject go) {
         super.retrieve(o, go);
+        var m = (KnowledgeTreeSapling) go;
+        m.growsInto = retrieveString("grows-into", m.getName());
         return go;
     }
 
     @Override
     public KnowledgeObject create() {
-        return new KnowledgeTreeSampling();
+        return new KnowledgeTreeSapling();
     }
 }

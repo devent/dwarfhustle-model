@@ -53,6 +53,24 @@ public class PowerLoomUtils {
     }
 
     /**
+     * Retrieves a String.
+     */
+    public static String retrieveString(String function, String name) {
+        var buff = new StringBuilder();
+        buff.append("?x (");
+        buff.append(function);
+        buff.append(" ");
+        buff.append(name);
+        buff.append(" ?x)");
+        var answer = PLI.sRetrieve(buff.toString(), WORKING_MODULE, null);
+        LogicObject next;
+        while ((next = (LogicObject) answer.pop()) != null) {
+            return next.surrogateValueInverse.symbolName;
+        }
+        return null;
+    }
+
+    /**
      * Retrieves a Integer.
      */
     public static int retrieveInt(String function, String name) {

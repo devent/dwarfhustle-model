@@ -30,18 +30,19 @@
 (assert (growing-climate Pine Boreal-rain-forest))
 (assert (growing-climate Pine Cool-temperate-moist-forest))
 (assert (growing-climate Pine Subtropical-moist-forest))
-(assert (Tree-Sampling Pine-Sampling)) :documentation "Pinus ponderosa, western yellow-pine."
-(assert (object-properties Pine-Sampling Pine Tree)) :documentation "Pinus ponderosa, western yellow-pine."
-(assert (Tree-Root Pine-Root)) :documentation "Pinus ponderosa, western yellow-pine."
-(assert (object-properties Pine-Root Pine Tree)) :documentation "Pinus ponderosa, western yellow-pine."
-(assert (Tree-Trunk Pine-Trunk)) :documentation "Pinus ponderosa, western yellow-pine."
-(assert (object-properties Pine-Trunk Pine Tree)) :documentation "Pinus ponderosa, western yellow-pine."
-(assert (Tree-Branch Pine-Branch)) :documentation "Pinus ponderosa, western yellow-pine."
-(assert (object-properties Pine-Branch Pine Tree)) :documentation "Pinus ponderosa, western yellow-pine."
-(assert (Tree-Twig Pine-Twig)) :documentation "Pinus ponderosa, western yellow-pine."
-(assert (object-properties Pine-Twig Pine Tree)) :documentation "Pinus ponderosa, western yellow-pine."
-(assert (Tree-Leaf Pine-Leaf)) :documentation "Pinus ponderosa, western yellow-pine."
-(assert (object-properties Pine-Leaf Pine Tree)) :documentation "Pinus ponderosa, western yellow-pine."
+(assert (Tree-Sapling Pine-Sapling))
+(assert (object-properties Pine-Sapling Pine Tree))
+(assert (grows-into Pine-Sapling Pine))
+(assert (Tree-Root Pine-Root))
+(assert (object-properties Pine-Root Pine Tree))
+(assert (Tree-Trunk Pine-Trunk))
+(assert (object-properties Pine-Trunk Pine Tree))
+(assert (Tree-Branch Pine-Branch))
+(assert (object-properties Pine-Branch Pine Tree))
+(assert (Tree-Twig Pine-Twig))
+(assert (object-properties Pine-Twig Pine Tree))
+(assert (Tree-Leaf Pine-Leaf))
+(assert (object-properties Pine-Leaf Pine Tree))
 (assert (growing-season Pine Spring))
 (assert (growing-season Pine Summer))
 (assert (growing-season Pine Autumn))
@@ -72,7 +73,7 @@
 (assert (growing-climate Birch Boreal-rain-forest))
 (assert (growing-climate Birch Cool-temperate-moist-forest))
 (assert (growing-climate Birch Subtropical-moist-forest))
-(assert (Tree-Sampling Birch-Sampling)) :documentation "Betula pendula, silver birch."
+(assert (Tree-Sapling Birch-Sapling)) :documentation "Betula pendula, silver birch."
 (assert (Tree-Root Birch-Root)) :documentation "Betula pendula, silver birch."
 (assert (Tree-Trunk Birch-Trunk)) :documentation "Betula pendula, silver birch."
 (assert (Tree-Branch Birch-Branch)) :documentation "Betula pendula, silver birch."

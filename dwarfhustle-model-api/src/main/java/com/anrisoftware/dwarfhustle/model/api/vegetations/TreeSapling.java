@@ -27,26 +27,26 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
- * Tree sampling.
+ * Tree sapling.
  */
 @NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Data
 @AutoService(StoredObject.class)
-public class TreeSampling extends Vegetation {
+public class TreeSapling extends Vegetation {
 
-    public static final int OBJECT_TYPE = TreeSampling.class.getSimpleName().hashCode();
+    public static final int OBJECT_TYPE = TreeSapling.class.getSimpleName().hashCode();
 
-    public TreeSampling(byte[] idbuf) {
+    public TreeSapling(byte[] idbuf) {
         super(idbuf);
     }
 
-    public TreeSampling(long id, GameBlockPos pos) {
+    public TreeSapling(long id, GameBlockPos pos) {
         super(id, pos);
     }
 
-    public TreeSampling(byte[] idbuf, GameBlockPos pos) {
+    public TreeSapling(byte[] idbuf, GameBlockPos pos) {
         super(idbuf, pos);
     }
 

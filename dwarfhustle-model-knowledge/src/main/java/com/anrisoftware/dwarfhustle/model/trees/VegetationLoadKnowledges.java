@@ -92,6 +92,7 @@ public class VegetationLoadKnowledges extends DefaultLoadKnowledges {
         knowledgeGet(res, IntLists.mutable.empty(), (o) -> {
             var ot = (KnowledgeVegetation) o;
             if (startsWithIgnoreCase(ot.getName(), name)) {
+                System.out.printf("%s - %s\n", name, ot); // TODO
                 objects.put(hash, o.getKid());
             }
         });
@@ -101,6 +102,7 @@ public class VegetationLoadKnowledges extends DefaultLoadKnowledges {
         knowledgeGet(res, IntLists.mutable.empty(), (o) -> {
             var ot = (BlockMaterial) o;
             if (startsWithIgnoreCase(ot.getName(), name)) {
+                System.out.printf("%s - %s\n", name, ot); // TODO
                 materials.get(hash).add(o.getKid());
             }
         });

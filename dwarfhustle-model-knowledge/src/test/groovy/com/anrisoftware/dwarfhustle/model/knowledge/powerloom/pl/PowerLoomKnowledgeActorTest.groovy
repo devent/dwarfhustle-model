@@ -284,6 +284,7 @@ class PowerLoomKnowledgeActorTest {
             assert pineSampling.widthMax == 5
             assert pineSampling.heightMax == 5
             assert pineSampling.depthMax == 10
+            assert pineSampling.growsInto == "PINE"
         }
     }
 }

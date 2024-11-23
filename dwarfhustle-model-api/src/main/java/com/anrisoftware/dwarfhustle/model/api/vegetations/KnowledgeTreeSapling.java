@@ -25,34 +25,39 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
- * Sampling of the tree.
+ * Sapling of the tree.
  */
 @NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @Data
-public class KnowledgeTreeSampling extends KnowledgeVegetation {
+public class KnowledgeTreeSapling extends KnowledgeVegetation {
 
-    public static final int OBJECT_TYPE = KnowledgeTreeSampling.class.getSimpleName().hashCode();
+    public static final int OBJECT_TYPE = KnowledgeTreeSapling.class.getSimpleName().hashCode();
 
-    public static final String TYPE = "Tree-Sampling";
+    public static final String TYPE = "Tree-Sapling";
 
-    public KnowledgeTreeSampling(int kid) {
+    /**
+     * The name of the tree that his sampling grows into.
+     */
+    public String growsInto;
+
+    public KnowledgeTreeSapling(int kid) {
         super(kid);
     }
 
     @Override
     public int getObjectType() {
-        return KnowledgeTreeSampling.OBJECT_TYPE;
+        return OBJECT_TYPE;
     }
 
     @Override
     public String getKnowledgeType() {
-        return KnowledgeTreeSampling.TYPE;
+        return TYPE;
     }
 
     @Override
     public GameObject createObject(byte[] id) {
-        return new TreeSampling(id);
+        return new TreeSapling(id);
     }
 }
