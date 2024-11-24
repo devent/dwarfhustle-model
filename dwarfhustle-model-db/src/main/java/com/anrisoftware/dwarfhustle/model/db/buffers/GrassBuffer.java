@@ -28,13 +28,20 @@ import com.google.auto.service.AutoService;
  * Writes and reads {@link Grass} in a byte buffer.
  * 
  * <ul>
- * <li>@{code i} the ID;
+ * <li>@{code i} the object ID;
+ * <li>@{code k} the knowledge ID;
+ * <li>@{code m} the map ID;
+ * <li>@{code x} the X position on the map;
+ * <li>@{code y} the Y position on the map;
+ * <li>@{code z} the Z position on the map;
+ * <li>@{code g} the growth;
  * </ul>
  * 
  * <pre>
- * int   0         1         2         3
- * short 0    1    2    3    4    5    6
- *       iiii iiii iiii iiii
+ * long  0                   1                   2                   3
+ * int   0         1         2         3         4         5         6         7
+ * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15
+ *       iiii iiii iiii iiii kkkk kkkk kkkk kkkk mmmm mmmm mmmm mmmm xxxx yyyy zzzz gggg
  * </pre>
  */
 @AutoService(StoredObjectBuffer.class)
@@ -46,17 +53,17 @@ public class GrassBuffer extends VegetationBuffer implements StoredObjectBuffer 
     public static final int SIZE = VegetationBuffer.SIZE;
 
     public static void setGrass(MutableDirectBuffer b, int off, Grass o) {
-        VegetationBuffer.writeObject(b, off, o);
+        VegetationBuffer.writeVegetation(b, off, o);
     }
 
     public static Grass getGrass(DirectBuffer b, int off, Grass o) {
-        VegetationBuffer.readObject(b, off, o);
+        VegetationBuffer.readVegetation(b, off, o);
         return o;
     }
 
     @Override
     public StoredObject read(DirectBuffer b) {
-        return GrassBuffer.getGrass(b, 0, new Grass());
+        return getGrass(b, 0, new Grass());
     }
 
     @Override

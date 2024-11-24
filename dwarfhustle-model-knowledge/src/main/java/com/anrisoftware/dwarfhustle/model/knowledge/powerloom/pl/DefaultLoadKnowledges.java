@@ -28,7 +28,10 @@ import java.util.function.Consumer;
 import org.eclipse.collections.api.factory.primitive.IntIntMaps;
 import org.eclipse.collections.api.factory.primitive.IntLists;
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
+import org.eclipse.collections.api.list.primitive.IntList;
 import org.eclipse.collections.api.list.primitive.MutableIntList;
+import org.eclipse.collections.api.map.primitive.IntIntMap;
+import org.eclipse.collections.api.map.primitive.IntObjectMap;
 import org.eclipse.collections.api.map.primitive.MutableIntIntMap;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 
@@ -114,20 +117,20 @@ public class DefaultLoadKnowledges {
 
     protected static final Duration ASK_TIMEOUT = Duration.of(10, ChronoUnit.SECONDS);
 
-    protected final MutableIntObjectMap<MutableIntList> materials;
+    protected final IntObjectMap<IntList> materials;
 
-    protected final MutableIntIntMap objects;
+    protected final IntIntMap objects;
 
     public DefaultLoadKnowledges() {
         this.materials = IntObjectMaps.mutable.empty();
         this.objects = IntIntMaps.mutable.ofInitialCapacity(100);
     }
 
-    public MutableIntList getMaterials(int name) {
+    public IntList getMaterials(int name) {
         return materials.get(name);
     }
 
-    public MutableIntObjectMap<MutableIntList> getMaterials() {
+    public IntObjectMap<IntList> getMaterials() {
         return materials;
     }
 
@@ -135,12 +138,14 @@ public class DefaultLoadKnowledges {
         return objects.get(name);
     }
 
-    public MutableIntIntMap getObjects() {
+    public IntIntMap getObjects() {
         return objects;
     }
 
     @SneakyThrows
     public void loadKnowledges(AskKnowledge ask) {
+        var objects = (MutableIntIntMap) this.objects;
+        var materials = (MutableIntObjectMap<IntList>) this.materials;
         MutableIntList solids = IntLists.mutable.withInitialCapacity(100);
         MutableIntList liquids = IntLists.mutable.withInitialCapacity(100);
         MutableIntList gases = IntLists.mutable.withInitialCapacity(100);

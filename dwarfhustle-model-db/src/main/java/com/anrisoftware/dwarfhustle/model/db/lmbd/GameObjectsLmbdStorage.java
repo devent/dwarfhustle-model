@@ -117,6 +117,18 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
         }
     }
 
+    /**
+     * Removes the game object in the database.
+     */
+    public void removeObject(int type, long id) {
+        try (Txn<DirectBuffer> txn = env.txnWrite()) {
+            final var key = buff8.get();
+            key.putLong(0, id);
+            dbs.get(type).delete(txn, key);
+            txn.commit();
+        }
+    }
+
     private class ObjectsListRecursiveAction<T extends StoredObject> extends AbstractObjectsListRecursiveAction<T> {
 
         private static final long serialVersionUID = 1L;
@@ -297,6 +309,11 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
                 soBuffer.write(b, (StoredObject) go);
             });
         }
+    }
+
+    @Override
+    public void remove(int type, GameObject go) throws ObjectsSetterException {
+        removeObject(type, go.getId());
     }
 
 }

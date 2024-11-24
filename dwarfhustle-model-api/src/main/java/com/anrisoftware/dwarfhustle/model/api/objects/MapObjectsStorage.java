@@ -30,6 +30,13 @@ public interface MapObjectsStorage extends AutoCloseable {
     void putObject(int x, int y, int z, int type, long id);
 
     /**
+     * Stores the game map object in the (x,y,z) block in the database.
+     */
+    default void putObject(GameMapObject o) {
+        putObject(o.getPos().getX(), o.getPos().getY(), o.getPos().getZ(), o.getObjectType(), o.getId());
+    }
+
+    /**
      * Mass storage for game map objects.
      */
     void putObjects(List<? extends StoredObject> objects);
@@ -55,5 +62,13 @@ public interface MapObjectsStorage extends AutoCloseable {
      * database.
      */
     void removeObject(int x, int y, int z, int type, long id);
+
+    /**
+     * Deletes the game map object in the (x,y,z) block with the type and ID in the
+     * database.
+     */
+    default void removeObject(GameMapObject o) {
+        removeObject(o.getPos().getX(), o.getPos().getY(), o.getPos().getZ(), o.getObjectType(), o.getId());
+    }
 
 }

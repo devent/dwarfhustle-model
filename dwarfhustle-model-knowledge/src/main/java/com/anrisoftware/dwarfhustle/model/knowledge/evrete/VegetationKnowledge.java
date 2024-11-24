@@ -78,8 +78,8 @@ public class VegetationKnowledge extends AbstractKnowledge {
                         if (!chunk.isInside(xx, yy, zz)) {
                             chunk = findChunk(root, xx, yy, zz, og);
                         }
-                        session.insert(new VegetationBlockFact(done, v, k, getObjects(), og, os, root, xx, yy, zz,
-                                gm.width, gm.height, gm.depth));
+                        session.insert(new VegetationBlockFact(done, v, k, getObjects(), getMaterials(), og, os, root,
+                                xx, yy, zz, gm.width, gm.height, gm.depth));
                     }
                 }
             }

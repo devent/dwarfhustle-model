@@ -370,4 +370,10 @@ public abstract class AbstractJcsCacheActor implements ObjectsGetter, ObjectsSet
         }
         storeValuesBackend(type, values);
     }
+
+    @Override
+    public void remove(int objectType, GameObject go) throws ObjectsSetterException {
+        os.remove(objectType, go);
+        cache.remove(go.getId());
+    }
 }

@@ -20,23 +20,32 @@ package com.anrisoftware.dwarfhustle.model.db.buffers;
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
+import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.anrisoftware.dwarfhustle.model.api.vegetations.Tree;
+import com.google.auto.service.AutoService;
 
 /**
  * Writes and reads {@link Tree} in a byte buffer.
  * 
  * <ul>
- * <li>@{code i} the KID;
+ * <li>@{code i} the object ID;
+ * <li>@{code k} the knowledge ID;
+ * <li>@{code m} the map ID;
+ * <li>@{code x} the X position on the map;
+ * <li>@{code y} the Y position on the map;
+ * <li>@{code z} the Z position on the map;
  * <li>@{code g} the growth;
  * </ul>
  * 
  * <pre>
- * int   0         1         2         3
- * short 0    1    2    3    4    5    6
- *       iiii iiii gggg
+ * long  0                   1                   2                   3
+ * int   0         1         2         3         4         5         6         7
+ * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15
+ *       iiii iiii iiii iiii kkkk kkkk kkkk kkkk mmmm mmmm mmmm mmmm xxxx yyyy zzzz gggg
  * </pre>
  */
-public abstract class TreeBuffer implements StoredObjectBuffer {
+@AutoService(StoredObjectBuffer.class)
+public class TreeBuffer implements StoredObjectBuffer {
 
     /**
      * Size in bytes.
@@ -44,11 +53,31 @@ public abstract class TreeBuffer implements StoredObjectBuffer {
     public static final int SIZE = VegetationBuffer.SIZE;
 
     public static void setTree(MutableDirectBuffer b, int off, Tree o) {
-        VegetationBuffer.writeObject(b, off, o);
+        VegetationBuffer.writeVegetation(b, off, o);
     }
 
     public static Tree getTree(DirectBuffer b, int off, Tree o) {
-        VegetationBuffer.readObject(b, off, o);
+        VegetationBuffer.readVegetation(b, off, o);
         return o;
+    }
+
+    @Override
+    public int getObjectType() {
+        return Tree.OBJECT_TYPE;
+    }
+
+    @Override
+    public int getSize(StoredObject go) {
+        return SIZE;
+    }
+
+    @Override
+    public StoredObject read(DirectBuffer b) {
+        return getTree(b, 0, new Tree());
+    }
+
+    @Override
+    public void write(MutableDirectBuffer b, StoredObject go) {
+        setTree(b, 0, (Tree) go);
     }
 }

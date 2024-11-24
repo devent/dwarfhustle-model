@@ -15,14 +15,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.trees;
+package com.anrisoftware.dwarfhustle.model.knowledge.evrete;
 
-import static com.anrisoftware.dwarfhustle.model.trees.VegetationKnowledgeObjects.MATERIAL_WOODS_NAME;
-import static com.anrisoftware.dwarfhustle.model.trees.VegetationKnowledgeObjects.OBJECT_TREE_BRANCH_NAME;
-import static com.anrisoftware.dwarfhustle.model.trees.VegetationKnowledgeObjects.OBJECT_TREE_LEAF_NAME;
-import static com.anrisoftware.dwarfhustle.model.trees.VegetationKnowledgeObjects.OBJECT_TREE_ROOT_NAME;
-import static com.anrisoftware.dwarfhustle.model.trees.VegetationKnowledgeObjects.OBJECT_TREE_TRUNK_NAME;
-import static com.anrisoftware.dwarfhustle.model.trees.VegetationKnowledgeObjects.OBJECT_TREE_TWIG_NAME;
+import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.VegetationKnowledgeMaterials.MATERIAL_TREE_WOOD_NAME;
+import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.VegetationKnowledgeObjects.OBJECT_TREE_BRANCH_NAME;
+import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.VegetationKnowledgeObjects.OBJECT_TREE_LEAF_NAME;
+import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.VegetationKnowledgeObjects.OBJECT_TREE_ROOT_NAME;
+import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.VegetationKnowledgeObjects.OBJECT_TREE_TRUNK_NAME;
+import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.VegetationKnowledgeObjects.OBJECT_TREE_TWIG_NAME;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static org.apache.commons.lang3.StringUtils.startsWithIgnoreCase;
 
@@ -30,7 +30,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.collections.api.factory.primitive.IntLists;
 import org.eclipse.collections.api.list.ListIterable;
+import org.eclipse.collections.api.list.primitive.IntList;
 import org.eclipse.collections.api.list.primitive.MutableIntList;
+import org.eclipse.collections.api.map.primitive.MutableIntIntMap;
+import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 
 import com.anrisoftware.dwarfhustle.model.api.materials.BlockMaterial;
 import com.anrisoftware.dwarfhustle.model.api.materials.Wood;
@@ -41,7 +44,6 @@ import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeRoot;
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeTrunk;
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeTwig;
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeVegetation;
-import com.anrisoftware.dwarfhustle.model.knowledge.evrete.AskKnowledge;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DefaultLoadKnowledges;
 
 import lombok.SneakyThrows;
@@ -63,8 +65,9 @@ public class VegetationLoadKnowledges extends DefaultLoadKnowledges {
     @SneakyThrows
     public void loadKnowledges(AskKnowledge ask) {
         super.loadKnowledges(ask);
+        var materials = (MutableIntObjectMap<IntList>) this.materials;
         MutableIntList wood = IntLists.mutable.withInitialCapacity(1);
-        materials.put(MATERIAL_WOODS_NAME.hash, wood);
+        materials.put(MATERIAL_TREE_WOOD_NAME.hash, wood);
         allOf( //
                 ask.doAskAsync(ASK_TIMEOUT, KnowledgeTreeRoot.TYPE).whenComplete((res, ex) -> {
                     objectsGetFilterName(k.getName(), res, OBJECT_TREE_ROOT_NAME.hash);
@@ -82,28 +85,29 @@ public class VegetationLoadKnowledges extends DefaultLoadKnowledges {
                     objectsGetFilterName(k.getName(), res, OBJECT_TREE_TRUNK_NAME.hash);
                 }).toCompletableFuture(), //
                 ask.doAskAsync(ASK_TIMEOUT, Wood.TYPE).whenComplete((res, ex) -> {
-                    materialsGetFilterName(k.getName(), res, MATERIAL_WOODS_NAME.hash);
+                    materialsGetFilterName(k.getName(), res, MATERIAL_TREE_WOOD_NAME.hash);
                 }).toCompletableFuture() //
         ) //
-                .get(10, TimeUnit.SECONDS);
+                .get(1000, TimeUnit.SECONDS);
     }
 
     private void objectsGetFilterName(String name, ListIterable<KnowledgeObject> res, int hash) {
+        var objects = (MutableIntIntMap) this.objects;
         knowledgeGet(res, IntLists.mutable.empty(), (o) -> {
             var ot = (KnowledgeVegetation) o;
             if (startsWithIgnoreCase(ot.getName(), name)) {
-                System.out.printf("%s - %s\n", name, ot); // TODO
                 objects.put(hash, o.getKid());
             }
         });
     }
 
     private void materialsGetFilterName(String name, ListIterable<KnowledgeObject> res, int hash) {
+        var materials = (MutableIntObjectMap<IntList>) this.materials;
         knowledgeGet(res, IntLists.mutable.empty(), (o) -> {
             var ot = (BlockMaterial) o;
             if (startsWithIgnoreCase(ot.getName(), name)) {
-                System.out.printf("%s - %s\n", name, ot); // TODO
-                materials.get(hash).add(o.getKid());
+                var m = (MutableIntList) materials.get(hash);
+                m.add(o.getKid());
             }
         });
     }

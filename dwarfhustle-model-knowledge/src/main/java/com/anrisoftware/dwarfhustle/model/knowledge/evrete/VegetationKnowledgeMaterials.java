@@ -15,19 +15,19 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.trees;
+package com.anrisoftware.dwarfhustle.model.knowledge.evrete;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
-import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
-import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsSetter;
-import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeVegetation;
-import com.anrisoftware.dwarfhustle.model.api.vegetations.Vegetation;
-import com.anrisoftware.dwarfhustle.model.db.buffers.MapChunkBuffer.MapBlockResult;
+import lombok.RequiredArgsConstructor;
 
-@FunctionalInterface
-public interface RulePredicate {
+/**
+ * 
+ */
+@RequiredArgsConstructor
+public enum VegetationKnowledgeMaterials {
 
-    boolean test(int x, int y, int z, MapChunk root, MapBlockResult res, KnowledgeVegetation k, Vegetation v,
-            ObjectsGetter og, ObjectsSetter os, VegetationLoadKnowledges ks);
+    MATERIAL_TREE_WOOD_NAME("material-tree-wood".hashCode()),
 
+    ;
+
+    public final int hash;
 }

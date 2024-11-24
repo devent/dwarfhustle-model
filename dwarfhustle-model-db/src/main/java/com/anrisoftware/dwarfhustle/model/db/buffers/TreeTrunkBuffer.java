@@ -28,14 +28,20 @@ import com.google.auto.service.AutoService;
  * Writes and reads {@link TreeTrunk} in a byte buffer.
  * 
  * <ul>
- * <li>@{code i} the KID;
- * <li>@{code g} the growth;
+ * <li>@{code i} the object ID;
+ * <li>@{code k} the knowledge ID;
+ * <li>@{code o} the knowledge object ID;
+ * <li>@{code m} the map ID;
+ * <li>@{code x} the X position on the map;
+ * <li>@{code y} the Y position on the map;
+ * <li>@{code z} the Z position on the map;
  * </ul>
  * 
  * <pre>
- * int   0         1         2         3
- * short 0    1    2    3    4    5    6
- *       iiii iiii gggg
+ * long  0                   1                   2                   3
+ * int   0         1         2         3         4         5         6         7
+ * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14
+ *       iiii iiii iiii iiii kkkk kkkk oooo oooo mmmm mmmm mmmm mmmm xxxx yyyy zzzz
  * </pre>
  */
 @AutoService(StoredObjectBuffer.class)
@@ -44,20 +50,20 @@ public class TreeTrunkBuffer implements StoredObjectBuffer {
     /**
      * Size in bytes.
      */
-    public static final int SIZE = VegetationBuffer.SIZE;
+    public static final int SIZE = GameObjectBuffer.SIZE;
 
     public static void setTreeTrunk(MutableDirectBuffer b, int off, TreeTrunk o) {
-        VegetationBuffer.writeObject(b, off, o);
+        GameObjectBuffer.writeObject(b, off, o);
     }
 
     public static TreeTrunk getTreeTrunk(DirectBuffer b, int off, TreeTrunk o) {
-        VegetationBuffer.readObject(b, off, o);
+        GameObjectBuffer.readObject(b, off, o);
         return o;
     }
 
     @Override
     public StoredObject read(DirectBuffer b) {
-        return TreeTrunkBuffer.getTreeTrunk(b, 0, new TreeTrunk());
+        return getTreeTrunk(b, 0, new TreeTrunk());
     }
 
     @Override

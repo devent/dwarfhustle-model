@@ -20,9 +20,9 @@ package com.anrisoftware.dwarfhustle.model.knowledge.evrete;
 import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DefaultLoadKnowledges.MATERIALS_NAME;
 import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DefaultLoadKnowledges.OBJECTS_NAME;
 
-import org.eclipse.collections.api.list.primitive.MutableIntList;
-import org.eclipse.collections.api.map.primitive.MutableIntIntMap;
-import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
+import org.eclipse.collections.api.list.primitive.IntList;
+import org.eclipse.collections.api.map.primitive.IntIntMap;
+import org.eclipse.collections.api.map.primitive.IntObjectMap;
 import org.evrete.Configuration;
 import org.evrete.KnowledgeService;
 import org.evrete.api.Knowledge;
@@ -45,11 +45,11 @@ public class AbstractKnowledge {
 
     protected DefaultLoadKnowledges loadedKnowledges;
 
-    public MutableIntList getMaterials(int name) {
+    public IntList getMaterials(int name) {
         return loadedKnowledges.getMaterials(name);
     }
 
-    public MutableIntObjectMap<MutableIntList> getMaterials() {
+    public IntObjectMap<IntList> getMaterials() {
         return loadedKnowledges.getMaterials();
     }
 
@@ -57,7 +57,7 @@ public class AbstractKnowledge {
         return loadedKnowledges.getObject(name);
     }
 
-    public MutableIntIntMap getObjects() {
+    public IntIntMap getObjects() {
         return loadedKnowledges.getObjects();
     }
 

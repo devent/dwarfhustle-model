@@ -22,6 +22,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.io.Serializable;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -44,9 +45,14 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Data
-public abstract class GameMapObject extends GameObject {
+public abstract class GameMapObject extends GameObject implements StoredObject {
 
     public static final int OBJECT_TYPE = GameMapObject.class.getSimpleName().hashCode();
+
+    /**
+     * Record ID set after the object was once stored in the backend.
+     */
+    public Serializable rid;
 
     /**
      * ID of the {@link GameMap}.

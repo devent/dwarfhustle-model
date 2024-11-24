@@ -77,6 +77,11 @@ public abstract class GameObject implements Externalizable, StreamStorage {
 
     public abstract int getObjectType();
 
+    @SuppressWarnings("unchecked")
+    public <T extends GameObject> T getAsType() {
+        return (T) this;
+    }
+
     public <T extends GameObject> T getAs(Class<T> type) {
         return type.cast(this);
     }

@@ -43,7 +43,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
  *       iiii iiii iiii iiii kkkk kkkk oooo oooo mmmm mmmm mmmm mmmm xxxx yyyy zzzz
  * </pre>
  */
-public class GameMapObjectBuffer extends GameObjectBuffer {
+public class GameMapObjectBuffer {
 
     /**
      * Size in bytes.

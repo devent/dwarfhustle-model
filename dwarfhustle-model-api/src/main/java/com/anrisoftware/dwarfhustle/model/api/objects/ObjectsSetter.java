@@ -66,4 +66,11 @@ public interface ObjectsSetter {
      */
     void set(int type, Iterable<GameObject> values) throws ObjectsSetterException;
 
+    /**
+     * Removes the {@link GameObject}.
+     */
+    default void remove(int objectType, GameObject go) throws ObjectsSetterException {
+        // nop
+    }
+
 }

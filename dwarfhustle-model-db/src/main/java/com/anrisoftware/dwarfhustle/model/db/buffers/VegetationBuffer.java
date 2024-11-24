@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.buffers;
 
+import static com.anrisoftware.dwarfhustle.model.db.buffers.BufferUtils.shortToFloat;
+
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
@@ -42,7 +44,7 @@ import com.anrisoftware.dwarfhustle.model.api.vegetations.Vegetation;
  *       iiii iiii iiii iiii kkkk kkkk kkkk kkkk mmmm mmmm mmmm mmmm xxxx yyyy zzzz gggg
  * </pre>
  */
-public class VegetationBuffer extends GameMapObjectBuffer {
+public class VegetationBuffer {
 
     /**
      * Size in bytes.
@@ -56,15 +58,15 @@ public class VegetationBuffer extends GameMapObjectBuffer {
     }
 
     public static float getGrowth(DirectBuffer b, int off) {
-        return BufferUtils.shortToFloat(b.getShort(GROWTH_INDEX_BYTES + off));
+        return shortToFloat(b.getShort(GROWTH_INDEX_BYTES + off));
     }
 
-    public static void writeObject(MutableDirectBuffer b, int off, Vegetation o) {
+    public static void writeVegetation(MutableDirectBuffer b, int off, Vegetation o) {
         GameMapObjectBuffer.writeObject(b, off, o);
         setGrowth(b, off, o.growth);
     }
 
-    public static Vegetation readObject(DirectBuffer b, int off, Vegetation o) {
+    public static Vegetation readVegetation(DirectBuffer b, int off, Vegetation o) {
         GameMapObjectBuffer.readObject(b, off, o);
         o.growth = getGrowth(b, off);
         return o;

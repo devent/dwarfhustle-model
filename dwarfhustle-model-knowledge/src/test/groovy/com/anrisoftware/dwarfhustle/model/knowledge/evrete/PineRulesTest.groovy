@@ -48,7 +48,6 @@ import com.anrisoftware.dwarfhustle.model.db.lmbd.MapChunksLmbdStorage.MapChunks
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustleModelKnowledgePowerloomPlModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor
-import com.anrisoftware.dwarfhustle.model.trees.VegetationLoadKnowledges
 import com.google.inject.Guice
 import com.google.inject.Injector
 

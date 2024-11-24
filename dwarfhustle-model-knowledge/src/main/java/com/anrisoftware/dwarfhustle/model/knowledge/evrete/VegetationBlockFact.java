@@ -19,7 +19,9 @@ package com.anrisoftware.dwarfhustle.model.knowledge.evrete;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.eclipse.collections.api.list.primitive.IntList;
 import org.eclipse.collections.api.map.primitive.IntIntMap;
+import org.eclipse.collections.api.map.primitive.IntObjectMap;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
@@ -37,17 +39,22 @@ public class VegetationBlockFact extends BlockFact {
     public final KnowledgeVegetation k;
 
     @ToString.Exclude
-    public final IntIntMap objects;
+    private final IntIntMap objects;
 
     private final AtomicBoolean done;
 
+    @ToString.Exclude
+    private final IntObjectMap<IntList> materials;
+
     public VegetationBlockFact(AtomicBoolean done, Vegetation v, KnowledgeVegetation k, IntIntMap objects,
-            ObjectsGetter og, ObjectsSetter os, MapChunk chunk, int x, int y, int z, int w, int h, int d) {
+            IntObjectMap<IntList> materials, ObjectsGetter og, ObjectsSetter os, MapChunk chunk, int x, int y, int z,
+            int w, int h, int d) {
         super(og, os, chunk, x, y, z, w, h, d);
         this.done = done;
         this.v = v;
         this.k = k;
         this.objects = objects;
+        this.materials = materials;
     }
 
     public void setChanged() {
@@ -81,4 +88,13 @@ public class VegetationBlockFact extends BlockFact {
     public boolean isNotOnMapEdge() {
         return x > 0 && y > 0 && z > 0 && x < w && y < h && z < d;
     }
+
+    public void setMaterial(int x, int y, int z, VegetationKnowledgeMaterials o) {
+        setMaterial(x, y, z, materials.get(o.hash).getFirst());
+    }
+
+    public void setMaterial(VegetationKnowledgeMaterials o) {
+        setMaterial(materials.get(o.hash).getFirst());
+    }
+
 }

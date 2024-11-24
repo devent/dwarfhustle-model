@@ -53,6 +53,7 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Sedimentary
 import com.anrisoftware.dwarfhustle.model.api.materials.Soil
 import com.anrisoftware.dwarfhustle.model.api.materials.Stone
 import com.anrisoftware.dwarfhustle.model.api.materials.Topsoil
+import com.anrisoftware.dwarfhustle.model.api.materials.Wood
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeGrass
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeShrub
@@ -203,7 +204,8 @@ class ListKnowledges {
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Sedimentary.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Liquid.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Topsoil.TYPE))
-        while (ko.size() != 10) {
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Wood.TYPE))
+        while (ko.size() != 11) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
         }

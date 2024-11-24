@@ -6,6 +6,7 @@ import static com.anrisoftware.dwarfhustle.model.db.buffers.MapBlockBuffer.*;
 import static com.anrisoftware.dwarfhustle.model.db.buffers.MapChunkBuffer.*;
 import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.VegetationKnowledge.*;
 import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.VegetationKnowledgeObjects.*;
+import static com.anrisoftware.dwarfhustle.model.knowledge.evrete.VegetationKnowledgeMaterials.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -38,6 +39,7 @@ public class PineRules extends AbstractTerrainRules {
         System.out.println("PineRules.step_1_branch_pos()"); // TODO
         $f.setChanged();
         $f.setObject(OBJECT_TREE_BRANCH_NAME);
+        $f.setMaterial(MATERIAL_TREE_WOOD_NAME);
         $f.removeProp(EMPTY);
         $f.addProp(FILLED);
     }

@@ -33,7 +33,9 @@ public enum VegetationKnowledgeObjects {
 
     OBJECT_TREE_BRANCH_NAME("object-tree-branch".hashCode()),
 
-    OBJECT_TREE_TRUNK_NAME("object-tree-trunk".hashCode());
+    OBJECT_TREE_TRUNK_NAME("object-tree-trunk".hashCode()),
+
+    ;
 
     public final int hash;
 }
