@@ -49,6 +49,10 @@ public abstract class GameMapObject extends GameObject implements StoredObject {
 
     public static final int OBJECT_TYPE = GameMapObject.class.getSimpleName().hashCode();
 
+    public static final int VISIBLE_POS = 0;
+
+    public static final int FORBIDDEN_POS = 1;
+
     /**
      * Record ID set after the object was once stored in the backend.
      */
@@ -74,6 +78,19 @@ public abstract class GameMapObject extends GameObject implements StoredObject {
      */
     public int oid;
 
+    /**
+     * Properties of the object.
+     * <p>
+     * Exclusive Flags:
+     * 
+     * <pre>
+     * 00000000 00000000 hidden.
+     * 00000000 00000001 visible.
+     * 00000000 00000010 forbidden.
+     * </pre>
+     */
+    public PropertiesSet p = new PropertiesSet();
+
     public GameMapObject(long id) {
         super(id);
     }
@@ -94,6 +111,42 @@ public abstract class GameMapObject extends GameObject implements StoredObject {
 
     public void setPos(GameBlockPos pos) {
         this.pos.set(pos);
+    }
+
+    public void setHidden(boolean flag) {
+        if (!flag) {
+            p.set(VISIBLE_POS);
+        } else {
+            p.clear(VISIBLE_POS);
+        }
+    }
+
+    public boolean isHidden() {
+        return !p.get(VISIBLE_POS);
+    }
+
+    public void setVisible(boolean flag) {
+        if (flag) {
+            p.set(VISIBLE_POS);
+        } else {
+            p.clear(VISIBLE_POS);
+        }
+    }
+
+    public boolean isVisible() {
+        return p.get(VISIBLE_POS);
+    }
+
+    public void setForbidden(boolean flag) {
+        if (flag) {
+            p.set(FORBIDDEN_POS);
+        } else {
+            p.clear(FORBIDDEN_POS);
+        }
+    }
+
+    public boolean isForbidden() {
+        return p.get(FORBIDDEN_POS);
     }
 
     @Override

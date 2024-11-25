@@ -26,26 +26,21 @@ import com.google.auto.service.AutoService;
 
 /**
  * Writes and reads {@link Grass} in a byte buffer.
- * 
+ * <p>
+ * See properties from {@link VegetationBuffer}.
  * <ul>
- * <li>@{code i} the object ID;
- * <li>@{code k} the knowledge ID;
- * <li>@{code m} the map ID;
- * <li>@{code x} the X position on the map;
- * <li>@{code y} the Y position on the map;
- * <li>@{code z} the Z position on the map;
- * <li>@{code g} the growth;
+ * <li>
  * </ul>
  * 
  * <pre>
- * long  0                   1                   2                   3
- * int   0         1         2         3         4         5         6         7
- * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15
- *       iiii iiii iiii iiii kkkk kkkk kkkk kkkk mmmm mmmm mmmm mmmm xxxx yyyy zzzz gggg
+ * long  0                   1                   2                   3                   4
+ * int   0         1         2         3         4         5         6         7         8
+ * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17
+ *       iiii iiii iiii iiii kkkk kkkk oooo oooo mmmm mmmm mmmm mmmm xxxx yyyy zzzz pppp pppp gggg
  * </pre>
  */
 @AutoService(StoredObjectBuffer.class)
-public class GrassBuffer extends VegetationBuffer implements StoredObjectBuffer {
+public class GrassBuffer implements StoredObjectBuffer {
 
     /**
      * Size in bytes.

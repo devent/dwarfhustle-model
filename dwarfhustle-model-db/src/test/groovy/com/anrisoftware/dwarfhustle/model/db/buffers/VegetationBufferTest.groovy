@@ -28,6 +28,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos
+import com.anrisoftware.dwarfhustle.model.api.objects.PropertiesSet
 import com.anrisoftware.dwarfhustle.model.api.vegetations.Vegetation
 
 /**
@@ -41,16 +42,16 @@ class VegetationBufferTest {
         def args = []
         int offset = 0
         def b = ByteBuffer.allocate(offset + VegetationBuffer.SIZE)
-        args << of(b, offset, 1, 2, 3, 10, 20, 30, 0.123f, "01000000 00000000 02000000 00000000 03000000 00000000 0a001400 1e007d9f 00000000")
+        args << of(b, offset, 1, 2, 3, 10, 20, 30, 0b0001, 0.123f, "01000000 00000000 02000000 00000000 03000000 00000000 0a001400 1e000100 00007d9f")
         offset = 3
         b = ByteBuffer.allocate(offset + VegetationBuffer.SIZE)
-        args << of(b, offset, 1, 2, 3, 10, 20, 30, 0.123f, "000000 01000000 00000000 02000000 00000000 03000000 00000000 0a001400 1e007d9f 00000000")
+        args << of(b, offset, 1, 2, 3, 10, 20, 30, 0b0001, 0.123f, "000000 01000000 00000000 02000000 00000000 03000000 00000000 0a001400 1e000100 00007d9f")
         Stream.of(args as Object[])
     }
 
     @ParameterizedTest
     @MethodSource()
-    void write_read_Vegetation(ByteBuffer b, int offset, long id, long kid, long map, int x, int y, int z, float growth, def expected) {
+    void write_read_Vegetation(ByteBuffer b, int offset, long id, long kid, long map, int x, int y, int z, int p, float growth, def expected) {
         def o = new Vegetation(id, new GameBlockPos(x, y, z)) {
 
                     @Override
@@ -61,7 +62,8 @@ class VegetationBufferTest {
         o.kid = kid
         o.map = map
         o.growth = growth
-        VegetationBuffer.writeObject(new UnsafeBuffer(b), offset, o)
+        o.p = new PropertiesSet(p)
+        VegetationBuffer.writeVegetation(new UnsafeBuffer(b), offset, o)
         assert HexFormat.of().formatHex(b.array()) == replace(expected, " ", "")
         def thato = new Vegetation() {
 
@@ -70,13 +72,14 @@ class VegetationBufferTest {
                         return 0;
                     }
                 }
-        VegetationBuffer.readObject(new UnsafeBuffer(b), offset, thato)
+        VegetationBuffer.readVegetation(new UnsafeBuffer(b), offset, thato)
         assert thato.id == id
         assert thato.kid == kid
         assert thato.map == map
         assert thato.pos.x == x
         assert thato.pos.y == y
         assert thato.pos.z == z
+        assert thato.p.bits == p
         assert thato.growth == growth
     }
 }
