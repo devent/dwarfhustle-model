@@ -47,8 +47,6 @@ import lombok.ToString;
 @Data
 public abstract class GameMapObject extends GameObject implements StoredObject {
 
-    public static final int OBJECT_TYPE = GameMapObject.class.getSimpleName().hashCode();
-
     public static final int VISIBLE_POS = 0;
 
     public static final int FORBIDDEN_POS = 1;

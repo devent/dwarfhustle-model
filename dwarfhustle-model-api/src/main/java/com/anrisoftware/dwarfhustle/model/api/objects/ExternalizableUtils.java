@@ -22,18 +22,26 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.eclipse.collections.api.LongIterable;
 import org.eclipse.collections.api.factory.primitive.IntLongMaps;
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
+import org.eclipse.collections.api.factory.primitive.LongIntMaps;
+import org.eclipse.collections.api.factory.primitive.LongLists;
 import org.eclipse.collections.api.factory.primitive.LongObjectMaps;
 import org.eclipse.collections.api.factory.primitive.ObjectIntMaps;
 import org.eclipse.collections.api.factory.primitive.ObjectLongMaps;
+import org.eclipse.collections.api.list.primitive.MutableLongList;
 import org.eclipse.collections.api.map.primitive.IntLongMap;
 import org.eclipse.collections.api.map.primitive.IntObjectMap;
+import org.eclipse.collections.api.map.primitive.LongIntMap;
 import org.eclipse.collections.api.map.primitive.LongObjectMap;
 import org.eclipse.collections.api.map.primitive.MutableIntLongMap;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
+import org.eclipse.collections.api.map.primitive.MutableLongIntMap;
 import org.eclipse.collections.api.map.primitive.MutableLongObjectMap;
 import org.eclipse.collections.api.map.primitive.MutableObjectIntMap;
 import org.eclipse.collections.api.map.primitive.MutableObjectLongMap;
@@ -190,6 +198,78 @@ public class ExternalizableUtils {
             T value = supplier.get();
             value.readStream(in);
             map.put(key, value);
+        }
+        return map;
+    }
+
+    /**
+     * Writes the keys and values of the {@link IntObjectMap} to stream.
+     */
+    public static <T> void writeStreamIntObjectMap(DataOutput out, IntObjectMap<T> map, BiConsumer<DataOutput, T> write)
+            throws IOException {
+        out.writeInt(map.size());
+        for (var view : map.keyValuesView()) {
+            out.writeInt(view.getOne());
+            write.accept(out, view.getTwo());
+        }
+    }
+
+    /**
+     * Reads the keys and values of the {@link IntObjectMap} from stream.
+     */
+    public static <T> MutableIntObjectMap<T> readStreamIntObjectMap(DataInput in, Function<DataInput, T> read)
+            throws IOException {
+        int size = in.readInt();
+        MutableIntObjectMap<T> map = IntObjectMaps.mutable.ofInitialCapacity(size);
+        for (int i = 0; i < size; i++) {
+            int key = in.readInt();
+            var value = read.apply(in);
+            map.put(key, value);
+        }
+        return map;
+    }
+
+    /**
+     * Writes the values of any {@link LongIterable}.
+     */
+    public static void writeStreamLongCollection(DataOutput out, int size, LongIterable it) throws IOException {
+        out.writeInt(size);
+        for (var i = it.longIterator(); i.hasNext();) {
+            out.writeLong(i.next());
+        }
+    }
+
+    /**
+     * Reads the values of to a {@link LongIterable}.
+     */
+    public static <T extends LongIterable> LongIterable readStreamLongCollection(DataInput in) throws IOException {
+        int size = in.readInt();
+        MutableLongList list = LongLists.mutable.withInitialCapacity(size);
+        for (int i = 0; i < size; i++) {
+            list.add(in.readLong());
+        }
+        return list;
+    }
+
+    /**
+     * Writes the keys and values of the {@link LongIntMap} to stream.
+     */
+    public static void writeStreamLongIntMap(DataOutput out, LongIntMap map) throws IOException {
+        out.writeInt(map.size());
+        for (var view : map.keyValuesView()) {
+            out.writeLong(view.getOne());
+            out.writeInt(view.getTwo());
+        }
+    }
+
+    /**
+     * Reads the keys and values of the {@link LongIntMap} to stream.
+     */
+    public static LongIntMap readStreamLongIntMap(DataInput in) throws IOException {
+        int size = in.readInt();
+        MutableLongIntMap map = LongIntMaps.mutable.ofInitialCapacity(size);
+        for (int i = 0; i < size; i++) {
+            map.put(in.readLong(), in.readInt());
         }
         return map;
     }

@@ -23,6 +23,7 @@ import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
@@ -41,6 +42,7 @@ import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 import akka.pattern.StatusReply;
 import jakarta.inject.Inject;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -115,6 +117,11 @@ public class MainActor extends MessageActor<Message> {
 
     public <T extends Message> ActorRef<T> getActor(int id) {
         return castActor(actors.get(id));
+    }
+
+    @SneakyThrows
+    public <T extends Message> ActorRef<T> getActorAsyncNow(int id) {
+        return castActor(getActorAsync(id).toCompletableFuture().get(15, TimeUnit.SECONDS));
     }
 
     public <T extends Message> CompletionStage<ActorRef<T>> getActorAsync(int id) {

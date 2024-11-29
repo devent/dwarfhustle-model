@@ -74,6 +74,10 @@ rid["PEAT"] = 859
 rid["LOAMY-SAND"] = 858
 rid["LOAM"] = 857
 
+// Wood
+rid["BIRCH-WOOD"] = 1042
+rid["PINE-WOOD"] = 1034
+
 rid["UNKNOWN"] = 0xffff
 
 map = [

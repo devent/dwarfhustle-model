@@ -17,6 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.lmbd;
 
+import static com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos.calcIndex;
 import static java.lang.Math.pow;
 import static java.nio.ByteBuffer.allocateDirect;
 import static org.lmdbjava.DbiFlags.MDB_CREATE;
@@ -28,29 +29,38 @@ import static org.lmdbjava.Env.create;
 import static org.lmdbjava.GetOp.MDB_SET;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.RecursiveAction;
 
 import org.agrona.DirectBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
+import org.eclipse.collections.api.LongIterable;
+import org.eclipse.collections.api.list.primitive.LongList;
 import org.lmdbjava.Dbi;
 import org.lmdbjava.Env;
 import org.lmdbjava.Txn;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapObjectsStorage;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsConsumer;
-import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsSetter;
+import com.anrisoftware.dwarfhustle.model.db.cache.MapObject;
 import com.google.inject.assistedinject.Assisted;
 
 import jakarta.inject.Inject;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Store the object ID and object type for the (x,y,z) map block.
  */
-public class MapObjectsLmbdStorage implements MapObjectsStorage {
+public class MapObjectsLmbdStorage implements MapObjectsStorage, ObjectsGetter, ObjectsSetter {
 
     /**
      * Factory to create the {@link MapObjectsLmbdStorage}.
@@ -108,6 +118,10 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage {
     @Override
     public void putObject(int x, int y, int z, int type, long id) {
         int index = GameBlockPos.calcIndex(w, h, d, 0, 0, 0, x, y, z);
+        putObject(index, type, id);
+    }
+
+    private void putObject(int index, int type, long id) {
         try (Txn<DirectBuffer> txn = env.txnWrite()) {
             final var key = buffkey.get();
             final var val = buffval.get();
@@ -119,36 +133,57 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage {
         }
     }
 
-    private class ObjectsListRecursiveAction<T extends StoredObject> extends AbstractObjectsListRecursiveAction<T> {
+    @RequiredArgsConstructor
+    private class ObjectsListRecursiveAction extends RecursiveAction {
 
         private static final long serialVersionUID = 1L;
 
-        public ObjectsListRecursiveAction(int max, int start, int end, List<T> objects) {
-            super(max, start, end, objects);
-        }
+        protected final int max;
+
+        protected final int start;
+
+        protected final int end;
+
+        protected final int index;
+
+        protected final int type;
+
+        protected final LongList oids;
 
         @Override
+        protected void compute() {
+            if (end - start > max) {
+                ForkJoinTask.invokeAll(createSubtasks());
+            } else {
+                processing();
+            }
+        }
+
+        private Collection<ObjectsListRecursiveAction> createSubtasks() {
+            List<ObjectsListRecursiveAction> dividedTasks = new ArrayList<>();
+            dividedTasks.add(create(max, start, start / 2 + end / 2));
+            dividedTasks.add(create(max, start / 2 + end / 2, end));
+            return dividedTasks;
+        }
+
         protected void processing() {
             try (Txn<DirectBuffer> txn = env.txnWrite()) {
                 final var c = db.openCursor(txn);
                 final var key = buffkey.get();
                 final var val = buffval.get();
                 for (int i = start; i < end; i++) {
-                    var o = objects.get(i);
-                    var mo = (GameMapObject) o;
-                    int index = GameBlockPos.calcIndex(w, h, d, 0, 0, 0, mo.pos.x, mo.pos.y, mo.pos.z);
+                    var id = oids.get(i);
                     key.putInt(0, index);
-                    MapObjectValue.setId(val, 0, o.getId());
-                    MapObjectValue.setType(val, 0, o.getObjectType());
+                    MapObjectValue.setId(val, 0, id);
+                    MapObjectValue.setType(val, 0, type);
                     c.put(key, val);
                 }
                 txn.commit();
             }
         }
 
-        @Override
-        protected AbstractObjectsListRecursiveAction<T> create(int max, int start, int end, List<T> objects) {
-            return new ObjectsListRecursiveAction<>(max, start, end, objects);
+        protected ObjectsListRecursiveAction create(int max, int start, int end) {
+            return new ObjectsListRecursiveAction(max, start, end, index, type, oids);
         }
     }
 
@@ -156,30 +191,28 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage {
      * Mass storage for game map objects.
      */
     @Override
-    public void putObjects(List<? extends StoredObject> objects) {
+    public void putObjects(int index, int type, LongIterable ids) {
         int max = 8192;
-        if (objects.size() < max) {
-            putObjects(objects);
-        } else {
+        if (ids instanceof LongList list) {
             var pool = ForkJoinPool.commonPool();
-            pool.invoke(new ObjectsListRecursiveAction<>(max, 0, objects.size(), objects));
+            pool.invoke(new ObjectsListRecursiveAction(max, 0, list.size(), index, type, list));
+        } else {
+            putObjects0(index, type, ids);
         }
     }
 
     /**
      * Mass storage for game map objects.
      */
-    @Override
-    public void putObjects(Iterable<GameMapObject> objects) {
+    public void putObjects0(int index, int type, LongIterable ids) {
         try (Txn<DirectBuffer> txn = env.txnWrite()) {
             final var c = db.openCursor(txn);
             final var key = buffkey.get();
             final var val = buffval.get();
-            for (var o : objects) {
-                int index = GameBlockPos.calcIndex(w, h, d, 0, 0, 0, o.pos.x, o.pos.y, o.pos.z);
+            for (var it = ids.longIterator(); it.hasNext();) {
                 key.putInt(0, index);
-                MapObjectValue.setId(val, 0, o.id);
-                MapObjectValue.setType(val, 0, o.getObjectType());
+                MapObjectValue.setId(val, 0, it.next());
+                MapObjectValue.setType(val, 0, type);
                 c.put(key, val);
             }
             txn.commit();
@@ -190,11 +223,15 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage {
      * Retrieves the game map objects on the (x,y,z) block from the database.
      */
     @Override
-    public synchronized void getObjects(int x, int y, int z, ObjectsConsumer consumer) {
+    public void getObjects(int x, int y, int z, ObjectsConsumer consumer) {
+        final int index = calcIndex(w, h, d, 0, 0, 0, x, y, z);
+        getObjects(x, y, z, index, consumer);
+    }
+
+    private synchronized void getObjects(int x, int y, int z, int index, ObjectsConsumer consumer) {
         try {
             readTxn.renew();
             final var key = buffkey.get();
-            final int index = GameBlockPos.calcIndex(w, h, d, 0, 0, 0, x, y, z);
             key.putInt(0, index);
             final var c = db.openCursor(readTxn);
             if (!c.get(key, MDB_SET)) {
@@ -225,7 +262,7 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage {
             for (int x = sx; x < ex; x++) {
                 for (int y = sy; y < ey; y++) {
                     for (int z = sz; z < ez; z++) {
-                        final int index = GameBlockPos.calcIndex(w, h, d, 0, 0, 0, x, y, z);
+                        final int index = calcIndex(w, h, d, 0, 0, 0, x, y, z);
                         key.putInt(0, index);
                         if (!c.get(key, MDB_SET)) {
                             continue;
@@ -247,7 +284,11 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage {
 
     @Override
     public void removeObject(int x, int y, int z, int type, long id) {
-        int index = GameBlockPos.calcIndex(w, h, d, 0, 0, 0, x, y, z);
+        int index = calcIndex(w, h, d, 0, 0, 0, x, y, z);
+        removeObject(type, index, id);
+    }
+
+    private void removeObject(int type, int index, long id) {
         try (Txn<DirectBuffer> txn = env.txnWrite()) {
             final var key = buffkey.get();
             final var val = buffval.get();
@@ -257,5 +298,36 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage {
             db.delete(txn, key, val);
             txn.commit();
         }
+    }
+
+    @Override
+    public void set(int type, GameObject go) throws ObjectsSetterException {
+        var mo = (MapObject) go;
+        mo.getOids().forEachKeyValue((id, type0) -> putObject(mo.getIndex(), type0, id));
+    }
+
+    @Override
+    public void set(int type, Iterable<GameObject> values) throws ObjectsSetterException {
+        for (var go : values) {
+            var mo = (MapObject) go;
+            mo.getOids().forEachKeyValue((id, type0) -> putObject(mo.getIndex(), type0, id));
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends GameObject> T get(int type, long key) throws ObjectsGetterException {
+        final int index = (int) key;
+        var mo = new MapObject(index);
+        getObjects(index, 0, 0, 0, (type0, id, x, y, z) -> {
+            mo.addObject(type0, id);
+        });
+        return (T) mo;
+    }
+
+    @Override
+    public void remove(int type, GameObject go) throws ObjectsSetterException {
+        var mo = (MapObject) go;
+        mo.getOids().forEachKeyValue((id, type0) -> removeObject(mo.getIndex(), type0, id));
     }
 }

@@ -17,7 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import java.util.List;
+import org.eclipse.collections.api.LongIterable;
 
 /**
  * Store the object ID and object type for the (x,y,z) map block.
@@ -39,12 +39,7 @@ public interface MapObjectsStorage extends AutoCloseable {
     /**
      * Mass storage for game map objects.
      */
-    void putObjects(List<? extends StoredObject> objects);
-
-    /**
-     * Mass storage for game map objects.
-     */
-    void putObjects(Iterable<GameMapObject> objects);
+    void putObjects(int index, int type, LongIterable ids);
 
     /**
      * Retrieves the game map objects on the (x,y,z) block from the database.

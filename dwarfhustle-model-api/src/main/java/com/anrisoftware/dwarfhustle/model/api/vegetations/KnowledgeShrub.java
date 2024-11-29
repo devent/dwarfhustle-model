@@ -51,9 +51,10 @@ public class KnowledgeShrub extends KnowledgeVegetation {
         return KnowledgeShrub.TYPE;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public GameObject createObject(byte[] id) {
-        return new Shrub(id);
+    public <T extends GameObject> T createObject(byte[] id) {
+        return (T) new Shrub(id);
     }
 
 }

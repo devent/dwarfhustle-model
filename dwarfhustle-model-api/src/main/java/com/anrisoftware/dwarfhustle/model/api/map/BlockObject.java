@@ -56,7 +56,7 @@ public class BlockObject extends ObjectType {
     }
 
     @Override
-    public GameObject createObject(byte[] id) {
+    public <T extends GameObject> T createObject(byte[] id) {
         return null;
     }
 }

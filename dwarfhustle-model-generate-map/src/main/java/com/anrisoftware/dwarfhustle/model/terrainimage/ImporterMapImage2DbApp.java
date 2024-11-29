@@ -275,15 +275,12 @@ public class ImporterMapImage2DbApp {
      */
     public GameMap createGameMap(Properties p, TerrainLoadImage image, int chunksCount, WorldMap wm)
             throws GeneratorException {
-        var gm = new GameMap(gen.generate());
+        var gm = new GameMap(gen.generate(), image.width, image.height, image.depth);
         wm.addMap(gm);
         wm.currentMap = gm.id;
         gm.world = wm.id;
         gm.chunkSize = image.chunkSize;
         gm.chunksCount = chunksCount;
-        gm.width = image.width;
-        gm.height = image.height;
-        gm.depth = image.depth;
         gm.area = MapArea.create(50.99819f, 10.98348f, 50.96610f, 11.05610f);
         gm.timeZone = ZoneOffset.ofHours(1);
         gm.setCameraPos(0.0f, 0.0f, 83.0f);

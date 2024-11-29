@@ -107,7 +107,7 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     public static CompletableFuture<CacheAccess<Object, GameObject>> createInitCacheAsync() {
         CompletableFuture<CacheAccess<Object, GameObject>> initCache = CompletableFuture.supplyAsync(() -> {
             try {
-                return JCS.getInstance("objects");
+                return JCS.getInstance("stored_objects");
             } catch (CacheException e) {
                 throw new RuntimeException(e);
             }

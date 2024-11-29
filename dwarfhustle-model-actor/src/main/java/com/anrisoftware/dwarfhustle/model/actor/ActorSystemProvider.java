@@ -17,7 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.actor;
 
-import java.util.concurrent.CompletableFuture;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeoutException;
@@ -131,8 +133,13 @@ public class ActorSystemProvider implements Provider<ActorRef<Message>> {
         ogs.put(id, og);
     }
 
+    @SneakyThrows
+    public ObjectsGetter getObjectGetterAsyncNow(int id) {
+        return getObjectGetterAsync(id).toCompletableFuture().get(15, SECONDS);
+    }
+
     public CompletionStage<ObjectsGetter> getObjectGetterAsync(int id) {
-        return CompletableFuture.supplyAsync(() -> supplyObjectGetter(id), pool);
+        return supplyAsync(() -> supplyObjectGetter(id), pool);
     }
 
     public synchronized void registerObjectsSetter(int id, ObjectsSetter os) {
@@ -141,7 +148,12 @@ public class ActorSystemProvider implements Provider<ActorRef<Message>> {
     }
 
     public CompletionStage<ObjectsSetter> getObjectSetterAsync(int id) {
-        return CompletableFuture.supplyAsync(() -> supplyObjectSetter(id), pool);
+        return supplyAsync(() -> supplyObjectSetter(id), pool);
+    }
+
+    @SneakyThrows
+    public ObjectsSetter getObjectSetterAsyncNow(int id) {
+        return getObjectSetterAsync(id).toCompletableFuture().get(15, SECONDS);
     }
 
     public synchronized void registerKnowledgeGetter(int id, KnowledgeGetter kg) {
@@ -150,7 +162,12 @@ public class ActorSystemProvider implements Provider<ActorRef<Message>> {
     }
 
     public CompletionStage<KnowledgeGetter> getKnowledgeGetterAsync(int id) {
-        return CompletableFuture.supplyAsync(() -> supplyKnowledgeGetter(id), pool);
+        return supplyAsync(() -> supplyKnowledgeGetter(id), pool);
+    }
+
+    @SneakyThrows
+    public KnowledgeGetter getKnowledgeGetterAsyncNow(int id) {
+        return getKnowledgeGetterAsync(id).toCompletableFuture().get(15, SECONDS);
     }
 
     @SneakyThrows

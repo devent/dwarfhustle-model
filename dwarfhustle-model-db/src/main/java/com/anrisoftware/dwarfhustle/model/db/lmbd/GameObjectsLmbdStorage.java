@@ -210,6 +210,7 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
             final var key = buff8.get();
             readTxn.renew();
             key.putLong(0, id);
+            // need to have a look-up map. id -> type -> read game object with type
             var val = dbs.get(type).get(readTxn, key);
             return (T) readBuffers.get(type).read(val);
         } finally {

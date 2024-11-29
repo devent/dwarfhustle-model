@@ -74,6 +74,6 @@ public abstract class KnowledgeObject extends GameObject {
     /**
      * Creates the {@link GameObject} for this {@link KnowledgeObject}.
      */
-    public abstract GameObject createObject(byte[] id);
+    public abstract <T extends GameObject> T createObject(byte[] id);
 
 }

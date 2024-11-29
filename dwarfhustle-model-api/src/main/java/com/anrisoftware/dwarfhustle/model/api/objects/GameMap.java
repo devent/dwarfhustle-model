@@ -17,14 +17,29 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamIntObjectMap;
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamIntObjectMap;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.time.ZoneOffset;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.eclipse.collections.api.IntIterable;
+import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
+import org.eclipse.collections.api.map.primitive.IntObjectMap;
+import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 
 import com.google.auto.service.AutoService;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.ToString;
 
 /**
@@ -124,12 +139,22 @@ public class GameMap extends GameObject implements StoredObject {
 
     public int climateZone;
 
-    public GameMap(long id) {
+    /**
+     * Contains the indices of blocks that have at least one {@link GameMapObject},
+     * with the objects count.
+     */
+    public IntObjectMap<AtomicInteger> filledBlocks = IntObjectMaps.mutable.withInitialCapacity(100);
+
+    public GameMap(long id, int width, int height, int depth) {
         super(id);
+        this.width = width;
+        this.height = height;
+        this.depth = depth;
+        this.filledBlocks = IntObjectMaps.mutable.withInitialCapacity(width * height * depth);
     }
 
-    public GameMap(byte[] idbuf) {
-        super(idbuf);
+    public GameMap(byte[] idbuf, int width, int height, int depth) {
+        this(toId(idbuf), width, height, depth);
     }
 
     @Override
@@ -183,4 +208,104 @@ public class GameMap extends GameObject implements StoredObject {
         sunPos[1] = y;
         sunPos[2] = z;
     }
+
+    public void addFilledBlock(int index) {
+        var filledBlocks = (MutableIntObjectMap<AtomicInteger>) this.filledBlocks;
+        filledBlocks.getIfAbsentPut(index, new AtomicInteger(0)).incrementAndGet();
+    }
+
+    public void addAllFilledBlock(IntIterable indices) {
+        for (var it = indices.intIterator(); it.hasNext();) {
+            addFilledBlock(it.next());
+        }
+    }
+
+    public void removeFilledBlock(int index) {
+        var filledBlocks = (MutableIntObjectMap<AtomicInteger>) this.filledBlocks;
+        filledBlocks.getIfAbsentPut(index, new AtomicInteger(0)).updateAndGet((it) -> {
+            if (it == 0) {
+                filledBlocks.remove(index);
+                return 0;
+            } else {
+                return --it;
+            }
+        });
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        writeStream(out);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        readStream(in);
+    }
+
+    @Override
+    public void writeStream(DataOutput out) throws IOException {
+        super.writeStream(out);
+        out.writeUTF(name);
+        out.writeInt(width);
+        out.writeInt(height);
+        out.writeInt(depth);
+        out.writeInt(chunkSize);
+        out.writeInt(chunksCount);
+        out.writeInt(blocksCount);
+        out.writeLong(world);
+        out.writeUTF(timeZone.getId());
+        area.writeStream(out);
+        out.writeFloat(cameraPos[0]);
+        out.writeFloat(cameraPos[1]);
+        out.writeFloat(cameraPos[2]);
+        out.writeFloat(cameraRot[0]);
+        out.writeFloat(cameraRot[1]);
+        out.writeFloat(cameraRot[2]);
+        out.writeFloat(cameraRot[3]);
+        cursor.writeStream(out);
+        out.writeFloat(sunPos[0]);
+        out.writeFloat(sunPos[1]);
+        out.writeFloat(sunPos[2]);
+        out.writeInt(climateZone);
+        writeStreamIntObjectMap(out, filledBlocks, this::writeAtomicInt);
+    }
+
+    @SneakyThrows
+    private void writeAtomicInt(DataOutput out, AtomicInteger i) {
+        out.writeInt(i.get());
+    }
+
+    @Override
+    public void readStream(DataInput in) throws IOException {
+        super.readStream(in);
+        this.name = in.readUTF();
+        this.width = in.readInt();
+        this.height = in.readInt();
+        this.depth = in.readInt();
+        this.chunkSize = in.readInt();
+        this.chunksCount = in.readInt();
+        this.blocksCount = in.readInt();
+        this.world = in.readLong();
+        this.timeZone = ZoneOffset.of(in.readUTF());
+        area.readStream(in);
+        this.cameraPos[0] = in.readFloat();
+        this.cameraPos[1] = in.readFloat();
+        this.cameraPos[2] = in.readFloat();
+        this.cameraRot[0] = in.readFloat();
+        this.cameraRot[1] = in.readFloat();
+        this.cameraRot[2] = in.readFloat();
+        this.cameraRot[3] = in.readFloat();
+        cursor.readStream(in);
+        this.sunPos[0] = in.readFloat();
+        this.sunPos[1] = in.readFloat();
+        this.sunPos[2] = in.readFloat();
+        this.climateZone = in.readInt();
+        this.filledBlocks = readStreamIntObjectMap(in, this::readAtomicInt);
+    }
+
+    @SneakyThrows
+    private AtomicInteger readAtomicInt(DataInput in) {
+        return new AtomicInteger(in.readInt());
+    }
+
 }

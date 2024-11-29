@@ -17,6 +17,11 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+/**
+ * 
+ * 
+ * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+ */
 @FunctionalInterface
 public interface ObjectsConsumer {
 

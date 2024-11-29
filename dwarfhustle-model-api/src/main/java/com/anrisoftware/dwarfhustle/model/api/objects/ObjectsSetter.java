@@ -69,7 +69,7 @@ public interface ObjectsSetter {
     /**
      * Removes the {@link GameObject}.
      */
-    default void remove(int objectType, GameObject go) throws ObjectsSetterException {
+    default void remove(int type, GameObject go) throws ObjectsSetterException {
         // nop
     }
 

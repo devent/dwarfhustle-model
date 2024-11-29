@@ -52,8 +52,9 @@ public class KnowledgeGrass extends KnowledgeVegetation {
         return KnowledgeGrass.TYPE;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public GameObject createObject(byte[] id) {
-        return new Grass(id);
+    public <T extends GameObject> T createObject(byte[] id) {
+        return (T) new Grass(id);
     }
 }

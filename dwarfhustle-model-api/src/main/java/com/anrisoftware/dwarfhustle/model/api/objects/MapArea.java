@@ -17,6 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.io.Serializable;
 
 import lombok.Data;
@@ -83,7 +86,7 @@ public class MapArea implements Serializable {
     /**
      * The center of the area.
      */
-    public MapCoordinate center;
+    public MapCoordinate center = new MapCoordinate();
 
     public MapArea(MapCoordinate nw, MapCoordinate se) {
         this.nw = nw;
@@ -94,4 +97,17 @@ public class MapArea implements Serializable {
     public void updateCenter() {
         this.center = getCentralGeoCoordinate(nw, se);
     }
+
+    public void writeStream(DataOutput out) throws IOException {
+        nw.writeStream(out);
+        se.writeStream(out);
+        center.writeStream(out);
+    }
+
+    public void readStream(DataInput in) throws IOException {
+        nw.readStream(in);
+        se.readStream(in);
+        center.readStream(in);
+    }
+
 }

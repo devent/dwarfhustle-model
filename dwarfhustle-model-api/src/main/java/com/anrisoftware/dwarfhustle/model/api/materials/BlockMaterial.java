@@ -67,7 +67,7 @@ public class BlockMaterial extends KnowledgeObject {
     }
 
     @Override
-    public GameObject createObject(byte[] id) {
+    public <T extends GameObject> T createObject(byte[] id) {
         return null;
     }
 }

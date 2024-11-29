@@ -51,8 +51,9 @@ public class KnowledgeTreeTrunk extends KnowledgeVegetation {
         return KnowledgeTreeTrunk.TYPE;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public GameObject createObject(byte[] id) {
-        return new TreeTrunk(id);
+    public <T extends GameObject> T createObject(byte[] id) {
+        return (T) new TreeTrunk(id);
     }
 }

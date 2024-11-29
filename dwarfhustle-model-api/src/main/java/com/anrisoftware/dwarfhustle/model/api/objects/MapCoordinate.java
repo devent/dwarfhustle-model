@@ -17,6 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -106,4 +109,15 @@ public class MapCoordinate implements Serializable {
     private String s(float[] llat, int n) {
         return TO_STRING_FORMATTER.format(llat[n]);
     }
+
+    public void writeStream(DataOutput out) throws IOException {
+        out.writeFloat(lat);
+        out.writeFloat(lon);
+    }
+
+    public void readStream(DataInput in) throws IOException {
+        this.lat = in.readFloat();
+        this.lon = in.readFloat();
+    }
+
 }

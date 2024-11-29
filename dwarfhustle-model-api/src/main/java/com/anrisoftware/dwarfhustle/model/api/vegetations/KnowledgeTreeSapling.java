@@ -56,8 +56,9 @@ public class KnowledgeTreeSapling extends KnowledgeVegetation {
         return TYPE;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public GameObject createObject(byte[] id) {
-        return new TreeSapling(id);
+    public <T extends GameObject> T createObject(byte[] id) {
+        return (T) new TreeSapling(id);
     }
 }

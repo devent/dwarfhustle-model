@@ -51,8 +51,9 @@ public class KnowledgeTreeTwig extends KnowledgeVegetation {
         return KnowledgeTreeTwig.TYPE;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public GameObject createObject(byte[] id) {
-        return new TreeTwig(id);
+    public <T extends GameObject> T createObject(byte[] id) {
+        return (T) new TreeTwig(id);
     }
 }

@@ -75,6 +75,20 @@ public class GameBlockPos implements Externalizable, StreamStorage {
     }
 
     /**
+     * Returns the index from the x/y/z position.
+     */
+    public static int calcIndex(GameMap gm, int x, int y, int z) {
+        return calcIndex(gm.getWidth(), gm.getHeight(), gm.getDepth(), 0, 0, 0, x, y, z);
+    }
+
+    /**
+     * Returns the index from the x/y/z position.
+     */
+    public static int calcIndex(GameMap gm, GameBlockPos pos) {
+        return calcIndex(gm.getWidth(), gm.getHeight(), gm.getDepth(), 0, 0, 0, pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    /**
      * Returns the X position from the index.
      */
     public static int calcX(int i, MapChunk chunk) {
