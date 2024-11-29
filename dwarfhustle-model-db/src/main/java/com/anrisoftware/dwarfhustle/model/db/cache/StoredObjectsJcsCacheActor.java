@@ -128,6 +128,7 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
 
     @Override
     protected void storeValueBackend(GameObject go) {
+        // TODO not save in every invocation
         os.set(go.getObjectType(), go);
     }
 
