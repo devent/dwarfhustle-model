@@ -45,8 +45,6 @@ import lombok.ToString;
 @Data
 public abstract class GameObject implements Externalizable, StreamStorage {
 
-    public static final int OBJECT_TYPE = GameObject.class.getSimpleName().hashCode();
-
     /**
      * Converts the byte array to an Id.
      */
