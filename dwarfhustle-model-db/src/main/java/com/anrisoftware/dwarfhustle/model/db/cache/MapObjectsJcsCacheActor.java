@@ -42,6 +42,7 @@ import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.BehaviorBuilder;
 import akka.actor.typed.javadsl.StashBuffer;
+import akka.actor.typed.javadsl.TimerScheduler;
 import akka.actor.typed.receptionist.ServiceKey;
 import lombok.extern.slf4j.Slf4j;
 
@@ -70,8 +71,8 @@ public class MapObjectsJcsCacheActor extends AbstractJcsCacheActor {
     public interface MapObjectsJcsCacheActorFactory extends AbstractJcsCacheActorFactory {
 
         @Override
-        MapObjectsJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, ObjectsGetter og,
-                ObjectsSetter os);
+        MapObjectsJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash,
+                TimerScheduler<Message> timer, ObjectsGetter og, ObjectsSetter os);
     }
 
     private static Behavior<Message> create(Injector injector, MapObjectsJcsCacheActorFactory actorFactory,

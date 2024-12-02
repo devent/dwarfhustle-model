@@ -20,16 +20,23 @@ package com.anrisoftware.dwarfhustle.model.db.cache;
 import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import org.apache.commons.jcs3.JCS;
 import org.apache.commons.jcs3.access.CacheAccess;
 import org.apache.commons.jcs3.access.exception.CacheException;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.primitive.LongObjectMaps;
+import org.eclipse.collections.api.map.primitive.MutableLongObjectMap;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+import com.anrisoftware.dwarfhustle.model.actor.ShutdownMessage;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsSetter;
@@ -40,8 +47,12 @@ import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.BehaviorBuilder;
+import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.StashBuffer;
+import akka.actor.typed.javadsl.TimerScheduler;
 import akka.actor.typed.receptionist.ServiceKey;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -59,6 +70,13 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
 
     public static final int ID = KEY.hashCode();
 
+    @RequiredArgsConstructor
+    @ToString(callSuper = true)
+    private static class StoreObjectsMessage extends Message {
+        public static final String KEY = StoreObjectsMessage.class.getName();
+
+    }
+
     /**
      * Factory to create {@link StoredObjectsJcsCacheActor}.
      *
@@ -67,8 +85,8 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     public interface StoredObjectsJcsCacheActorFactory extends AbstractJcsCacheActorFactory {
 
         @Override
-        StoredObjectsJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, ObjectsGetter og,
-                ObjectsSetter os);
+        StoredObjectsJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash,
+                TimerScheduler<Message> timer, ObjectsGetter og, ObjectsSetter os);
     }
 
     private static Behavior<Message> create(Injector injector, StoredObjectsJcsCacheActorFactory actorFactory,
@@ -115,9 +133,14 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
         return initCache;
     }
 
+    private final MutableLongObjectMap<GameObject> queue = LongObjectMaps.mutable.ofInitialCapacity(1000);
+
+    private final Semaphore queueLock = new Semaphore(1);
+
     @Override
     protected Behavior<Message> initialStage(InitialStateMessage m) {
         log.debug("initialStage {}", m);
+        timer.startTimerAtFixedRate(StoreObjectsMessage.KEY, new StoreObjectsMessage(), Duration.ofSeconds(30));
         return super.initialStage(m);
     }
 
@@ -126,15 +149,60 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
         return ID;
     }
 
+    /**
+     */
+    protected Behavior<Message> onStoreObjects(StoreObjectsMessage m) {
+        storeObjects();
+        return Behaviors.same();
+    }
+
+    /**
+     */
+    protected Behavior<Message> onShutdown(ShutdownMessage m) {
+        timer.cancelAll();
+        storeObjects();
+        return Behaviors.stopped();
+    }
+
+    private void storeObjects() {
+        try {
+            if (queueLock.tryAcquire(1, TimeUnit.SECONDS)) {
+                List<GameObject> list = Lists.mutable.ofAll(queue.values());
+                queue.clear();
+                for (var go : list) {
+                    os.set(go.getObjectType(), go);
+                }
+                queueLock.release();
+            }
+        } catch (InterruptedException e) {
+            log.error("storeObjects", e);
+        }
+    }
+
     @Override
     protected void storeValueBackend(GameObject go) {
-        // TODO not save in every invocation
-        os.set(go.getObjectType(), go);
+        try {
+            if (queueLock.tryAcquire(1, TimeUnit.SECONDS)) {
+                queue.put(go.getId(), go);
+                queueLock.release();
+            }
+        } catch (InterruptedException e) {
+            log.error("storeValueBackend", e);
+        }
     }
 
     @Override
     protected void storeValuesBackend(int type, Iterable<GameObject> values) {
-        os.set(type, values);
+        try {
+            if (queueLock.tryAcquire(1, TimeUnit.SECONDS)) {
+                for (GameObject go : values) {
+                    queue.put(go.getId(), go);
+                }
+                queueLock.release();
+            }
+        } catch (InterruptedException e) {
+            log.error("storeValuesBackend", e);
+        }
     }
 
     @Override
@@ -150,6 +218,8 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     @Override
     protected BehaviorBuilder<Message> getInitialBehavior() {
         return super.getInitialBehavior()//
+                .onMessage(StoreObjectsMessage.class, this::onStoreObjects)//
+                .onMessage(ShutdownMessage.class, this::onShutdown)//
         ;
     }
 

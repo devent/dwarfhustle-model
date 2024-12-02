@@ -70,8 +70,6 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
 
     private final IntObjectMap<Dbi<DirectBuffer>> dbs;
 
-    private final Txn<DirectBuffer> readTxn;
-
     private final ThreadLocal<UnsafeBuffer> buff8;
 
     private final IntObjectMap<StoredObjectBuffer> readBuffers;
@@ -89,8 +87,6 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
             dbs.put(type, env.openDbi(Integer.toString(type), MDB_CREATE, MDB_INTEGERKEY));
         });
         this.dbs = dbs;
-        this.readTxn = env.txnRead();
-        readTxn.reset();
         this.buff8 = ThreadLocal.withInitial(() -> new UnsafeBuffer(allocateDirect(8)));
     }
 
@@ -99,7 +95,6 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
      */
     @Override
     public void close() {
-        readTxn.close();
         env.close();
     }
 
@@ -206,15 +201,11 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
      */
     @SuppressWarnings("unchecked")
     public <T extends StoredObject> T getObject(int type, long id) {
-        try {
+        try (var txn = env.txnRead()) {
             final var key = buff8.get();
-            readTxn.renew();
             key.putLong(0, id);
-            // need to have a look-up map. id -> type -> read game object with type
-            var val = dbs.get(type).get(readTxn, key);
+            var val = dbs.get(type).get(txn, key);
             return (T) readBuffers.get(type).read(val);
-        } finally {
-            readTxn.reset();
         }
     }
 
@@ -222,14 +213,11 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
      * Retrieves all game objects with the specific object type.
      */
     public void getObjects(int type, Consumer<StoredObject> consumer) {
-        try {
-            readTxn.renew();
-            var it = dbs.get(type).iterate(readTxn);
+        try (var txn = env.txnRead()) {
+            var it = dbs.get(type).iterate(txn);
             it.forEach((k) -> {
                 consumer.accept(readBuffers.get(type).read(k.val()));
             });
-        } finally {
-            readTxn.reset();
         }
     }
 
@@ -244,9 +232,9 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
      * </pre>
      */
     public DbIterable getObjects(int type) {
-        readTxn.renew();
-        var it = dbs.get(type).iterate(readTxn);
-        return new DbIterable(it, type);
+        var txn = env.txnRead();
+        var it = dbs.get(type).iterate(txn);
+        return new DbIterable(it, type, txn);
     }
 
     /**
@@ -260,9 +248,12 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
 
         private final int type;
 
-        public DbIterable(CursorIterable<DirectBuffer> it, int type) {
+        private final Txn<?> txn;
+
+        public DbIterable(CursorIterable<DirectBuffer> it, int type, Txn<?> txn) {
             this.it = it.iterator();
             this.type = type;
+            this.txn = txn;
         }
 
         @Override
@@ -283,7 +274,7 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
 
         @Override
         public void close() throws Exception {
-            readTxn.reset();
+            txn.reset();
         }
 
     }

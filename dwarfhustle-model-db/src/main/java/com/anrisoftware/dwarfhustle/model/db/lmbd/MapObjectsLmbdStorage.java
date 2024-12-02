@@ -319,7 +319,7 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage, ObjectsGetter, 
     public <T extends GameObject> T get(int type, long key) throws ObjectsGetterException {
         final int index = (int) key;
         var mo = new MapObject(index);
-        getObjects(index, 0, 0, 0, (type0, id, x, y, z) -> {
+        getObjects(0, 0, 0, index, (type0, id, x, y, z) -> {
             mo.addObject(type0, id);
         });
         return (T) mo;

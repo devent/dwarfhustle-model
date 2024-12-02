@@ -43,6 +43,7 @@ import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.BehaviorBuilder;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.StashBuffer;
+import akka.actor.typed.javadsl.TimerScheduler;
 import jakarta.inject.Inject;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -74,29 +75,29 @@ public abstract class AbstractJcsCacheActor implements ObjectsGetter, ObjectsSet
      */
     public interface AbstractJcsCacheActorFactory {
 
-        AbstractJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash, ObjectsGetter og,
-                ObjectsSetter os);
+        AbstractJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash,
+                TimerScheduler<Message> timer, ObjectsGetter og, ObjectsSetter os);
     }
 
     public static Behavior<Message> create(Injector injector, AbstractJcsCacheActorFactory actorFactory,
             CompletionStage<ObjectsGetter> og, CompletionStage<ObjectsSetter> os,
             CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
-        return Behaviors.withStash(100, stash -> Behaviors.setup(context -> {
+        return Behaviors.withTimers(timer -> Behaviors.withStash(100, stash -> Behaviors.setup(context -> {
             initCache(context, initCacheAsync);
             var og0 = og.toCompletableFuture().get(15, SECONDS);
             var os0 = os.toCompletableFuture().get(15, SECONDS);
-            return actorFactory.create(context, stash, og0, os0).start();
-        }));
+            return actorFactory.create(context, stash, timer, og0, os0).start();
+        })));
     }
 
     public static Behavior<Message> create(Injector injector, AbstractJcsCacheActorFactory actorFactory,
             ObjectsGetter og, ObjectsSetter os, CompletionStage<CacheAccess<Object, GameObject>> initCacheAsync) {
         assert og != null : "og is null";
         assert os != null : "os is null";
-        return Behaviors.withStash(100, stash -> Behaviors.setup(context -> {
+        return Behaviors.withTimers(timer -> Behaviors.withStash(100, stash -> Behaviors.setup(context -> {
             initCache(context, initCacheAsync);
-            return actorFactory.create(context, stash, og, os).start();
-        }));
+            return actorFactory.create(context, stash, timer, og, os).start();
+        })));
     }
 
     private static void initCache(ActorContext<Message> context,
@@ -123,6 +124,10 @@ public abstract class AbstractJcsCacheActor implements ObjectsGetter, ObjectsSet
     @Inject
     @Assisted
     protected StashBuffer<Message> buffer;
+
+    @Inject
+    @Assisted
+    protected TimerScheduler<Message> timer;
 
     @Inject
     @Assisted
