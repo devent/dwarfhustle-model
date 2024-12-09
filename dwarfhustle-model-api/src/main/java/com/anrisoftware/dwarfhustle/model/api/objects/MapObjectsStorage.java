@@ -27,19 +27,19 @@ public interface MapObjectsStorage extends AutoCloseable {
     /**
      * Stores the game map object in the (x,y,z) block in the database.
      */
-    void putObject(int x, int y, int z, int type, long id);
+    void putObject(int x, int y, int z, int cid, int type, long id);
 
     /**
      * Stores the game map object in the (x,y,z) block in the database.
      */
-    default void putObject(GameMapObject o) {
-        putObject(o.getPos().getX(), o.getPos().getY(), o.getPos().getZ(), o.getObjectType(), o.getId());
+    default void putObject(int cid, GameMapObject o) {
+        putObject(o.getPos().getX(), o.getPos().getY(), o.getPos().getZ(), cid, o.getObjectType(), o.getId());
     }
 
     /**
      * Mass storage for game map objects.
      */
-    void putObjects(int index, int type, LongIterable ids);
+    void putObjects(int cid, int index, int type, LongIterable ids);
 
     /**
      * Retrieves the game map objects on the (x,y,z) block from the database.
@@ -56,14 +56,14 @@ public interface MapObjectsStorage extends AutoCloseable {
      * Deletes the game map object in the (x,y,z) block with the type and ID in the
      * database.
      */
-    void removeObject(int x, int y, int z, int type, long id);
+    void removeObject(int x, int y, int z, int cid, int type, long id);
 
     /**
      * Deletes the game map object in the (x,y,z) block with the type and ID in the
      * database.
      */
-    default void removeObject(GameMapObject o) {
-        removeObject(o.getPos().getX(), o.getPos().getY(), o.getPos().getZ(), o.getObjectType(), o.getId());
+    default void removeObject(int cid, GameMapObject o) {
+        removeObject(o.getPos().getX(), o.getPos().getY(), o.getPos().getZ(), cid, o.getObjectType(), o.getId());
     }
 
 }

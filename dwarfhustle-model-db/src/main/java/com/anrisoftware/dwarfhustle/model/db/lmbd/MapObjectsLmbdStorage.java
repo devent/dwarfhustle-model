@@ -99,7 +99,7 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage, ObjectsGetter, 
         this.db = env.openDbi("pos-ids", MDB_CREATE, MDB_DUPSORT, MDB_DUPFIXED, MDB_INTEGERDUP);
         this.readTxn = env.txnRead();
         this.buffkey = ThreadLocal.withInitial(() -> new UnsafeBuffer(allocateDirect(4)));
-        this.buffval = ThreadLocal.withInitial(() -> new UnsafeBuffer(allocateDirect(8 + 4)));
+        this.buffval = ThreadLocal.withInitial(() -> new UnsafeBuffer(allocateDirect(MapObjectValue.SIZE)));
         readTxn.reset();
     }
 
@@ -116,18 +116,19 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage, ObjectsGetter, 
      * Stores the game map object in the (x,y,z) block in the database.
      */
     @Override
-    public void putObject(int x, int y, int z, int type, long id) {
+    public void putObject(int x, int y, int z, int cid, int type, long id) {
         int index = GameBlockPos.calcIndex(w, h, d, 0, 0, 0, x, y, z);
-        putObject(index, type, id);
+        putObject(cid, index, type, id);
     }
 
-    private void putObject(int index, int type, long id) {
+    private void putObject(int cid, int index, int type, long id) {
         try (Txn<DirectBuffer> txn = env.txnWrite()) {
             final var key = buffkey.get();
             final var val = buffval.get();
             key.putInt(0, index);
             MapObjectValue.setId(val, 0, id);
             MapObjectValue.setType(val, 0, type);
+            MapObjectValue.setCid(val, 0, cid);
             db.put(txn, key, val);
             txn.commit();
         }
@@ -143,6 +144,8 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage, ObjectsGetter, 
         protected final int start;
 
         protected final int end;
+
+        protected final int cid;
 
         protected final int index;
 
@@ -176,6 +179,7 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage, ObjectsGetter, 
                     key.putInt(0, index);
                     MapObjectValue.setId(val, 0, id);
                     MapObjectValue.setType(val, 0, type);
+                    MapObjectValue.setCid(val, 0, cid);
                     c.put(key, val);
                 }
                 txn.commit();
@@ -183,7 +187,7 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage, ObjectsGetter, 
         }
 
         protected ObjectsListRecursiveAction create(int max, int start, int end) {
-            return new ObjectsListRecursiveAction(max, start, end, index, type, oids);
+            return new ObjectsListRecursiveAction(max, start, end, cid, index, type, oids);
         }
     }
 
@@ -191,11 +195,11 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage, ObjectsGetter, 
      * Mass storage for game map objects.
      */
     @Override
-    public void putObjects(int index, int type, LongIterable ids) {
+    public void putObjects(int cid, int index, int type, LongIterable ids) {
         int max = 8192;
         if (ids instanceof LongList list) {
             var pool = ForkJoinPool.commonPool();
-            pool.invoke(new ObjectsListRecursiveAction(max, 0, list.size(), index, type, list));
+            pool.invoke(new ObjectsListRecursiveAction(max, 0, list.size(), cid, index, type, list));
         } else {
             putObjects0(index, type, ids);
         }
@@ -241,7 +245,8 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage, ObjectsGetter, 
                 var val = c.val();
                 long id = MapObjectValue.getId(val, 0);
                 int type = MapObjectValue.getType(val, 0);
-                consumer.accept(type, id, x, y, z);
+                int cid = MapObjectValue.getCid(val, 0);
+                consumer.accept(cid, type, id, x, y, z);
                 c.next();
             }
         } finally {
@@ -271,7 +276,8 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage, ObjectsGetter, 
                             var val = c.val();
                             long id = MapObjectValue.getId(val, 0);
                             int type = MapObjectValue.getType(val, 0);
-                            consumer.accept(type, id, x, y, z);
+                            int cid = MapObjectValue.getCid(val, 0);
+                            consumer.accept(cid, type, id, x, y, z);
                             c.next();
                         }
                     }
@@ -283,18 +289,19 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage, ObjectsGetter, 
     }
 
     @Override
-    public void removeObject(int x, int y, int z, int type, long id) {
+    public void removeObject(int x, int y, int z, int cid, int type, long id) {
         int index = calcIndex(w, h, d, 0, 0, 0, x, y, z);
-        removeObject(type, index, id);
+        removeObject(cid, type, index, id);
     }
 
-    private void removeObject(int type, int index, long id) {
+    private void removeObject(int cid, int type, int index, long id) {
         try (Txn<DirectBuffer> txn = env.txnWrite()) {
             final var key = buffkey.get();
             final var val = buffval.get();
             key.putInt(0, index);
             MapObjectValue.setId(val, 0, id);
             MapObjectValue.setType(val, 0, type);
+            MapObjectValue.setCid(val, 0, cid);
             db.delete(txn, key, val);
             txn.commit();
         }
@@ -303,14 +310,14 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage, ObjectsGetter, 
     @Override
     public void set(int type, GameObject go) throws ObjectsSetterException {
         var mo = (MapObject) go;
-        mo.getOids().forEachKeyValue((id, type0) -> putObject(mo.getIndex(), type0, id));
+        mo.getOids().forEachKeyValue((id, type0) -> putObject(mo.getCid(), mo.getIndex(), type0, id));
     }
 
     @Override
     public void set(int type, Iterable<GameObject> values) throws ObjectsSetterException {
         for (var go : values) {
             var mo = (MapObject) go;
-            mo.getOids().forEachKeyValue((id, type0) -> putObject(mo.getIndex(), type0, id));
+            mo.getOids().forEachKeyValue((id, type0) -> putObject(mo.getCid(), mo.getIndex(), type0, id));
         }
     }
 
@@ -319,8 +326,9 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage, ObjectsGetter, 
     public <T extends GameObject> T get(int type, long key) throws ObjectsGetterException {
         final int index = (int) key;
         var mo = new MapObject(index);
-        getObjects(0, 0, 0, index, (type0, id, x, y, z) -> {
+        getObjects(0, 0, 0, index, (cid, type0, id, x, y, z) -> {
             mo.addObject(type0, id);
+            mo.setCid(cid);
         });
         return (T) mo;
     }
@@ -328,6 +336,7 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage, ObjectsGetter, 
     @Override
     public void remove(int type, GameObject go) throws ObjectsSetterException {
         var mo = (MapObject) go;
-        mo.getOids().forEachKeyValue((id, type0) -> removeObject(mo.getIndex(), type0, id));
+        mo.getRemovedOids().forEachKeyValue((id, type0) -> removeObject(mo.getCid(), type0, mo.getIndex(), id));
+        mo.getRemovedOids().clear();
     }
 }

@@ -22,11 +22,13 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.eclipse.collections.api.LongIterable;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.primitive.IntLongMaps;
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.factory.primitive.LongIntMaps;
@@ -47,6 +49,7 @@ import org.eclipse.collections.api.map.primitive.MutableObjectIntMap;
 import org.eclipse.collections.api.map.primitive.MutableObjectLongMap;
 import org.eclipse.collections.api.map.primitive.ObjectIntMap;
 import org.eclipse.collections.api.map.primitive.ObjectLongMap;
+import org.eclipse.collections.api.multimap.MutableMultimap;
 
 /**
  * Utils to write/read external.
@@ -263,13 +266,81 @@ public class ExternalizableUtils {
     }
 
     /**
-     * Reads the keys and values of the {@link LongIntMap} to stream.
+     * Reads the keys and values of the {@link LongIntMap} from stream.
      */
     public static LongIntMap readStreamLongIntMap(DataInput in) throws IOException {
         int size = in.readInt();
         MutableLongIntMap map = LongIntMaps.mutable.ofInitialCapacity(size);
         for (int i = 0; i < size; i++) {
             map.put(in.readLong(), in.readInt());
+        }
+        return map;
+    }
+
+    /**
+     * Writes the keys and values of the {@link MutableMultimap} to stream.
+     */
+    public static void writeExternalMutableLongIntMultimap(DataOutput out, MutableMultimap<Long, Integer> map)
+            throws IOException {
+        out.writeInt(map.size());
+        for (var keysValues : map.keyMultiValuePairsView()) {
+            out.writeInt(keysValues.getTwo().size());
+            out.writeLong(keysValues.getOne());
+            for (var value : keysValues.getTwo()) {
+                out.writeInt(value);
+            }
+        }
+    }
+
+    /**
+     * Reads the keys and values of the {@link MutableMultimap} from stream.
+     */
+    public static MutableMultimap<Long, Integer> readExternalMutableLongIntMultimap(DataInput in,
+            Supplier<MutableMultimap<Long, Integer>> supplier) throws IOException {
+        int size = in.readInt();
+        MutableMultimap<Long, Integer> map = supplier.get();
+        for (int i = 0; i < size; i++) {
+            final int vsize = in.readInt();
+            List<Integer> values = Lists.mutable.withInitialCapacity(vsize);
+            final long key = in.readLong();
+            for (int j = 0; j < vsize; j++) {
+                values.add(in.readInt());
+            }
+            map.putAll(key, values);
+        }
+        return map;
+    }
+
+    /**
+     * Writes the keys and values of the {@link MutableMultimap} to stream.
+     */
+    public static void writeExternalMutableIntIntMultimap(DataOutput out, MutableMultimap<Integer, Integer> map)
+            throws IOException {
+        out.writeInt(map.size());
+        for (var keysValues : map.keyMultiValuePairsView()) {
+            out.writeInt(keysValues.getTwo().size());
+            out.writeInt(keysValues.getOne());
+            for (var value : keysValues.getTwo()) {
+                out.writeInt(value);
+            }
+        }
+    }
+
+    /**
+     * Reads the keys and values of the {@link MutableMultimap} from stream.
+     */
+    public static MutableMultimap<Integer, Integer> readExternalMutableIntIntMultimap(DataInput in,
+            Supplier<MutableMultimap<Integer, Integer>> supplier) throws IOException {
+        int size = in.readInt();
+        MutableMultimap<Integer, Integer> map = supplier.get();
+        for (int i = 0; i < size; i++) {
+            final int vsize = in.readInt();
+            List<Integer> values = Lists.mutable.withInitialCapacity(vsize);
+            final int key = in.readInt();
+            for (int j = 0; j < vsize; j++) {
+                values.add(in.readInt());
+            }
+            map.putAll(key, values);
         }
         return map;
     }

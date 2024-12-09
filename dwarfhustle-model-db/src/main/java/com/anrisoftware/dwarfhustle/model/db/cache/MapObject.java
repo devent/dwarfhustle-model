@@ -17,6 +17,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsSetter;
 
@@ -56,9 +57,19 @@ public class MapObject extends GameObject {
     }
 
     /**
+     * The {@link MapChunk#getCid()} CID.
+     */
+    public int cid;
+
+    /**
      * Stores the {@link GameMapObject} IDs to type.
      */
     public MutableLongIntMap oids = LongIntMaps.mutable.withInitialCapacity(10).asSynchronized();
+
+    /**
+     * Stores the removed {@link GameMapObject} IDs.
+     */
+    public MutableLongIntMap removedOids = LongIntMaps.mutable.withInitialCapacity(10).asSynchronized();
 
     public MapObject(int index) {
         super(index);
@@ -84,10 +95,15 @@ public class MapObject extends GameObject {
 
     public void addObject(int type, long id) {
         oids.put(id, type);
+        removedOids.remove(id);
     }
 
     public void removeObject(long id) {
-        oids.remove(id);
+        if (oids.containsKey(id)) {
+            final int type = oids.get(id);
+            oids.remove(id);
+            removedOids.put(id, type);
+        }
     }
 
     public boolean isEmpty() {
@@ -107,13 +123,17 @@ public class MapObject extends GameObject {
     @Override
     public void writeStream(DataOutput out) throws IOException {
         super.writeStream(out);
+        out.writeInt(cid);
         writeStreamLongIntMap(out, oids);
+        writeStreamLongIntMap(out, removedOids);
     }
 
     @Override
     public void readStream(DataInput in) throws IOException {
         super.readStream(in);
-        this.oids = (MutableLongIntMap) readStreamLongIntMap(in);
+        this.cid = in.readInt();
+        this.oids = ((MutableLongIntMap) readStreamLongIntMap(in)).asSynchronized();
+        this.removedOids = ((MutableLongIntMap) readStreamLongIntMap(in)).asSynchronized();
     }
 
 }

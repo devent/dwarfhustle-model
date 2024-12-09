@@ -17,7 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readExternalMutableIntIntMultimap;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamIntObjectMap;
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeExternalMutableIntIntMultimap;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamIntObjectMap;
 
 import java.io.DataInput;
@@ -29,16 +31,16 @@ import java.io.Serializable;
 import java.time.ZoneOffset;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.eclipse.collections.api.IntIterable;
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.map.primitive.IntObjectMap;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
+import org.eclipse.collections.api.multimap.MutableMultimap;
+import org.eclipse.collections.impl.factory.Multimaps;
 
 import com.google.auto.service.AutoService;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.ToString;
 
@@ -47,7 +49,6 @@ import lombok.ToString;
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -140,17 +141,33 @@ public class GameMap extends GameObject implements StoredObject {
     public int climateZone;
 
     /**
+     * Contains the chunks and block indices that have objects.
+     */
+    public MutableMultimap<Integer, Integer> filledChunks;
+
+    /**
      * Contains the indices of blocks that have at least one {@link GameMapObject},
      * with the objects count.
      */
-    public IntObjectMap<AtomicInteger> filledBlocks = IntObjectMaps.mutable.withInitialCapacity(100);
+    public IntObjectMap<AtomicInteger> filledBlocks;
+
+    public GameMap() {
+        MutableIntObjectMap<AtomicInteger> filledBlocks = IntObjectMaps.mutable.withInitialCapacity(100);
+        this.filledBlocks = filledBlocks.asSynchronized();
+        MutableMultimap<Integer, Integer> filledChunks = Multimaps.mutable.set.empty();
+        this.filledChunks = filledChunks.asSynchronized();
+    }
 
     public GameMap(long id, int width, int height, int depth) {
         super(id);
         this.width = width;
         this.height = height;
         this.depth = depth;
-        this.filledBlocks = IntObjectMaps.mutable.withInitialCapacity(width * height * depth);
+        MutableIntObjectMap<AtomicInteger> filledBlocks = IntObjectMaps.mutable
+                .withInitialCapacity(width * height * depth);
+        this.filledBlocks = filledBlocks.asSynchronized();
+        MutableMultimap<Integer, Integer> filledChunks = Multimaps.mutable.set.empty();
+        this.filledChunks = filledChunks.asSynchronized();
     }
 
     public GameMap(byte[] idbuf, int width, int height, int depth) {
@@ -209,26 +226,24 @@ public class GameMap extends GameObject implements StoredObject {
         sunPos[2] = z;
     }
 
-    public void addFilledBlock(int index) {
-        var filledBlocks = (MutableIntObjectMap<AtomicInteger>) this.filledBlocks;
-        filledBlocks.getIfAbsentPut(index, new AtomicInteger(0)).incrementAndGet();
-    }
-
-    public void addAllFilledBlock(IntIterable indices) {
-        for (var it = indices.intIterator(); it.hasNext();) {
-            addFilledBlock(it.next());
-        }
-    }
-
-    public void removeFilledBlock(int index) {
+    public void addFilledBlock(int cid, int index) {
         var filledBlocks = (MutableIntObjectMap<AtomicInteger>) this.filledBlocks;
         filledBlocks.getIfAbsentPut(index, new AtomicInteger(0)).updateAndGet((it) -> {
+            it++;
+            filledChunks.put(cid, index);
+            return it;
+        });
+    }
+
+    public void removeFilledBlock(int cid, int index) {
+        var filledBlocks = (MutableIntObjectMap<AtomicInteger>) this.filledBlocks;
+        filledBlocks.getIfAbsentPut(index, new AtomicInteger(0)).updateAndGet((it) -> {
+            it--;
             if (it == 0) {
                 filledBlocks.remove(index);
-                return 0;
-            } else {
-                return --it;
+                filledChunks.remove(cid, index);
             }
+            return it;
         });
     }
 
@@ -268,6 +283,7 @@ public class GameMap extends GameObject implements StoredObject {
         out.writeFloat(sunPos[2]);
         out.writeInt(climateZone);
         writeStreamIntObjectMap(out, filledBlocks, this::writeAtomicInt);
+        writeExternalMutableIntIntMultimap(out, filledChunks);
     }
 
     @SneakyThrows
@@ -300,7 +316,10 @@ public class GameMap extends GameObject implements StoredObject {
         this.sunPos[1] = in.readFloat();
         this.sunPos[2] = in.readFloat();
         this.climateZone = in.readInt();
-        this.filledBlocks = readStreamIntObjectMap(in, this::readAtomicInt);
+        var filledBlocks = readStreamIntObjectMap(in, this::readAtomicInt);
+        this.filledBlocks = filledBlocks.asSynchronized();
+        var filledChunks = readExternalMutableIntIntMultimap(in, () -> Multimaps.mutable.set.empty());
+        this.filledChunks = filledChunks.asSynchronized();
     }
 
     @SneakyThrows
