@@ -20,10 +20,10 @@
 (defconcept Season (?s)
   :documentation "Seasons.")
 
-(assert (Season spring)) :documentation "Spring season."
-(assert (Season summer)) :documentation "Summer season."
-(assert (Season autumn)) :documentation "Autumn season."
-(assert (Season winter)) :documentation "Winter season."
+(assert (Season Spring)) :documentation "Spring season."
+(assert (Season Summer)) :documentation "Summer season."
+(assert (Season Autumn)) :documentation "Autumn season."
+(assert (Season Winter)) :documentation "Winter season."
 
 (defconcept Month (?m)
   :documentation "Months.")

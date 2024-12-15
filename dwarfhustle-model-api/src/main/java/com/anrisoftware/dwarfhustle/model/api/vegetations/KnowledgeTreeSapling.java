@@ -59,6 +59,10 @@ public class KnowledgeTreeSapling extends KnowledgeVegetation {
     @SuppressWarnings("unchecked")
     @Override
     public <T extends GameObject> T createObject(byte[] id) {
-        return (T) new TreeSapling(id);
+        var go = new TreeSapling(id);
+        go.setVisible(true);
+        go.setHaveModel(true);
+        go.setHaveTex(false);
+        return (T) go;
     }
 }

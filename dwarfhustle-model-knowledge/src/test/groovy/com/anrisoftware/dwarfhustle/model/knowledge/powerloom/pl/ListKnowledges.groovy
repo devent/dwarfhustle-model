@@ -205,7 +205,8 @@ class ListKnowledges {
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Liquid.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Topsoil.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Wood.TYPE))
-        while (ko.size() != 11) {
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeGrass.TYPE))
+        while (ko.size() != 12) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
         }

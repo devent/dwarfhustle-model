@@ -51,6 +51,10 @@ public abstract class GameMapObject extends GameObject implements StoredObject {
 
     public static final int FORBIDDEN_POS = 1;
 
+    public static final int MODEL_POS = 2;
+
+    public static final int TEX_POS = 3;
+
     /**
      * Record ID set after the object was once stored in the backend.
      */
@@ -85,6 +89,8 @@ public abstract class GameMapObject extends GameObject implements StoredObject {
      * 00000000 00000000 hidden.
      * 00000000 00000001 visible.
      * 00000000 00000010 forbidden.
+     * 00000000 00000100 have model.
+     * 00000000 00001000 have texture.
      * </pre>
      */
     public PropertiesSet p = new PropertiesSet();
@@ -145,6 +151,30 @@ public abstract class GameMapObject extends GameObject implements StoredObject {
 
     public boolean isForbidden() {
         return p.get(FORBIDDEN_POS);
+    }
+
+    public void setHaveModel(boolean flag) {
+        if (flag) {
+            p.set(MODEL_POS);
+        } else {
+            p.clear(MODEL_POS);
+        }
+    }
+
+    public boolean isHaveModel() {
+        return p.get(MODEL_POS);
+    }
+
+    public void setHaveTex(boolean flag) {
+        if (flag) {
+            p.set(TEX_POS);
+        } else {
+            p.clear(TEX_POS);
+        }
+    }
+
+    public boolean isHaveTex() {
+        return p.get(TEX_POS);
     }
 
     @Override

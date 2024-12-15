@@ -44,6 +44,10 @@ public class PropertiesSet implements Externalizable, StreamStorage {
         return (bits & (1 << (pos))) != 0;
     }
 
+    public static boolean isProp(int bits, int pos) {
+        return get(bits, pos);
+    }
+
     public int bits = empty;
 
     public PropertiesSet() {

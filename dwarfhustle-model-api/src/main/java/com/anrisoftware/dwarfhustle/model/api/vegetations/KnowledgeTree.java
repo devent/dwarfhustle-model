@@ -55,6 +55,10 @@ public class KnowledgeTree extends KnowledgeVegetation {
     @SuppressWarnings("unchecked")
     @Override
     public <T extends GameObject> T createObject(byte[] id) {
-        return (T) new Tree(id);
+        var go = new Tree(id);
+        go.setVisible(true);
+        go.setHaveModel(false);
+        go.setHaveTex(false);
+        return (T) go;
     }
 }
