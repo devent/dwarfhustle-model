@@ -111,12 +111,6 @@
         <!-- Own modules dependencies -->
         <dependency>
             <groupId>com.anrisoftware.dwarfhustle</groupId>
-            <artifactId>dwarfhustle-orientdb-dependencies</artifactId>
-            <version>${project.version}</version>
-            <type>pom</type>
-        </dependency>
-        <dependency>
-            <groupId>com.anrisoftware.dwarfhustle</groupId>
             <artifactId>dwarfhustle-model-api</artifactId>
             <version>${project.version}</version>
         </dependency>

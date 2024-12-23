@@ -17,9 +17,7 @@
  */
 package com.anrisoftware.dwarfhustle.model.generate;
 
-import com.anrisoftware.dwarfhustle.model.generate.GenerateMapActor.GenerateMapActorFactory;
 import com.google.inject.AbstractModule;
-import com.google.inject.assistedinject.FactoryModuleBuilder;
 
 /**
  * @author Erwin Müller
@@ -28,8 +26,6 @@ public class DwarfhustleModelGenerateModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        install(new FactoryModuleBuilder().implement(GenerateMapActor.class, GenerateMapActor.class)
-                .build(GenerateMapActorFactory.class));
     }
 
 }
