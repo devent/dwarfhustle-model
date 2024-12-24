@@ -103,8 +103,8 @@ public class MapChunk extends GameObject {
     private LongObjectMap<GameChunkPos> chunks;
 
     /**
-     * The chunk CIDs of {@link NeighboringDir} neighbors of this chunk.
-     */
+	 * The chunk CIDs of {@link NeighboringDir} neighbours of this chunk.
+	 */
     @ToString.Exclude
     public long[] neighbors = new long[NeighboringDir.values().length];
 

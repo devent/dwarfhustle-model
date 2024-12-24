@@ -72,7 +72,7 @@ public class KnowledgeJcsCacheActor extends AbstractJcsCacheActor {
     public interface KnowledgeJcsCacheActorFactory extends AbstractJcsCacheActorFactory {
 
         @Override
-        KnowledgeJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash,
+		KnowledgeJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash,
                 TimerScheduler<Message> timer, ObjectsGetter og, ObjectsSetter os);
     }
 
