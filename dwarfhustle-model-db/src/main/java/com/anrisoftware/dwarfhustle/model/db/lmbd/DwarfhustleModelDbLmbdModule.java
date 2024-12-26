@@ -1,6 +1,6 @@
 /*
  * dwarfhustle-model-db - Manages the compile dependencies for the model.
- * Copyright © 2022-2024 Erwin Müller (erwin.mueller@anrisoftware.com)
+ * Copyright © 2022-2025 Erwin Müller (erwin.mueller@anrisoftware.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -67,7 +67,7 @@ public class DwarfhustleModelDbLmbdModule extends AbstractModule {
         StreamSupport.stream(loader.spliterator(), true).forEach(s -> {
             set.add(s.getObjectType());
         });
-        assertThat(set.size(), is(greaterThan(0)));
+		assertThat("StoredObject(s)", set.size(), is(greaterThan(0)));
         return set;
     }
 
@@ -79,7 +79,7 @@ public class DwarfhustleModelDbLmbdModule extends AbstractModule {
         StreamSupport.stream(loader.spliterator(), true).forEach(s -> {
             map.put(s.getObjectType(), s);
         });
-        assertThat(map.size(), is(greaterThan(0)));
+		assertThat("StoredObjectBuffer(s)", map.size(), is(greaterThan(0)));
         return map;
     }
 }

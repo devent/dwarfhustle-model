@@ -75,8 +75,15 @@ rid["LOAMY-SAND"] = 858
 rid["LOAM"] = 857
 
 // Wood
-rid["BIRCH-WOOD"] = 1042
-rid["PINE-WOOD"] = 1034
+rid["BIRCH-WOOD"] = 1043
+rid["PINE-WOOD"] = 1035
+
+// Grass
+rid["RED-POPPY"] = 1024
+rid["DAISY"] = 1023
+rid["CARROT"] = 1022
+rid["WHEAT"] = 1020
+rid["MEADOW-GRASS"] = 1019
 
 rid["UNKNOWN"] = 0xffff
 

@@ -1,6 +1,6 @@
 /*
  * dwarfhustle-model-knowledge - Manages the compile dependencies for the model.
- * Copyright © 2022-2024 Erwin Müller (erwin.mueller@anrisoftware.com)
+ * Copyright © 2022-2025 Erwin Müller (erwin.mueller@anrisoftware.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -24,6 +24,7 @@ import java.nio.file.Path
 
 import org.apache.commons.io.FileUtils
 import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -57,106 +58,107 @@ import groovy.util.logging.Slf4j
 @Slf4j
 class PineRulesTest {
 
-    static Injector injector
+	static Injector injector
 
-    static ActorRef<Message> knowledgeActor
+	static ActorRef<Message> knowledgeActor
 
-    static ActorSystemProvider actor
+	static ActorSystemProvider actor
 
-    static AskKnowledge askKnowledge
+	static AskKnowledge askKnowledge
 
-    static MapChunksLmbdStorageFactory chunksLmbdStorageFactory
+	static MapChunksLmbdStorageFactory chunksLmbdStorageFactory
 
-    static IDGenerator generator
+	static IDGenerator generator
 
-    @BeforeAll
-    static void setupActor() {
-        injector = Guice.createInjector(
-                new DwarfhustleModelActorsModule(),
-                new DwarfhustleModelKnowledgePowerloomPlModule(),
-                new DwarfhustleModelApiObjectsModule(),
-                new DwarfhustleModelDbLmbdModule())
-        actor = injector.getInstance(ActorSystemProvider.class)
-        KnowledgeJcsCacheActor.create(injector, ofSeconds(1)).whenComplete({ it, ex ->
-            log.debug("KnowledgeJcsCacheActor {} {}", it, ex)
-        } ).get()
-        PowerLoomKnowledgeActor.create(injector, ofSeconds(1),
-                actor.getActorAsync(KnowledgeJcsCacheActor.ID),
-                actor.getObjectGetterAsync(KnowledgeJcsCacheActor.ID)).whenComplete({ it, ex ->
-                    log.debug("PowerLoomKnowledgeActor {} {}", it, ex)
-                    knowledgeActor = it
-                } ).get()
-        askKnowledge = { timeout, type -> askKnowledgeObjects(actor.actorSystem, timeout, type) }
-        chunksLmbdStorageFactory = injector.getInstance(MapChunksLmbdStorageFactory)
-        generator = LocalUniqueIDGeneratorFactory.generatorFor(0, 0, Mode.SPREAD);
-    }
+	@BeforeAll
+	static void setupActor() {
+		injector = Guice.createInjector(
+				new DwarfhustleModelActorsModule(),
+				new DwarfhustleModelKnowledgePowerloomPlModule(),
+				new DwarfhustleModelApiObjectsModule(),
+				new DwarfhustleModelDbLmbdModule())
+		actor = injector.getInstance(ActorSystemProvider.class)
+		KnowledgeJcsCacheActor.create(injector, ofSeconds(1)).whenComplete({ it, ex ->
+			log.debug("KnowledgeJcsCacheActor {} {}", it, ex)
+		} ).get()
+		PowerLoomKnowledgeActor.create(injector, ofSeconds(1),
+				actor.getActorAsync(KnowledgeJcsCacheActor.ID),
+				actor.getObjectGetterAsync(KnowledgeJcsCacheActor.ID)).whenComplete({ it, ex ->
+					log.debug("PowerLoomKnowledgeActor {} {}", it, ex)
+					knowledgeActor = it
+				} ).get()
+		askKnowledge = { timeout, type -> askKnowledgeObjects(actor.actorSystem, timeout, type) }
+		chunksLmbdStorageFactory = injector.getInstance(MapChunksLmbdStorageFactory)
+		generator = LocalUniqueIDGeneratorFactory.generatorFor(0, 0, Mode.SPREAD);
+	}
 
-    @AfterAll
-    static void closeActor() {
-        actor.shutdownWait()
-    }
+	@AfterAll
+	static void closeActor() {
+		actor.shutdownWait()
+	}
 
-    @TempDir
-    static Path tmpdir
+	@TempDir
+	static Path tmpdir
 
-    Path terrainPath
+	Path terrainPath
 
-    GameMap gm
+	GameMap gm
 
-    @BeforeEach
-    void setUp() {
-        def terrain = "terrain_32_32_32_4_585"
-        def path = Path.of("/home/devent/Projects/dwarf-hustle/terrain-maps", terrain);
-        def tmp = tmpdir.resolve(terrain)
-        FileUtils.copyDirectory(path.toFile(), tmp.toFile())
-        terrainPath = tmp
-        gm = new GameMap(1)
-        gm.width = 32
-        gm.height = 32
-        gm.depth = 32
-    }
+	@BeforeEach
+	void setUp() {
+		def terrain = "terrain_32_32_32_4_585"
+		def path = Path.of("/home/devent/Projects/dwarf-hustle/terrain-maps", terrain);
+		def tmp = tmpdir.resolve(terrain)
+		Assumptions.assumeTrue(tmp.toFile().exists())
+		FileUtils.copyDirectory(path.toFile(), tmp.toFile())
+		terrainPath = tmp
+		gm = new GameMap(1)
+		gm.width = 32
+		gm.height = 32
+		gm.depth = 32
+	}
 
-    @Test
-    void pine_rules() {
-        def chunks = chunksLmbdStorageFactory.create(terrainPath, 4)
-        Vegetation v
-        KnowledgeVegetation kv
-        askKnowledge.doAskAsync(ofSeconds(10), KnowledgeTree.TYPE).whenComplete({ it, ex ->
-            kv = it.find { it.name == "PINE" }
-        } ).get()
-        v = kv.createObject(generator.generate())
-        v.map = gm.id
-        v.pos.x = 11
-        v.pos.y = 15
-        v.pos.z = 9
-        def loaded = new VegetationLoadKnowledges(kv)
-        loaded.loadKnowledges(askKnowledge)
-        def vkn = new VegetationKnowledge()
-        def k = vkn.createKnowledgeService()
-        vkn.setLoadedKnowledges(loaded)
-        def knowledge = vkn.createRulesKnowledgeFromSource(k, "PineRules.java")
-        def root = MapChunk.getChunk(chunks, 0)
-        def block = MapChunkBuffer.findBlock(root, 11, 15, 9, chunks)
-        vkn.run(askKnowledge, knowledge, v, kv, chunks, chunks, gm)
-        int r = 2
-        for (int zz = v.pos.z - r; zz < v.pos.z + r; zz++) {
-            for (int yy = v.pos.y - r; yy < v.pos.y + r; yy++) {
-                for (int xx = v.pos.x - r; xx < v.pos.x + r; xx++) {
-                    def b = MapChunkBuffer.findBlock(root, new GameBlockPos(xx, yy, zz), chunks)
-                    println "[$b.pos.x,$b.pos.y,$b.pos.z,$b.parent,$b.material,$b.object,$b.temp,$b.lux,0b$b.p],"
-                }
-            }
-        }
-        println "##### $v"
-        vkn.run(askKnowledge, knowledge, v, kv, chunks, chunks, gm)
-        for (int zz = v.pos.z - r; zz < v.pos.z + r; zz++) {
-            for (int yy = v.pos.y - r; yy < v.pos.y + r; yy++) {
-                for (int xx = v.pos.x - r; xx < v.pos.x + r; xx++) {
-                    def b = MapChunkBuffer.findBlock(root, new GameBlockPos(xx, yy, zz), chunks)
-                    println "[$b.pos.x,$b.pos.y,$b.pos.z,$b.parent,$b.material,$b.object,$b.temp,$b.lux,0b$b.p],"
-                }
-            }
-        }
-        chunks.close()
-    }
+	@Test
+	void pine_rules() {
+		def chunks = chunksLmbdStorageFactory.create(terrainPath, 4)
+		Vegetation v
+		KnowledgeVegetation kv
+		askKnowledge.doAskAsync(ofSeconds(10), KnowledgeTree.TYPE).whenComplete({ it, ex ->
+			kv = it.find { it.name == "PINE" }
+		} ).get()
+		v = kv.createObject(generator.generate())
+		v.map = gm.id
+		v.pos.x = 11
+		v.pos.y = 15
+		v.pos.z = 9
+		def loaded = new VegetationLoadKnowledges(kv)
+		loaded.loadKnowledges(askKnowledge)
+		def vkn = new VegetationKnowledge()
+		def k = vkn.createKnowledgeService()
+		vkn.setLoadedKnowledges(loaded)
+		def knowledge = vkn.createRulesKnowledgeFromSource(k, "PineRules.java")
+		def root = MapChunk.getChunk(chunks, 0)
+		def block = MapChunkBuffer.findBlock(root, 11, 15, 9, chunks)
+		vkn.run(askKnowledge, knowledge, v, kv, chunks, chunks, gm)
+		int r = 2
+		for (int zz = v.pos.z - r; zz < v.pos.z + r; zz++) {
+			for (int yy = v.pos.y - r; yy < v.pos.y + r; yy++) {
+				for (int xx = v.pos.x - r; xx < v.pos.x + r; xx++) {
+					def b = MapChunkBuffer.findBlock(root, new GameBlockPos(xx, yy, zz), chunks)
+					println "[$b.pos.x,$b.pos.y,$b.pos.z,$b.parent,$b.material,$b.object,$b.temp,$b.lux,0b$b.p],"
+				}
+			}
+		}
+		println "##### $v"
+		vkn.run(askKnowledge, knowledge, v, kv, chunks, chunks, gm)
+		for (int zz = v.pos.z - r; zz < v.pos.z + r; zz++) {
+			for (int yy = v.pos.y - r; yy < v.pos.y + r; yy++) {
+				for (int xx = v.pos.x - r; xx < v.pos.x + r; xx++) {
+					def b = MapChunkBuffer.findBlock(root, new GameBlockPos(xx, yy, zz), chunks)
+					println "[$b.pos.x,$b.pos.y,$b.pos.z,$b.parent,$b.material,$b.object,$b.temp,$b.lux,0b$b.p],"
+				}
+			}
+		}
+		chunks.close()
+	}
 }

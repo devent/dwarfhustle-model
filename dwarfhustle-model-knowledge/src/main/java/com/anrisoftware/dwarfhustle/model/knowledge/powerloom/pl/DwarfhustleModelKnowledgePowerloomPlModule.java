@@ -1,6 +1,6 @@
 /*
  * dwarfhustle-model-knowledge - Manages the compile dependencies for the model.
- * Copyright © 2022-2024 Erwin Müller (erwin.mueller@anrisoftware.com)
+ * Copyright © 2022-2025 Erwin Müller (erwin.mueller@anrisoftware.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -63,7 +63,7 @@ public class DwarfhustleModelKnowledgePowerloomPlModule extends AbstractModule {
         StreamSupport.stream(loader.spliterator(), true).forEach(s -> {
             map.put(s.getType(), s);
         });
-        assertThat(map.entrySet(), not(empty()));
+		assertThat("GameObjectKnowledge(s)", map.entrySet(), not(empty()));
         return map;
     }
 
