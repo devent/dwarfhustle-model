@@ -154,7 +154,8 @@ public class ImporterMapImage2DbActor {
         var wm = getWorldMap(og, gm.world);
         var path = Path.of(m.root, format("%d-%d", wm.id, gm.id));
         path.toFile().mkdir();
-        var storage = storageFactory.create(path, gm.chunkSize);
+        final long mapSize = 10 * (long) Math.pow(10, 9);
+        var storage = storageFactory.create(path, mapSize);
         ImporterChunksJcsCacheActor.create(injector, ofSeconds(1), storage, storage).whenComplete((cache, ex) -> {
             if (ex != null) {
                 log.error("ChunksJcsCacheActor", ex);
@@ -167,7 +168,7 @@ public class ImporterMapImage2DbActor {
         terrainImageCreateMap.create(actor.getObjectGetterAsync(MapChunksJcsCacheActor.ID).toCompletableFuture().get(),
                 actor.getObjectSetterAsync(MapChunksJcsCacheActor.ID).toCompletableFuture().get(), storage, knowledge)
                 .startImportMapping(m.url, m.image, gm);
-        storage.close();
+        storage.shrinkCopyClose();
         m.replyTo.tell(new ImportImageSuccessMessage());
     }
 

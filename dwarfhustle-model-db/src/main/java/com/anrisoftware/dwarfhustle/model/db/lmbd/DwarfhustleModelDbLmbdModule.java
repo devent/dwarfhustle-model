@@ -22,7 +22,6 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 
 import java.util.ServiceLoader;
-import java.util.stream.StreamSupport;
 
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.factory.primitive.IntSets;
@@ -64,10 +63,10 @@ public class DwarfhustleModelDbLmbdModule extends AbstractModule {
     public IntSet getObjectTypes() {
         MutableIntSet set = IntSets.mutable.empty();
         var loader = ServiceLoader.load(StoredObject.class);
-        StreamSupport.stream(loader.spliterator(), true).forEach(s -> {
+        for (var s : loader) {
             set.add(s.getObjectType());
-        });
-		assertThat("StoredObject(s)", set.size(), is(greaterThan(0)));
+        }
+        assertThat("StoredObject(s)", set.size(), is(greaterThan(0)));
         return set;
     }
 
@@ -76,10 +75,10 @@ public class DwarfhustleModelDbLmbdModule extends AbstractModule {
     public IntObjectMap<StoredObjectBuffer> getTypeReadBuffers() {
         MutableIntObjectMap<StoredObjectBuffer> map = IntObjectMaps.mutable.empty();
         var loader = ServiceLoader.load(StoredObjectBuffer.class);
-        StreamSupport.stream(loader.spliterator(), true).forEach(s -> {
+        for (var s : loader) {
             map.put(s.getObjectType(), s);
-        });
-		assertThat("StoredObjectBuffer(s)", map.size(), is(greaterThan(0)));
+        }
+        assertThat("StoredObjectBuffer(s)", map.size(), is(greaterThan(0)));
         return map;
     }
 }

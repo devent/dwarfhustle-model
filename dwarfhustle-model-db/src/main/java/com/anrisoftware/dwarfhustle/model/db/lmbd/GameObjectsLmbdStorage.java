@@ -17,7 +17,6 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.lmbd;
 
-import static java.lang.Math.pow;
 import static java.nio.ByteBuffer.allocateDirect;
 import static org.lmdbjava.DbiFlags.MDB_CREATE;
 import static org.lmdbjava.DbiFlags.MDB_INTEGERKEY;
@@ -63,7 +62,7 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
      * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
      */
     public interface GameObjectsLmbdStorageFactory {
-        GameObjectsLmbdStorage create(Path file);
+        GameObjectsLmbdStorage create(Path file, long mapSize);
     }
 
     private final Env<DirectBuffer> env;
@@ -78,10 +77,10 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
      * Creates or opens the game objects storage.
      */
     @Inject
-    protected GameObjectsLmbdStorage(@Assisted Path file, IntSet objectTypes,
+    protected GameObjectsLmbdStorage(@Assisted Path file, @Assisted long mapSize, IntSet objectTypes,
             IntObjectMap<StoredObjectBuffer> readBuffers) {
         this.readBuffers = readBuffers;
-        this.env = create(PROXY_DB).setMapSize((long) (10 * pow(10, 9))).setMaxDbs(20).open(file.toFile());
+        this.env = create(PROXY_DB).setMapSize(mapSize).setMaxDbs(20).open(file.toFile());
         MutableIntObjectMap<Dbi<DirectBuffer>> dbs = IntObjectMaps.mutable.withInitialCapacity(objectTypes.size());
         objectTypes.each((type) -> {
             dbs.put(type, env.openDbi(Integer.toString(type), MDB_CREATE, MDB_INTEGERKEY));
@@ -288,6 +287,9 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
     @Override
     public void set(int type, GameObject go) throws ObjectsSetterException {
         var soBuffer = readBuffers.get(type);
+        if (soBuffer == null) {
+            System.out.printf("%s - go.type=%d - type=%d%n", go, go.getObjectType(), type);
+        }
         putObject(type, go.id, soBuffer.getSize((StoredObject) go), (b) -> {
             soBuffer.write(b, (StoredObject) go);
         });

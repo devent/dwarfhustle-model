@@ -44,64 +44,64 @@ import com.google.inject.Injector
  */
 class ImporterMapImage2DbAppTest {
 
-	static Injector injector
+    static Injector injector
 
-	@BeforeAll
-	static void setupActor() {
-		this.injector = Guice.createInjector(
-				new DwarfhustleModelActorsModule(),
-				new DwarfhustleModelKnowledgePowerloomPlModule(),
-				new DwarfhustleModelApiObjectsModule(),
-				new DwarfhustleModelTerrainimageModule(),
-				new DwarfhustleModelDbLmbdModule(),
-				new DwarfhustleModelDbCacheModule(),
-				)
-	}
+    @BeforeAll
+    static void setupActor() {
+        this.injector = Guice.createInjector(
+                new DwarfhustleModelActorsModule(),
+                new DwarfhustleModelKnowledgePowerloomPlModule(),
+                new DwarfhustleModelApiObjectsModule(),
+                new DwarfhustleModelTerrainimageModule(),
+                new DwarfhustleModelDbLmbdModule(),
+                new DwarfhustleModelDbCacheModule(),
+                )
+    }
 
-	@AfterAll
-	static void testsFinished() {
-		def dest = new File("/home/devent/Projects/dwarf-hustle/terrain-maps/game")
-		if (System.getProperty("os.name") =~ "^Windows.*") {
-			def user = System.getProperty("user.home")
-			dest = new File("${user}/Projects/dwarf-hustle/terrain-maps/")
-		}
-		dest.mkdir()
-		FileUtils.copyDirectory(tmp, dest)
-		println "Temp: $tmp Dest: $dest"
-	}
+    @AfterAll
+    static void testsFinished() {
+        def dest = new File("/home/devent/Projects/dwarf-hustle/terrain-maps/game")
+        if (System.getProperty("os.name") =~ "^Windows.*") {
+            def user = System.getProperty("user.home")
+            dest = new File("${user}/Projects/dwarf-hustle/terrain-maps/")
+        }
+        dest.mkdir()
+        FileUtils.copyDirectory(tmp, dest)
+        println "Temp: $tmp Dest: $dest"
+    }
 
-	static Stream test_start_import_db() {
-		def args = []
-		def mapProperties = new Properties()
-		mapProperties.setProperty("world_name", "The Central World")
-		mapProperties.setProperty("map_name", "Fierybringer Castle")
-		mapProperties.setProperty("map_climate_zone", "Cool-temperate-moist-forest")
-		args << of(TerrainImage.terrain_4_4_4_2, mapProperties)
-		//        args << of(TerrainImage.terrain_8_8_8_4, mapProperties)
-		//args << of(TerrainImage.terrain_32_32_32_4, mapProperties)
-		//args << of(TerrainImage.terrain_32_32_32_8, mapProperties)
-		//args << of(TerrainImage.terrain_512_512_128_16, mapProperties)
-		//        args << of(TerrainImage.terrain_512_512_128_32, mapProperties)
-		//        args << of(TerrainImage.terrain_512_512_128_64, mapProperties)
-		Stream.of(args as Object[])
-	}
+    static Stream test_start_import_db() {
+        def args = []
+        def mapProperties = new Properties()
+        mapProperties.setProperty("world_name", "The Central World")
+        mapProperties.setProperty("map_name", "Fierybringer Castle")
+        mapProperties.setProperty("map_climate_zone", "Cool-temperate-moist-forest")
+        args << of(TerrainImage.terrain_4_4_4_2, mapProperties)
+        //args << of(TerrainImage.terrain_8_8_8_4, mapProperties)
+        //args << of(TerrainImage.terrain_32_32_32_4, mapProperties)
+        //args << of(TerrainImage.terrain_32_32_32_8, mapProperties)
+        //args << of(TerrainImage.terrain_512_512_128_16, mapProperties)
+        //args << of(TerrainImage.terrain_512_512_128_32, mapProperties)
+        //args << of(TerrainImage.terrain_512_512_128_64, mapProperties)
+        Stream.of(args as Object[])
+    }
 
-	@TempDir
-	static File tmp
+    @TempDir
+    static File tmp
 
-	@ParameterizedTest
-	@MethodSource
-	@Timeout(600)
-	void test_start_import_db(TerrainImage image, Properties mapProperties) {
-		def actor = injector.getInstance(ActorSystemProvider)
-		def importer = injector.getInstance(ImporterMapImage2DbApp)
-		def wm = importer.createWorldMap(mapProperties)
-		def gm = importer.createGameMap(mapProperties, image.terrain, image.chunksCount, wm)
-		def subtmp = new File(tmp, image.name())
-		subtmp.mkdir()
-		importer.init(injector, subtmp, wm, gm).get()
-		importer.startImport(ImporterMapImage2DbAppTest.class.getResource(image.imageName), image.terrain, subtmp, gm.id)
-		importer.close()
-		println "done"
-	}
+    @ParameterizedTest
+    @MethodSource
+    @Timeout(600)
+    void test_start_import_db(TerrainImage image, Properties mapProperties) {
+        def actor = injector.getInstance(ActorSystemProvider)
+        def importer = injector.getInstance(ImporterMapImage2DbApp)
+        def wm = importer.createWorldMap(mapProperties)
+        def gm = importer.createGameMap(mapProperties, image.terrain, image.chunksCount, wm)
+        def subtmp = new File(tmp, image.name())
+        subtmp.mkdir()
+        importer.init(injector, subtmp, wm, gm).get()
+        importer.startImport(ImporterMapImage2DbAppTest.class.getResource(image.imageName), image.terrain, subtmp, gm.id)
+        importer.close()
+        println "done"
+    }
 }

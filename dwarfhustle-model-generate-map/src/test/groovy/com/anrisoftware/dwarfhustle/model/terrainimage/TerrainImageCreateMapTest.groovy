@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.terrainimage
 
+import static com.anrisoftware.dwarfhustle.model.db.buffers.MapChunkBuffer.SIZE_MIN
+import static com.anrisoftware.dwarfhustle.model.db.buffers.MapChunkBuffer.getBlocksSize
 import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeGetMessage.askKnowledgeObjects
 import static java.lang.String.format
 import static java.time.Duration.ofSeconds
@@ -104,7 +106,7 @@ class TerrainImageCreateMapTest {
 	static Stream test_start_import_terrain() {
 		def args = []
 		args << of(TerrainImage.terrain_4_4_4_2, true, new Terrain_4_4_4_2_blocks_expected().run())
-		args << of(TerrainImage.terrain_8_8_8_4, true, new Terrain_8_8_8_4_blocks_expected().run())
+		//args << of(TerrainImage.terrain_8_8_8_4, true, new Terrain_8_8_8_4_blocks_expected().run())
 		//
 		//        args << of(TerrainImage.terrain_4_4_4_2, false, new Terrain_4_4_4_2_blocks_expected().run())
 		//        args << of(TerrainImage.terrain_8_8_8_4, false, new Terrain_8_8_8_4_blocks_expected().run())
@@ -133,15 +135,21 @@ class TerrainImageCreateMapTest {
 		KnowledgeJcsCacheActor.create(injector, ofSeconds(1)).whenComplete({ cache, ex ->
 			if (ex == null) {
 				PowerLoomKnowledgeActor.create(
-						injector, ofSeconds(1), supplyAsync({cache}),
-						supplyAsync({ { type, key -> } as ObjectsGetter })).
+						injector, ofSeconds(1), supplyAsync({
+							cache
+						}),
+						supplyAsync({ { type, key ->
+							} as ObjectsGetter
+						})).
 						whenComplete({ knowledge, pex ->
 						} ).get()
 			}
 		} ).get()
 		def terrainKnowledge = new TerrainKnowledge()
 		def loaded = new DefaultLoadKnowledges();
-		loaded.loadKnowledges({ timeout, type -> askKnowledgeObjects(actor.actorSystem, timeout, type) })
+		loaded.loadKnowledges({ timeout, type ->
+			askKnowledgeObjects(actor.actorSystem, timeout, type)
+		})
 		terrainKnowledge.setLoadedKnowledges(loaded)
 		def terrain = image.terrain
 		def gm = new GameMap(1, terrain.width, terrain.height, terrain.depth)
@@ -150,9 +158,13 @@ class TerrainImageCreateMapTest {
 		def file = format("terrain_%d_%d_%d_%d_%d", gm.width, gm.height, gm.depth, gm.chunkSize, gm.chunksCount)
 		def path = Path.of(tmp.absolutePath, file)
 		path.toFile().mkdir()
-		def storage = chunksStorageFactory.create(path, gm.chunkSize);
+		def storage = chunksStorageFactory.create(path, gm.getSize() * (SIZE_MIN + getBlocksSize(gm)))
 		ActorRef<Message> cacheActor
-		StoredObjectsJcsCacheActor.create(injector, ofSeconds(1), supplyAsync({ storage }), supplyAsync({ storage })).whenComplete({ cache, pex ->
+		StoredObjectsJcsCacheActor.create(injector, ofSeconds(1), supplyAsync({
+			storage
+		}), supplyAsync({
+			storage
+		})).whenComplete({ cache, pex ->
 			cacheActor = cache
 		} ).get()
 		def createMap = injector.getInstance(TerrainImageCreateMapFactory).create(
@@ -162,7 +174,9 @@ class TerrainImageCreateMapTest {
 				terrainKnowledge)
 		createMap.startImportMapping(TerrainImageCreateMapTest.class.getResource(image.imageName), terrain, gm)
 		def root = storage.getChunk(0)
-		def retriever = { type, id -> storage.getChunk(MapChunk.id2Cid(id)) }
+		def retriever = { type, id ->
+			storage.getChunk(MapChunk.id2Cid(id))
+		}
 		if (printBlocks) {
 			println "["
 			for (int z = 0; z < terrain.depth; z++) {

@@ -18,7 +18,6 @@
 package com.anrisoftware.dwarfhustle.model.db.lmbd;
 
 import static com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos.calcIndex;
-import static java.lang.Math.pow;
 import static java.nio.ByteBuffer.allocateDirect;
 import static org.lmdbjava.DbiFlags.MDB_CREATE;
 import static org.lmdbjava.DbiFlags.MDB_DUPFIXED;
@@ -68,7 +67,7 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage, ObjectsGetter, 
      * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
      */
     public interface MapObjectsLmbdStorageFactory {
-        MapObjectsLmbdStorage create(Path file, GameMap gm);
+        MapObjectsLmbdStorage create(Path file, GameMap gm, long mapSize);
     }
 
     private final Env<DirectBuffer> env;
@@ -91,11 +90,11 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage, ObjectsGetter, 
      * Creates or opens the game map objects storage for the game map.
      */
     @Inject
-    protected MapObjectsLmbdStorage(@Assisted Path file, @Assisted GameMap gm) {
+    protected MapObjectsLmbdStorage(@Assisted Path file, @Assisted GameMap gm, @Assisted long mapSize) {
         this.w = gm.width;
         this.h = gm.height;
         this.d = gm.depth;
-        this.env = create(PROXY_DB).setMapSize((long) (10 * pow(10, 9))).setMaxDbs(1).open(file.toFile());
+        this.env = create(PROXY_DB).setMapSize(mapSize).setMaxDbs(1).open(file.toFile());
         this.db = env.openDbi("pos-ids", MDB_CREATE, MDB_DUPSORT, MDB_DUPFIXED, MDB_INTEGERDUP);
         this.readTxn = env.txnRead();
         this.buffkey = ThreadLocal.withInitial(() -> new UnsafeBuffer(allocateDirect(4)));

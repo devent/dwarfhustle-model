@@ -19,6 +19,7 @@ package com.anrisoftware.dwarfhustle.model.terrainimage;
 
 import static com.anrisoftware.dwarfhustle.model.db.cache.CachePutMessage.askCachePut;
 import static com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.askImportImage;
+import static java.lang.Math.pow;
 import static java.time.Duration.ofSeconds;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
@@ -184,12 +185,13 @@ public class ImporterMapImage2DbApp {
         if (!gameObjectsPath.isDirectory()) {
             gameObjectsPath.mkdir();
         }
-        this.gameObjectsStorage = gameObjectsFactory.create(gameObjectsPath.toPath());
+        final long mapSize = 200 * (long) pow(10, 6);
+        this.gameObjectsStorage = gameObjectsFactory.create(gameObjectsPath.toPath(), mapSize);
         var mapObjectsPath = new File(root, "map-" + gm.id);
         if (!mapObjectsPath.isDirectory()) {
             mapObjectsPath.mkdir();
         }
-        this.mapObjectsStorage = mapObjectsFactory.create(mapObjectsPath.toPath(), gm);
+        this.mapObjectsStorage = mapObjectsFactory.create(mapObjectsPath.toPath(), gm, mapSize);
         gameObjectsStorage.putObject(WorldMap.OBJECT_TYPE, wm.id, WorldMapBuffer.calcSize(wm),
                 (b) -> WorldMapBuffer.setWorldMap(b, 0, wm));
         gameObjectsStorage.putObject(GameMap.OBJECT_TYPE, gm.id, GameMapBuffer.calcSize(gm),

@@ -17,13 +17,13 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.lmbd;
 
-import static java.lang.Math.pow;
 import static java.nio.ByteBuffer.allocateDirect;
 import static org.lmdbjava.DbiFlags.MDB_CREATE;
 import static org.lmdbjava.DbiFlags.MDB_INTEGERKEY;
 import static org.lmdbjava.DirectBufferProxy.PROXY_DB;
 import static org.lmdbjava.Env.create;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
@@ -32,6 +32,8 @@ import java.util.function.Consumer;
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
+import org.apache.commons.io.FileUtils;
+import org.lmdbjava.CopyFlags;
 import org.lmdbjava.Dbi;
 import org.lmdbjava.Env;
 import org.lmdbjava.Txn;
@@ -57,7 +59,7 @@ public class MapChunksLmbdStorage implements MapChunksStorage, ObjectsGetter, Ob
      * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
      */
     public interface MapChunksLmbdStorageFactory {
-        MapChunksLmbdStorage create(Path file, int chuckSize);
+        MapChunksLmbdStorage create(Path file, long mapSize);
     }
 
     private final Env<DirectBuffer> env;
@@ -68,12 +70,15 @@ public class MapChunksLmbdStorage implements MapChunksStorage, ObjectsGetter, Ob
 
     private final ThreadLocal<MutableDirectBuffer> buffChunk;
 
+    private final Path file;
+
     /**
      * Creates or opens the game map objects storage for the game map.
      */
     @Inject
-    protected MapChunksLmbdStorage(@Assisted Path file, @Assisted int csize) {
-        this.env = create(PROXY_DB).setMapSize((long) (10 * pow(10, 9))).setMaxDbs(2).open(file.toFile());
+    protected MapChunksLmbdStorage(@Assisted Path file, @Assisted long mapSize) {
+        this.file = file;
+        this.env = create(PROXY_DB).setMapSize(mapSize).setMaxDbs(2).open(file.toFile());
         this.chunksDb = env.openDbi("chunks", MDB_CREATE, MDB_INTEGERKEY);
         this.buffkey = ThreadLocal.withInitial(() -> new UnsafeBuffer(allocateDirect(4)));
         this.buffChunk = ThreadLocal.withInitial(() -> MapChunkBuffer.createBlocks(MapChunkBuffer.SIZE_MIN));
@@ -221,6 +226,15 @@ public class MapChunksLmbdStorage implements MapChunksStorage, ObjectsGetter, Ob
     @Override
     public <T extends GameObject> T get(int type, long key) throws ObjectsGetterException {
         return (T) getChunk(MapChunk.id2Cid(key));
+    }
+
+    public void shrinkCopyClose() throws IOException {
+        final var copy = Path.of(file.toString() + "_copy");
+        copy.toFile().mkdirs();
+        env.copy(copy.toFile(), CopyFlags.MDB_CP_COMPACT);
+        close();
+        FileUtils.deleteDirectory(file.toFile());
+        FileUtils.moveDirectory(copy.toFile(), file.toFile());
     }
 
 }
