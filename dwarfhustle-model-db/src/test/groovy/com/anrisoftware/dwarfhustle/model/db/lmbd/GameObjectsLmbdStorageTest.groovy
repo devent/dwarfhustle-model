@@ -17,6 +17,8 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.lmbd
 
+import static java.lang.Math.pow
+
 import java.nio.file.Path
 
 import org.junit.jupiter.api.BeforeAll
@@ -39,55 +41,56 @@ import groovy.util.logging.Slf4j
 @Slf4j
 class GameObjectsLmbdStorageTest {
 
-	static Injector injector
+    static Injector injector
 
-	@BeforeAll
-	static void setupInjector() {
-		injector = Guice.createInjector(new DwarfhustleModelDbLmbdModule())
-	}
+    @BeforeAll
+    static void setupInjector() {
+        injector = Guice.createInjector(new DwarfhustleModelDbLmbdModule())
+    }
 
-	@Test
-	void putObject_test(@TempDir Path tmp) {
-		def wm = new WorldMap(1)
-		wm.name = "Big Endless World"
-		wm.distanceLat = 1
-		wm.distanceLon = 1
-		def gm = new GameMap(2, 32, 32, 32)
-		gm.name = "Timeless Fortress"
-		wm.maps.add(gm.id)
-		wm.currentMap = gm.id
-		def storage = injector.getInstance(GameObjectsLmbdStorageFactory).create(tmp)
-		storage.putObject(WorldMap.OBJECT_TYPE, wm.id, WorldMapBuffer.calcSize(wm), { b ->
-			WorldMapBuffer.setWorldMap(b, 0, wm)
-		})
-		storage.putObject(GameMap.OBJECT_TYPE, gm.id, GameMapBuffer.calcSize(gm), { b ->
-			GameMapBuffer.setGameMap(b, 0, gm)
-		})
-		def that_wm = storage.getObject(WorldMap.OBJECT_TYPE, wm.id)
-		def that_gm = storage.get(GameMap.OBJECT_TYPE, gm.id)
-		test_getObjectsIterator(storage)
-		storage.close()
-		assert that_wm.id == wm.id
-		assert that_wm.name == wm.name
-		assert that_gm.id == gm.id
-		assert that_gm.name == gm.name
-		TestUtils.listFiles log, tmp
-	}
+    @Test
+    void putObject_test(@TempDir Path tmp) {
+        def wm = new WorldMap(1)
+        wm.name = "Big Endless World"
+        wm.distanceLat = 1
+        wm.distanceLon = 1
+        def gm = new GameMap(2, 32, 32, 32)
+        gm.name = "Timeless Fortress"
+        wm.maps.add(gm.id)
+        wm.currentMap = gm.id
+        long mapSize = 200 * (long) pow(10, 6);
+        def storage = injector.getInstance(GameObjectsLmbdStorageFactory).create(tmp, mapSize)
+        storage.putObject(WorldMap.OBJECT_TYPE, wm.id, WorldMapBuffer.calcSize(wm), { b ->
+            WorldMapBuffer.setWorldMap(b, 0, wm)
+        })
+        storage.putObject(GameMap.OBJECT_TYPE, gm.id, GameMapBuffer.calcSize(gm), { b ->
+            GameMapBuffer.setGameMap(b, 0, gm)
+        })
+        def that_wm = storage.getObject(WorldMap.OBJECT_TYPE, wm.id)
+        def that_gm = storage.get(GameMap.OBJECT_TYPE, gm.id)
+        test_getObjectsIterator(storage)
+        storage.close()
+        assert that_wm.id == wm.id
+        assert that_wm.name == wm.name
+        assert that_gm.id == gm.id
+        assert that_gm.name == gm.name
+        TestUtils.listFiles log, tmp
+    }
 
-	void test_getObjectsIterator(GameObjectsLmbdStorage storage) {
-		storage.getObjects(WorldMap.OBJECT_TYPE).withCloseable { ite ->
-			for (def go : ite) {
-				println go
-			}
-		}
-		storage.getObjects(WorldMap.OBJECT_TYPE).withCloseable { ite ->
-			assert ite.hasNext()
-			println ite.next()
-		}
-		storage.getObjects(GameMap.OBJECT_TYPE).withCloseable { ite ->
-			for (def go : ite) {
-				println go
-			}
-		}
-	}
+    void test_getObjectsIterator(GameObjectsLmbdStorage storage) {
+        storage.getObjects(WorldMap.OBJECT_TYPE).withCloseable { ite ->
+            for (def go : ite) {
+                println go
+            }
+        }
+        storage.getObjects(WorldMap.OBJECT_TYPE).withCloseable { ite ->
+            assert ite.hasNext()
+            println ite.next()
+        }
+        storage.getObjects(GameMap.OBJECT_TYPE).withCloseable { ite ->
+            for (def go : ite) {
+                println go
+            }
+        }
+    }
 }
