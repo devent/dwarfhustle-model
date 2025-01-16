@@ -36,6 +36,7 @@ import org.eclipse.collections.api.factory.primitive.LongLists;
 import org.eclipse.collections.api.factory.primitive.LongObjectMaps;
 import org.eclipse.collections.api.factory.primitive.ObjectIntMaps;
 import org.eclipse.collections.api.factory.primitive.ObjectLongMaps;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.list.primitive.MutableLongList;
 import org.eclipse.collections.api.map.primitive.IntLongMap;
 import org.eclipse.collections.api.map.primitive.IntObjectMap;
@@ -345,4 +346,27 @@ public class ExternalizableUtils {
         return map;
     }
 
+    /**
+     * Writes the keys and values of the {@link List} to stream.
+     */
+    public static <T> void writeExternalList(DataOutput out, List<T> list, BiConsumer<DataOutput, T> write)
+            throws IOException {
+        out.writeInt(list.size());
+        for (var value : list) {
+            write.accept(out, value);
+        }
+    }
+
+    /**
+     * Reads the values of the {@link List} from stream.
+     */
+    public static <T> MutableList<T> readExternalMutableList(DataInput in, Function<DataInput, T> supplier)
+            throws IOException {
+        int size = in.readInt();
+        MutableList<T> list = Lists.mutable.withInitialCapacity(size);
+        for (int i = 0; i < size; i++) {
+            list.add(supplier.apply(in));
+        }
+        return list;
+    }
 }

@@ -18,7 +18,9 @@
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readExternalMutableIntIntMultimap;
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readExternalMutableList;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamIntObjectMap;
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeExternalList;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeExternalMutableIntIntMultimap;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamIntObjectMap;
 
@@ -31,7 +33,9 @@ import java.io.Serializable;
 import java.time.ZoneOffset;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.primitive.IntObjectMap;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.eclipse.collections.api.multimap.MutableMultimap;
@@ -151,11 +155,18 @@ public class GameMap extends GameObject implements StoredObject {
      */
     public IntObjectMap<AtomicInteger> filledBlocks;
 
+    /**
+     * A list of the selected blocks.
+     */
+    public MutableList<GameBlockPos> selectedBlocks;
+
     public GameMap() {
         MutableIntObjectMap<AtomicInteger> filledBlocks = IntObjectMaps.mutable.withInitialCapacity(100);
         this.filledBlocks = filledBlocks.asSynchronized();
         MutableMultimap<Integer, Integer> filledChunks = Multimaps.mutable.set.empty();
         this.filledChunks = filledChunks.asSynchronized();
+        MutableList<GameBlockPos> selectedBlocks = Lists.mutable.empty();
+        this.selectedBlocks = selectedBlocks.asSynchronized();
     }
 
     public GameMap(long id, int width, int height, int depth) {
@@ -168,6 +179,8 @@ public class GameMap extends GameObject implements StoredObject {
         this.filledBlocks = filledBlocks.asSynchronized();
         MutableMultimap<Integer, Integer> filledChunks = Multimaps.mutable.set.empty();
         this.filledChunks = filledChunks.asSynchronized();
+        MutableList<GameBlockPos> selectedBlocks = Lists.mutable.empty();
+        this.selectedBlocks = selectedBlocks.asSynchronized();
     }
 
     public GameMap(byte[] idbuf, int width, int height, int depth) {
@@ -284,11 +297,17 @@ public class GameMap extends GameObject implements StoredObject {
         out.writeInt(climateZone);
         writeStreamIntObjectMap(out, filledBlocks, this::writeAtomicInt);
         writeExternalMutableIntIntMultimap(out, filledChunks);
+        writeExternalList(out, selectedBlocks, this::writeGameBlockPos);
     }
 
     @SneakyThrows
     private void writeAtomicInt(DataOutput out, AtomicInteger i) {
         out.writeInt(i.get());
+    }
+
+    @SneakyThrows
+    private void writeGameBlockPos(DataOutput out, GameBlockPos p) {
+        p.writeStream(out);
     }
 
     @Override
@@ -320,11 +339,20 @@ public class GameMap extends GameObject implements StoredObject {
         this.filledBlocks = filledBlocks.asSynchronized();
         var filledChunks = readExternalMutableIntIntMultimap(in, () -> Multimaps.mutable.set.empty());
         this.filledChunks = filledChunks.asSynchronized();
+        var selectedBlocks = readExternalMutableList(in, this::readGameBlockPos);
+        this.selectedBlocks = selectedBlocks.asSynchronized();
     }
 
     @SneakyThrows
     private AtomicInteger readAtomicInt(DataInput in) {
         return new AtomicInteger(in.readInt());
+    }
+
+    @SneakyThrows
+    private GameBlockPos readGameBlockPos(DataInput in) {
+        var p = new GameBlockPos();
+        p.readStream(in);
+        return p;
     }
 
 }
