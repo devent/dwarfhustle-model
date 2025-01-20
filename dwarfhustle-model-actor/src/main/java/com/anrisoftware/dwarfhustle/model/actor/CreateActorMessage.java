@@ -87,6 +87,28 @@ public abstract class CreateActorMessage extends Message {
 
     /**
      * Ask to create a new anonymous actor within the timeout duration.
+     * <p>
+     * Example:
+     *
+     * <pre>
+     * <code>
+     * createAnonActor(actor.getActorSystem(), ofSeconds(1), withTimers(timer -&#62; setup(context -&#62; {
+     *     timer.startTimerAtFixedRate(UpdateInfoPaneMessage.KEY, new UpdateInfoPaneMessage(), ofMillis(1000),
+     *             ofMillis(1000));
+     *     return receive(Message.class)//
+     *             .onMessage(ShutdownMessage.class, (m) -&#62; {
+     *                 timer.cancelAll();
+     *                 return Behaviors.stopped();
+     *             })//
+     *             .onMessage(UpdateInfoPaneMessage.class, (m) -&#62; {
+     *                 updateInfoPane();
+     *                 return Behaviors.same();
+     *             })//
+     *             .build();
+     *     })));
+     *
+     * </code>
+     * </pre>
      */
     public static CompletionStage<ActorRef<Message>> createAnonActor(ActorSystem<Message> system, Duration timeout,
             Behavior<Message> actor) {

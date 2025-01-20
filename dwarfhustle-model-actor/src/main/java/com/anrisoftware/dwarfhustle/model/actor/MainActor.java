@@ -25,10 +25,13 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.impl.map.mutable.primitive.SynchronizedIntObjectMap;
 
+import com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.CreateAnonActorMessage;
 import com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.CreateNamedActorMessage;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.google.inject.Injector;
@@ -104,7 +107,9 @@ public class MainActor extends MessageActor<Message> {
         return (ActorRef<T>) actor;
     }
 
-    private final MutableIntObjectMap<ActorRef<? extends Message>> actors;
+    private final MutableIntObjectMap<ActorRef<? extends Message>> namedActors;
+
+    private final MutableList<ActorRef<? extends Message>> annonActors;
 
     private final ForkJoinPool pool;
 
@@ -112,11 +117,13 @@ public class MainActor extends MessageActor<Message> {
     MainActor(@Assisted ActorContext<Message> context) {
         super(context);
         this.pool = new ForkJoinPool(4);
-        this.actors = new SynchronizedIntObjectMap<>(IntObjectMaps.mutable.empty());
+        this.namedActors = new SynchronizedIntObjectMap<>(IntObjectMaps.mutable.empty());
+        MutableList<ActorRef<? extends Message>> annonActors = Lists.mutable.withInitialCapacity(100);
+        this.annonActors = annonActors.asSynchronized();
     }
 
     public <T extends Message> ActorRef<T> getActor(int id) {
-        return castActor(actors.get(id));
+        return castActor(namedActors.get(id));
     }
 
     @SneakyThrows
@@ -136,32 +143,26 @@ public class MainActor extends MessageActor<Message> {
     }
 
     public synchronized void waitActor(int id) throws InterruptedException {
-        while (!actors.containsKey(id)) {
+        while (!namedActors.containsKey(id)) {
             wait(10);
         }
     }
 
     public boolean haveActor(int id) {
-        return actors.containsKey(id);
+        return namedActors.containsKey(id);
     }
 
     public void putActor(int id, ActorRef<? extends Message> actor) {
-        actors.put(id, actor);
+        namedActors.put(id, actor);
+    }
+
+    public void addActor(ActorRef<? extends Message> actor) {
+        annonActors.add(actor);
     }
 
     public MainActor tell(Message m) {
         getContext().getSelf().tell(m);
         return this;
-    }
-
-    @Override
-    public Receive<Message> createReceive() {
-        return newReceiveBuilder()//
-                .onMessage(CreateNamedActorMessage.class, this::onCreateNamedActor)//
-                .onMessage(ActorTerminatedMessage.class, this::onActorTerminated)//
-                .onMessage(ShutdownMessage.class, this::onShutdown)//
-                .onMessage(Message.class, this::forwardMessage)//
-                .build();
     }
 
     private Behavior<Message> onShutdown(ShutdownMessage m) {
@@ -175,24 +176,54 @@ public class MainActor extends MessageActor<Message> {
     private Behavior<Message> onCreateNamedActor(CreateNamedActorMessage m) {
         log.debug("onCreateNamedActor {}", m);
         var actor = getContext().spawnAnonymous(m.actor);
-        getContext().watchWith(actor, new ActorTerminatedMessage(m.id, m.key, actor));
+        getContext().watchWith(actor, new NamedActorTerminatedMessage(m.id, m.key, actor));
         putActor(m.id, actor);
         m.replyTo.tell(StatusReply.success(castActor(actor)));
         return this;
     }
 
-    private Behavior<Message> onActorTerminated(ActorTerminatedMessage m) {
-        log.debug("onActorTerminated {}", m);
-        actors.remove(m.id);
+    private Behavior<Message> onCreateAnonActor(CreateAnonActorMessage m) {
+        log.debug("onCreateAnonActor {}", m);
+        var actor = getContext().spawnAnonymous(m.actor);
+        getContext().watchWith(actor, new AnnonActorTerminatedMessage(actor));
+        addActor(actor);
+        m.replyTo.tell(StatusReply.success(castActor(actor)));
+        return this;
+    }
+
+    private Behavior<Message> onNamedActorTerminated(NamedActorTerminatedMessage m) {
+        log.debug("onNamedActorTerminated {}", m);
+        namedActors.remove(m.id);
+        return this;
+    }
+
+    private Behavior<Message> onAnnonActorTerminated(AnnonActorTerminatedMessage m) {
+        log.debug("onAnnonActorTerminated {}", m);
+        annonActors.remove(m.actor);
         return this;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private Behavior<Message> forwardMessage(Message m) {
-        for (ActorRef actor : actors) {
+        for (ActorRef actor : namedActors) {
+            actor.tell(m);
+        }
+        for (ActorRef actor : annonActors) {
             actor.tell(m);
         }
         return this;
+    }
+
+    @Override
+    public Receive<Message> createReceive() {
+        return newReceiveBuilder()//
+                .onMessage(CreateNamedActorMessage.class, this::onCreateNamedActor)//
+                .onMessage(CreateAnonActorMessage.class, this::onCreateAnonActor)//
+                .onMessage(NamedActorTerminatedMessage.class, this::onNamedActorTerminated)//
+                .onMessage(AnnonActorTerminatedMessage.class, this::onAnnonActorTerminated)//
+                .onMessage(ShutdownMessage.class, this::onShutdown)//
+                .onMessage(Message.class, this::forwardMessage)//
+                .build();
     }
 
 }

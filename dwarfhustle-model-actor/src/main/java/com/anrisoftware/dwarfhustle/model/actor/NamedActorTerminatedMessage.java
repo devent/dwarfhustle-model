@@ -25,14 +25,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
- * Message that the actor was terminated. This message is send after the actor
- * was terminated.
+ * Message that the named actor was terminated. This message is send after the
+ * actor was terminated.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @RequiredArgsConstructor
 @ToString
-public class ActorTerminatedMessage extends Message {
+public class NamedActorTerminatedMessage extends Message {
 
     public final int id;
 
