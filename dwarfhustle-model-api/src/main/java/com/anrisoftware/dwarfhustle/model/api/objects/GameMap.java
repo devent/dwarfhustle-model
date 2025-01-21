@@ -260,6 +260,15 @@ public class GameMap extends GameObject implements StoredObject {
         });
     }
 
+    /**
+     * Returns true if the given {@link MapBlock} have any game objects.
+     */
+    public boolean isFilledBlock(MapBlock mb) {
+        int index = GameBlockPos.calcIndex(this, mb.getPos());
+        var count = filledBlocks.get(index);
+        return count != null && count.get() > 0;
+    }
+
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
         writeStream(out);
