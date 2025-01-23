@@ -63,6 +63,11 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
 
     /**
      * Asks the actor to retrieve knowledge.
+     *
+     * @param a       the {@link ActorSystem}.
+     * @param timeout the timeout {@link Duration}.
+     * @param the     type {@link String} from
+     *                {@link KnowledgeObject#getKnowledgeType()}.
      */
     public static CompletionStage<KnowledgeResponseMessage> askKnowledgeGet(ActorSystem<Message> a, Duration timeout,
             String type) {
@@ -71,6 +76,12 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
 
     /**
      * Asks the actor to retrieve {@link KnowledgeObject}s.
+     *
+     * @param a         the {@link ActorRef}.
+     * @param timeout   the timeout {@link Duration}.
+     * @param scheduler the {@link Scheduler}.
+     * @param the       type {@link String} from
+     *                  {@link KnowledgeObject#getKnowledgeType()}.
      */
     @SneakyThrows
     public static CompletionStage<ListIterable<KnowledgeObject>> askKnowledgeObjects(ActorRef<Message> a,
@@ -105,7 +116,7 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
 
     /**
      * Ask the actor to retrieve the ID of a specific material.
-     * 
+     *
      * @see BlockMaterial
      */
     public static long askBlockMaterialId(ActorRef<Message> a, Duration timeout, Scheduler scheduler, String type,
@@ -115,7 +126,7 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
 
     /**
      * Ask the actor to retrieve the ID of a object type.
-     * 
+     *
      * @see ObjectType
      */
     public static long askObjectTypeId(ActorRef<Message> a, Duration timeout, Scheduler scheduler, String type,

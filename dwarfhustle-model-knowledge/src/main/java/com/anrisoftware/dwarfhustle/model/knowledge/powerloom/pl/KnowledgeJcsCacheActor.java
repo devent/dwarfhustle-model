@@ -72,7 +72,7 @@ public class KnowledgeJcsCacheActor extends AbstractJcsCacheActor {
     public interface KnowledgeJcsCacheActorFactory extends AbstractJcsCacheActorFactory {
 
         @Override
-		KnowledgeJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash,
+        KnowledgeJcsCacheActor create(ActorContext<Message> context, StashBuffer<Message> stash,
                 TimerScheduler<Message> timer, ObjectsGetter og, ObjectsSetter os);
     }
 
@@ -110,6 +110,15 @@ public class KnowledgeJcsCacheActor extends AbstractJcsCacheActor {
     @Override
     protected int getId() {
         return ID;
+    }
+
+    @Override
+    protected void preCachePut(long id, GameObject value) {
+        if (value instanceof KnowledgeLoadedObject klo) {
+            for (var ko : klo.objects) {
+                cache.put(ko.getId(), ko);
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")

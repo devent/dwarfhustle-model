@@ -30,8 +30,8 @@ import com.google.auto.service.AutoService;
 
 /**
  * Writes and reads {@link GameMap} in a byte buffer.
- * 
- * 
+ *
+ *
  * <ul>
  * <li>@{code i} the ID;
  * <li>@{code w} the ID of the {@link GameMap#world};
@@ -40,6 +40,7 @@ import com.google.auto.service.AutoService;
  * <li>@{code D} the {@link GameMap#depth};
  * <li>@{code S} the {@link GameMap#chunkSize};
  * <li>@{code C} the {@link GameMap#chunksCount};
+ * <li>@{code O} the {@link GameMap#cursorObject};
  * <li>@{code a} the {@link GameMap#area};
  * <li>@{code p} the {@link GameMap#cameraPos};
  * <li>@{code r} the {@link GameMap#cameraRot};
@@ -48,12 +49,12 @@ import com.google.auto.service.AutoService;
  * <li>@{code t} the {@link GameMap#timeZone};
  * <li>@{code n} the {@link GameMap#name};
  * </ul>
- * 
+ *
  * <pre>
  * long  0                   1                   2                   3                   4                   5                   6
  * int   0         1         2         3         4         5         6         7         8         9         10        11        12
  * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21   22   23
- *       iiii iiii iiii iiii wwww wwww wwww wwww WWWW HHHH DDDD SSSS CCCC aaaa aaaa aaaa aaaa aaaa aaaa aaaa aaaa pppp pppp pppp pppp pppp pppp rrrr rrrr rrrr rrrr rrrr rrrr rrrr rrrr cccc cccc cccc ssss ssss ssss ssss ssss ssss tttt tttt nnnn nnnn ....
+ *       iiii iiii iiii iiii wwww wwww wwww wwww OOOO OOOO OOOO OOOO WWWW HHHH DDDD SSSS CCCC aaaa aaaa aaaa aaaa aaaa aaaa aaaa aaaa pppp pppp pppp pppp pppp pppp rrrr rrrr rrrr rrrr rrrr rrrr rrrr rrrr cccc cccc cccc ssss ssss ssss ssss ssss ssss tttt tttt nnnn nnnn ....
  * </pre>
  */
 @AutoService(StoredObjectBuffer.class)
@@ -64,17 +65,20 @@ public class GameMapBuffer extends GameObjectBuffer implements StoredObjectBuffe
      */
     public static final int MIN_SIZE = //
             GameObjectBuffer.SIZE + //
-                    8 + //
-                    5 * 2 + //
-                    MapAreaBuffer.SIZE + //
-                    3 * 4 + //
-                    4 * 4 + //
-                    3 * 4 + //
-                    3 * 4 + //
+                    8 + // world
+                    8 + // cursorObject
+                    5 * 2 + // width, height, depth, chunk-size, chunk-count
+                    MapAreaBuffer.SIZE + // area
+                    3 * 4 + // cameraPos
+                    4 * 4 + // cameraRot
+                    3 * 4 + // cursor
+                    3 * 4 + // sunPos
                     ZoneOffsetBuffer.SIZE + //
-                    1 * 4;
+                    1 * 4; // name
 
     private static final int WORLD_BYTES = 4 * 2;
+
+    private static final int CURSOR_OBJECT_BYTES = 8 * 2;
 
     private static final int WIDTH_BYTES = 8 * 2;
 
@@ -92,7 +96,7 @@ public class GameMapBuffer extends GameObjectBuffer implements StoredObjectBuffe
 
     private static final int CAMERA_ROT_BYTES = 27 * 2;
 
-    private static final int CURSOR_BYTES = 35 * 2;
+    private static final int CURSOR_POS_BYTES = 35 * 2;
 
     private static final int SUN_POS_BYTES = 38 * 2;
 
@@ -113,6 +117,14 @@ public class GameMapBuffer extends GameObjectBuffer implements StoredObjectBuffe
 
     public static long getWorld(DirectBuffer b, int off) {
         return b.getLong(WORLD_BYTES + off);
+    }
+
+    public static void setCursorObject(MutableDirectBuffer b, int off, long id) {
+        b.putLong(CURSOR_OBJECT_BYTES + off, id);
+    }
+
+    public static long getCursorObject(DirectBuffer b, int off) {
+        return b.getLong(CURSOR_OBJECT_BYTES + off);
     }
 
     public static void setWidth(MutableDirectBuffer b, int off, int w) {
@@ -199,21 +211,21 @@ public class GameMapBuffer extends GameObjectBuffer implements StoredObjectBuffe
     }
 
     public static void setCursor(MutableDirectBuffer b, int off, GameBlockPos c) {
-        b.putShort(CURSOR_BYTES + off + 0 * 2, (short) c.x);
-        b.putShort(CURSOR_BYTES + off + 1 * 2, (short) c.y);
-        b.putShort(CURSOR_BYTES + off + 2 * 2, (short) c.z);
+        b.putShort(CURSOR_POS_BYTES + off + 0 * 2, (short) c.x);
+        b.putShort(CURSOR_POS_BYTES + off + 1 * 2, (short) c.y);
+        b.putShort(CURSOR_POS_BYTES + off + 2 * 2, (short) c.z);
     }
 
     public static void setCursor(MutableDirectBuffer b, int off, int x, int y, int z) {
-        b.putShort(CURSOR_BYTES + off + 0 * 2, (short) x);
-        b.putShort(CURSOR_BYTES + off + 1 * 2, (short) y);
-        b.putShort(CURSOR_BYTES + off + 2 * 2, (short) z);
+        b.putShort(CURSOR_POS_BYTES + off + 0 * 2, (short) x);
+        b.putShort(CURSOR_POS_BYTES + off + 1 * 2, (short) y);
+        b.putShort(CURSOR_POS_BYTES + off + 2 * 2, (short) z);
     }
 
     public static GameBlockPos getCursor(DirectBuffer b, int off, GameBlockPos c) {
-        c.x = b.getShort(CURSOR_BYTES + off + 0 * 2);
-        c.y = b.getShort(CURSOR_BYTES + off + 1 * 2);
-        c.z = b.getShort(CURSOR_BYTES + off + 2 * 2);
+        c.x = b.getShort(CURSOR_POS_BYTES + off + 0 * 2);
+        c.y = b.getShort(CURSOR_POS_BYTES + off + 1 * 2);
+        c.z = b.getShort(CURSOR_POS_BYTES + off + 2 * 2);
         return c;
     }
 
@@ -253,6 +265,7 @@ public class GameMapBuffer extends GameObjectBuffer implements StoredObjectBuffe
     public static void setGameMap(MutableDirectBuffer b, int off, GameMap gm) {
         setId(b, off, gm.id);
         setWorld(b, off, gm.world);
+        setCursorObject(b, off, gm.cursorObject);
         setWidth(b, off, gm.width);
         setHeight(b, off, gm.height);
         setDepth(b, off, gm.depth);
@@ -270,6 +283,7 @@ public class GameMapBuffer extends GameObjectBuffer implements StoredObjectBuffe
     public static GameMap getGameMap(DirectBuffer b, int off, GameMap gm) {
         gm.id = getId(b, off);
         gm.world = getWorld(b, off);
+        gm.cursorObject = getCursorObject(b, off);
         gm.width = getWidth(b, off);
         gm.height = getHeight(b, off);
         gm.depth = getDepth(b, off);

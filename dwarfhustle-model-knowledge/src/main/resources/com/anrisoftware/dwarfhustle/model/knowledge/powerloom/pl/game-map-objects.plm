@@ -29,6 +29,8 @@
 (assert (BlockObject block-normal)) :documentation "Not mined out block block."
 (assert (BlockObject block-water)) :documentation "Water block."
 (assert (BlockObject block-ceiling)) :documentation "Ceiling block."
+(assert (BlockObject block-select)) :documentation "Selected block."
+(assert (BlockObject block-focus)) :documentation "Focused block."
 (assert (BlockObject block-ramp-corner-ne)) :documentation "Not mined out ramp."
 (assert (BlockObject block-ramp-corner-nw)) :documentation "Not mined out ramp."
 (assert (BlockObject block-ramp-corner-se)) :documentation "Not mined out ramp."

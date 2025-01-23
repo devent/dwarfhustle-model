@@ -102,5 +102,10 @@
             <artifactId>dwarfhustle-model-db</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.anrisoftware.dwarfhustle</groupId>
+            <artifactId>dwarfhustle-model-objects</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 	</dependencies>
 </project>

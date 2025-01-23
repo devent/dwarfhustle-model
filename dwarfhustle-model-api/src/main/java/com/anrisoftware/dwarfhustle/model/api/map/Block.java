@@ -17,48 +17,40 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.map;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
+import com.google.auto.service.AutoService;
 
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Block object.
+ * Block on the game map.
  *
- * @see Block
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-@Getter
-@Setter
-public class BlockObject extends ObjectType {
+@Data
+@AutoService(StoredObject.class)
+public class Block extends GameMapObject {
 
-    public static final int OBJECT_TYPE = BlockObject.class.getSimpleName().hashCode();
+    public static final int OBJECT_TYPE = Block.class.getSimpleName().hashCode();
 
-    public static final String TYPE = BlockObject.class.getSimpleName();
+    public Block(long id) {
+        super(id);
+    }
 
-    public BlockObject(int kid) {
-        super(kid);
+    public Block(byte[] idbuf) {
+        super(idbuf);
     }
 
     @Override
     public int getObjectType() {
-        return BlockObject.OBJECT_TYPE;
+        return OBJECT_TYPE;
     }
 
-    @Override
-    public String getKnowledgeType() {
-        return BlockObject.TYPE;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T extends GameObject> T createObject(byte[] id) {
-        return (T) new Block(id);
-    }
 }

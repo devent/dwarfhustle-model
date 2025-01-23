@@ -48,6 +48,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsSetter;
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
 import com.anrisoftware.dwarfhustle.model.db.buffers.GameMapBuffer;
 import com.anrisoftware.dwarfhustle.model.db.buffers.WorldMapBuffer;
+import com.anrisoftware.dwarfhustle.model.db.cache.MapObjectsJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.db.lmbd.GameObjectsLmbdStorage;
 import com.anrisoftware.dwarfhustle.model.db.lmbd.GameObjectsLmbdStorage.GameObjectsLmbdStorageFactory;
@@ -113,7 +114,8 @@ public class ImporterMapImage2DbApp {
         return CompletableFuture.allOf( //
                 createObjectsCacheStage(injector).thenAccept((a) -> {
                     this.cacheActor = a;
-                    createKnowledge(injector, wm, gm);
+                    createMapObjectsCacheWait(injector, mapObjectsStorage, mapObjectsStorage);
+                    createKnowledgeWait(injector, wm, gm);
                     cacheMapWait(wm, gm);
                 }).toCompletableFuture(), //
                 createImporter(childInjector).toCompletableFuture()).toCompletableFuture()
@@ -121,7 +123,7 @@ public class ImporterMapImage2DbApp {
     }
 
     @SneakyThrows
-    private void createKnowledge(Injector injector, WorldMap wm, GameMap gm) {
+    private void createKnowledgeWait(Injector injector, WorldMap wm, GameMap gm) {
         createKnowledgeCache(injector, actor).thenAccept((aa) -> {
             createPowerLoomWait(injector);
         }).toCompletableFuture().get();
@@ -172,6 +174,19 @@ public class ImporterMapImage2DbApp {
     }
 
     @SneakyThrows
+    private static void createMapObjectsCacheWait(Injector injector, ObjectsGetter mg, ObjectsSetter ms) {
+        CompletionStage<ActorRef<Message>> res = MapObjectsJcsCacheActor.create(injector, ofSeconds(1), mg, ms)
+                .whenComplete((ret, ex) -> {
+                    if (ex != null) {
+                        log.error("MapObjectsJcsCacheActor.create", ex);
+                    } else {
+                        log.debug("MapObjectsJcsCacheActor created");
+                    }
+                });
+        res.toCompletableFuture().get();
+    }
+
+    @SneakyThrows
     private void cacheMapWait(WorldMap wm, GameMap gm) {
         askCachePut(cacheActor, actor.getScheduler(), ofSeconds(1), gm).toCompletableFuture().get();
         askCachePut(cacheActor, actor.getScheduler(), ofSeconds(1), wm).toCompletableFuture().get();
@@ -219,13 +234,16 @@ public class ImporterMapImage2DbApp {
     private Void logError(String msg, Throwable ex) {
         log.error(msg, ex);
         shutdownImporter().toCompletableFuture().get();
+        close();
         return null;
     }
 
     /**
      * Closes the storages.
      */
+    @SneakyThrows
     public void close() {
+        shutdownImporter().toCompletableFuture().get();
         gameObjectsStorage.close();
         mapObjectsStorage.close();
     }
@@ -235,7 +253,6 @@ public class ImporterMapImage2DbApp {
      */
     @SneakyThrows
     public CompletionStage<Done> shutdownImporter() {
-        close();
         actor.getMainActor().tell(new ShutdownMessage());
         return actor.shutdown();
     }

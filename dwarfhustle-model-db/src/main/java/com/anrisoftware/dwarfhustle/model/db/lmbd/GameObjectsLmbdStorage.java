@@ -58,7 +58,7 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
 
     /**
      * Factory to create the {@link GameObjectsLmbdStorage}.
-     * 
+     *
      * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
      */
     public interface GameObjectsLmbdStorageFactory {
@@ -203,7 +203,12 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
         try (var txn = env.txnRead()) {
             final var key = buff8.get();
             key.putLong(0, id);
-            var val = dbs.get(type).get(txn, key);
+            var dbi = dbs.get(type);
+            if (dbi == null) {
+                System.out.printf("[GameObjectsLmbdStorage] %d - %d\n", type, id); // TODO
+                assert dbi != null;
+            }
+            var val = dbi.get(txn, key);
             return (T) readBuffers.get(type).read(val);
         }
     }
@@ -224,7 +229,7 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
      * Retrieves all game objects with the specific object type.
      * <p>
      * The returned {@link DbIterable} must be closed.
-     * 
+     *
      * <pre>
      * try (var it = storage.getObjects(WorldMap.OBJECT_TYPE)) {
      * }
@@ -238,7 +243,7 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
 
     /**
      * Iterable with {@link AutoCloseable}.
-     * 
+     *
      * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
      */
     public class DbIterable implements Iterable<StoredObject>, Iterator<StoredObject>, AutoCloseable {
@@ -288,7 +293,8 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
     public void set(int type, GameObject go) throws ObjectsSetterException {
         var soBuffer = readBuffers.get(type);
         if (soBuffer == null) {
-            System.out.printf("%s - go.type=%d - type=%d%n", go, go.getObjectType(), type);
+            System.out.printf("[GameObjectsLmbdStorage] %s - go.type=%d - type=%d%n", go, go.getObjectType(), type); // TODO
+            assert soBuffer != null;
         }
         putObject(type, go.id, soBuffer.getSize((StoredObject) go), (b) -> {
             soBuffer.write(b, (StoredObject) go);

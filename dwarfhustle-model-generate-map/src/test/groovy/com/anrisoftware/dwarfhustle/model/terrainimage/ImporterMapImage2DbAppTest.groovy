@@ -35,6 +35,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjects
 import com.anrisoftware.dwarfhustle.model.db.cache.DwarfhustleModelDbCacheModule
 import com.anrisoftware.dwarfhustle.model.db.lmbd.DwarfhustleModelDbLmbdModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustleModelKnowledgePowerloomPlModule
+import com.anrisoftware.dwarfhustle.model.objects.DwarfhustleModelObjectsModule
 import com.google.inject.Guice
 import com.google.inject.Injector
 
@@ -55,6 +56,7 @@ class ImporterMapImage2DbAppTest {
                 new DwarfhustleModelTerrainimageModule(),
                 new DwarfhustleModelDbLmbdModule(),
                 new DwarfhustleModelDbCacheModule(),
+                new DwarfhustleModelObjectsModule(),
                 )
     }
 
@@ -76,10 +78,10 @@ class ImporterMapImage2DbAppTest {
         mapProperties.setProperty("world_name", "The Central World")
         mapProperties.setProperty("map_name", "Fierybringer Castle")
         mapProperties.setProperty("map_climate_zone", "Cool-temperate-moist-forest")
-        args << of(TerrainImage.terrain_4_4_4_2, mapProperties)
+        //args << of(TerrainImage.terrain_4_4_4_2, mapProperties)
         //args << of(TerrainImage.terrain_8_8_8_4, mapProperties)
         //args << of(TerrainImage.terrain_32_32_32_4, mapProperties)
-        //args << of(TerrainImage.terrain_32_32_32_8, mapProperties)
+        args << of(TerrainImage.terrain_32_32_32_8, mapProperties)
         //args << of(TerrainImage.terrain_512_512_128_16, mapProperties)
         //args << of(TerrainImage.terrain_512_512_128_32, mapProperties)
         //args << of(TerrainImage.terrain_512_512_128_64, mapProperties)

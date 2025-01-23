@@ -51,6 +51,7 @@ import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.IdsKnowledgePro
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandErrorMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeCommandResponseMessage.KnowledgeCommandSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.RetrieveKnowledgesMessage.RetrieveKnowledgesSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.GameObjectKnowledge;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
@@ -226,7 +227,7 @@ public class PowerLoomKnowledgeActor implements KnowledgeGetter {
 
     @Inject
     @Assisted("knowledgesGetter")
-    private ObjectsGetter knowledgesGetter;
+    private ObjectsGetter kg;
 
     @Inject
     @Named("knowledge-storages")
@@ -311,6 +312,24 @@ public class PowerLoomKnowledgeActor implements KnowledgeGetter {
         return Behaviors.same();
     }
 
+    /**
+     * Reacts to {@link KnowledgeGetMessage}. Returns a behavior for the messages
+     * from {@link #getInitialBehavior()}.
+     */
+    @SneakyThrows
+    private Behavior<Message> onRetrieveKnowledges(RetrieveKnowledgesMessage<? super Message> m) {
+        log.debug("onRetrieveKnowledges {}", m);
+        loadKnowledges();
+        m.replyTo.tell(new RetrieveKnowledgesSuccessMessage());
+        return Behaviors.same();
+    }
+
+    private void loadKnowledges() {
+        tidTypeMap.keySet().forEach((tid) -> {
+            get(tid);
+        });
+    }
+
     @SuppressWarnings("unchecked")
     @SneakyThrows
     private void cacheMiss(@SuppressWarnings("rawtypes") KnowledgeGetMessage m) {
@@ -335,7 +354,7 @@ public class PowerLoomKnowledgeActor implements KnowledgeGetter {
      * <ul>
      * </ul>
      */
-    private Behavior<Message> onWrappedCacheResponse(WrappedCacheResponse m) {
+    private Behavior<Message> onWrappedCacheResponse(Object m) {
         log.debug("onWrappedCacheResponse {}", m);
         return Behaviors.same();
     }
@@ -346,12 +365,14 @@ public class PowerLoomKnowledgeActor implements KnowledgeGetter {
      * <ul>
      * <li>{@link KnowledgeCommandMessage}
      * <li>{@link KnowledgeGetMessage}
+     * <li>{@link RetrieveKnowledgesMessage}
      * </ul>
      */
     private BehaviorBuilder<Message> getInitialBehavior() {
         return Behaviors.receive(Message.class)//
                 .onMessage(KnowledgeCommandMessage.class, this::onKnowledgeCommand)//
                 .onMessage(KnowledgeGetMessage.class, this::onKnowledgeGet)//
+                .onMessage(RetrieveKnowledgesMessage.class, this::onRetrieveKnowledges)//
                 .onMessage(WrappedCacheResponse.class, this::onWrappedCacheResponse)//
         ;
     }
@@ -393,7 +414,7 @@ public class PowerLoomKnowledgeActor implements KnowledgeGetter {
     @Override
     @SneakyThrows
     public KnowledgeLoadedObject get(int tid) {
-        var klo = (KnowledgeLoadedObject) knowledgesGetter.get(KnowledgeLoadedObject.OBJECT_TYPE, tid);
+        KnowledgeLoadedObject klo = kg.get(KnowledgeLoadedObject.OBJECT_TYPE, KnowledgeLoadedObject.kid2Id(tid));
         if (klo == null) {
             String type = tidTypeMap.get(tid);
             klo = retrieveKnowledgeLoadedObject(type);

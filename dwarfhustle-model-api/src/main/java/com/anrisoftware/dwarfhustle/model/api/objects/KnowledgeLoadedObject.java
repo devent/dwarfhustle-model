@@ -34,18 +34,34 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class KnowledgeLoadedObject extends GameObject {
 
+    public static final long ID_FLAG = 0;
+
+    /**
+     * Returns the game object ID from the knowledge KID.
+     */
+    public static long kid2Id(long kid) {
+        return (kid << 32) | ID_FLAG;
+    }
+
+    /**
+     * Returns the knowledge KID from the game object ID.
+     */
+    public static int id2Kid(long id) {
+        return (int) (id >> 32);
+    }
+
     private static final long serialVersionUID = 1L;
 
     public static final int OBJECT_TYPE = KnowledgeLoadedObject.class.getSimpleName().hashCode();
 
     public ListIterable<KnowledgeObject> objects;
 
-    public KnowledgeLoadedObject(long id) {
-        super(id);
+    public KnowledgeLoadedObject(long kid) {
+        super(kid2Id(kid));
     }
 
-    public KnowledgeLoadedObject(long id, ListIterable<KnowledgeObject> objects) {
-        super(id);
+    public KnowledgeLoadedObject(long kid, ListIterable<KnowledgeObject> objects) {
+        super(kid2Id(kid));
         this.objects = objects;
     }
 
@@ -54,4 +70,7 @@ public class KnowledgeLoadedObject extends GameObject {
         return OBJECT_TYPE;
     }
 
+    public int getKid() {
+        return id2Kid(getId());
+    }
 }

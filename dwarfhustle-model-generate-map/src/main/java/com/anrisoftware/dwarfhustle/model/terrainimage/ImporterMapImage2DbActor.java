@@ -21,6 +21,7 @@ import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.create
 import static com.anrisoftware.dwarfhustle.model.api.objects.GameMap.getGameMap;
 import static com.anrisoftware.dwarfhustle.model.api.objects.WorldMap.getWorldMap;
 import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeGetMessage.askKnowledgeObjects;
+import static com.anrisoftware.dwarfhustle.model.objects.InsertObjectMessage.askInsertObject;
 import static java.lang.String.format;
 import static java.time.Duration.ofSeconds;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -28,19 +29,28 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CountDownLatch;
 
 import org.lable.oss.uniqueid.IDGenerator;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.actor.ShutdownMessage;
+import com.anrisoftware.dwarfhustle.model.api.map.BlockObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.IdsObjectsProvider.IdsObjects;
+import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
+import com.anrisoftware.dwarfhustle.model.db.buffers.MapChunkBuffer;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.db.cache.MapChunksJcsCacheActor;
+import com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.db.lmbd.MapChunksLmbdStorage.MapChunksLmbdStorageFactory;
 import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DefaultLoadKnowledges;
+import com.anrisoftware.dwarfhustle.model.objects.InsertObjectMessage.InsertObjectSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.objects.ObjectsActor;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.ImportImageErrorMessage;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.ImportImageSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.terrainimage.TerrainImageCreateMap.TerrainImageCreateMapFactory;
@@ -161,6 +171,11 @@ public class ImporterMapImage2DbActor {
                 log.error("ChunksJcsCacheActor", ex);
             }
         }).toCompletableFuture().get();
+        ObjectsActor.create(injector, ofSeconds(1)).whenComplete((cache, ex) -> {
+            if (ex != null) {
+                log.error("ObjectsActor", ex);
+            }
+        }).toCompletableFuture().get();
         var knowledge = new TerrainKnowledge();
         var loaded = new DefaultLoadKnowledges();
         loaded.loadKnowledges((timeout, type) -> askKnowledgeObjects(actor.getActorSystem(), timeout, type));
@@ -168,8 +183,41 @@ public class ImporterMapImage2DbActor {
         terrainImageCreateMap.create(actor.getObjectGetterAsync(MapChunksJcsCacheActor.ID).toCompletableFuture().get(),
                 actor.getObjectSetterAsync(MapChunksJcsCacheActor.ID).toCompletableFuture().get(), storage, knowledge)
                 .startImportMapping(m.url, m.image, gm);
+        createObjects(gm.getId(), gm.getCursor(), gm);
         storage.shrinkCopyClose();
         m.replyTo.tell(new ImportImageSuccessMessage());
+    }
+
+    @SneakyThrows
+    private void createObjects(long mid, GameBlockPos cursor, GameMap gm) {
+        var os = actor.getObjectSetterAsyncNow(StoredObjectsJcsCacheActor.ID);
+        var cg = actor.getObjectGetterAsyncNow(MapChunksJcsCacheActor.ID);
+        var chunk = MapChunk.getChunk(cg, 0);
+        var mb = MapChunkBuffer.findBlock(chunk, cursor, cg);
+        var kret = askKnowledgeObjects(actor.getActorSystem(), ofSeconds(10), BlockObject.TYPE);
+        var lock = new CountDownLatch(1);
+        kret.whenComplete((ret, ex) -> {
+            if (ex == null) {
+                var ko = ret.detect(_ko -> _ko.name.equalsIgnoreCase("block-focus"));
+                var iret = askInsertObject(actor.getActorSystem(), mid, mb.getParent(), ko, cursor, ofSeconds(10));
+                iret.whenComplete((ret1, ex1) -> {
+                    if (ex1 == null) {
+                        if (ret1 instanceof InsertObjectSuccessMessage sm) {
+                            gm.setCursorObject(sm.go.getId());
+                            os.set(GameMap.OBJECT_TYPE, gm);
+                        }
+                    } else {
+                        log.error("askInsertObject", ex1);
+                    }
+                    lock.countDown();
+                });
+            } else {
+                log.error("askKnowledgeObjects", ex);
+                lock.countDown();
+            }
+        });
+        lock.await();
+        log.trace("createObjects done");
     }
 
     /**

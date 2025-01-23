@@ -160,6 +160,11 @@ public class GameMap extends GameObject implements StoredObject {
      */
     public MutableList<GameBlockPos> selectedBlocks;
 
+    /**
+     * Sets the OID of the cursor object.
+     */
+    public long cursorObject = 0;
+
     public GameMap() {
         MutableIntObjectMap<AtomicInteger> filledBlocks = IntObjectMaps.mutable.withInitialCapacity(100);
         this.filledBlocks = filledBlocks.asSynchronized();
@@ -307,6 +312,7 @@ public class GameMap extends GameObject implements StoredObject {
         writeStreamIntObjectMap(out, filledBlocks, this::writeAtomicInt);
         writeExternalMutableIntIntMultimap(out, filledChunks);
         writeExternalList(out, selectedBlocks, this::writeGameBlockPos);
+        out.writeLong(cursorObject);
     }
 
     @SneakyThrows
@@ -350,6 +356,7 @@ public class GameMap extends GameObject implements StoredObject {
         this.filledChunks = filledChunks.asSynchronized();
         var selectedBlocks = readExternalMutableList(in, this::readGameBlockPos);
         this.selectedBlocks = selectedBlocks.asSynchronized();
+        this.cursorObject = in.readLong();
     }
 
     @SneakyThrows

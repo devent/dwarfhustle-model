@@ -56,11 +56,9 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Topsoil
 import com.anrisoftware.dwarfhustle.model.api.materials.Wood
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeGrass
-import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeShrub
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeBranch
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeLeaf
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeRoot
-import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeSapling
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeTrunk
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeTwig
 import com.google.inject.Guice
@@ -113,7 +111,7 @@ class ListKnowledges {
     void "list knowledge top level"() {
         def ko = []
         def ret = spawnListKnowledgeActor(actor, {
-            def name = tidType.get(it.response.go.id as int)
+            def name = tidType.get(it.response.go.kid)
             println name
             it.response.go.objects.each {
                 println "${it.name},${it.kid}"
@@ -127,7 +125,7 @@ class ListKnowledges {
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Liquid.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockObject.TYPE))
-        while (ko.size() != 87) {
+        while (ko.size() != 89) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
         }
@@ -138,7 +136,7 @@ class ListKnowledges {
     void "print model-map"() {
         def komap = [:]
         def ret = spawnListKnowledgeActor(actor, {
-            def name = tidType.get(it.response.go.id as int)
+            def name = tidType.get(it.response.go.kid)
             komap[name] = []
             it.response.go.objects.each { o ->
                 komap[name] << o
@@ -146,15 +144,12 @@ class ListKnowledges {
         })
         def knowledgeResponseAdapter = ret[1]
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockObject.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeGrass.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeShrub.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeBranch.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeLeaf.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeRoot.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeSapling.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeTrunk.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeTwig.TYPE))
-        while (komap.size() != 9) {
+        while (komap.size() != 6) {
             log.info("Knowledge objects loaded {}", komap.size())
             Thread.sleep(500)
         }
@@ -190,7 +185,7 @@ class ListKnowledges {
         def ko = [:]
         println "rid = [:]"
         def ret = spawnListKnowledgeActor(actor, {
-            def name = tidType.get(it.response.go.id as int)
+            def name = tidType.get(it.response.go.kid)
             ko[name] = it.response.go.objects
         })
         def knowledgeResponseAdapter = ret[1]
@@ -223,7 +218,7 @@ class ListKnowledges {
     void "list knowledge low level"() {
         def ko = []
         def ret = spawnListKnowledgeActor(actor, {
-            def name = tidType.get(it.response.go.id as int)
+            def name = tidType.get(it.response.go.kid)
             println "## ${name}"
             it.response.go.objects.each {
                 println "${it.name},${it.kid}"
@@ -246,7 +241,7 @@ class ListKnowledges {
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, RoofType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ObjectType.TYPE))
-        while (ko.size() != 115) {
+        while (ko.size() != 118) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
         }
@@ -261,7 +256,7 @@ class ListKnowledges {
     void "list knowledges"(String type, int size) {
         def ko = []
         def ret = spawnListKnowledgeActor(actor, {
-            def name = tidType.get(it.response.go.id as int)
+            def name = tidType.get(it.response.go.kid)
             println "## ${name}"
             it.response.go.objects.each {
                 println "${it.name},${it.kid}"

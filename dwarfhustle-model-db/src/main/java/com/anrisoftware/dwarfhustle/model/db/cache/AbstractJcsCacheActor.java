@@ -184,6 +184,7 @@ public abstract class AbstractJcsCacheActor implements ObjectsGetter, ObjectsSet
     @SuppressWarnings("unchecked")
     private Behavior<Message> onCachePut(@SuppressWarnings("rawtypes") CachePutMessage m) {
         try {
+            preCachePut(m.value.getId(), m.value);
             cache.put(m.value.getId(), m.value);
             storeValueBackend(m.value);
             m.replyTo.tell(new CacheSuccessMessage<>(m));
@@ -201,6 +202,7 @@ public abstract class AbstractJcsCacheActor implements ObjectsGetter, ObjectsSet
         try {
             for (var o : m.values) {
                 var go = (GameObject) o;
+                preCachePut(go.getId(), go);
                 cache.put(go.getId(), go);
             }
             storeValuesBackend(m.objectType, m.values);
@@ -347,6 +349,13 @@ public abstract class AbstractJcsCacheActor implements ObjectsGetter, ObjectsSet
      * </pre>
      */
     protected abstract <T extends GameObject> T getValueFromBackend(int type, long key);
+
+    /**
+     * Called before the value is cached.
+     */
+    protected void preCachePut(long id, GameObject value) {
+        // nop
+    }
 
     /**
      * Returns the value for the key directly from the cache without sending of
