@@ -25,6 +25,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
+import com.anrisoftware.dwarfhustle.model.api.map.Block
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap
 import com.anrisoftware.dwarfhustle.model.db.buffers.GameMapBuffer
@@ -92,5 +93,22 @@ class GameObjectsLmbdStorageTest {
                 println go
             }
         }
+    }
+
+    @Test
+    void read_objects_test() {
+        Path tmp = Path.of("/home/devent/Projects/dwarf-hustle/terrain-maps/game/", "terrain_32_32_32_8", "objects")
+        long mapSize = 200 * (long) pow(10, 6);
+        def storage = injector.getInstance(GameObjectsLmbdStorageFactory).create(tmp, mapSize)
+        storage.getObjects(WorldMap.OBJECT_TYPE, {
+            println it
+        })
+        storage.getObjects(GameMap.OBJECT_TYPE, {
+            println it
+        })
+        storage.getObjects(Block.OBJECT_TYPE, {
+            println it
+        })
+        storage.close()
     }
 }

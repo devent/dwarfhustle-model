@@ -204,4 +204,27 @@ class MapObjectsLmbdStorageTest {
     static long calcObjectId(GameMap gm, int x, int y, int z) {
         100 + GameBlockPos.calcIndex(gm.width, gm.height, gm.depth, 0, 0, 0, x, y, z)
     }
+
+    @Test
+    void read_objects_test() {
+        int zz = 32
+        int yy = 32
+        int xx = 32
+        Path tmp = Path.of("/home/devent/Projects/dwarf-hustle/terrain-maps/game/", "terrain_32_32_32_8", "map-140913948921645")
+        def gm = new GameMap(1, 32, 32, 32)
+        long mapSize = 200 * (long) pow(10, 6);
+        def storage = injector.getInstance(MapObjectsLmbdStorageFactory).create(tmp, gm, mapSize)
+        def posObjects = []
+        def o = storage.getObjectsRange(0, 0, 0, xx, yy, zz, { _cid, _type, _id, _x, _y, _z ->
+            def map = [:]
+            posObjects << map
+            map.id = _id
+            map.type = _type
+            map.x = _x
+            map.y = _y
+            map.z = _z
+        })
+        println posObjects
+        storage.close()
+    }
 }

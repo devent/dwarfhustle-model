@@ -80,13 +80,14 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
     protected GameObjectsLmbdStorage(@Assisted Path file, @Assisted long mapSize, IntSet objectTypes,
             IntObjectMap<StoredObjectBuffer> readBuffers) {
         this.readBuffers = readBuffers;
-        this.env = create(PROXY_DB).setMapSize(mapSize).setMaxDbs(20).open(file.toFile());
-        MutableIntObjectMap<Dbi<DirectBuffer>> dbs = IntObjectMaps.mutable.withInitialCapacity(objectTypes.size());
-        objectTypes.each((type) -> {
+        env = create(PROXY_DB).setMapSize(mapSize).setMaxDbs(20).open(file.toFile());
+        final MutableIntObjectMap<Dbi<DirectBuffer>> dbs = IntObjectMaps.mutable
+                .withInitialCapacity(objectTypes.size());
+        objectTypes.each(type -> {
             dbs.put(type, env.openDbi(Integer.toString(type), MDB_CREATE, MDB_INTEGERKEY));
         });
         this.dbs = dbs;
-        this.buff8 = ThreadLocal.withInitial(() -> new UnsafeBuffer(allocateDirect(8)));
+        buff8 = ThreadLocal.withInitial(() -> new UnsafeBuffer(allocateDirect(8)));
     }
 
     /**
@@ -148,7 +149,7 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
                 final var val = new UnsafeBuffer(allocateDirect(size));
                 final var c = dbs.get(type).openCursor(txn);
                 for (int i = start; i < end; i++) {
-                    var o = objects.get(i);
+                    final var o = objects.get(i);
                     key.putLong(0, o.getId());
                     writeBuffer.accept(o, val);
                     c.put(key, val);
@@ -168,11 +169,11 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
      */
     public void putObjects(int type, int size, List<? extends StoredObject> objects,
             BiConsumer<StoredObject, MutableDirectBuffer> writeBuffer) {
-        int max = 8192;
+        final int max = 8192;
         if (objects.size() < max) {
             putObjects(type, size, objects, writeBuffer);
         } else {
-            var pool = ForkJoinPool.commonPool();
+            final var pool = ForkJoinPool.commonPool();
             pool.invoke(new ObjectsListRecursiveAction<>(max, 0, objects.size(), objects, size, type, writeBuffer));
         }
     }
@@ -186,7 +187,7 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
             final var key = buff8.get();
             final var val = new UnsafeBuffer(allocateDirect(size));
             final var c = dbs.get(type).openCursor(txn);
-            for (var o : objects) {
+            for (final var o : objects) {
                 key.putLong(0, o.getId());
                 writeBuffer.accept(o, val);
                 c.put(key, val);
@@ -203,12 +204,16 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
         try (var txn = env.txnRead()) {
             final var key = buff8.get();
             key.putLong(0, id);
-            var dbi = dbs.get(type);
+            final var dbi = dbs.get(type);
             if (dbi == null) {
                 System.out.printf("[GameObjectsLmbdStorage] %d - %d\n", type, id); // TODO
                 assert dbi != null;
             }
-            var val = dbi.get(txn, key);
+            final var val = dbi.get(txn, key);
+            if (val == null) {
+                System.out.printf("[GameObjectsLmbdStorage] %d - %d\n", type, id); // TODO
+                assert val != null;
+            }
             return (T) readBuffers.get(type).read(val);
         }
     }
@@ -218,8 +223,8 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
      */
     public void getObjects(int type, Consumer<StoredObject> consumer) {
         try (var txn = env.txnRead()) {
-            var it = dbs.get(type).iterate(txn);
-            it.forEach((k) -> {
+            final var it = dbs.get(type).iterate(txn);
+            it.forEach(k -> {
                 consumer.accept(readBuffers.get(type).read(k.val()));
             });
         }
@@ -236,8 +241,8 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
      * </pre>
      */
     public DbIterable getObjects(int type) {
-        var txn = env.txnRead();
-        var it = dbs.get(type).iterate(txn);
+        final var txn = env.txnRead();
+        final var it = dbs.get(type).iterate(txn);
         return new DbIterable(it, type, txn);
     }
 
@@ -272,7 +277,7 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
 
         @Override
         public StoredObject next() {
-            var kv = it.next();
+            final var kv = it.next();
             return readBuffers.get(type).read(kv.val());
         }
 
@@ -291,21 +296,21 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
 
     @Override
     public void set(int type, GameObject go) throws ObjectsSetterException {
-        var soBuffer = readBuffers.get(type);
+        final var soBuffer = readBuffers.get(type);
         if (soBuffer == null) {
             System.out.printf("[GameObjectsLmbdStorage] %s - go.type=%d - type=%d%n", go, go.getObjectType(), type); // TODO
             assert soBuffer != null;
         }
-        putObject(type, go.id, soBuffer.getSize((StoredObject) go), (b) -> {
+        putObject(type, go.id, soBuffer.getSize((StoredObject) go), b -> {
             soBuffer.write(b, (StoredObject) go);
         });
     }
 
     @Override
     public void set(int type, Iterable<GameObject> values) throws ObjectsSetterException {
-        var soBuffer = readBuffers.get(type);
-        for (var go : values) {
-            putObject(type, go.id, soBuffer.getSize((StoredObject) go), (b) -> {
+        final var soBuffer = readBuffers.get(type);
+        for (final var go : values) {
+            putObject(type, go.id, soBuffer.getSize((StoredObject) go), b -> {
                 soBuffer.write(b, (StoredObject) go);
             });
         }

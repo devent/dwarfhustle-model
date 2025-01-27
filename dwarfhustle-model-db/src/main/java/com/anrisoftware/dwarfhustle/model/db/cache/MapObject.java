@@ -45,7 +45,7 @@ import lombok.ToString;
 
 /**
  * Cache entry for a {@link GameMapObject} on the {@link GameMap}.
- * 
+ *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @NoArgsConstructor
@@ -66,11 +66,15 @@ public class MapObject extends GameObject {
     }
 
     public static MapObject getMapObject(ObjectsGetter og, GameMap gm, int x, int y, int z) {
-        return getMapObject(og, calcIndex(gm, x, y, z));
+        return getMapObject(og, gm, calcIndex(gm, x, y, z));
     }
 
-    public static MapObject getMapObject(ObjectsGetter og, int index) {
-        return og.get(MapObject.OBJECT_TYPE, index);
+    public static MapObject getMapObject(ObjectsGetter og, GameMap gm, int index) {
+        final MapObject mo = og.get(MapObject.OBJECT_TYPE, index);
+        if (mo.getCid() == 0) {
+            mo.setCid(gm.getCid(index));
+        }
+        return mo;
     }
 
     /**
@@ -101,6 +105,9 @@ public class MapObject extends GameObject {
         this(calcIndex(gm, o.getPos()), o.getObjectType(), o.getId());
     }
 
+    /**
+     * Return the block index.
+     */
     public int getIndex() {
         return (int) getId();
     }
@@ -110,17 +117,39 @@ public class MapObject extends GameObject {
         return OBJECT_TYPE;
     }
 
-    public void addObject(int type, long id) {
-        oids.put(id, type);
-        removedOids.remove(id);
+    /**
+     * Adds the object to the map.
+     *
+     * @param type the {@link GameObject#getObjectType()}.
+     * @param id   the {@link GameObject#getId()}.
+     * @return <code>true</code> if the object was added, <code>false</code> if the
+     *         object was already on the map.
+     */
+    public boolean addObject(int type, long id) {
+        if (oids.containsKey(id)) {
+            return false;
+        } else {
+            oids.put(id, type);
+            removedOids.remove(id);
+            return true;
+        }
     }
 
-    public void removeObject(long id) {
+    /**
+     * Removes the object to the map.
+     *
+     * @param id the {@link GameObject#getId()}.
+     * @return <code>true</code> if the object was removed, <code>false</code> if
+     *         the object was already removed the map.
+     */
+    public boolean removeObject(long id) {
         if (oids.containsKey(id)) {
             final int type = oids.get(id);
             oids.remove(id);
             removedOids.put(id, type);
+            return true;
         }
+        return false;
     }
 
     public boolean isEmpty() {
@@ -148,9 +177,9 @@ public class MapObject extends GameObject {
     @Override
     public void readStream(DataInput in) throws IOException {
         super.readStream(in);
-        this.cid = in.readInt();
-        this.oids = ((MutableLongIntMap) readStreamLongIntMap(in)).asSynchronized();
-        this.removedOids = ((MutableLongIntMap) readStreamLongIntMap(in)).asSynchronized();
+        cid = in.readInt();
+        oids = ((MutableLongIntMap) readStreamLongIntMap(in)).asSynchronized();
+        removedOids = ((MutableLongIntMap) readStreamLongIntMap(in)).asSynchronized();
     }
 
 }

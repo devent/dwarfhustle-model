@@ -20,6 +20,7 @@ package com.anrisoftware.dwarfhustle.model.terrainimage;
 import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.createNamedActor;
 import static com.anrisoftware.dwarfhustle.model.api.objects.GameMap.getGameMap;
 import static com.anrisoftware.dwarfhustle.model.api.objects.WorldMap.getWorldMap;
+import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeGetMessage.askKnowledgeObjectName;
 import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeGetMessage.askKnowledgeObjects;
 import static com.anrisoftware.dwarfhustle.model.objects.InsertObjectMessage.askInsertObject;
 import static java.lang.String.format;
@@ -29,7 +30,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.CountDownLatch;
 
 import org.lable.oss.uniqueid.IDGenerator;
 
@@ -94,9 +94,8 @@ public class ImporterMapImage2DbActor {
 
     public static Behavior<Message> create(Injector injector, ActorSystemProvider actor,
             ImporterMapImage2DbActorFactory actorFactory, CompletionStage<ObjectsGetter> og) {
-        return Behaviors.setup(context -> {
-            return actorFactory.create(context, og.toCompletableFuture().get(15, SECONDS)).start(injector);
-        });
+        return Behaviors.setup(
+                context -> actorFactory.create(context, og.toCompletableFuture().get(15, SECONDS)).start(injector));
     }
 
     /**
@@ -107,8 +106,8 @@ public class ImporterMapImage2DbActor {
      */
     public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout,
             CompletionStage<ObjectsGetter> og) {
-        var actor = injector.getInstance(ActorSystemProvider.class);
-        var actorFactory = injector.getInstance(ImporterMapImage2DbActorFactory.class);
+        final var actor = injector.getInstance(ActorSystemProvider.class);
+        final var actorFactory = injector.getInstance(ImporterMapImage2DbActorFactory.class);
         return createNamedActor(actor.getActorSystem(), timeout, ID, KEY, NAME,
                 create(injector, actor, actorFactory, og));
     }
@@ -149,7 +148,7 @@ public class ImporterMapImage2DbActor {
         log.debug("onImportImage {}", m);
         try {
             importImage(m);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             log.error("onImportImage", e);
             m.replyTo.tell(new ImportImageErrorMessage(e));
             return Behaviors.stopped();
@@ -183,6 +182,7 @@ public class ImporterMapImage2DbActor {
         terrainImageCreateMap.create(actor.getObjectGetterAsync(MapChunksJcsCacheActor.ID).toCompletableFuture().get(),
                 actor.getObjectSetterAsync(MapChunksJcsCacheActor.ID).toCompletableFuture().get(), storage, knowledge)
                 .startImportMapping(m.url, m.image, gm);
+        MapChunkBuffer.cacheCids(gm, storage);
         createObjects(gm.getId(), gm.getCursor(), gm);
         storage.shrinkCopyClose();
         m.replyTo.tell(new ImportImageSuccessMessage());
@@ -194,29 +194,22 @@ public class ImporterMapImage2DbActor {
         var cg = actor.getObjectGetterAsyncNow(MapChunksJcsCacheActor.ID);
         var chunk = MapChunk.getChunk(cg, 0);
         var mb = MapChunkBuffer.findBlock(chunk, cursor, cg);
-        var kret = askKnowledgeObjects(actor.getActorSystem(), ofSeconds(10), BlockObject.TYPE);
-        var lock = new CountDownLatch(1);
-        kret.whenComplete((ret, ex) -> {
-            if (ex == null) {
-                var ko = ret.detect(_ko -> _ko.name.equalsIgnoreCase("block-focus"));
-                var iret = askInsertObject(actor.getActorSystem(), mid, mb.getParent(), ko, cursor, ofSeconds(10));
-                iret.whenComplete((ret1, ex1) -> {
-                    if (ex1 == null) {
-                        if (ret1 instanceof InsertObjectSuccessMessage sm) {
-                            gm.setCursorObject(sm.go.getId());
-                            os.set(GameMap.OBJECT_TYPE, gm);
-                        }
-                    } else {
-                        log.error("askInsertObject", ex1);
-                    }
-                    lock.countDown();
-                });
-            } else {
-                log.error("askKnowledgeObjects", ex);
-                lock.countDown();
-            }
+        var ko = askKnowledgeObjectName(actor.getActorSystem(), ofSeconds(10), BlockObject.TYPE, "block-focus");
+        var iret = askInsertObject(actor.getActorSystem(), mid, mb.getParent(), ko, cursor, ofSeconds(1), (o) -> {
+            o.setElevated(true);
+            o.setCanSelect(false);
+            o.setHaveModel(true);
         });
-        lock.await();
+        iret.whenComplete((ret, ex) -> {
+            if (ex == null) {
+                if (ret instanceof InsertObjectSuccessMessage sm) {
+                    gm.setCursorObject(sm.go.getId());
+                    os.set(GameMap.OBJECT_TYPE, gm);
+                }
+            } else {
+                log.error("askInsertObject", ex);
+            }
+        }).toCompletableFuture().get(1, SECONDS);
         log.trace("createObjects done");
     }
 

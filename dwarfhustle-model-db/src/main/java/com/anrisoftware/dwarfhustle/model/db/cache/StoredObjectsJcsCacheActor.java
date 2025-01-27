@@ -105,9 +105,9 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
      */
     public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout,
             CompletionStage<ObjectsGetter> og, CompletionStage<ObjectsSetter> os) {
-        var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
-        var actorFactory = injector.getInstance(StoredObjectsJcsCacheActorFactory.class);
-        var initCache = createInitCacheAsync();
+        final var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
+        final var actorFactory = injector.getInstance(StoredObjectsJcsCacheActorFactory.class);
+        final var initCache = createInitCacheAsync();
         return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, actorFactory, og, os, initCache));
     }
 
@@ -116,17 +116,17 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
      */
     public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout, ObjectsGetter og,
             ObjectsSetter os) {
-        var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
-        var actorFactory = injector.getInstance(StoredObjectsJcsCacheActorFactory.class);
-        var initCache = createInitCacheAsync();
+        final var system = injector.getInstance(ActorSystemProvider.class).getActorSystem();
+        final var actorFactory = injector.getInstance(StoredObjectsJcsCacheActorFactory.class);
+        final var initCache = createInitCacheAsync();
         return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, actorFactory, og, os, initCache));
     }
 
     public static CompletableFuture<CacheAccess<Object, GameObject>> createInitCacheAsync() {
-        CompletableFuture<CacheAccess<Object, GameObject>> initCache = CompletableFuture.supplyAsync(() -> {
+        final CompletableFuture<CacheAccess<Object, GameObject>> initCache = CompletableFuture.supplyAsync(() -> {
             try {
                 return JCS.getInstance("stored_objects");
-            } catch (CacheException e) {
+            } catch (final CacheException e) {
                 throw new RuntimeException(e);
             }
         });
@@ -167,16 +167,18 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     private void storeObjects() {
         try {
             if (queueLock.tryAcquire(1, TimeUnit.SECONDS)) {
-                List<GameObject> list = Lists.mutable.ofAll(queue.values());
+                final List<GameObject> list = Lists.mutable.ofAll(queue.values());
                 queue.clear();
-                for (var go : list) {
+                for (final var go : list) {
                     os.set(go.getObjectType(), go);
                 }
                 queueLock.release();
+                System.out.println(list); // TODO
             }
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
             log.error("storeObjects", e);
         }
+        System.out.println("StoredObjectsJcsCacheActor.storeObjects()"); // TODO
     }
 
     @Override
@@ -186,7 +188,7 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
                 queue.put(go.getId(), go);
                 queueLock.release();
             }
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
             log.error("storeValueBackend", e);
         }
     }
@@ -195,12 +197,12 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
     protected void storeValuesBackend(int type, Iterable<GameObject> values) {
         try {
             if (queueLock.tryAcquire(1, TimeUnit.SECONDS)) {
-                for (GameObject go : values) {
+                for (final GameObject go : values) {
                     queue.put(go.getId(), go);
                 }
                 queueLock.release();
             }
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
             log.error("storeValuesBackend", e);
         }
     }

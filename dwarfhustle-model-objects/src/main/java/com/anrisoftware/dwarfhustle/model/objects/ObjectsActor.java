@@ -124,19 +124,19 @@ public class ObjectsActor {
      * Creates the {@link ObjectsActor}.
      */
     public static CompletionStage<ActorRef<Message>> create(Injector injector, Duration timeout) {
-        var actor = injector.getInstance(ActorSystemProvider.class);
+        final var actor = injector.getInstance(ActorSystemProvider.class);
         return createNamedActor(actor.getActorSystem(), timeout, ID, KEY, NAME, create(injector, actor));
     }
 
     private static Message returnInitialState(Injector injector, ActorSystemProvider actor) {
         try {
-            var og = actor.getObjectGetterAsyncNow(StoredObjectsJcsCacheActor.ID);
-            var os = actor.getObjectSetterAsyncNow(StoredObjectsJcsCacheActor.ID);
-            var chunks = actor.getObjectGetterAsyncNow(MapChunksJcsCacheActor.ID);
-            var mg = actor.getObjectGetterAsyncNow(MapObjectsJcsCacheActor.ID);
-            var ms = actor.getObjectSetterAsyncNow(MapObjectsJcsCacheActor.ID);
+            final var og = actor.getObjectGetterAsyncNow(StoredObjectsJcsCacheActor.ID);
+            final var os = actor.getObjectSetterAsyncNow(StoredObjectsJcsCacheActor.ID);
+            final var chunks = actor.getObjectGetterAsyncNow(MapChunksJcsCacheActor.ID);
+            final var mg = actor.getObjectGetterAsyncNow(MapObjectsJcsCacheActor.ID);
+            final var ms = actor.getObjectSetterAsyncNow(MapObjectsJcsCacheActor.ID);
             return new InitialStateMessage(og, os, chunks, mg, ms);
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             return new SetupErrorMessage(ex);
         }
     }
@@ -189,7 +189,7 @@ public class ObjectsActor {
      */
     private Behavior<Message> onInitialState(InitialStateMessage m) {
         log.debug("onInitialState");
-        this.is = m;
+        is = m;
         return buffer.unstashAll(getInitialBehavior()//
                 .build());
     }
@@ -211,6 +211,8 @@ public class ObjectsActor {
         go.setPos(m.pos);
         go.setKid(m.ko.getKid());
         go.setOid(m.ko.getKnowledgeType().hashCode());
+        go.setVisible(true);
+        go.setCanSelect(true);
         m.consumer.accept(go);
         is.os.set(go.getObjectType(), go);
         final var gm = getGameMap(is.og, m.gm);

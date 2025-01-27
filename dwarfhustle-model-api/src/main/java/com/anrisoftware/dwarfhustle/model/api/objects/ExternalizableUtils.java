@@ -29,6 +29,7 @@ import java.util.function.Supplier;
 
 import org.eclipse.collections.api.LongIterable;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.primitive.IntIntMaps;
 import org.eclipse.collections.api.factory.primitive.IntLongMaps;
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.factory.primitive.LongIntMaps;
@@ -38,10 +39,12 @@ import org.eclipse.collections.api.factory.primitive.ObjectIntMaps;
 import org.eclipse.collections.api.factory.primitive.ObjectLongMaps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.list.primitive.MutableLongList;
+import org.eclipse.collections.api.map.primitive.IntIntMap;
 import org.eclipse.collections.api.map.primitive.IntLongMap;
 import org.eclipse.collections.api.map.primitive.IntObjectMap;
 import org.eclipse.collections.api.map.primitive.LongIntMap;
 import org.eclipse.collections.api.map.primitive.LongObjectMap;
+import org.eclipse.collections.api.map.primitive.MutableIntIntMap;
 import org.eclipse.collections.api.map.primitive.MutableIntLongMap;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.eclipse.collections.api.map.primitive.MutableLongIntMap;
@@ -73,8 +76,8 @@ public class ExternalizableUtils {
     @SuppressWarnings("unchecked")
     public static <T> MutableObjectLongMap<T> readExternalObjectLongMap(ObjectInput in)
             throws IOException, ClassNotFoundException {
-        int size = in.readInt();
-        MutableObjectLongMap<T> map = ObjectLongMaps.mutable.ofInitialCapacity(size);
+        final int size = in.readInt();
+        final MutableObjectLongMap<T> map = ObjectLongMaps.mutable.ofInitialCapacity(size);
         for (int i = 0; i < size; i++) {
             map.put((T) in.readObject(), in.readLong());
         }
@@ -87,7 +90,7 @@ public class ExternalizableUtils {
      */
     public static void writeExternalLongObjectMap(ObjectOutput out, LongObjectMap<?> map) throws IOException {
         out.writeInt(map.size());
-        for (var view : map.keyValuesView()) {
+        for (final var view : map.keyValuesView()) {
             out.writeLong(view.getOne());
             out.writeObject(view.getTwo());
         }
@@ -100,8 +103,8 @@ public class ExternalizableUtils {
     @SuppressWarnings("unchecked")
     public static <T> MutableLongObjectMap<T> readExternalLongObjectMap(ObjectInput in)
             throws IOException, ClassNotFoundException {
-        int size = in.readInt();
-        MutableLongObjectMap<T> map = LongObjectMaps.mutable.ofInitialCapacity(size);
+        final int size = in.readInt();
+        final MutableLongObjectMap<T> map = LongObjectMaps.mutable.ofInitialCapacity(size);
         for (int i = 0; i < size; i++) {
             map.put(in.readLong(), (T) in.readObject());
         }
@@ -114,8 +117,8 @@ public class ExternalizableUtils {
     @SuppressWarnings("unchecked")
     public static <T> MutableObjectIntMap<T> readExternalObjectIntMap(ObjectInput in, Supplier<T> supply)
             throws IOException, ClassNotFoundException {
-        int size = in.readInt();
-        MutableObjectIntMap<T> map = ObjectIntMaps.mutable.ofInitialCapacity(size);
+        final int size = in.readInt();
+        final MutableObjectIntMap<T> map = ObjectIntMaps.mutable.ofInitialCapacity(size);
         for (int i = 0; i < size; i++) {
             map.put((T) in.readObject(), in.readInt());
         }
@@ -127,7 +130,7 @@ public class ExternalizableUtils {
      */
     public static void writeStreamIntLongMap(DataOutput out, IntLongMap map) throws IOException {
         out.writeInt(map.size());
-        for (var view : map.keyValuesView()) {
+        for (final var view : map.keyValuesView()) {
             out.writeInt(view.getOne());
             out.writeLong(view.getTwo());
         }
@@ -138,8 +141,8 @@ public class ExternalizableUtils {
      * size to avoid a re-hash of the map.
      */
     public static IntLongMap readStreamIntLongMap(DataInput in) throws IOException {
-        int size = in.readInt();
-        MutableIntLongMap map = IntLongMaps.mutable.ofInitialCapacity(size);
+        final int size = in.readInt();
+        final MutableIntLongMap map = IntLongMaps.mutable.ofInitialCapacity(size);
         for (int i = 0; i < size; i++) {
             map.put(in.readInt(), in.readLong());
         }
@@ -153,7 +156,7 @@ public class ExternalizableUtils {
             throws IOException {
         if (map != null) {
             out.writeInt(map.size());
-            for (var view : map.keyValuesView()) {
+            for (final var view : map.keyValuesView()) {
                 out.writeLong(view.getOne());
                 view.getTwo().writeStream(out);
             }
@@ -167,11 +170,11 @@ public class ExternalizableUtils {
      */
     public static <T extends StreamStorage> MutableLongObjectMap<T> readStreamLongObjectMap(DataInput in,
             Supplier<T> supplier) throws IOException {
-        int size = in.readInt();
-        MutableLongObjectMap<T> map = LongObjectMaps.mutable.ofInitialCapacity(size);
+        final int size = in.readInt();
+        final MutableLongObjectMap<T> map = LongObjectMaps.mutable.ofInitialCapacity(size);
         for (int i = 0; i < size; i++) {
-            long key = in.readLong();
-            T value = supplier.get();
+            final long key = in.readLong();
+            final T value = supplier.get();
             value.readStream(in);
             map.put(key, value);
         }
@@ -184,7 +187,7 @@ public class ExternalizableUtils {
     public static void writeStreamIntObjectMap(DataOutput out, IntObjectMap<? extends StreamStorage> map)
             throws IOException {
         out.writeInt(map.size());
-        for (var view : map.keyValuesView()) {
+        for (final var view : map.keyValuesView()) {
             out.writeInt(view.getOne());
             view.getTwo().writeStream(out);
         }
@@ -195,11 +198,11 @@ public class ExternalizableUtils {
      */
     public static <T extends StreamStorage> MutableIntObjectMap<T> readStreamIntObjectMap(DataInput in,
             Supplier<T> supplier) throws IOException {
-        int size = in.readInt();
-        MutableIntObjectMap<T> map = IntObjectMaps.mutable.ofInitialCapacity(size);
+        final int size = in.readInt();
+        final MutableIntObjectMap<T> map = IntObjectMaps.mutable.ofInitialCapacity(size);
         for (int i = 0; i < size; i++) {
-            int key = in.readInt();
-            T value = supplier.get();
+            final int key = in.readInt();
+            final T value = supplier.get();
             value.readStream(in);
             map.put(key, value);
         }
@@ -212,7 +215,7 @@ public class ExternalizableUtils {
     public static <T> void writeStreamIntObjectMap(DataOutput out, IntObjectMap<T> map, BiConsumer<DataOutput, T> write)
             throws IOException {
         out.writeInt(map.size());
-        for (var view : map.keyValuesView()) {
+        for (final var view : map.keyValuesView()) {
             out.writeInt(view.getOne());
             write.accept(out, view.getTwo());
         }
@@ -223,11 +226,11 @@ public class ExternalizableUtils {
      */
     public static <T> MutableIntObjectMap<T> readStreamIntObjectMap(DataInput in, Function<DataInput, T> read)
             throws IOException {
-        int size = in.readInt();
-        MutableIntObjectMap<T> map = IntObjectMaps.mutable.ofInitialCapacity(size);
+        final int size = in.readInt();
+        final MutableIntObjectMap<T> map = IntObjectMaps.mutable.ofInitialCapacity(size);
         for (int i = 0; i < size; i++) {
-            int key = in.readInt();
-            var value = read.apply(in);
+            final int key = in.readInt();
+            final var value = read.apply(in);
             map.put(key, value);
         }
         return map;
@@ -238,7 +241,7 @@ public class ExternalizableUtils {
      */
     public static void writeStreamLongCollection(DataOutput out, int size, LongIterable it) throws IOException {
         out.writeInt(size);
-        for (var i = it.longIterator(); i.hasNext();) {
+        for (final var i = it.longIterator(); i.hasNext();) {
             out.writeLong(i.next());
         }
     }
@@ -247,8 +250,8 @@ public class ExternalizableUtils {
      * Reads the values of to a {@link LongIterable}.
      */
     public static <T extends LongIterable> LongIterable readStreamLongCollection(DataInput in) throws IOException {
-        int size = in.readInt();
-        MutableLongList list = LongLists.mutable.withInitialCapacity(size);
+        final int size = in.readInt();
+        final MutableLongList list = LongLists.mutable.withInitialCapacity(size);
         for (int i = 0; i < size; i++) {
             list.add(in.readLong());
         }
@@ -260,7 +263,7 @@ public class ExternalizableUtils {
      */
     public static void writeStreamLongIntMap(DataOutput out, LongIntMap map) throws IOException {
         out.writeInt(map.size());
-        for (var view : map.keyValuesView()) {
+        for (final var view : map.keyValuesView()) {
             out.writeLong(view.getOne());
             out.writeInt(view.getTwo());
         }
@@ -270,10 +273,33 @@ public class ExternalizableUtils {
      * Reads the keys and values of the {@link LongIntMap} from stream.
      */
     public static LongIntMap readStreamLongIntMap(DataInput in) throws IOException {
-        int size = in.readInt();
-        MutableLongIntMap map = LongIntMaps.mutable.ofInitialCapacity(size);
+        final int size = in.readInt();
+        final MutableLongIntMap map = LongIntMaps.mutable.ofInitialCapacity(size);
         for (int i = 0; i < size; i++) {
             map.put(in.readLong(), in.readInt());
+        }
+        return map;
+    }
+
+    /**
+     * Writes the keys and values of the {@link IntIntMap} to stream.
+     */
+    public static void writeStreamIntIntMap(DataOutput out, IntIntMap map) throws IOException {
+        out.writeInt(map.size());
+        for (final var view : map.keyValuesView()) {
+            out.writeInt(view.getOne());
+            out.writeInt(view.getTwo());
+        }
+    }
+
+    /**
+     * Reads the keys and values of the {@link IntIntMap} from stream.
+     */
+    public static IntIntMap readStreamIntIntMap(DataInput in) throws IOException {
+        final int size = in.readInt();
+        final MutableIntIntMap map = IntIntMaps.mutable.ofInitialCapacity(size);
+        for (int i = 0; i < size; i++) {
+            map.put(in.readInt(), in.readInt());
         }
         return map;
     }
@@ -284,10 +310,10 @@ public class ExternalizableUtils {
     public static void writeExternalMutableLongIntMultimap(DataOutput out, MutableMultimap<Long, Integer> map)
             throws IOException {
         out.writeInt(map.size());
-        for (var keysValues : map.keyMultiValuePairsView()) {
+        for (final var keysValues : map.keyMultiValuePairsView()) {
             out.writeInt(keysValues.getTwo().size());
             out.writeLong(keysValues.getOne());
-            for (var value : keysValues.getTwo()) {
+            for (final var value : keysValues.getTwo()) {
                 out.writeInt(value);
             }
         }
@@ -298,11 +324,11 @@ public class ExternalizableUtils {
      */
     public static MutableMultimap<Long, Integer> readExternalMutableLongIntMultimap(DataInput in,
             Supplier<MutableMultimap<Long, Integer>> supplier) throws IOException {
-        int size = in.readInt();
-        MutableMultimap<Long, Integer> map = supplier.get();
+        final int size = in.readInt();
+        final MutableMultimap<Long, Integer> map = supplier.get();
         for (int i = 0; i < size; i++) {
             final int vsize = in.readInt();
-            List<Integer> values = Lists.mutable.withInitialCapacity(vsize);
+            final List<Integer> values = Lists.mutable.withInitialCapacity(vsize);
             final long key = in.readLong();
             for (int j = 0; j < vsize; j++) {
                 values.add(in.readInt());
@@ -318,10 +344,10 @@ public class ExternalizableUtils {
     public static void writeExternalMutableIntIntMultimap(DataOutput out, MutableMultimap<Integer, Integer> map)
             throws IOException {
         out.writeInt(map.size());
-        for (var keysValues : map.keyMultiValuePairsView()) {
+        for (final var keysValues : map.keyMultiValuePairsView()) {
             out.writeInt(keysValues.getTwo().size());
             out.writeInt(keysValues.getOne());
-            for (var value : keysValues.getTwo()) {
+            for (final var value : keysValues.getTwo()) {
                 out.writeInt(value);
             }
         }
@@ -332,11 +358,11 @@ public class ExternalizableUtils {
      */
     public static MutableMultimap<Integer, Integer> readExternalMutableIntIntMultimap(DataInput in,
             Supplier<MutableMultimap<Integer, Integer>> supplier) throws IOException {
-        int size = in.readInt();
-        MutableMultimap<Integer, Integer> map = supplier.get();
+        final int size = in.readInt();
+        final MutableMultimap<Integer, Integer> map = supplier.get();
         for (int i = 0; i < size; i++) {
             final int vsize = in.readInt();
-            List<Integer> values = Lists.mutable.withInitialCapacity(vsize);
+            final List<Integer> values = Lists.mutable.withInitialCapacity(vsize);
             final int key = in.readInt();
             for (int j = 0; j < vsize; j++) {
                 values.add(in.readInt());
@@ -352,7 +378,7 @@ public class ExternalizableUtils {
     public static <T> void writeExternalList(DataOutput out, List<T> list, BiConsumer<DataOutput, T> write)
             throws IOException {
         out.writeInt(list.size());
-        for (var value : list) {
+        for (final var value : list) {
             write.accept(out, value);
         }
     }
@@ -362,11 +388,12 @@ public class ExternalizableUtils {
      */
     public static <T> MutableList<T> readExternalMutableList(DataInput in, Function<DataInput, T> supplier)
             throws IOException {
-        int size = in.readInt();
-        MutableList<T> list = Lists.mutable.withInitialCapacity(size);
+        final int size = in.readInt();
+        final MutableList<T> list = Lists.mutable.withInitialCapacity(size);
         for (int i = 0; i < size; i++) {
             list.add(supplier.apply(in));
         }
         return list;
     }
+
 }

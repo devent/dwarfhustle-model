@@ -32,23 +32,27 @@ import java.util.function.Consumer;
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
+import org.eclipse.collections.api.factory.primitive.IntIntMaps;
 import org.eclipse.collections.api.factory.primitive.LongObjectMaps;
+import org.eclipse.collections.api.map.primitive.MutableIntIntMap;
 import org.eclipse.collections.api.map.primitive.MutableLongObjectMap;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameChunkPos;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapBlock;
 import com.anrisoftware.dwarfhustle.model.api.objects.MapChunk;
 import com.anrisoftware.dwarfhustle.model.api.objects.NeighboringDir;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 import com.anrisoftware.dwarfhustle.model.api.objects.PropertiesSet;
+import com.anrisoftware.dwarfhustle.model.db.api.MapChunksStorage;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 /**
  * Writes and reads {@link MapChunk} in a byte buffer.
- * 
+ *
  * <ul>
  * <li>@{code i} chunk CID;
  * <li>@{code P} parent chunk CID;
@@ -60,10 +64,10 @@ import lombok.RequiredArgsConstructor;
  * <li>@{code C} 8 {@link CidGameChunkPosMapBuffer};
  * <li>@{code b} w*h*d times {@link MapBlockBuffer};
  * </ul>
- * 
+ *
  * <pre>
  * int   0         1         2         3         4         5         6         7         8
- * short 0    1    2    3    4    5    6    7    8    9    10   11        37        94        
+ * short 0    1    2    3    4    5    6    7    8    9    10   11        37        94
  *       iiii PPPP cccc wwww hhhh xxxx yyyy zzzz XXXX YYYY ZZZZ NNNN x26. CCCC x8.. bbbb ....
  * </pre>
  */
@@ -73,7 +77,7 @@ public class MapChunkBuffer {
 
     /**
      * Minimum size in bytes.
-     * 
+     *
      * @see #getSize(MapChunk)
      */
     public static final int SIZE_MIN = 2 + 2 + 2 + 2 + 2 + //
@@ -83,7 +87,7 @@ public class MapChunkBuffer {
 
     /**
      * Contains the {@link MapChunk} and the {@link MapBlock} index.
-     * 
+     *
      * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
      */
     @Data
@@ -133,6 +137,19 @@ public class MapChunkBuffer {
         return w * h * d * MapBlockBuffer.SIZE;
     }
 
+    public static void cacheCids(GameMap gm, MapChunksStorage storage) {
+        final MutableIntIntMap map = IntIntMaps.mutable.ofInitialCapacity(gm.getSize());
+        storage.forEachValue(c -> {
+            if (c.isLeaf()) {
+                for (final var b : MapChunkBuffer.getBlocks(c)) {
+                    final int index = GameBlockPos.calcIndex(gm, b.getPos());
+                    map.put(index, c.getCid());
+                }
+            }
+        });
+        gm.cids = map.toImmutable();
+    }
+
     public static void write(MutableDirectBuffer b, int offset, MapChunk chunk) {
         b.putShort(ID_BYTE + offset, (short) chunk.getCid());
         b.putShort(PARENT_BYTE + offset, (short) chunk.parent);
@@ -143,11 +160,11 @@ public class MapChunkBuffer {
         for (int i = 0; i < 26; i++) {
             b.putShort(offset + NEIGHBORS_BYTE + i * 2, (short) chunk.neighbors[i]);
         }
-        int[] chunks = new int[CHUNKS_COUNT * 7];
+        final int[] chunks = new int[CHUNKS_COUNT * 7];
         if (!chunk.isLeaf()) {
             int i = 0;
             if (chunk.getChunks() != null) {
-                for (var pair : chunk.getChunks().keyValuesView()) {
+                for (final var pair : chunk.getChunks().keyValuesView()) {
                     chunks[i * 7 + 0] = (int) pair.getOne();
                     chunks[i * 7 + 1] = pair.getTwo().x;
                     chunks[i * 7 + 2] = pair.getTwo().y;
@@ -165,15 +182,15 @@ public class MapChunkBuffer {
     }
 
     public static MapChunk read(DirectBuffer b, int offset) {
-        var chunk = new MapChunk(cid2Id(b.getShort(ID_BYTE + offset)), b.getShort(PARENT_BYTE + offset),
+        final var chunk = new MapChunk(cid2Id(b.getShort(ID_BYTE + offset)), b.getShort(PARENT_BYTE + offset),
                 b.getShort(CHUNK_SIZE_BYTE + offset), b.getShort(WIDTH_BYTE + offset), b.getShort(HEIGHT_BYTE + offset),
                 GameChunkPosBuffer.read(b, POS_BYTE + offset));
         for (int i = 0; i < 26; i++) {
             chunk.neighbors[i] = b.getShort(offset + NEIGHBORS_BYTE + i * 2);
         }
         if (!chunk.isLeaf()) {
-            var chunkEntries = CidGameChunkPosMapBuffer.read(b, CHUNKS_BYTE + offset, CHUNKS_COUNT, null);
-            MutableLongObjectMap<GameChunkPos> chunks = LongObjectMaps.mutable
+            final var chunkEntries = CidGameChunkPosMapBuffer.read(b, CHUNKS_BYTE + offset, CHUNKS_COUNT, null);
+            final MutableLongObjectMap<GameChunkPos> chunks = LongObjectMaps.mutable
                     .ofInitialCapacity(chunkEntries.length / 7);
             for (int i = 0; i < chunkEntries.length / 7; i++) {
                 chunks.put(chunkEntries[i * 7 + 0], //
@@ -201,17 +218,17 @@ public class MapChunkBuffer {
             return findChunk(c, x, y, z, og);
         }
         if (!c.isLeaf()) {
-            for (var view : c.getChunks().keyValuesView()) {
-                var b = view.getTwo();
-                int bx = b.getX();
-                int by = b.getY();
-                int bz = b.getZ();
-                var ep = b.getEp();
-                int ebx = ep.getX();
-                int eby = ep.getY();
-                int ebz = ep.getZ();
+            for (final var view : c.getChunks().keyValuesView()) {
+                final var b = view.getTwo();
+                final int bx = b.getX();
+                final int by = b.getY();
+                final int bz = b.getZ();
+                final var ep = b.getEp();
+                final int ebx = ep.getX();
+                final int eby = ep.getY();
+                final int ebz = ep.getZ();
                 if (x >= bx && y >= by && z >= bz && x < ebx && y < eby && z < ebz) {
-                    var foundChunk = getChunk(og, cid2Id(view.getOne()));
+                    final var foundChunk = getChunk(og, cid2Id(view.getOne()));
                     return findChunk(foundChunk, x, y, z, og);
                 }
             }
@@ -229,21 +246,21 @@ public class MapChunkBuffer {
             return 0;
         }
         if (!mc.isLeaf()) {
-            long id = findChunk(mc, x, y, z, ex, ey, ez);
+            final long id = findChunk(mc, x, y, z, ex, ey, ez);
             if (id != 0) {
                 return id;
             }
-            for (var view : mc.getChunks().keyValuesView()) {
-                var b = view.getTwo();
-                int bx = b.getX();
-                int by = b.getY();
-                int bz = b.getZ();
-                var ep = b.getEp();
-                int ebx = ep.getX();
-                int eby = ep.getY();
-                int ebz = ep.getZ();
+            for (final var view : mc.getChunks().keyValuesView()) {
+                final var b = view.getTwo();
+                final int bx = b.getX();
+                final int by = b.getY();
+                final int bz = b.getZ();
+                final var ep = b.getEp();
+                final int ebx = ep.getX();
+                final int eby = ep.getY();
+                final int ebz = ep.getZ();
                 if (x >= bx && y >= by && z >= bz && x < ebx && y < eby && z < ebz) {
-                    MapChunk foundChunk = getter.get(MapChunk.OBJECT_TYPE, cid2Id(view.getOne()));
+                    final MapChunk foundChunk = getter.get(MapChunk.OBJECT_TYPE, cid2Id(view.getOne()));
                     return findChild(foundChunk, x, y, z, ex, ey, ez, getter);
                 }
             }
@@ -252,7 +269,7 @@ public class MapChunkBuffer {
     }
 
     private static long findChunk(MapChunk c, int x, int y, int z, int ex, int ey, int ez) {
-        for (var view : c.getChunks().keyValuesView()) {
+        for (final var view : c.getChunks().keyValuesView()) {
             if (view.getTwo().equals(x, y, z, ex, ey, ez)) {
                 return view.getOne();
             }
@@ -278,14 +295,14 @@ public class MapChunkBuffer {
      */
     public static MapBlockResult findBlockIndex(MapChunk c, GameBlockPos pos, ObjectsGetter og) {
         if (!c.isInside(pos)) {
-            var parent = getChunk(og, cid2Id(c.parent));
+            final var parent = getChunk(og, cid2Id(c.parent));
             return findBlockIndex(parent, pos, og);
         }
         if (!c.isLeaf()) {
-            for (var view : c.getChunks().keyValuesView()) {
-                var b = view.getTwo();
+            for (final var view : c.getChunks().keyValuesView()) {
+                final var b = view.getTwo();
                 if (b.contains(pos)) {
-                    var foundChunk = getChunk(og, cid2Id(view.getOne()));
+                    final var foundChunk = getChunk(og, cid2Id(view.getOne()));
                     return findBlockIndex(foundChunk, pos, og);
                 }
             }
@@ -305,7 +322,7 @@ public class MapChunkBuffer {
         final int sx = mc.pos.x;
         final int sy = mc.pos.y;
         final int sz = mc.pos.z;
-        var b = mc.blocks.orElseThrow();
+        final var b = mc.blocks.orElseThrow();
         return () -> new Itr(cw, ch, cd, sx, sy, sz, b, b.capacity() / MapBlockBuffer.SIZE);
     }
 
@@ -339,7 +356,7 @@ public class MapChunkBuffer {
         final int sx = mc.pos.x;
         final int sy = mc.pos.y;
         final int sz = mc.pos.z;
-        mc.blocks.ifPresent((b) -> {
+        mc.blocks.ifPresent(b -> {
             for (int i = 0; i < b.capacity() / MapBlockBuffer.SIZE; i++) {
                 consumer.accept(readMapBlockIndex(b, 0, i, cw, ch, cd, sx, sy, sz));
             }
@@ -348,7 +365,7 @@ public class MapChunkBuffer {
 
     public static MapBlock getNeighbor(MapBlock mb, NeighboringDir dir, MapChunk c, int w, int h, int d,
             ObjectsGetter og) {
-        var dirpos = mb.pos.add(dir.pos);
+        final var dirpos = mb.pos.add(dir.pos);
         if (dirpos.isNegative()) {
             return null;
         }
@@ -359,7 +376,7 @@ public class MapChunkBuffer {
             final int off = GameChunkPos.calcIndex(c, dirpos.x, dirpos.y, dirpos.z) * MapBlockBuffer.SIZE;
             return MapBlockBuffer.read(c.getBlocks(), off, dirpos);
         } else {
-            var parent = getChunk(og, cid2Id(c.parent));
+            final var parent = getChunk(og, cid2Id(c.parent));
             return findBlock(parent, dirpos, og);
         }
     }
@@ -401,7 +418,7 @@ public class MapChunkBuffer {
 
     public static MapBlockResult getNeighbor(int index, NeighboringDir dir, MapChunk c, int w, int h, int d,
             ObjectsGetter og) {
-        var dirpos = fromIndex(index, c).add(dir.pos);
+        final var dirpos = fromIndex(index, c).add(dir.pos);
         if (dirpos.isNegative()) {
             return new MapBlockResult(c, -1);
         }
@@ -445,8 +462,8 @@ public class MapChunkBuffer {
             if (!(PropertiesSet.get(getProp(up.c.getBlocks(), up.getOff()), EMPTY_POS))) {
                 return false;
             }
-            int mbparent = MapBlockBuffer.getParent(chunk.getBlocks(), index * MapBlockBuffer.SIZE);
-            int upparent = MapBlockBuffer.getParent(up.c.getBlocks(), up.getOff());
+            final int mbparent = MapBlockBuffer.getParent(chunk.getBlocks(), index * MapBlockBuffer.SIZE);
+            final int upparent = MapBlockBuffer.getParent(up.c.getBlocks(), up.getOff());
             if (mbparent != upparent) {
                 chunk = getChunk(og, cid2Id(upparent));
             }

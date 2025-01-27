@@ -53,7 +53,7 @@ import com.google.auto.service.AutoService;
  * <pre>
  * long  0                   1                   2                   3                   4                   5                   6
  * int   0         1         2         3         4         5         6         7         8         9         10        11        12
- * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21   22   23
+ * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21   22   23   24   25   26   27   28   29   30   31
  *       iiii iiii iiii iiii wwww wwww wwww wwww OOOO OOOO OOOO OOOO WWWW HHHH DDDD SSSS CCCC aaaa aaaa aaaa aaaa aaaa aaaa aaaa aaaa pppp pppp pppp pppp pppp pppp rrrr rrrr rrrr rrrr rrrr rrrr rrrr rrrr cccc cccc cccc ssss ssss ssss ssss ssss ssss tttt tttt nnnn nnnn ....
  * </pre>
  */
@@ -80,29 +80,29 @@ public class GameMapBuffer extends GameObjectBuffer implements StoredObjectBuffe
 
     private static final int CURSOR_OBJECT_BYTES = 8 * 2;
 
-    private static final int WIDTH_BYTES = 8 * 2;
+    private static final int WIDTH_BYTES = 12 * 2;
 
-    private static final int HEIGHT_BYTES = 9 * 2;
+    private static final int HEIGHT_BYTES = 13 * 2;
 
-    private static final int DEPTH_BYTES = 10 * 2;
+    private static final int DEPTH_BYTES = 14 * 2;
 
-    private static final int CHUNK_SIZE_BYTES = 11 * 2;
+    private static final int CHUNK_SIZE_BYTES = 15 * 2;
 
-    private static final int CHUNKS_COUNT_BYTES = 12 * 2;
+    private static final int CHUNKS_COUNT_BYTES = 16 * 2;
 
-    private static final int AREA_BYTES = 13 * 2;
+    private static final int AREA_BYTES = 17 * 2;
 
-    private static final int CAMERA_POS_BYTES = 21 * 2;
+    private static final int CAMERA_POS_BYTES = 25 * 2;
 
-    private static final int CAMERA_ROT_BYTES = 27 * 2;
+    private static final int CAMERA_ROT_BYTES = 31 * 2;
 
-    private static final int CURSOR_POS_BYTES = 35 * 2;
+    private static final int CURSOR_POS_BYTES = 39 * 2;
 
-    private static final int SUN_POS_BYTES = 38 * 2;
+    private static final int SUN_POS_BYTES = 42 * 2;
 
-    private static final int TIME_BYTES = 44 * 2;
+    private static final int TIME_BYTES = 48 * 2;
 
-    private static final int NAME_BYTES = 46 * 2;
+    private static final int NAME_BYTES = 50 * 2;
 
     /**
      * Calculates the size in bytes.

@@ -18,7 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl;
 
 import static akka.actor.typed.javadsl.AskPattern.ask;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.time.Duration;
 import java.util.concurrent.CompletionStage;
@@ -30,8 +30,6 @@ import java.util.function.Predicate;
 import org.eclipse.collections.api.list.ListIterable;
 
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
-import com.anrisoftware.dwarfhustle.model.api.map.ObjectType;
-import com.anrisoftware.dwarfhustle.model.api.materials.BlockMaterial;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeLoadedObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeResponseMessage.KnowledgeResponseErrorMessage;
@@ -101,37 +99,96 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
     }
 
     /**
-     * Ask the actor to retrieve the ID of a specific material.
+     * Ask the actor to retrieve the specific {@link KnowledgeObject}.
+     *
+     * @see KnowledgeObject
+     */
+    public static <T extends KnowledgeObject> T askKnowledgeObject(ActorSystem<Message> a, Duration timeout,
+            String type, Predicate<T> predicate) throws InterruptedException, ExecutionException, TimeoutException {
+        return askKnowledgeObject(a, timeout, a.scheduler(), type, predicate);
+    }
+
+    /**
+     * Ask the actor to retrieve the specific {@link KnowledgeObject}.
+     *
+     * @see KnowledgeObject
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends KnowledgeObject> T askKnowledgeObject(ActorRef<Message> a, Duration timeout,
+            Scheduler scheduler, String type, Predicate<T> predicate)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        return askKnowledgeObjects(a, timeout, scheduler, type).toCompletableFuture()
+                .get(timeout.toMillis(), MILLISECONDS).collectIf(o -> {
+                    final var ko = (T) o;
+                    return predicate.test(ko);
+                }, ko -> (T) ko.getAsType()).getFirst();
+    }
+
+    /**
+     * Ask the actor to retrieve the specific {@link KnowledgeObject}.
+     *
+     * @see KnowledgeObject
+     */
+    public static <T extends KnowledgeObject> T askKnowledgeObjectName(ActorSystem<Message> a, Duration timeout,
+            String type, String name) throws InterruptedException, ExecutionException, TimeoutException {
+        return askKnowledgeObjectName(a, timeout, a.scheduler(), type, name);
+    }
+
+    /**
+     * Ask the actor to retrieve the specific {@link KnowledgeObject}.
+     *
+     * @see KnowledgeObject
+     */
+    public static <T extends KnowledgeObject> T askKnowledgeObjectName(ActorRef<Message> a, Duration timeout,
+            Scheduler scheduler, String type, String name)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        return askKnowledgeObject(a, timeout, scheduler, type, ko -> ko.getName().equalsIgnoreCase(name));
+    }
+
+    /**
+     * Ask the actor to retrieve the ID of a specific {@link KnowledgeObject}.
+     *
+     * @see KnowledgeObject
+     */
+    public static <T extends KnowledgeObject> long askKnowledgeId(ActorSystem<Message> a, Duration timeout, String type,
+            Predicate<T> predicate) throws InterruptedException, ExecutionException, TimeoutException {
+        return askKnowledgeId(a, timeout, a.scheduler(), type, predicate);
+    }
+
+    /**
+     * Ask the actor to retrieve the ID of a specific {@link KnowledgeObject}.
+     *
+     * @see KnowledgeObject
      */
     public static <T extends KnowledgeObject> long askKnowledgeId(ActorRef<Message> a, Duration timeout,
             Scheduler scheduler, String type, Predicate<T> predicate)
             throws InterruptedException, ExecutionException, TimeoutException {
-        return askKnowledgeObjects(a, timeout, scheduler, type).toCompletableFuture().get(timeout.toSeconds(), SECONDS)
-                .collectIf((o) -> {
+        return askKnowledgeObjects(a, timeout, scheduler, type).toCompletableFuture()
+                .get(timeout.toMillis(), MILLISECONDS).collectIf(o -> {
                     @SuppressWarnings("unchecked")
-                    var ko = (T) o;
+                    final var ko = (T) o;
                     return predicate.test(ko);
                 }, KnowledgeObject::getId).getFirst();
     }
 
     /**
-     * Ask the actor to retrieve the ID of a specific material.
+     * Ask the actor to retrieve the ID of a {@link KnowledgeObject} by name.
      *
-     * @see BlockMaterial
+     * @see KnowledgeObject
      */
-    public static long askBlockMaterialId(ActorRef<Message> a, Duration timeout, Scheduler scheduler, String type,
-            String name) throws InterruptedException, ExecutionException, TimeoutException {
-        return askKnowledgeId(a, timeout, scheduler, type, (BlockMaterial ko) -> ko.getName().equalsIgnoreCase(name));
+    public static long askKnowledgeIdByName(ActorSystem<Message> a, Duration timeout, String type, String name)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        return askKnowledgeIdByName(a, timeout, a.scheduler(), type, name);
     }
 
     /**
-     * Ask the actor to retrieve the ID of a object type.
+     * Ask the actor to retrieve the ID of a {@link KnowledgeObject} by name.
      *
-     * @see ObjectType
+     * @see KnowledgeObject
      */
-    public static long askObjectTypeId(ActorRef<Message> a, Duration timeout, Scheduler scheduler, String type,
+    public static long askKnowledgeIdByName(ActorRef<Message> a, Duration timeout, Scheduler scheduler, String type,
             String name) throws InterruptedException, ExecutionException, TimeoutException {
-        return askKnowledgeId(a, timeout, scheduler, type, (ObjectType ko) -> ko.getName().equalsIgnoreCase(name));
+        return askKnowledgeId(a, timeout, scheduler, type, (KnowledgeObject ko) -> ko.getName().equalsIgnoreCase(name));
     }
 
     /**
@@ -143,7 +200,7 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
         return askKnowledgeObjects(a, timeout, a.scheduler(), type);
     }
 
-    private final static Consumer<KnowledgeLoadedObject> NOP = (ko) -> {
+    private final static Consumer<KnowledgeLoadedObject> NOP = ko -> {
     };
 
     public final String type;

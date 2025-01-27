@@ -53,13 +53,24 @@ public class InsertObjectMessage<T extends Message> extends Message {
         public final GameMapObject go;
     }
 
+    /**
+     * Asks with an {@link InsertObjectMessage}.
+     */
     public static CompletionStage<Message> askInsertObject(ActorSystem<Message> a, long gm, int cid, KnowledgeObject ko,
             GameBlockPos pos, Duration timeout) {
-        return AskPattern.ask(a, replyTo -> new InsertObjectMessage<>(replyTo, gm, cid, ko, pos, NOP_CONSUMER, NOP),
+        return askInsertObject(a, gm, cid, ko, pos, timeout, NOP_CONSUMER);
+    }
+
+    /**
+     * Asks with an {@link InsertObjectMessage}.
+     */
+    public static CompletionStage<Message> askInsertObject(ActorSystem<Message> a, long gm, int cid, KnowledgeObject ko,
+            GameBlockPos pos, Duration timeout, Consumer<GameMapObject> consumer) {
+        return AskPattern.ask(a, replyTo -> new InsertObjectMessage<>(replyTo, gm, cid, ko, pos, consumer, NOP),
                 timeout, a.scheduler());
     }
 
-    private static final Consumer<GameMapObject> NOP_CONSUMER = (go) -> {
+    private static final Consumer<GameMapObject> NOP_CONSUMER = go -> {
     };
 
     private final static Runnable NOP = () -> {

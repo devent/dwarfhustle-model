@@ -55,6 +55,10 @@ public abstract class GameMapObject extends GameObject implements StoredObject {
 
     public static final int TEX_POS = 3;
 
+    public static final int SELECT_POS = 9;
+
+    public static final int ELEVATED_POS = 10;
+
     /**
      * Record ID set after the object was once stored in the backend.
      */
@@ -84,13 +88,20 @@ public abstract class GameMapObject extends GameObject implements StoredObject {
      * Properties of the object.
      * <p>
      * Exclusive Flags:
-     * 
+     *
      * <pre>
      * 00000000 00000000 hidden.
      * 00000000 00000001 visible.
      * 00000000 00000010 forbidden.
      * 00000000 00000100 have model.
      * 00000000 00001000 have texture.
+     * </pre>
+     * <p>
+     * Inclusive Flags:
+     *
+     * <pre>
+     * 00000001 00000000 can be selected.
+     * 00000010 00000000 elevated from terrain.
      * </pre>
      */
     public PropertiesSet p = new PropertiesSet();
@@ -177,6 +188,30 @@ public abstract class GameMapObject extends GameObject implements StoredObject {
         return p.get(TEX_POS);
     }
 
+    public void setCanSelect(boolean flag) {
+        if (flag) {
+            p.set(SELECT_POS);
+        } else {
+            p.clear(SELECT_POS);
+        }
+    }
+
+    public boolean isCanSelect() {
+        return p.get(SELECT_POS);
+    }
+
+    public void setElevated(boolean flag) {
+        if (flag) {
+            p.set(ELEVATED_POS);
+        } else {
+            p.clear(ELEVATED_POS);
+        }
+    }
+
+    public boolean isElevated() {
+        return p.get(ELEVATED_POS);
+    }
+
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
         writeStream(out);
@@ -199,10 +234,10 @@ public abstract class GameMapObject extends GameObject implements StoredObject {
     @Override
     public void readStream(DataInput in) throws IOException {
         super.readStream(in);
-        this.map = in.readLong();
+        map = in.readLong();
         getPos().readStream(in);
-        this.kid = in.readInt();
-        this.oid = in.readInt();
+        kid = in.readInt();
+        oid = in.readInt();
     }
 
 }

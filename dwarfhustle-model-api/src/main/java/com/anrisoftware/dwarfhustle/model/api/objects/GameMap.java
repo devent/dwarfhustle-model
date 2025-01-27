@@ -19,9 +19,11 @@ package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readExternalMutableIntIntMultimap;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readExternalMutableList;
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamIntIntMap;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamIntObjectMap;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeExternalList;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeExternalMutableIntIntMultimap;
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamIntIntMap;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamIntObjectMap;
 
 import java.io.DataInput;
@@ -34,8 +36,10 @@ import java.time.ZoneOffset;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.primitive.IntIntMaps;
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.primitive.IntIntMap;
 import org.eclipse.collections.api.map.primitive.IntObjectMap;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.eclipse.collections.api.multimap.MutableMultimap;
@@ -165,13 +169,19 @@ public class GameMap extends GameObject implements StoredObject {
      */
     public long cursorObject = 0;
 
+    /**
+     * Cashes the chunk ID for the block index.
+     */
+    public IntIntMap cids;
+
     public GameMap() {
-        MutableIntObjectMap<AtomicInteger> filledBlocks = IntObjectMaps.mutable.withInitialCapacity(100);
+        final MutableIntObjectMap<AtomicInteger> filledBlocks = IntObjectMaps.mutable.withInitialCapacity(100);
         this.filledBlocks = filledBlocks.asSynchronized();
-        MutableMultimap<Integer, Integer> filledChunks = Multimaps.mutable.set.empty();
+        final MutableMultimap<Integer, Integer> filledChunks = Multimaps.mutable.set.empty();
         this.filledChunks = filledChunks.asSynchronized();
-        MutableList<GameBlockPos> selectedBlocks = Lists.mutable.empty();
+        final MutableList<GameBlockPos> selectedBlocks = Lists.mutable.empty();
         this.selectedBlocks = selectedBlocks.asSynchronized();
+        this.cids = IntIntMaps.immutable.empty();
     }
 
     public GameMap(long id, int width, int height, int depth) {
@@ -179,12 +189,12 @@ public class GameMap extends GameObject implements StoredObject {
         this.width = width;
         this.height = height;
         this.depth = depth;
-        MutableIntObjectMap<AtomicInteger> filledBlocks = IntObjectMaps.mutable
+        final MutableIntObjectMap<AtomicInteger> filledBlocks = IntObjectMaps.mutable
                 .withInitialCapacity(width * height * depth);
         this.filledBlocks = filledBlocks.asSynchronized();
-        MutableMultimap<Integer, Integer> filledChunks = Multimaps.mutable.set.empty();
+        final MutableMultimap<Integer, Integer> filledChunks = Multimaps.mutable.set.empty();
         this.filledChunks = filledChunks.asSynchronized();
-        MutableList<GameBlockPos> selectedBlocks = Lists.mutable.empty();
+        final MutableList<GameBlockPos> selectedBlocks = Lists.mutable.empty();
         this.selectedBlocks = selectedBlocks.asSynchronized();
     }
 
@@ -223,43 +233,43 @@ public class GameMap extends GameObject implements StoredObject {
     }
 
     public void addCursorZ(int dd) {
-        setCursor(new GameBlockPos(cursor.x, cursor.y, cursor.z + dd));
+        setCursor(new GameBlockPos(this.cursor.x, this.cursor.y, this.cursor.z + dd));
     }
 
     public boolean isCursor(int x, int y, int z) {
-        return cursor.equals(x, y, z);
+        return this.cursor.equals(x, y, z);
     }
 
     public int getCursorZ() {
-        return cursor.z;
+        return this.cursor.z;
     }
 
     public void setCursorZ(int z) {
-        setCursor(new GameBlockPos(cursor.x, cursor.y, z));
+        setCursor(new GameBlockPos(this.cursor.x, this.cursor.y, z));
     }
 
     public void setSunPosition(float x, float y, float z) {
-        sunPos[0] = x;
-        sunPos[1] = y;
-        sunPos[2] = z;
+        this.sunPos[0] = x;
+        this.sunPos[1] = y;
+        this.sunPos[2] = z;
     }
 
     public void addFilledBlock(int cid, int index) {
-        var filledBlocks = (MutableIntObjectMap<AtomicInteger>) this.filledBlocks;
-        filledBlocks.getIfAbsentPut(index, new AtomicInteger(0)).updateAndGet((it) -> {
+        final var filledBlocks = (MutableIntObjectMap<AtomicInteger>) this.filledBlocks;
+        filledBlocks.getIfAbsentPut(index, new AtomicInteger(0)).updateAndGet(it -> {
             it++;
-            filledChunks.put(cid, index);
+            this.filledChunks.put(cid, index);
             return it;
         });
     }
 
     public void removeFilledBlock(int cid, int index) {
-        var filledBlocks = (MutableIntObjectMap<AtomicInteger>) this.filledBlocks;
-        filledBlocks.getIfAbsentPut(index, new AtomicInteger(0)).updateAndGet((it) -> {
+        final var filledBlocks = (MutableIntObjectMap<AtomicInteger>) this.filledBlocks;
+        filledBlocks.getIfAbsentPut(index, new AtomicInteger(0)).updateAndGet(it -> {
             it--;
             if (it == 0) {
                 filledBlocks.remove(index);
-                filledChunks.remove(cid, index);
+                this.filledChunks.remove(cid, index);
             }
             return it;
         });
@@ -269,9 +279,16 @@ public class GameMap extends GameObject implements StoredObject {
      * Returns true if the given {@link MapBlock} have any game objects.
      */
     public boolean isFilledBlock(MapBlock mb) {
-        int index = GameBlockPos.calcIndex(this, mb.getPos());
-        var count = filledBlocks.get(index);
+        final int index = GameBlockPos.calcIndex(this, mb.getPos());
+        final var count = this.filledBlocks.get(index);
         return count != null && count.get() > 0;
+    }
+
+    /**
+     * Returns the chunk ID for the block index.
+     */
+    public int getCid(int index) {
+        return this.cids.get(index);
     }
 
     @Override
@@ -287,32 +304,33 @@ public class GameMap extends GameObject implements StoredObject {
     @Override
     public void writeStream(DataOutput out) throws IOException {
         super.writeStream(out);
-        out.writeUTF(name);
-        out.writeInt(width);
-        out.writeInt(height);
-        out.writeInt(depth);
-        out.writeInt(chunkSize);
-        out.writeInt(chunksCount);
-        out.writeInt(blocksCount);
-        out.writeLong(world);
-        out.writeUTF(timeZone.getId());
-        area.writeStream(out);
-        out.writeFloat(cameraPos[0]);
-        out.writeFloat(cameraPos[1]);
-        out.writeFloat(cameraPos[2]);
-        out.writeFloat(cameraRot[0]);
-        out.writeFloat(cameraRot[1]);
-        out.writeFloat(cameraRot[2]);
-        out.writeFloat(cameraRot[3]);
-        cursor.writeStream(out);
-        out.writeFloat(sunPos[0]);
-        out.writeFloat(sunPos[1]);
-        out.writeFloat(sunPos[2]);
-        out.writeInt(climateZone);
-        writeStreamIntObjectMap(out, filledBlocks, this::writeAtomicInt);
-        writeExternalMutableIntIntMultimap(out, filledChunks);
-        writeExternalList(out, selectedBlocks, this::writeGameBlockPos);
-        out.writeLong(cursorObject);
+        out.writeUTF(this.name);
+        out.writeInt(this.width);
+        out.writeInt(this.height);
+        out.writeInt(this.depth);
+        out.writeInt(this.chunkSize);
+        out.writeInt(this.chunksCount);
+        out.writeInt(this.blocksCount);
+        out.writeLong(this.world);
+        out.writeUTF(this.timeZone.getId());
+        this.area.writeStream(out);
+        out.writeFloat(this.cameraPos[0]);
+        out.writeFloat(this.cameraPos[1]);
+        out.writeFloat(this.cameraPos[2]);
+        out.writeFloat(this.cameraRot[0]);
+        out.writeFloat(this.cameraRot[1]);
+        out.writeFloat(this.cameraRot[2]);
+        out.writeFloat(this.cameraRot[3]);
+        this.cursor.writeStream(out);
+        out.writeFloat(this.sunPos[0]);
+        out.writeFloat(this.sunPos[1]);
+        out.writeFloat(this.sunPos[2]);
+        out.writeInt(this.climateZone);
+        writeStreamIntObjectMap(out, this.filledBlocks, this::writeAtomicInt);
+        writeExternalMutableIntIntMultimap(out, this.filledChunks);
+        writeExternalList(out, this.selectedBlocks, this::writeGameBlockPos);
+        out.writeLong(this.cursorObject);
+        writeStreamIntIntMap(out, cids);
     }
 
     @SneakyThrows
@@ -337,7 +355,7 @@ public class GameMap extends GameObject implements StoredObject {
         this.blocksCount = in.readInt();
         this.world = in.readLong();
         this.timeZone = ZoneOffset.of(in.readUTF());
-        area.readStream(in);
+        this.area.readStream(in);
         this.cameraPos[0] = in.readFloat();
         this.cameraPos[1] = in.readFloat();
         this.cameraPos[2] = in.readFloat();
@@ -345,18 +363,19 @@ public class GameMap extends GameObject implements StoredObject {
         this.cameraRot[1] = in.readFloat();
         this.cameraRot[2] = in.readFloat();
         this.cameraRot[3] = in.readFloat();
-        cursor.readStream(in);
+        this.cursor.readStream(in);
         this.sunPos[0] = in.readFloat();
         this.sunPos[1] = in.readFloat();
         this.sunPos[2] = in.readFloat();
         this.climateZone = in.readInt();
-        var filledBlocks = readStreamIntObjectMap(in, this::readAtomicInt);
+        final var filledBlocks = readStreamIntObjectMap(in, this::readAtomicInt);
         this.filledBlocks = filledBlocks.asSynchronized();
-        var filledChunks = readExternalMutableIntIntMultimap(in, () -> Multimaps.mutable.set.empty());
+        final var filledChunks = readExternalMutableIntIntMultimap(in, () -> Multimaps.mutable.set.empty());
         this.filledChunks = filledChunks.asSynchronized();
-        var selectedBlocks = readExternalMutableList(in, this::readGameBlockPos);
+        final var selectedBlocks = readExternalMutableList(in, this::readGameBlockPos);
         this.selectedBlocks = selectedBlocks.asSynchronized();
         this.cursorObject = in.readLong();
+        this.cids = readStreamIntIntMap(in);
     }
 
     @SneakyThrows
