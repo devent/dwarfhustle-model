@@ -27,9 +27,11 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.eclipse.collections.api.IntIterable;
 import org.eclipse.collections.api.LongIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.primitive.IntIntMaps;
+import org.eclipse.collections.api.factory.primitive.IntLists;
 import org.eclipse.collections.api.factory.primitive.IntLongMaps;
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.factory.primitive.LongIntMaps;
@@ -38,6 +40,7 @@ import org.eclipse.collections.api.factory.primitive.LongObjectMaps;
 import org.eclipse.collections.api.factory.primitive.ObjectIntMaps;
 import org.eclipse.collections.api.factory.primitive.ObjectLongMaps;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.list.primitive.MutableIntList;
 import org.eclipse.collections.api.list.primitive.MutableLongList;
 import org.eclipse.collections.api.map.primitive.IntIntMap;
 import org.eclipse.collections.api.map.primitive.IntLongMap;
@@ -254,6 +257,28 @@ public class ExternalizableUtils {
         final MutableLongList list = LongLists.mutable.withInitialCapacity(size);
         for (int i = 0; i < size; i++) {
             list.add(in.readLong());
+        }
+        return list;
+    }
+
+    /**
+     * Writes the values of any {@link IntIterable}.
+     */
+    public static void writeStreamIntCollection(DataOutput out, int size, IntIterable it) throws IOException {
+        out.writeInt(size);
+        for (final var i = it.intIterator(); i.hasNext();) {
+            out.writeInt(i.next());
+        }
+    }
+
+    /**
+     * Reads the values of to a {@link IntIterable}.
+     */
+    public static <T extends IntIterable> IntIterable readStreamIntCollection(DataInput in) throws IOException {
+        final int size = in.readInt();
+        final MutableIntList list = IntLists.mutable.withInitialCapacity(size);
+        for (int i = 0; i < size; i++) {
+            list.add(in.readInt());
         }
         return list;
     }

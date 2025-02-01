@@ -43,7 +43,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class GameBlockPos implements Externalizable, StreamStorage {
+public class GameBlockPos implements Externalizable, StreamStorage, Cloneable {
 
     private static final long serialVersionUID = 1L;
 
@@ -148,6 +148,12 @@ public class GameBlockPos implements Externalizable, StreamStorage {
      */
     public int z = -1;
 
+    public GameBlockPos(GameBlockPos that) {
+        this.x = that.x;
+        this.y = that.y;
+        this.z = that.z;
+    }
+
     public int getDiffX(GameBlockPos pos) {
         return x - pos.x;
     }
@@ -171,8 +177,8 @@ public class GameBlockPos implements Externalizable, StreamStorage {
      * Returns the {@link GameBlockPos} parsed from the string.
      */
     public static GameBlockPos parse(String s) {
-        var split = StringUtils.split(s, "/");
-        var pos = new GameBlockPos(toInt(split[0]), toInt(split[1]), toInt(split[2]));
+        final var split = StringUtils.split(s, "/");
+        final var pos = new GameBlockPos(toInt(split[0]), toInt(split[1]), toInt(split[2]));
         return pos;
     }
 
@@ -238,6 +244,11 @@ public class GameBlockPos implements Externalizable, StreamStorage {
         this.x = in.readInt();
         this.y = in.readInt();
         this.z = in.readInt();
+    }
+
+    @Override
+    public GameBlockPos clone() {
+        return new GameBlockPos(this);
     }
 
     public boolean equals(int x2, int y2, int z2) {

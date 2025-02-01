@@ -173,12 +173,12 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
                     os.set(go.getObjectType(), go);
                 }
                 queueLock.release();
-                System.out.println(list); // TODO
+                // System.out.println(list); // TODO
             }
         } catch (final InterruptedException e) {
             log.error("storeObjects", e);
         }
-        System.out.println("StoredObjectsJcsCacheActor.storeObjects()"); // TODO
+        // System.out.println("StoredObjectsJcsCacheActor.storeObjects()"); // TODO
     }
 
     @Override
