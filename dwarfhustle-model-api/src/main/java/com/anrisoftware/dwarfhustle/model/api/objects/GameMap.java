@@ -25,6 +25,7 @@ import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamIntCollection;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamIntIntMap;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamIntObjectMap;
+import static com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos.calcIndex;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -33,16 +34,20 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.time.ZoneOffset;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.collections.api.factory.primitive.IntIntMaps;
 import org.eclipse.collections.api.factory.primitive.IntLists;
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
+import org.eclipse.collections.api.factory.primitive.IntSets;
 import org.eclipse.collections.api.list.primitive.MutableIntList;
 import org.eclipse.collections.api.map.primitive.IntIntMap;
 import org.eclipse.collections.api.map.primitive.IntObjectMap;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.eclipse.collections.api.multimap.MutableMultimap;
+import org.eclipse.collections.api.set.primitive.IntSet;
+import org.eclipse.collections.api.set.primitive.MutableIntSet;
 import org.eclipse.collections.impl.factory.Multimaps;
 
 import com.google.auto.service.AutoService;
@@ -51,6 +56,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
 import lombok.ToString;
+import lombok.val;
 
 /**
  * Information about the game.
@@ -178,6 +184,11 @@ public class GameMap extends GameObject implements StoredObject {
      */
     public IntIntMap cids;
 
+    /**
+     * Lock to get game map objects.
+     */
+    private final Semaphore objectsLock;
+
     public GameMap() {
         final MutableIntObjectMap<AtomicInteger> filledBlocks = IntObjectMaps.mutable.withInitialCapacity(100);
         this.filledBlocks = filledBlocks.asSynchronized();
@@ -186,6 +197,7 @@ public class GameMap extends GameObject implements StoredObject {
         final MutableIntList selectedBlocks = IntLists.mutable.empty();
         this.selectedBlocks = selectedBlocks.asSynchronized();
         this.cids = IntIntMaps.immutable.empty();
+        this.objectsLock = new Semaphore(1);
     }
 
     public GameMap(long id, int width, int height, int depth) {
@@ -200,6 +212,7 @@ public class GameMap extends GameObject implements StoredObject {
         this.filledChunks = filledChunks.asSynchronized();
         final MutableIntList selectedBlocks = IntLists.mutable.empty();
         this.selectedBlocks = selectedBlocks.asSynchronized();
+        this.objectsLock = new Semaphore(1);
     }
 
     public GameMap(byte[] idbuf, int width, int height, int depth) {
@@ -395,6 +408,31 @@ public class GameMap extends GameObject implements StoredObject {
 
     public void addSelectedBlock(int index) {
         selectedBlocks.add(index);
+    }
+
+    public boolean isSelectedBlock(int x, int y, int z) {
+        return !selectedBlocks.isEmpty() && selectedBlocks.contains(calcIndex(this, x, y, z));
+    }
+
+    /**
+     * Returns only the indices of the blocks with at least one map object.
+     */
+    public IntSet getFilledBlocksIndices() {
+        MutableIntSet set = IntSets.mutable.withInitialCapacity(filledBlocks.size());
+        for (val entry : filledBlocks.keyValuesView()) {
+            if (entry.getTwo().get() > 0) {
+                set.add(entry.getOne());
+            }
+        }
+        return set.asUnmodifiable();
+    }
+
+    /**
+     * Acquires a lock over the map objects, blocks until a lock is available.
+     */
+    public AutoCloseable acquireLockMapObjects() throws InterruptedException {
+        objectsLock.acquire();
+        return () -> objectsLock.release();
     }
 
 }
