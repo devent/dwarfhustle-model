@@ -134,11 +134,21 @@ public class GameBlockPos implements Externalizable, StreamStorage, Cloneable {
     }
 
     /**
-     * Translates the chunk block index to a global block index.
+     * Translates the chunk block index to a map block index.
      */
-    public static int translateIndex(int index, MapChunk chunk, GameMap gm) {
+    public static int chunkIndex2MapIndex(int index, MapChunk chunk, GameMap gm) {
         final int x = calcX(index, chunk), y = calcY(index, chunk), z = calcZ(index, chunk);
         return calcIndex(gm, x, y, z);
+    }
+
+    /**
+     * Translates the map block index to a chunk block index.
+     */
+    public static int chunkMapIndex2ChunkIndex(int index, GameMap gm, MapChunk chunk) {
+        final int w = gm.getWidth();
+        final int x = calcX(index, w, 0), y = calcY(index, gm.getWidth(), 0),
+                z = calcZ(index, gm.getWidth(), gm.getHeight(), 0);
+        return calcIndex(chunk, x, y, z);
     }
 
     /**

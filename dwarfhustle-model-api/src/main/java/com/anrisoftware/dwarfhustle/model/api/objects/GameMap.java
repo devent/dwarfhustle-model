@@ -137,8 +137,6 @@ public class GameMap extends GameObject implements StoredObject {
 
     public int chunksCount;
 
-    public int blocksCount;
-
     /**
      * The {@link WorldMap} ID of the map.
      */
@@ -226,6 +224,10 @@ public class GameMap extends GameObject implements StoredObject {
 
     public int getSize() {
         return depth * height * width;
+    }
+
+    public int getBlocksCount() {
+        return getSize();
     }
 
     public void setCameraPos(float x, float y, float z) {
@@ -327,7 +329,6 @@ public class GameMap extends GameObject implements StoredObject {
         out.writeInt(this.depth);
         out.writeInt(this.chunkSize);
         out.writeInt(this.chunksCount);
-        out.writeInt(this.blocksCount);
         out.writeLong(this.world);
         out.writeUTF(this.timeZone.getId());
         this.area.writeStream(out);
@@ -364,7 +365,6 @@ public class GameMap extends GameObject implements StoredObject {
         this.depth = in.readInt();
         this.chunkSize = in.readInt();
         this.chunksCount = in.readInt();
-        this.blocksCount = in.readInt();
         this.world = in.readLong();
         this.timeZone = ZoneOffset.of(in.readUTF());
         this.area.readStream(in);

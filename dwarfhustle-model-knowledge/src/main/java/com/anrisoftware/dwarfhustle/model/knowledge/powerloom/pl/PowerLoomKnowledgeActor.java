@@ -325,7 +325,7 @@ public class PowerLoomKnowledgeActor implements KnowledgeGetter {
     }
 
     private void loadKnowledges() {
-        tidTypeMap.keySet().forEach((tid) -> {
+        tidTypeMap.keySet().forEach(tid -> {
             get(tid);
         });
     }

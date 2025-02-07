@@ -36,6 +36,7 @@ import org.apache.commons.io.FileUtils;
 import org.lmdbjava.CopyFlags;
 import org.lmdbjava.Dbi;
 import org.lmdbjava.Env;
+import org.lmdbjava.Env.MapFullException;
 import org.lmdbjava.Txn;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
@@ -55,7 +56,7 @@ public class MapChunksLmbdStorage implements MapChunksStorage, ObjectsGetter, Ob
 
     /**
      * Factory to create the {@link MapChunksLmbdStorage}.
-     * 
+     *
      * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
      */
     public interface MapChunksLmbdStorageFactory {
@@ -72,12 +73,15 @@ public class MapChunksLmbdStorage implements MapChunksStorage, ObjectsGetter, Ob
 
     private final Path file;
 
+    private long mapSize;
+
     /**
      * Creates or opens the game map objects storage for the game map.
      */
     @Inject
     protected MapChunksLmbdStorage(@Assisted Path file, @Assisted long mapSize) {
         this.file = file;
+        this.mapSize = mapSize;
         this.env = create(PROXY_DB).setMapSize(mapSize).setMaxDbs(2).open(file.toFile());
         this.chunksDb = env.openDbi("chunks", MDB_CREATE, MDB_INTEGERKEY);
         this.buffkey = ThreadLocal.withInitial(() -> new UnsafeBuffer(allocateDirect(4)));
@@ -104,6 +108,10 @@ public class MapChunksLmbdStorage implements MapChunksStorage, ObjectsGetter, Ob
             MapChunkBuffer.write(val, 0, chunk);
             chunksDb.put(txn, key, val);
             txn.commit();
+        } catch (MapFullException e) {
+            this.mapSize *= 2;
+            env.setMapSize(mapSize);
+            putChunk(chunk);
         }
     }
 
@@ -205,7 +213,7 @@ public class MapChunksLmbdStorage implements MapChunksStorage, ObjectsGetter, Ob
     public void forEachValue(Consumer<MapChunk> consumer) {
         try (final var t = env.txnRead()) {
             var it = chunksDb.iterate(t);
-            it.forEach((k) -> {
+            it.forEach(k -> {
                 consumer.accept(MapChunkBuffer.read(k.val(), 0));
             });
         }

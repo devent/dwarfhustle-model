@@ -154,7 +154,6 @@ public class TerrainImageCreateMap {
         updateTerrain();
         log.debug("startImport done chunks {} blocks {}", chunksCount, blocksCount);
         gm.chunksCount = chunksCount;
-        gm.blocksCount = blocksCount;
     }
 
     @SneakyThrows

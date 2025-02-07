@@ -42,8 +42,6 @@ public class BlockMaterial extends KnowledgeObject {
 
     public static final String TYPE = "Material";
 
-    private String name;
-
     private float meltingPoint;
 
     private float density;

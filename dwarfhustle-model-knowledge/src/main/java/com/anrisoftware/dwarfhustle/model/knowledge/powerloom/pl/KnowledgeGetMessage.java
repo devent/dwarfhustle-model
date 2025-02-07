@@ -85,14 +85,14 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
     public static CompletionStage<ListIterable<KnowledgeObject>> askKnowledgeObjects(ActorRef<Message> a,
             Duration timeout, Scheduler scheduler, String type) {
         return askKnowledgeGet(a, timeout, scheduler, type).handle((res, ex) -> {
-            if (ex != null) {
-                throw new RuntimeException(ex);
-            } else {
+            if (ex == null) {
                 if (res instanceof KnowledgeResponseSuccessMessage rm) {
                     return rm.go.objects;
                 } else if (res instanceof KnowledgeResponseErrorMessage rm) {
                     throw new RuntimeException(rm.error);
                 }
+            } else {
+                throw new RuntimeException(ex);
             }
             return null;
         });
