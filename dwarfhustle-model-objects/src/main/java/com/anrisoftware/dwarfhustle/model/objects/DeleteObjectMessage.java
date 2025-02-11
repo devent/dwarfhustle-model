@@ -20,7 +20,6 @@ package com.anrisoftware.dwarfhustle.model.objects;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
-import com.anrisoftware.dwarfhustle.model.db.cache.MapObject;
 import com.anrisoftware.dwarfhustle.model.objects.DeleteObjectMessage.DeleteObjectSuccessMessage;
 
 import akka.actor.typed.ActorRef;
@@ -36,8 +35,8 @@ import lombok.ToString;
 public class DeleteObjectMessage<T extends DeleteObjectSuccessMessage> extends Message {
 
     /**
-     * 
-     * 
+     *
+     *
      * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
      */
     @RequiredArgsConstructor
@@ -54,24 +53,24 @@ public class DeleteObjectMessage<T extends DeleteObjectSuccessMessage> extends M
     @ToString.Exclude
     public final ActorRef<T> replyTo;
 
-    public final GameMap gm;
+    public final long gm;
 
-    public final MapObject mo;
+    public final int type;
 
     public final long id;
 
     public final Runnable onDeleted;
 
-    public DeleteObjectMessage(ActorRef<T> replyTo, GameMap gm, MapObject mo, long id, Runnable onDeleted) {
+    public DeleteObjectMessage(ActorRef<T> replyTo, long gm, int type, long id, Runnable onDeleted) {
         this.replyTo = replyTo;
         this.gm = gm;
-        this.mo = mo;
+        this.type = type;
         this.id = id;
         this.onDeleted = onDeleted;
     }
 
-    public DeleteObjectMessage(ActorRef<T> replyTo, GameMap gm, MapObject mo, long id) {
-        this(replyTo, gm, mo, id, NOP);
+    public DeleteObjectMessage(ActorRef<T> replyTo, long gm, int type, long id) {
+        this(replyTo, gm, type, id, NOP);
     }
 
 }

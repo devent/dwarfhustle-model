@@ -109,7 +109,7 @@ public class MapChunksLmbdStorage implements MapChunksStorage, ObjectsGetter, Ob
             chunksDb.put(txn, key, val);
             txn.commit();
         } catch (MapFullException e) {
-            this.mapSize *= 2;
+            this.mapSize += mapSize;
             env.setMapSize(mapSize);
             putChunk(chunk);
         }

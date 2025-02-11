@@ -56,6 +56,7 @@ import jakarta.inject.Inject;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.ToString;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -216,12 +217,14 @@ public class ObjectsActor {
         m.consumer.accept(go);
         is.os.set(go.getObjectType(), go);
         final var gm = getGameMap(is.og, m.gm);
-        final var mo = getMapObject(is.mg, gm, go.getPos());
-        mo.setCid(m.cid);
-        mo.addObject(go.getObjectType(), go.getId());
-        setMapObject(is.ms, mo);
-        gm.addFilledBlock(mo.getCid(), mo.getIndex());
-        is.os.set(gm.getObjectType(), gm);
+        try (var lock = gm.acquireLockMapObjects()) {
+            final var mo = getMapObject(is.mg, gm, go.getPos());
+            mo.setCid(m.cid);
+            mo.addObject(go.getObjectType(), go.getId());
+            setMapObject(is.ms, mo);
+            gm.addFilledBlock(mo.getCid(), mo.getIndex());
+            is.os.set(gm.getObjectType(), gm);
+        }
         m.onInserted.run();
         m.replyTo.tell(new InsertObjectSuccessMessage(go));
         return Behaviors.same();
@@ -231,16 +234,19 @@ public class ObjectsActor {
     private Behavior<Message> onDeleteObject(Object om) {
         @SuppressWarnings("unchecked")
         var m = (DeleteObjectMessage<? super DeleteObjectSuccessMessage>) om;
-        if (!m.mo.getOids().isEmpty()) {
-            final int type = m.mo.getOids().get(m.id);
-            final GameMapObject go = is.og.get(type, m.id);
-            m.mo.removeObject(m.id);
-            is.ms.set(m.mo.getObjectType(), m.mo);
-            is.os.remove(go.getObjectType(), go);
-            if (m.mo.isEmpty()) {
-                m.gm.removeFilledBlock(m.mo.cid, m.mo.getIndex());
-                is.os.set(m.gm.getObjectType(), m.gm);
-                is.ms.remove(MapObject.OBJECT_TYPE, m.mo);
+        final GameMapObject go = is.og.get(m.type, m.id);
+        val gm = getGameMap(is.og, m.gm);
+        try (var lock = gm.acquireLockMapObjects()) {
+            val mo = getMapObject(is.mg, gm, go.getPos());
+            if (!mo.getOids().isEmpty()) {
+                mo.removeObject(m.id);
+                is.ms.set(mo.getObjectType(), mo);
+                is.os.remove(go.getObjectType(), go);
+                if (mo.isEmpty()) {
+                    gm.removeFilledBlock(mo.getCid(), mo.getIndex());
+                    is.os.set(gm.getObjectType(), gm);
+                    is.ms.remove(MapObject.OBJECT_TYPE, mo);
+                }
             }
         }
         m.onDeleted.run();
