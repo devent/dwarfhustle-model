@@ -368,7 +368,8 @@ public abstract class AbstractJcsCacheActor implements ObjectsGetter, ObjectsSet
     }
 
     private GameObject supplyValue(int type, long key) {
-        return getValueFromBackend(type, key);
+        var go = getValueFromBackend(type, key);
+        return go;
     }
 
     @Override

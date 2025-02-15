@@ -73,4 +73,11 @@ public interface ObjectsSetter {
         // nop
     }
 
+    /**
+     * Removes the {@link GameObject}.
+     */
+    default void remove(int type, long id) throws ObjectsSetterException {
+        // nop
+    }
+
 }

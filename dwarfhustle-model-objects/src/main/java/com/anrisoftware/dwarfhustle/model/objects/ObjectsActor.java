@@ -26,6 +26,8 @@ import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.lable.oss.uniqueid.IDGenerator;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
@@ -40,8 +42,10 @@ import com.anrisoftware.dwarfhustle.model.db.cache.MapChunksJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.db.cache.MapObject;
 import com.anrisoftware.dwarfhustle.model.db.cache.MapObjectsJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor;
+import com.anrisoftware.dwarfhustle.model.objects.DeleteBulkObjectsMessage.DeleteBulkObjectsSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.objects.DeleteObjectMessage.DeleteObjectSuccessMessage;
 import com.anrisoftware.dwarfhustle.model.objects.InsertObjectMessage.InsertObjectSuccessMessage;
+import com.anrisoftware.dwarfhustle.model.objects.RetrieveObjectsMessage.RetrieveObjectsSuccessMessage;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
 
@@ -196,17 +200,18 @@ public class ObjectsActor {
     }
 
     /**
-     * <ul>
-     * <li>
-     * </ul>
+     * @see ShutdownMessage
      */
     private Behavior<Message> onShutdown(ShutdownMessage m) {
         log.debug("onShutdown {}", m);
         return Behaviors.stopped();
     }
 
+    /**
+     * @see InsertObjectMessage
+     */
     @SneakyThrows
-    private Behavior<Message> onInsertObject(InsertObjectMessage<? super InsertObjectSuccessMessage> m) {
+    private Behavior<Message> onInsertObject(InsertObjectMessage<? super ObjectResponseMessage> m) {
         final GameMapObject go = m.ko.createObject(ids.generate());
         go.setMap(m.gm);
         go.setPos(m.pos);
@@ -230,6 +235,9 @@ public class ObjectsActor {
         return Behaviors.same();
     }
 
+    /**
+     * @see DeleteObjectSuccessMessage
+     */
     @SneakyThrows
     private Behavior<Message> onDeleteObject(Object om) {
         @SuppressWarnings("unchecked")
@@ -255,6 +263,53 @@ public class ObjectsActor {
     }
 
     /**
+     * @see DeleteBulkObjectsMessage
+     */
+    @SneakyThrows
+    private Behavior<Message> onDeleteBulkObjectsMessage(DeleteBulkObjectsMessage<? super ObjectResponseMessage> m) {
+        val gm = getGameMap(is.og, m.gm);
+        try (var lock = gm.acquireLockMapObjects()) {
+            for (var it = m.ids.longIterator(); it.hasNext();) {
+                final long id = it.next();
+                final GameMapObject go = is.og.get(m.type, id);
+                val mo = getMapObject(is.mg, gm, go.getPos());
+                if (!mo.getOids().isEmpty()) {
+                    mo.removeObject(id);
+                    is.ms.set(mo.getObjectType(), mo);
+                    is.os.remove(go.getObjectType(), go);
+                    if (mo.isEmpty()) {
+                        gm.removeFilledBlock(mo.getCid(), mo.getIndex());
+                        is.os.set(gm.getObjectType(), gm);
+                        is.ms.remove(MapObject.OBJECT_TYPE, mo);
+                    }
+                }
+            }
+        }
+        m.onDeleted.run();
+        m.replyTo.tell(new DeleteBulkObjectsSuccessMessage());
+        return Behaviors.same();
+    }
+
+    /**
+     * @see RetrieveObjectsMessage
+     */
+    @SneakyThrows
+    private Behavior<Message> onRetrieveObjects(RetrieveObjectsMessage<? super ObjectResponseMessage> m) {
+        val gm = getGameMap(is.og, m.gm);
+        MutableList<GameMapObject> objects = Lists.mutable.empty();
+        try (var lock = gm.acquireLockMapObjects()) {
+            val mo = getMapObject(is.mg, gm, m.pos.getX(), m.pos.getY(), m.pos.getZ());
+            mo.getOids().forEachKeyValue((id, type) -> {
+                final GameMapObject go = is.og.get(type, id);
+                objects.add(go);
+            });
+        }
+        m.consumer.accept(objects);
+        m.replyTo.tell(new RetrieveObjectsSuccessMessage(objects));
+        return Behaviors.same();
+    }
+
+    /**
      * Returns a behavior for the messages:
      *
      * <ul>
@@ -266,6 +321,8 @@ public class ObjectsActor {
                 .onMessage(ShutdownMessage.class, this::onShutdown)//
                 .onMessage(InsertObjectMessage.class, this::onInsertObject)//
                 .onMessage(DeleteObjectMessage.class, this::onDeleteObject)//
+                .onMessage(DeleteBulkObjectsMessage.class, this::onDeleteBulkObjectsMessage)//
+                .onMessage(RetrieveObjectsMessage.class, this::onRetrieveObjects)//
         ;
     }
 

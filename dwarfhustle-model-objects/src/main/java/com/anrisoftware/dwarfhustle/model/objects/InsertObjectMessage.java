@@ -39,7 +39,7 @@ import lombok.ToString;
  * @author Erwin Müller {@literal <erwin@mullerlpublic.de}
  */
 @ToString(callSuper = true)
-public class InsertObjectMessage<T extends Message> extends Message {
+public class InsertObjectMessage<T extends ObjectResponseMessage> extends Message {
 
     /**
      *
@@ -48,7 +48,7 @@ public class InsertObjectMessage<T extends Message> extends Message {
      */
     @RequiredArgsConstructor
     @ToString(callSuper = true)
-    public static class InsertObjectSuccessMessage extends Message {
+    public static class InsertObjectSuccessMessage extends ObjectResponseMessage {
 
         public final GameMapObject go;
     }
@@ -56,16 +56,16 @@ public class InsertObjectMessage<T extends Message> extends Message {
     /**
      * Asks with an {@link InsertObjectMessage}.
      */
-    public static CompletionStage<Message> askInsertObject(ActorSystem<Message> a, long gm, int cid, KnowledgeObject ko,
-            GameBlockPos pos, Duration timeout) {
+    public static CompletionStage<? extends ObjectResponseMessage> askInsertObject(ActorSystem<Message> a, long gm,
+            int cid, KnowledgeObject ko, GameBlockPos pos, Duration timeout) {
         return askInsertObject(a, gm, cid, ko, pos, timeout, NOP_CONSUMER);
     }
 
     /**
      * Asks with an {@link InsertObjectMessage}.
      */
-    public static CompletionStage<Message> askInsertObject(ActorSystem<Message> a, long gm, int cid, KnowledgeObject ko,
-            GameBlockPos pos, Duration timeout, Consumer<GameMapObject> consumer) {
+    public static CompletionStage<? extends ObjectResponseMessage> askInsertObject(ActorSystem<Message> a, long gm,
+            int cid, KnowledgeObject ko, GameBlockPos pos, Duration timeout, Consumer<GameMapObject> consumer) {
         return AskPattern.ask(a, replyTo -> new InsertObjectMessage<>(replyTo, gm, cid, ko, pos, consumer, NOP),
                 timeout, a.scheduler());
     }

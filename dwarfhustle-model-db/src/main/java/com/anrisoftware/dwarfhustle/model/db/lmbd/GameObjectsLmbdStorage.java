@@ -212,7 +212,7 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
             final var val = dbi.get(txn, key);
             if (val == null) {
                 System.out.printf("[GameObjectsLmbdStorage] %d - %d\n", type, id); // TODO
-                assert val != null;
+                return null;
             }
             return (T) readBuffers.get(type).read(val);
         }
@@ -319,6 +319,11 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
     @Override
     public void remove(int type, GameObject go) throws ObjectsSetterException {
         removeObject(type, go.getId());
+    }
+
+    @Override
+    public void remove(int type, long id) throws ObjectsSetterException {
+        removeObject(type, id);
     }
 
 }
