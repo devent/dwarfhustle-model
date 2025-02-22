@@ -33,9 +33,9 @@ import lombok.ToString;
 @Data
 public class KnowledgeTreeSapling extends KnowledgeVegetation {
 
-    public static final int OBJECT_TYPE = KnowledgeTreeSapling.class.getSimpleName().hashCode();
-
     public static final String TYPE = "Tree-Sapling";
+
+    public static final int OBJECT_TYPE = TYPE.hashCode();
 
     /**
      * The name of the tree that his sampling grows into.
@@ -61,8 +61,8 @@ public class KnowledgeTreeSapling extends KnowledgeVegetation {
     public <T extends GameObject> T createObject(byte[] id) {
         var go = new TreeSapling(id);
         go.setVisible(true);
-        go.setHaveModel(true);
-        go.setHaveTex(false);
+        go.setHaveModel(false);
+        go.setHaveTex(true);
         return (T) go;
     }
 }

@@ -24,7 +24,6 @@ import static org.hamcrest.Matchers.not;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.stream.StreamSupport;
 
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.map.primitive.IntObjectMap;
@@ -59,11 +58,10 @@ public class DwarfhustleModelKnowledgePowerloomPlModule extends AbstractModule {
 
     private Map<String, GameObjectKnowledge> loadStorages() {
         var map = new HashMap<String, GameObjectKnowledge>();
-        var loader = ServiceLoader.load(GameObjectKnowledge.class);
-        StreamSupport.stream(loader.spliterator(), true).forEach(s -> {
+        for (GameObjectKnowledge s : ServiceLoader.load(GameObjectKnowledge.class)) {
             map.put(s.getType(), s);
-        });
-		assertThat("GameObjectKnowledge(s)", map.entrySet(), not(empty()));
+        }
+        assertThat("GameObjectKnowledge(s)", map.entrySet(), not(empty()));
         return map;
     }
 

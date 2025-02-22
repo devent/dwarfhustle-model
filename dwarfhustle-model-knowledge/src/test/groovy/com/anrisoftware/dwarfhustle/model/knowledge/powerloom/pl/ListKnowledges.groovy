@@ -56,9 +56,11 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Topsoil
 import com.anrisoftware.dwarfhustle.model.api.materials.Wood
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeGrass
+import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeShrub
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeBranch
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeLeaf
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeRoot
+import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeSapling
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeTrunk
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeTwig
 import com.google.inject.Guice
@@ -201,7 +203,9 @@ class ListKnowledges {
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Topsoil.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Wood.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeGrass.TYPE))
-        while (ko.size() != 12) {
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeShrub.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeSapling.TYPE))
+        while (ko.size() != 14) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
         }
