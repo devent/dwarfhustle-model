@@ -62,11 +62,11 @@ public class VegetationBlockFact extends BlockFact {
     }
 
     public boolean isOnVegetationBlock() {
-        return x == v.pos.x && y == v.pos.y && z == v.pos.z;
+        return x == v.getPos().x && y == v.getPos().y && z == v.getPos().z;
     }
 
     public boolean isOnVegetationNeighbor(int dx, int dy, int dz) {
-        return x == v.pos.x + dx && y == v.pos.y + dy && z == v.pos.z + dz;
+        return x == v.getPos().x + dx && y == v.getPos().y + dy && z == v.getPos().z + dz;
     }
 
     public void setObject(int x, int y, int z, VegetationKnowledgeObjects o) {

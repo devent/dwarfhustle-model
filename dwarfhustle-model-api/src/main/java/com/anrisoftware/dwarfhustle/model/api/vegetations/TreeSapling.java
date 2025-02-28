@@ -36,7 +36,7 @@ import lombok.ToString;
 @AutoService(StoredObject.class)
 public class TreeSapling extends Vegetation {
 
-    public static final int OBJECT_TYPE = TreeSapling.class.getSimpleName().hashCode();
+    public static final int OBJECT_TYPE = "Tree-Sapling".hashCode();
 
     public TreeSapling(byte[] idbuf) {
         super(idbuf);

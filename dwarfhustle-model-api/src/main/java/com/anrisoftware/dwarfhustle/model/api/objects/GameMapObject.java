@@ -62,27 +62,27 @@ public abstract class GameMapObject extends GameObject implements StoredObject {
     /**
      * Record ID set after the object was once stored in the backend.
      */
-    public Serializable rid;
+    private Serializable rid;
 
     /**
      * ID of the {@link GameMap}.
      */
-    public long map = 0;
+    private long map = 0;
 
     /**
      * Sets the X, Y and Z position of a {@link GameMapObject} on the game map.
      */
-    public GameBlockPos pos = new GameBlockPos();
+    private GameBlockPos pos = new GameBlockPos();
 
     /**
      * Knowledge ID.
      */
-    public int kid;
+    private int kid;
 
     /**
      * Knowledge object ID.
      */
-    public int oid;
+    private int oid;
 
     /**
      * Properties of the object.
@@ -104,7 +104,17 @@ public abstract class GameMapObject extends GameObject implements StoredObject {
      * 00000010 00000000 elevated from terrain.
      * </pre>
      */
-    public PropertiesSet p = new PropertiesSet();
+    private PropertiesSet p = new PropertiesSet();
+
+    /**
+     * Temperature.
+     */
+    private int temp;
+
+    /**
+     * Light lux.
+     */
+    private int lux;
 
     public GameMapObject(long id) {
         super(id);
@@ -229,15 +239,19 @@ public abstract class GameMapObject extends GameObject implements StoredObject {
         getPos().writeStream(out);
         out.writeInt(kid);
         out.writeInt(oid);
+        out.writeInt(temp);
+        out.writeInt(lux);
     }
 
     @Override
     public void readStream(DataInput in) throws IOException {
         super.readStream(in);
-        map = in.readLong();
-        getPos().readStream(in);
-        kid = in.readInt();
-        oid = in.readInt();
+        this.map = in.readLong();
+        this.pos.readStream(in);
+        this.kid = in.readInt();
+        this.oid = in.readInt();
+        this.temp = in.readInt();
+        this.lux = in.readInt();
     }
 
 }

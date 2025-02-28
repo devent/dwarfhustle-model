@@ -57,7 +57,13 @@ public class MapBlockBuffer {
     /**
      * Size in bytes. 14 bytes.
      */
-    public static final int SIZE = 4 + 2 + 2 + 2 + 2 + 2;
+    public static final int SIZE = 4 // properties
+            + 2 // parent chunk CID
+            + 2 // material KID
+            + 2 // object KID
+            + 2 // temperature
+            + 2 // light lux
+    ;
 
     private static final int PARENT_BYTE = 2 * 2;
 

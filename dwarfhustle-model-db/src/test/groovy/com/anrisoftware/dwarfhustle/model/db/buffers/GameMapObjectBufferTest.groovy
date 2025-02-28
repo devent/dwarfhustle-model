@@ -42,16 +42,16 @@ class GameMapObjectBufferTest {
         def args = []
         int offset = 0
         def b = ByteBuffer.allocate(offset + GameMapObjectBuffer.SIZE)
-        args << of(b, offset, 1, 2, 3, 4, 10, 20, 30, 0b0001, "01000000 00000000 02000000 03000000 04000000 00000000 0a001400 1e000100 0000")
+        args << of(b, offset, 1, 2, 3, 4, 10, 20, 30, 0b0001, 22, 100, "01000000 00000000 02000000 03000000 04000000 00000000 0a001400 1e000100 00001680 6480")
         offset = 3
         b = ByteBuffer.allocate(offset + GameMapObjectBuffer.SIZE)
-        args << of(b, offset, 1, 2, 3, 4, 10, 20, 30, 0b0001, "000000 01000000 00000000 02000000 03000000 04000000 00000000 0a001400 1e000100 0000")
+        args << of(b, offset, 1, 2, 3, 4, 10, 20, 30, 0b0001, 22, 100, "000000 01000000 00000000 02000000 03000000 04000000 00000000 0a001400 1e000100 00001680 6480")
         Stream.of(args as Object[])
     }
 
     @ParameterizedTest
     @MethodSource()
-    void write_read_gamemapobject(ByteBuffer b, int offset, long id, int kid, int oid, long map, int x, int y, int z, int p, def expected) {
+    void write_read_gamemapobject(ByteBuffer b, int offset, long id, int kid, int oid, long map, int x, int y, int z, int p, int t, int l, def expected) {
         def o = new GameMapObject(id, new GameBlockPos(x, y, z)) {
 
                     @Override
@@ -63,6 +63,8 @@ class GameMapObjectBufferTest {
         o.oid = oid
         o.map = map
         o.p = new PropertiesSet(p)
+        o.temp = t
+        o.lux = l
         GameMapObjectBuffer.writeObject(new UnsafeBuffer(b), offset, o)
         assert HexFormat.of().formatHex(b.array()) == replace(expected, " ", "")
         def thato = new GameMapObject() {
@@ -81,5 +83,7 @@ class GameMapObjectBufferTest {
         assert thato.pos.y == y
         assert thato.pos.z == z
         assert thato.p.bits == p
+        assert thato.temp == t
+        assert thato.lux == l
     }
 }

@@ -17,6 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.buffers;
 
+import static com.anrisoftware.dwarfhustle.model.db.buffers.BufferUtils.int2short;
+import static com.anrisoftware.dwarfhustle.model.db.buffers.BufferUtils.short2int;
+
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
@@ -26,7 +29,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.PropertiesSet;
 
 /**
  * Writes and reads {@link GameMapObject} in a byte buffer.
- * 
+ *
  * <ul>
  * <li>@{code i} the object ID;
  * <li>@{code k} the knowledge ID;
@@ -36,13 +39,15 @@ import com.anrisoftware.dwarfhustle.model.api.objects.PropertiesSet;
  * <li>@{code y} the Y position on the map;
  * <li>@{code z} the Z position on the map;
  * <li>@{code p} the object properties;
+ * <li>@{code t} temperature;
+ * <li>@{code t} light lux;
  * </ul>
- * 
+ *
  * <pre>
  * long  0                   1                   2                   3                   4
- * int   0         1         2         3         4         5         6         7         8
- * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16
- *       iiii iiii iiii iiii kkkk kkkk oooo oooo mmmm mmmm mmmm mmmm xxxx yyyy zzzz pppp pppp
+ * int   0         1         2         3         4         5         6         7         8         9
+ * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18
+ *       iiii iiii iiii iiii kkkk kkkk oooo oooo mmmm mmmm mmmm mmmm xxxx yyyy zzzz pppp pppp tttt llll
  * </pre>
  */
 public class GameMapObjectBuffer {
@@ -55,7 +60,10 @@ public class GameMapObjectBuffer {
             + 4 // o
             + 8 // m
             + GameBlockPosBuffer.SIZE // x/y/z
-            + 4; // properties
+            + 4 // properties
+            + 2 // temperature
+            + 2 // light lux
+    ;
 
     private static final int KID_BYTES = 2 * 4;
 
@@ -66,6 +74,10 @@ public class GameMapObjectBuffer {
     private static final int POS_BYTES = 3 * 8;
 
     private static final int PROPERTIES_BYTES = 15 * 2;
+
+    private static final int TEMP_BYTE = 17 * 2;
+
+    private static final int LUX_BYTE = 18 * 2;
 
     public static void setKid(MutableDirectBuffer b, int off, int kid) {
         b.putInt(KID_BYTES + off, kid);
@@ -131,13 +143,31 @@ public class GameMapObjectBuffer {
         return b.getInt(PROPERTIES_BYTES + off);
     }
 
+    public static void setTemp(MutableDirectBuffer b, int off, int t) {
+        b.putShort(TEMP_BYTE + off, int2short(t));
+    }
+
+    public static int getTemp(DirectBuffer b, int off) {
+        return short2int(b.getShort(TEMP_BYTE + off));
+    }
+
+    public static void setLux(MutableDirectBuffer b, int off, int l) {
+        b.putShort(LUX_BYTE + off, int2short(l));
+    }
+
+    public static int getLux(DirectBuffer b, int off) {
+        return short2int(b.getShort(LUX_BYTE + off));
+    }
+
     public static void writeObject(MutableDirectBuffer b, int off, GameMapObject o) {
         GameObjectBuffer.writeObject(b, off, o);
-        setKid(b, off, o.kid);
-        setOid(b, off, o.oid);
-        setMap(b, off, o.map);
-        setPos(b, off, o.pos);
-        setP(b, off, o.p.bits);
+        setKid(b, off, o.getKid());
+        setOid(b, off, o.getOid());
+        setMap(b, off, o.getMap());
+        setPos(b, off, o.getPos());
+        setP(b, off, o.getP().bits);
+        setTemp(b, off, o.getTemp());
+        setLux(b, off, o.getLux());
     }
 
     public static GameMapObject readObject(DirectBuffer b, int off, GameMapObject o) {
@@ -145,8 +175,10 @@ public class GameMapObjectBuffer {
         o.setKid(getKid(b, off));
         o.setOid(getOid(b, off));
         o.setMap(getMap(b, off));
-        GameBlockPosBuffer.read(b, POS_BYTES + off, o.pos);
+        GameBlockPosBuffer.read(b, POS_BYTES + off, o.getPos());
         o.setP(new PropertiesSet(getP(b, off)));
+        o.setTemp(getTemp(b, off));
+        o.setLux(getLux(b, off));
         return o;
     }
 }
