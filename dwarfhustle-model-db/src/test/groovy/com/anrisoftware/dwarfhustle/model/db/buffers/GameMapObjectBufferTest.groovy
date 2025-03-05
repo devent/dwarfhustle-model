@@ -32,7 +32,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject
 import com.anrisoftware.dwarfhustle.model.api.objects.PropertiesSet
 
 /**
- * @see GameChunkPosBuffer
+ * @see GameMapObjectBuffer
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */

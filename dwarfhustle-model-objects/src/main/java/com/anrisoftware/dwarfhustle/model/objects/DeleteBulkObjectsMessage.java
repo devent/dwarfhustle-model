@@ -1,6 +1,6 @@
 /*
- * dwarfhustle-gamemap-model - Game map.
- * Copyright © 2023 Erwin Müller (erwin.mueller@anrisoftware.com)
+ * dwarfhustle-model-objects - Manages the compile dependencies for the model.
+ * Copyright © 2022-2025 Erwin Müller (erwin.mueller@anrisoftware.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by

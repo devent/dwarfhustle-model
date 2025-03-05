@@ -123,6 +123,8 @@ public class GameMap extends GameObject implements StoredObject {
     /**
      * Record ID set after the object was once stored in the backend.
      */
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     public Serializable rid;
 
     public String name;
@@ -159,32 +161,44 @@ public class GameMap extends GameObject implements StoredObject {
     /**
      * Contains the chunks and block indices that have objects.
      */
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     public MutableMultimap<Integer, Integer> filledChunks;
 
     /**
      * Contains the indices of blocks that have at least one {@link GameMapObject},
      * with the objects count.
      */
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     public IntObjectMap<AtomicInteger> filledBlocks;
 
     /**
      * A list of the selected blocks indices.
      */
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     public MutableIntList selectedBlocks;
 
     /**
      * Sets the OID of the cursor object.
      */
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     public long cursorObject = 0;
 
     /**
      * Cashes the chunk ID for the block index.
      */
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     public IntIntMap cids;
 
     /**
      * Lock to get game map objects.
      */
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private final Semaphore objectsLock;
 
     public GameMap() {

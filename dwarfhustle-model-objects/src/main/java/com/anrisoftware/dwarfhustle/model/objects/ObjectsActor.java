@@ -1,6 +1,6 @@
 /*
- * dwarfhustle-gamemap-model - Game map.
- * Copyright © 2023 Erwin Müller (erwin.mueller@anrisoftware.com)
+ * dwarfhustle-model-objects - Manages the compile dependencies for the model.
+ * Copyright © 2022-2025 Erwin Müller (erwin.mueller@anrisoftware.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -266,7 +266,9 @@ public class ObjectsActor {
      * @see DeleteBulkObjectsMessage
      */
     @SneakyThrows
-    private Behavior<Message> onDeleteBulkObjectsMessage(DeleteBulkObjectsMessage<? super ObjectResponseMessage> m) {
+    private Behavior<Message> onDeleteBulkObjectsMessage(Object om) {
+        @SuppressWarnings("unchecked")
+        val m = (DeleteBulkObjectsMessage<? super ObjectResponseMessage>) om;
         val gm = getGameMap(is.og, m.gm);
         try (var lock = gm.acquireLockMapObjects()) {
             for (var it = m.ids.longIterator(); it.hasNext();) {
@@ -294,7 +296,9 @@ public class ObjectsActor {
      * @see RetrieveObjectsMessage
      */
     @SneakyThrows
-    private Behavior<Message> onRetrieveObjects(RetrieveObjectsMessage<? super ObjectResponseMessage> m) {
+    private Behavior<Message> onRetrieveObjects(Object om) {
+        @SuppressWarnings("unchecked")
+        val m = (RetrieveObjectsMessage<? super ObjectResponseMessage>) om;
         val gm = getGameMap(is.og, m.gm);
         MutableList<GameMapObject> objects = Lists.mutable.empty();
         try (var lock = gm.acquireLockMapObjects()) {

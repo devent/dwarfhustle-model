@@ -42,16 +42,18 @@ class VegetationBufferTest {
         def args = []
         int offset = 0
         def b = ByteBuffer.allocate(offset + VegetationBuffer.SIZE)
-        args << of(b, offset, 1, 2, 3, 10, 20, 30, 0b0001, 0.123f, "01000000 00000000 02000000 00000000 03000000 00000000 0a001400 1e000100 00007d9f")
+        args << of(b, offset, 1, 2, 3, 4, 10, 20, 30, 0b0001, 22, 100, 0.123f, 10, "0100000000000000 02000000 03000000 0400000000000000 0a00 1400 1e00 01000000 1680 6480 6de7fb3d 0a00")
+        b = ByteBuffer.allocate(offset + VegetationBuffer.SIZE)
+        args << of(b, offset, 1, 2, 3, 4, 10, 20, 30, 0b0001, 22, 100, 0.000001f, 10, "0100000000000000 02000000 03000000 0400000000000000 0a00 1400 1e00 01000000 1680 6480 bd378635 0a00")
         offset = 3
         b = ByteBuffer.allocate(offset + VegetationBuffer.SIZE)
-        args << of(b, offset, 1, 2, 3, 10, 20, 30, 0b0001, 0.123f, "000000 01000000 00000000 02000000 00000000 03000000 00000000 0a001400 1e000100 00007d9f")
+        args << of(b, offset, 1, 2, 3, 4, 10, 20, 30, 0b0001, 22, 100, 0.123f, 10, "000000 0100000000000000 02000000 03000000 0400000000000000 0a00 1400 1e00 01000000 1680 6480 6de7fb3d 0a00")
         Stream.of(args as Object[])
     }
 
     @ParameterizedTest
     @MethodSource()
-    void write_read_Vegetation(ByteBuffer b, int offset, long id, long kid, long map, int x, int y, int z, int p, float growth, def expected) {
+    void write_read_Vegetation(ByteBuffer b, int offset, long id, int kid, int oid, long map, int x, int y, int z, int p, int t, int l, float growth, float growthStep, def expected) {
         def o = new Vegetation(id, new GameBlockPos(x, y, z)) {
 
                     @Override
@@ -60,9 +62,13 @@ class VegetationBufferTest {
                     }
                 }
         o.kid = kid
+        o.oid = oid
         o.map = map
         o.growth = growth
+        o.growthStep = growthStep
         o.p = new PropertiesSet(p)
+        o.temp = t
+        o.lux = l
         VegetationBuffer.writeVegetation(new UnsafeBuffer(b), offset, o)
         assert HexFormat.of().formatHex(b.array()) == replace(expected, " ", "")
         def thato = new Vegetation() {
@@ -75,11 +81,15 @@ class VegetationBufferTest {
         VegetationBuffer.readVegetation(new UnsafeBuffer(b), offset, thato)
         assert thato.id == id
         assert thato.kid == kid
+        assert thato.oid == oid
         assert thato.map == map
         assert thato.pos.x == x
         assert thato.pos.y == y
         assert thato.pos.z == z
         assert thato.p.bits == p
+        assert thato.temp == t
+        assert thato.lux == l
         assert thato.growth == growth
+        assert thato.growthStep == growthStep
     }
 }

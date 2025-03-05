@@ -17,8 +17,6 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.buffers;
 
-import static com.anrisoftware.dwarfhustle.model.db.buffers.BufferUtils.shortToFloat;
-
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
@@ -30,13 +28,14 @@ import com.anrisoftware.dwarfhustle.model.api.vegetations.Vegetation;
  * See properties from {@link GameMapObjectBuffer}.
  * <ul>
  * <li>@{code g} the growth;
+ * <li>@{code G} the growth step;
  * </ul>
- * 
+ *
  * <pre>
- * long  0                   1                   2                   3                   4
- * int   0         1         2         3         4         5         6         7         8
- * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17
- *       iiii iiii iiii iiii kkkk kkkk oooo oooo mmmm mmmm mmmm mmmm xxxx yyyy zzzz pppp pppp gggg
+ * long  0                   1                   2                   3                   4                   5
+ * int   0         1         2         3         4         5         6         7         8         9         10
+ * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21
+ *       iiii iiii iiii iiii kkkk kkkk oooo oooo mmmm mmmm mmmm mmmm xxxx yyyy zzzz pppp pppp tttt llll gggg gggg GGGG
  * </pre>
  */
 public class VegetationBuffer {
@@ -44,26 +43,41 @@ public class VegetationBuffer {
     /**
      * Size in bytes.
      */
-    public static final int SIZE = GameMapObjectBuffer.SIZE + 2;
+    public static final int SIZE = GameMapObjectBuffer.SIZE //
+            + 4 // g
+            + 2 // G
+    ;
 
-    private static final int GROWTH_INDEX_BYTES = 17 * 2;
+    private static final int GROWTH_BYTE = 19 * 2;
+
+    private static final int GROWTH_STEP_BYTE = 21 * 2;
 
     public static void setGrowth(MutableDirectBuffer b, int off, float g) {
-        b.putShort(GROWTH_INDEX_BYTES + off, BufferUtils.floatToShort(g));
+        b.putFloat(GROWTH_BYTE + off, g);
     }
 
     public static float getGrowth(DirectBuffer b, int off) {
-        return shortToFloat(b.getShort(GROWTH_INDEX_BYTES + off));
+        return b.getFloat(GROWTH_BYTE + off);
+    }
+
+    public static void setGrowthStep(MutableDirectBuffer b, int off, int g) {
+        b.putShort(GROWTH_STEP_BYTE + off, (short) g);
+    }
+
+    public static int getGrowthStep(DirectBuffer b, int off) {
+        return b.getShort(GROWTH_STEP_BYTE + off);
     }
 
     public static void writeVegetation(MutableDirectBuffer b, int off, Vegetation o) {
         GameMapObjectBuffer.writeObject(b, off, o);
         setGrowth(b, off, o.growth);
+        setGrowthStep(b, off, o.growthStep);
     }
 
     public static Vegetation readVegetation(DirectBuffer b, int off, Vegetation o) {
         GameMapObjectBuffer.readObject(b, off, o);
         o.growth = getGrowth(b, off);
+        o.growthStep = getGrowthStep(b, off);
         return o;
     }
 
