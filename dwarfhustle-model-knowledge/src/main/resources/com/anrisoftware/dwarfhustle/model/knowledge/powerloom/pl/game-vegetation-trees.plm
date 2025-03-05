@@ -8,12 +8,12 @@
 (defmodule "DWARFHUSTLE-VEGETATION-TREES"
   :documentation "Plant with an elongated stem, or trunk, usually supporting branches and leaves."
   :includes ("PL-USER")
-  :uses ("LOGIC" "STELLA" 
+  :uses ("LOGIC" "STELLA"
     "DWARFHUSTLE-GAME-MAP"
     "DWARFHUSTLE-GAME-MAP-OBJECTS"
-    "DWARFHUSTLE-OBJECTS-VEGETATION" 
-    "DWARFHUSTLE-MATERIALS" 
-    "DWARFHUSTLE-MATERIALS-CLAYS" 
+    "DWARFHUSTLE-OBJECTS-VEGETATION"
+    "DWARFHUSTLE-MATERIALS"
+    "DWARFHUSTLE-MATERIALS-CLAYS"
     "DWARFHUSTLE-MATERIALS-TOPSOILS")
   )
 
@@ -46,7 +46,7 @@
 (assert (growing-season Pine Spring))
 (assert (growing-season Pine Summer))
 (assert (growing-season Pine Autumn))
-(assert (= (growing-speed Pine) 0.2739))
+(assert (= (growing-speed Pine) 0.000001))
 (assert (= (growing-min-temp Pine) 10.0))
 (assert (= (growing-max-temp Pine) 50.0))
 (assert (= (growing-opt-temp Pine) 15.0))
@@ -81,7 +81,7 @@
 (assert (Tree-Leaf Birch-Leaf)) :documentation "Betula pendula, silver birch."
 (assert (growing-season Birch Spring))
 (assert (growing-season Birch Summer))
-(assert (= (growing-speed Birch) 0.2739))
+(assert (= (growing-speed Birch) 0.000001))
 (assert (= (growing-min-temp Birch) 10.0))
 (assert (= (growing-max-temp Birch) 50.0))
 (assert (= (growing-opt-temp Birch) 15.0))
