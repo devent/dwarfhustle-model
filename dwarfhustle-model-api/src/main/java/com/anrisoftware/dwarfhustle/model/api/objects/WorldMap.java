@@ -69,8 +69,8 @@ public class WorldMap extends GameObject implements StoredObject {
     public float distanceLon;
 
     /**
-     * The world time at 0° 0′ 0″ N, 0° 0′ 0″ E. Each game map must convert the time
-     * to the specific time zone.
+     * The world time at UTC+00:00. Each game map must convert the time to the
+     * specific time zone.
      */
     public LocalDateTime time = LocalDateTime.now();
 
