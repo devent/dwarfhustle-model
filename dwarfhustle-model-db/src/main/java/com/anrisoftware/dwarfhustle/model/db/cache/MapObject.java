@@ -49,7 +49,7 @@ import lombok.ToString;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @NoArgsConstructor
-@ToString
+@ToString(callSuper = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @Data
 public class MapObject extends GameObject {
@@ -80,29 +80,29 @@ public class MapObject extends GameObject {
     /**
      * The {@link MapChunk#getCid()} CID.
      */
-    public int cid;
+    private int cid;
 
     /**
      * Stores the {@link GameMapObject} IDs to type.
      */
-    public MutableLongIntMap oids = LongIntMaps.mutable.withInitialCapacity(10).asSynchronized();
-
-    /**
-     * Stores the removed {@link GameMapObject} IDs.
-     */
-    public MutableLongIntMap removedOids = LongIntMaps.mutable.withInitialCapacity(10).asSynchronized();
+    private MutableLongIntMap oids = LongIntMaps.mutable.withInitialCapacity(10).asSynchronized();
 
     public MapObject(int index) {
         super(index);
     }
 
-    public MapObject(int index, int type, long oid) {
-        this(index);
+    public MapObject(int index, int cid) {
+        super(index);
+        this.cid = cid;
+    }
+
+    public MapObject(int index, int type, long oid, int cid) {
+        this(index, cid);
         addObject(type, oid);
     }
 
-    public MapObject(GameMap gm, GameMapObject o) {
-        this(calcIndex(gm, o.getPos()), o.getObjectType(), o.getId());
+    public MapObject(GameMap gm, GameMapObject o, int cid) {
+        this(calcIndex(gm, o.getPos()), o.getObjectType(), o.getId(), cid);
     }
 
     /**
@@ -130,7 +130,6 @@ public class MapObject extends GameObject {
             return false;
         } else {
             oids.put(id, type);
-            removedOids.remove(id);
             return true;
         }
     }
@@ -144,9 +143,7 @@ public class MapObject extends GameObject {
      */
     public boolean removeObject(long id) {
         if (oids.containsKey(id)) {
-            final int type = oids.get(id);
             oids.remove(id);
-            removedOids.put(id, type);
             return true;
         }
         return false;
@@ -171,7 +168,6 @@ public class MapObject extends GameObject {
         super.writeStream(out);
         out.writeInt(cid);
         writeStreamLongIntMap(out, oids);
-        writeStreamLongIntMap(out, removedOids);
     }
 
     @Override
@@ -179,7 +175,6 @@ public class MapObject extends GameObject {
         super.readStream(in);
         cid = in.readInt();
         oids = ((MutableLongIntMap) readStreamLongIntMap(in)).asSynchronized();
-        removedOids = ((MutableLongIntMap) readStreamLongIntMap(in)).asSynchronized();
     }
 
 }

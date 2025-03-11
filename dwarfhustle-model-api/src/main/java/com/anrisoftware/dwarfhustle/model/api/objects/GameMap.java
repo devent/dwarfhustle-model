@@ -123,6 +123,8 @@ public class GameMap extends GameObject implements StoredObject {
     /**
      * Record ID set after the object was once stored in the backend.
      */
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     public Serializable rid;
 
     public String name;
@@ -159,33 +161,52 @@ public class GameMap extends GameObject implements StoredObject {
     /**
      * Contains the chunks and block indices that have objects.
      */
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     public MutableMultimap<Integer, Integer> filledChunks;
 
     /**
      * Contains the indices of blocks that have at least one {@link GameMapObject},
      * with the objects count.
      */
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     public IntObjectMap<AtomicInteger> filledBlocks;
 
     /**
      * A list of the selected blocks indices.
      */
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     public MutableIntList selectedBlocks;
 
     /**
      * Sets the OID of the cursor object.
      */
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     public long cursorObject = 0;
 
     /**
      * Cashes the chunk ID for the block index.
      */
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     public IntIntMap cids;
 
     /**
      * Lock to get game map objects.
      */
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private final Semaphore objectsLock;
+
+    /**
+     * Sets the ID of the selected object.
+     */
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    public long selectedObject = 0;
 
     public GameMap() {
         final MutableIntObjectMap<AtomicInteger> filledBlocks = IntObjectMaps.mutable.withInitialCapacity(100);
@@ -349,6 +370,7 @@ public class GameMap extends GameObject implements StoredObject {
         writeStreamIntCollection(out, selectedBlocks.size(), selectedBlocks);
         out.writeLong(this.cursorObject);
         writeStreamIntIntMap(out, cids);
+        out.writeLong(selectedObject);
     }
 
     @SneakyThrows
@@ -388,6 +410,7 @@ public class GameMap extends GameObject implements StoredObject {
         this.selectedBlocks = selectedBlocks.asSynchronized();
         this.cursorObject = in.readLong();
         this.cids = readStreamIntIntMap(in);
+        this.selectedObject = in.readLong();
     }
 
     @SneakyThrows
@@ -435,4 +458,17 @@ public class GameMap extends GameObject implements StoredObject {
         return () -> objectsLock.release();
     }
 
+    /**
+     * Toggle the selected object on the position.
+     */
+    @SneakyThrows
+    public void toggleSelectedObject(GameBlockPos pos) {
+    }
+
+    /**
+     * Clears any selected object.
+     */
+    public void clearSelectedObject() {
+        this.selectedObject = 0;
+    }
 }

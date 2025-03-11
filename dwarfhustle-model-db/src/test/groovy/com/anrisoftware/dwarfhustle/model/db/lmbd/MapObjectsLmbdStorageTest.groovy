@@ -24,6 +24,7 @@ import java.nio.file.Path
 import org.eclipse.collections.api.factory.primitive.LongLists
 import org.eclipse.collections.api.list.primitive.LongList
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
@@ -206,12 +207,14 @@ class MapObjectsLmbdStorageTest {
     }
 
     @Test
+    @Disabled
     void read_objects_test() {
-        int zz = 32
-        int yy = 32
         int xx = 32
-        Path tmp = Path.of("/home/devent/Projects/dwarf-hustle/terrain-maps/game/", "terrain_32_32_32_8", "map-140913948921645")
-        def gm = new GameMap(1, 32, 32, 32)
+        int yy = 32
+        int zz = 32
+        int cc = 8
+        def gm = new GameMap(141463902821922, xx, yy, zz)
+        Path tmp = Path.of("/home/devent/Projects/dwarf-hustle/terrain-maps/game/", "terrain_${xx}_${yy}_${zz}_${cc}", "map-${gm.id}")
         long mapSize = 200 * (long) pow(10, 6);
         def storage = injector.getInstance(MapObjectsLmbdStorageFactory).create(tmp, gm, mapSize)
         def posObjects = []
@@ -224,7 +227,9 @@ class MapObjectsLmbdStorageTest {
             map.y = _y
             map.z = _z
         })
-        println posObjects
         storage.close()
+        posObjects.each {
+            println it
+        }
     }
 }

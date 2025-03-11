@@ -358,6 +358,13 @@ public abstract class AbstractJcsCacheActor implements ObjectsGetter, ObjectsSet
     }
 
     /**
+     * Removes the {@link GameObject} from the backend.
+     */
+    protected void removeValueBackend(int type, GameObject go) {
+        os.remove(type, go);
+    }
+
+    /**
      * Returns the value for the key directly from the cache without sending of
      * messages. Should be used for performance critical code.
      */
@@ -387,8 +394,8 @@ public abstract class AbstractJcsCacheActor implements ObjectsGetter, ObjectsSet
     }
 
     @Override
-    public void remove(int objectType, GameObject go) throws ObjectsSetterException {
-        os.remove(objectType, go);
+    public void remove(int type, GameObject go) throws ObjectsSetterException {
         cache.remove(go.getId());
+        removeValueBackend(type, go);
     }
 }

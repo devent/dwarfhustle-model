@@ -22,8 +22,6 @@ import java.nio.ByteBuffer
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
-import com.anrisoftware.dwarfhustle.model.db.buffers.BufferUtils
-
 /**
  * @see BufferUtils
  *
@@ -73,5 +71,43 @@ class BufferUtilsTest {
         b.asLongBuffer().put(d)
         b.position(offset)
         assert BufferUtils.readLong(b) == d
+    }
+
+    @ParameterizedTest
+    @CsvSource([
+        "0,0.0",
+        "11878,0.099975586",
+        "14336,0.5",
+        "14361,0.51220703",
+        "15155,0.89990234",
+        "15360,1.0",
+        "16384,2.0",
+        "18688,10.0",
+        "19712,20.0",
+        "20352,30.0",
+        "22080,100.0",
+        "22082,100.125",
+    ])
+    void shortToFloat_test(short s, float f) {
+        assert BufferUtils.shortToFloat(s) == f
+    }
+
+    @ParameterizedTest
+    @CsvSource([
+        "0,0.0",
+        "11878,0.1",
+        "14336,0.5",
+        "14361,0.5123456789",
+        "15155,0.9",
+        "15360,1.0",
+        "16384,2.0",
+        "18688,10.0",
+        "19712,20.0",
+        "20352,30.0",
+        "22080,100.0",
+        "22082,100.123467",
+    ])
+    void floatToShort_test(short s, float f) {
+        assert BufferUtils.floatToShort(f) == s
     }
 }

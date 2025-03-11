@@ -266,7 +266,9 @@ public class ObjectsActor {
      * @see DeleteBulkObjectsMessage
      */
     @SneakyThrows
-    private Behavior<Message> onDeleteBulkObjectsMessage(DeleteBulkObjectsMessage<? super ObjectResponseMessage> m) {
+    private Behavior<Message> onDeleteBulkObjectsMessage(Object om) {
+        @SuppressWarnings("unchecked")
+        val m = (DeleteBulkObjectsMessage<? super ObjectResponseMessage>) om;
         val gm = getGameMap(is.og, m.gm);
         try (var lock = gm.acquireLockMapObjects()) {
             for (var it = m.ids.longIterator(); it.hasNext();) {
@@ -294,7 +296,9 @@ public class ObjectsActor {
      * @see RetrieveObjectsMessage
      */
     @SneakyThrows
-    private Behavior<Message> onRetrieveObjects(RetrieveObjectsMessage<? super ObjectResponseMessage> m) {
+    private Behavior<Message> onRetrieveObjects(Object om) {
+        @SuppressWarnings("unchecked")
+        val m = (RetrieveObjectsMessage<? super ObjectResponseMessage>) om;
         val gm = getGameMap(is.og, m.gm);
         MutableList<GameMapObject> objects = Lists.mutable.empty();
         try (var lock = gm.acquireLockMapObjects()) {

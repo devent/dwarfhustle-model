@@ -87,14 +87,14 @@ public class BufferUtils {
      * Converts the short number to a float number.
      */
     public static float shortToFloat(short value) {
-        return (float) trunc((value + 32_768f) / 65_536f, 5);
+        return Float.float16ToFloat(value);
     }
 
     /**
      * Converts the float number to a short number with loss of precision.
      */
     public static short floatToShort(float value) {
-        return (short) (value * 65_536f - 32_768f);
+        return Float.floatToFloat16(value);
     }
 
     /**
