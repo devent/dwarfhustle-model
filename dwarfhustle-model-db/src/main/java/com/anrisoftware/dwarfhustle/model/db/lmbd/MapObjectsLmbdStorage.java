@@ -121,7 +121,6 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage, ObjectsGetter, 
     }
 
     private void putObject(int cid, int index, int type, long id) {
-        System.out.printf("[putObject] %d %d %d %d\n", cid, index, type, id); // TODO
         try (Txn<DirectBuffer> txn = env.txnWrite()) {
             final var key = buffkey.get();
             final var val = buffval.get();
@@ -196,7 +195,6 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage, ObjectsGetter, 
      */
     @Override
     public void putObjects(int cid, int index, int type, LongIterable ids) {
-        System.out.printf("[putObjects] %d %d %d %s\n", cid, index, type, ids); // TODO
         final int max = 8192;
         if (ids instanceof final LongList list) {
             final var pool = ForkJoinPool.commonPool();
@@ -249,7 +247,6 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage, ObjectsGetter, 
                 final int type = MapObjectValue.getType(val, 0);
                 final int cid = MapObjectValue.getCid(val, 0);
                 consumer.accept(cid, type, id, x, y, z);
-                System.out.printf("[getObjects] %d/%d/%d %d %d %d %d\n", x, y, z, index, cid, type, id); // TODO
                 c.next();
             }
         } finally {
@@ -281,8 +278,6 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage, ObjectsGetter, 
                             final int type = MapObjectValue.getType(val, 0);
                             final int cid = MapObjectValue.getCid(val, 0);
                             consumer.accept(cid, type, id, x, y, z);
-                            System.out.printf("[getObjectsRange] %d/%d/%d %d %d %d %d\n", x, y, z, index, cid, type,
-                                    id); // TODO
                             c.next();
                         }
                     }

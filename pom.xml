@@ -25,11 +25,11 @@
     <parent>
         <groupId>com.anrisoftware.dwarfhustle</groupId>
         <artifactId>dwarfhustle-parent</artifactId>
-        <version>0.0.2-SNAPSHOT</version>
+        <version>0.0.2</version>
     </parent>
 
     <artifactId>dwarfhustle-model</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.2</version>
     <packaging>pom</packaging>
     <name>Dwarf Hustle Model</name>
     <description>Manages the compile dependencies for the model.</description>

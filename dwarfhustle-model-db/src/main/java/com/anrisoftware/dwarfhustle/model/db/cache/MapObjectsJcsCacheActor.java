@@ -128,15 +128,11 @@ public class MapObjectsJcsCacheActor extends AbstractJcsCacheActor {
 
     private MutableLongSet objects;
 
-    private MutableLongSet objectsRemove;
-
     @Override
     protected Behavior<Message> initialStage(InitialStateMessage m) {
         log.debug("initialStage {}", m);
         final MutableLongSet objects = LongSets.mutable.withInitialCapacity(100);
         this.objects = objects.asSynchronized();
-        final MutableLongSet objectsRemove = LongSets.mutable.withInitialCapacity(100);
-        this.objectsRemove = objectsRemove.asSynchronized();
         return super.initialStage(m);
     }
 
@@ -161,7 +157,7 @@ public class MapObjectsJcsCacheActor extends AbstractJcsCacheActor {
 
     @Override
     protected void retrieveValueFromBackend(CacheGetMessage<?> m, Consumer<GameObject> consumer) {
-        // consumer.accept(og.get(m.type, m.key));
+        // retrieved on start
     }
 
     @SuppressWarnings("unchecked")

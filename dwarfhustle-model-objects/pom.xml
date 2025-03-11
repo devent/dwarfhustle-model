@@ -22,7 +22,7 @@
   <parent>
     <groupId>com.anrisoftware.dwarfhustle</groupId>
     <artifactId>dwarfhustle-model</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.2</version>
   </parent>
   <artifactId>dwarfhustle-model-objects</artifactId>
 
