@@ -201,6 +201,13 @@ public class GameMap extends GameObject implements StoredObject {
     @ToString.Exclude
     private final Semaphore objectsLock;
 
+    /**
+     * Sets the ID of the selected object.
+     */
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    public long selectedObject = 0;
+
     public GameMap() {
         final MutableIntObjectMap<AtomicInteger> filledBlocks = IntObjectMaps.mutable.withInitialCapacity(100);
         this.filledBlocks = filledBlocks.asSynchronized();
@@ -363,6 +370,7 @@ public class GameMap extends GameObject implements StoredObject {
         writeStreamIntCollection(out, selectedBlocks.size(), selectedBlocks);
         out.writeLong(this.cursorObject);
         writeStreamIntIntMap(out, cids);
+        out.writeLong(selectedObject);
     }
 
     @SneakyThrows
@@ -402,6 +410,7 @@ public class GameMap extends GameObject implements StoredObject {
         this.selectedBlocks = selectedBlocks.asSynchronized();
         this.cursorObject = in.readLong();
         this.cids = readStreamIntIntMap(in);
+        this.selectedObject = in.readLong();
     }
 
     @SneakyThrows
@@ -449,4 +458,17 @@ public class GameMap extends GameObject implements StoredObject {
         return () -> objectsLock.release();
     }
 
+    /**
+     * Toggle the selected object on the position.
+     */
+    @SneakyThrows
+    public void toggleSelectedObject(GameBlockPos pos) {
+    }
+
+    /**
+     * Clears any selected object.
+     */
+    public void clearSelectedObject() {
+        this.selectedObject = 0;
+    }
 }

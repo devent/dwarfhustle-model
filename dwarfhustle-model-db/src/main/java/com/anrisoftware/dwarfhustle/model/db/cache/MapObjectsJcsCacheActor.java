@@ -27,9 +27,14 @@ import java.util.function.Consumer;
 import org.apache.commons.jcs3.JCS;
 import org.apache.commons.jcs3.access.CacheAccess;
 import org.apache.commons.jcs3.access.exception.CacheException;
+import org.eclipse.collections.api.factory.primitive.LongLists;
+import org.eclipse.collections.api.factory.primitive.LongSets;
+import org.eclipse.collections.api.list.primitive.MutableLongList;
+import org.eclipse.collections.api.set.primitive.MutableLongSet;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
+import com.anrisoftware.dwarfhustle.model.actor.ShutdownMessage;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
@@ -41,9 +46,11 @@ import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.BehaviorBuilder;
+import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.StashBuffer;
 import akka.actor.typed.javadsl.TimerScheduler;
 import akka.actor.typed.receptionist.ServiceKey;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -119,9 +126,17 @@ public class MapObjectsJcsCacheActor extends AbstractJcsCacheActor {
         return initCache;
     }
 
+    private MutableLongSet objects;
+
+    private MutableLongSet objectsRemove;
+
     @Override
     protected Behavior<Message> initialStage(InitialStateMessage m) {
         log.debug("initialStage {}", m);
+        final MutableLongSet objects = LongSets.mutable.withInitialCapacity(100);
+        this.objects = objects.asSynchronized();
+        final MutableLongSet objectsRemove = LongSets.mutable.withInitialCapacity(100);
+        this.objectsRemove = objectsRemove.asSynchronized();
         return super.initialStage(m);
     }
 
@@ -132,27 +147,54 @@ public class MapObjectsJcsCacheActor extends AbstractJcsCacheActor {
 
     @Override
     protected void storeValueBackend(GameObject go) {
-        os.set(go.getObjectType(), go);
+        objects.add(go.getId());
     }
 
     @Override
     protected void storeValuesBackend(int type, Iterable<GameObject> values) {
-        os.set(type, values);
+        MutableLongList v = LongLists.mutable.withInitialCapacity(100);
+        for (val go : values) {
+            v.add(go.getId());
+        }
+        objects.addAll(v);
     }
 
     @Override
     protected void retrieveValueFromBackend(CacheGetMessage<?> m, Consumer<GameObject> consumer) {
-        consumer.accept(og.get(m.type, m.key));
+        // consumer.accept(og.get(m.type, m.key));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    protected <T extends GameObject> T getValueFromBackend(int type, long key) {
+        final int index = (int) key;
+        final var mo = new MapObject(index);
+        storeValueBackend(mo);
+        return (T) mo;
     }
 
     @Override
-    protected <T extends GameObject> T getValueFromBackend(int type, long key) {
-        return og.get(type, key);
+    protected void removeValueBackend(int type, GameObject go) {
+        objects.remove(go.getId());
+        os.remove(MapObject.OBJECT_TYPE, go);
+    }
+
+    /**
+     * @see ShutdownMessage
+     */
+    protected Behavior<Message> onShutdown(ShutdownMessage m) {
+        for (final var it = objects.longIterator(); it.hasNext();) {
+            val next = it.next();
+            val go = cache.get(next);
+            os.set(MapObject.OBJECT_TYPE, go);
+        }
+        return Behaviors.stopped();
     }
 
     @Override
     protected BehaviorBuilder<Message> getInitialBehavior() {
         return super.getInitialBehavior()//
+                .onMessage(ShutdownMessage.class, this::onShutdown)//
         ;
     }
 

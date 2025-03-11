@@ -209,11 +209,12 @@ class MapObjectsLmbdStorageTest {
     @Test
     @Disabled
     void read_objects_test() {
-        int zz = 32
-        int yy = 32
         int xx = 32
-        Path tmp = Path.of("/home/devent/Projects/dwarf-hustle/terrain-maps/game/", "terrain_32_32_32_8", "map-141466869377654")
-        def gm = new GameMap(1, 32, 32, 32)
+        int yy = 32
+        int zz = 32
+        int cc = 8
+        def gm = new GameMap(141463902821922, xx, yy, zz)
+        Path tmp = Path.of("/home/devent/Projects/dwarf-hustle/terrain-maps/game/", "terrain_${xx}_${yy}_${zz}_${cc}", "map-${gm.id}")
         long mapSize = 200 * (long) pow(10, 6);
         def storage = injector.getInstance(MapObjectsLmbdStorageFactory).create(tmp, gm, mapSize)
         def posObjects = []
@@ -226,7 +227,9 @@ class MapObjectsLmbdStorageTest {
             map.y = _y
             map.z = _z
         })
-        println posObjects
         storage.close()
+        posObjects.each {
+            println it
+        }
     }
 }

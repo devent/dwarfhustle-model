@@ -179,8 +179,9 @@ public class ImporterMapImage2DbActor {
         var loaded = new DefaultLoadKnowledges();
         loaded.loadKnowledges((timeout, type) -> askKnowledgeObjects(actor.getActorSystem(), timeout, type));
         knowledge.setLoadedKnowledges(loaded);
-        terrainImageCreateMap.create(actor.getObjectGetterAsync(MapChunksJcsCacheActor.ID).toCompletableFuture().get(),
-                actor.getObjectSetterAsync(MapChunksJcsCacheActor.ID).toCompletableFuture().get(), storage, knowledge)
+        terrainImageCreateMap
+                .create(actor.getObjectGetterAsyncNow(MapChunksJcsCacheActor.ID),
+                        actor.getObjectSetterAsyncNow(MapChunksJcsCacheActor.ID), storage, knowledge)
                 .startImportMapping(m.url, m.image, gm);
         MapChunkBuffer.cacheCids(gm, storage);
         createObjects(gm.getId(), gm.getCursor(), gm);
