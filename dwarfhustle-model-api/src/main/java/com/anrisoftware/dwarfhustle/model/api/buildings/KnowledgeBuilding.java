@@ -15,8 +15,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api.map;
+package com.anrisoftware.dwarfhustle.model.api.buildings;
 
+import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectType;
 
@@ -27,7 +28,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Block object.
+ * Building.
  *
  * @see Block
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
@@ -37,29 +38,31 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-public class BlockObject extends ObjectType {
+public class KnowledgeBuilding extends ObjectType {
 
-    public static final int OBJECT_TYPE = BlockObject.class.getSimpleName().hashCode();
+    public static final int OBJECT_TYPE = KnowledgeBuilding.class.getSimpleName().hashCode();
 
-    public static final String TYPE = BlockObject.class.getSimpleName();
+    public static final String TYPE = "Building";
 
-    public BlockObject(int kid) {
+    private GameBlockPos size = new GameBlockPos(1, 1, 1);
+
+    public KnowledgeBuilding(int kid) {
         super(kid);
     }
 
     @Override
     public int getObjectType() {
-        return BlockObject.OBJECT_TYPE;
+        return KnowledgeBuilding.OBJECT_TYPE;
     }
 
     @Override
     public String getKnowledgeType() {
-        return BlockObject.TYPE;
+        return KnowledgeBuilding.TYPE;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public <T extends GameObject> T createObject(byte[] id) {
-        return (T) new Block(id);
+        return (T) new Building(id);
     }
 }

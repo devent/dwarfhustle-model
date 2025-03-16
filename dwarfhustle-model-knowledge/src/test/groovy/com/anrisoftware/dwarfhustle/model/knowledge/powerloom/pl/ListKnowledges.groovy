@@ -35,11 +35,11 @@ import org.junit.jupiter.params.provider.CsvSource
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
 import com.anrisoftware.dwarfhustle.model.actor.DwarfhustleModelActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
+import com.anrisoftware.dwarfhustle.model.api.buildings.KnowledgeBuilding
 import com.anrisoftware.dwarfhustle.model.api.map.BlockObject
 import com.anrisoftware.dwarfhustle.model.api.map.BlockType
 import com.anrisoftware.dwarfhustle.model.api.map.FloorType
 import com.anrisoftware.dwarfhustle.model.api.map.LightType
-import com.anrisoftware.dwarfhustle.model.api.map.ObjectType
 import com.anrisoftware.dwarfhustle.model.api.map.RoofType
 import com.anrisoftware.dwarfhustle.model.api.materials.Clay
 import com.anrisoftware.dwarfhustle.model.api.materials.Gas
@@ -55,6 +55,7 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Stone
 import com.anrisoftware.dwarfhustle.model.api.materials.Topsoil
 import com.anrisoftware.dwarfhustle.model.api.materials.Wood
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectType
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeGrass
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeShrub
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeBranch
@@ -127,6 +128,7 @@ class ListKnowledges {
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Liquid.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockObject.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeBuilding.TYPE))
         while (ko.size() != 89) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
@@ -151,7 +153,8 @@ class ListKnowledges {
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeRoot.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeTrunk.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeTwig.TYPE))
-        while (komap.size() != 6) {
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeBuilding.TYPE))
+        while (komap.size() != 7) {
             log.info("Knowledge objects loaded {}", komap.size())
             Thread.sleep(500)
         }

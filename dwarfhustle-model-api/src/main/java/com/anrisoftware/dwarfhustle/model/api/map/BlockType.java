@@ -18,6 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.api.map;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectType;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

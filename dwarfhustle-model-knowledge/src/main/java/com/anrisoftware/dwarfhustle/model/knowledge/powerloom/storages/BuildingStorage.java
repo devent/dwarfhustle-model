@@ -17,34 +17,50 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
-import com.anrisoftware.dwarfhustle.model.api.objects.ObjectType;
+import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.PowerLoomUtils.retrieveInt;
 
-import edu.isi.powerloom.logic.LogicObject;
+import com.anrisoftware.dwarfhustle.model.api.buildings.KnowledgeBuilding;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
+import com.google.auto.service.AutoService;
 
 /**
  *
- * @see ObjectType
+ *
+ * @see KnowledgeBuilding
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-public abstract class AbstractObjectTypeStorage implements GameObjectKnowledge {
+@AutoService(GameObjectKnowledge.class)
+public class BuildingStorage extends AbstractObjectTypeStorage {
 
     @Override
     public String getType() {
-        return ObjectType.TYPE;
+        return KnowledgeBuilding.TYPE;
     }
 
     @Override
     public KnowledgeObject retrieve(Object o, KnowledgeObject go) {
-        var next = (LogicObject) o;
-        var ko = (ObjectType) go;
-        ko.setKid(next.surrogateValueInverse.symbolId);
-        ko.setName(next.surrogateValueInverse.symbolName);
-        return ko;
+        super.retrieve(o, go);
+        var m = (KnowledgeBuilding) go;
+        retrieveProperties(m, m.getName());
+        return go;
     }
 
     @Override
     public KnowledgeObject overrideProperties(String parent, KnowledgeObject go) {
+        super.overrideProperties(parent, go);
+        var m = (KnowledgeBuilding) go;
+        retrieveProperties(m, parent);
         return go;
+    }
+
+    private void retrieveProperties(KnowledgeBuilding m, String name) {
+        m.setSize(new GameBlockPos(retrieveInt("object-width", name), retrieveInt("object-height", name),
+                retrieveInt("object-depth", name)));
+    }
+
+    @Override
+    public KnowledgeObject create() {
+        return new KnowledgeBuilding();
     }
 }

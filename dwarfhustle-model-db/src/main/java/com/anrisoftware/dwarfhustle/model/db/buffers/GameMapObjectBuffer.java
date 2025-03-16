@@ -38,16 +38,19 @@ import com.anrisoftware.dwarfhustle.model.api.objects.PropertiesSet;
  * <li>@{code x} the X position on the map;
  * <li>@{code y} the Y position on the map;
  * <li>@{code z} the Z position on the map;
+ * <li>@{code w} the width;
+ * <li>@{code h} the height;
+ * <li>@{code d} the depth;
  * <li>@{code p} the object properties;
  * <li>@{code t} temperature;
  * <li>@{code t} light lux;
  * </ul>
  *
  * <pre>
- * long  0                   1                   2                   3                   4
- * int   0         1         2         3         4         5         6         7         8         9
- * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18
- *       iiii iiii iiii iiii kkkk kkkk oooo oooo mmmm mmmm mmmm mmmm xxxx yyyy zzzz pppp pppp tttt llll
+ * long  0                   1                   2                   3                   4                   5
+ * int   0         1         2         3         4         5         6         7         8         9         10
+ * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21
+ *       iiii iiii iiii iiii kkkk kkkk oooo oooo mmmm mmmm mmmm mmmm xxxx yyyy zzzz tttt wwww hhhh dddd llll pppp pppp
  * </pre>
  */
 public class GameMapObjectBuffer {
@@ -60,6 +63,7 @@ public class GameMapObjectBuffer {
             + 4 // o
             + 8 // m
             + GameBlockPosBuffer.SIZE // x/y/z
+            + GameBlockPosBuffer.SIZE // w/h/d
             + 4 // properties
             + 2 // temperature
             + 2 // light lux
@@ -73,11 +77,13 @@ public class GameMapObjectBuffer {
 
     private static final int POS_BYTES = 3 * 8;
 
-    private static final int PROPERTIES_BYTES = 15 * 2;
+    private static final int SIZE_BYTES = 4 * 8;
 
-    private static final int TEMP_BYTE = 17 * 2;
+    private static final int PROPERTIES_BYTES = 5 * 8;
 
-    private static final int LUX_BYTE = 18 * 2;
+    private static final int TEMP_BYTE = 15 * 2;
+
+    private static final int LUX_BYTE = 19 * 2;
 
     public static void setKid(MutableDirectBuffer b, int off, int kid) {
         b.putInt(KID_BYTES + off, kid);
@@ -135,6 +141,14 @@ public class GameMapObjectBuffer {
         return GameBlockPosBuffer.read(b, POS_BYTES + off);
     }
 
+    public static void setSize(MutableDirectBuffer b, int off, GameBlockPos pos) {
+        GameBlockPosBuffer.write(b, SIZE_BYTES + off, pos);
+    }
+
+    public static GameBlockPos getSize(DirectBuffer b, int off) {
+        return GameBlockPosBuffer.read(b, SIZE_BYTES + off);
+    }
+
     public static void setP(MutableDirectBuffer b, int off, int p) {
         b.putInt(PROPERTIES_BYTES + off, p);
     }
@@ -165,6 +179,7 @@ public class GameMapObjectBuffer {
         setOid(b, off, o.getOid());
         setMap(b, off, o.getMap());
         setPos(b, off, o.getPos());
+        setSize(b, off, o.getSize());
         setP(b, off, o.getP().bits);
         setTemp(b, off, o.getTemp());
         setLux(b, off, o.getLux());
@@ -176,6 +191,7 @@ public class GameMapObjectBuffer {
         o.setOid(getOid(b, off));
         o.setMap(getMap(b, off));
         GameBlockPosBuffer.read(b, POS_BYTES + off, o.getPos());
+        GameBlockPosBuffer.read(b, SIZE_BYTES + off, o.getSize());
         o.setP(new PropertiesSet(getP(b, off)));
         o.setTemp(getTemp(b, off));
         o.setLux(getLux(b, off));

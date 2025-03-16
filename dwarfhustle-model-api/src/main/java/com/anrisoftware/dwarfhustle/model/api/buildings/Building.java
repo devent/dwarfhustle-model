@@ -15,43 +15,46 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api.map;
+package com.anrisoftware.dwarfhustle.model.api.buildings;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
 
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Object type.
- *
- * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+ * Building.
  */
 @NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-@Getter
-@Setter
-public abstract class ObjectType extends KnowledgeObject {
+@Data
+public class Building extends GameMapObject {
 
-    public static final int OBJECT_TYPE = ObjectType.class.getSimpleName().hashCode();
+    public static final int OBJECT_TYPE = "Building".hashCode();
 
-    public static final String TYPE = "ObjectType";
+    public Building(long id) {
+        super(id);
+    }
 
-    public ObjectType(int kid) {
-        super(kid);
+    public Building(byte[] idbuf) {
+        super(idbuf);
+    }
+
+    public Building(long id, GameBlockPos pos) {
+        super(id, pos);
+    }
+
+    public Building(byte[] idbuf, GameBlockPos pos) {
+        super(idbuf, pos);
     }
 
     @Override
     public int getObjectType() {
-        return ObjectType.OBJECT_TYPE;
+        return OBJECT_TYPE;
     }
 
-    @Override
-    public String getKnowledgeType() {
-        return ObjectType.TYPE;
-    }
 }

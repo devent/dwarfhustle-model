@@ -107,6 +107,11 @@ public abstract class GameMapObject extends GameObject implements StoredObject {
     private PropertiesSet p = new PropertiesSet();
 
     /**
+     * Sets the X width, Y height and Z depth of the object.
+     */
+    private GameBlockPos size = new GameBlockPos(1, 1, 1);
+
+    /**
      * Temperature.
      */
     private int temp;

@@ -19,7 +19,7 @@ package com.anrisoftware.dwarfhustle.model.api.vegetations;
 
 import org.eclipse.collections.api.set.primitive.IntSet;
 
-import com.anrisoftware.dwarfhustle.model.api.map.ObjectType;
+import com.anrisoftware.dwarfhustle.model.api.objects.ObjectType;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

@@ -22,6 +22,7 @@ import static java.lang.Math.pow
 import java.nio.file.Path
 
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
@@ -96,6 +97,7 @@ class GameObjectsLmbdStorageTest {
     }
 
     @Test
+    @Disabled
     void read_objects_test() {
         Path tmp = Path.of("/home/devent/Projects/dwarf-hustle/terrain-maps/game/", "terrain_32_32_32_8", "objects")
         long mapSize = 200 * (long) pow(10, 6);

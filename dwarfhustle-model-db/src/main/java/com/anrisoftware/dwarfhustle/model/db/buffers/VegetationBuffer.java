@@ -32,10 +32,10 @@ import com.anrisoftware.dwarfhustle.model.api.vegetations.Vegetation;
  * </ul>
  *
  * <pre>
- * long  0                   1                   2                   3                   4                   5
- * int   0         1         2         3         4         5         6         7         8         9         10
- * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21
- *       iiii iiii iiii iiii kkkk kkkk oooo oooo mmmm mmmm mmmm mmmm xxxx yyyy zzzz pppp pppp tttt llll gggg gggg GGGG
+ * long  0                   1                   2                   3                   4                   5                   6
+ * int   0         1         2         3         4         5         6         7         8         9         10        11        12
+ * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21   22   23   24
+ *       iiii iiii iiii iiii kkkk kkkk oooo oooo mmmm mmmm mmmm mmmm xxxx yyyy zzzz tttt wwww hhhh dddd llll pppp pppp gggg gggg GGGG
  * </pre>
  */
 public class VegetationBuffer {
@@ -48,9 +48,9 @@ public class VegetationBuffer {
             + 2 // G
     ;
 
-    private static final int GROWTH_BYTE = 19 * 2;
+    private static final int GROWTH_BYTE = 22 * 2;
 
-    private static final int GROWTH_STEP_BYTE = 21 * 2;
+    private static final int GROWTH_STEP_BYTE = 24 * 2;
 
     public static void setGrowth(MutableDirectBuffer b, int off, float g) {
         b.putFloat(GROWTH_BYTE + off, g);

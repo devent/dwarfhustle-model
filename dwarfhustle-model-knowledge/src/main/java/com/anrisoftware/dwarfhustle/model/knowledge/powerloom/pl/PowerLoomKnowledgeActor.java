@@ -115,6 +115,7 @@ public class PowerLoomKnowledgeActor implements KnowledgeGetter {
         resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("game-vegetation-grasses.plm"));
         resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("game-vegetation-shrubs.plm"));
         resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("game-vegetation-trees.plm"));
+        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("game-buildings.plm"));
         resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("working.plm"));
         PLI.initialize();
         for (InputStream res : resources) {

@@ -42,16 +42,16 @@ class GameMapObjectBufferTest {
         def args = []
         int offset = 0
         def b = ByteBuffer.allocate(offset + GameMapObjectBuffer.SIZE)
-        args << of(b, offset, 1, 2, 3, 4, 10, 20, 30, 0b0001, 22, 100, "01000000 00000000 02000000 03000000 04000000 00000000 0a001400 1e000100 00001680 6480")
+        args << of(b, offset, 1, 2, 3, 4, 10, 20, 30, 1, 1, 1, 0b0001, 22, 100, "0100 0000 0000 0000 0200 0000 0300 0000 0400 0000 0000 0000 0a00 1400 1e00 1680 0100 0100 0100 6480 0100 0000")
         offset = 3
         b = ByteBuffer.allocate(offset + GameMapObjectBuffer.SIZE)
-        args << of(b, offset, 1, 2, 3, 4, 10, 20, 30, 0b0001, 22, 100, "000000 01000000 00000000 02000000 03000000 04000000 00000000 0a001400 1e000100 00001680 6480")
+        args << of(b, offset, 1, 2, 3, 4, 10, 20, 30, 1, 1, 1, 0b0001, 22, 100, "000000 0100 0000 0000 0000 0200 0000 0300 0000 0400 0000 0000 0000 0a00 1400 1e00 1680 0100 0100 0100 6480 0100 0000")
         Stream.of(args as Object[])
     }
 
     @ParameterizedTest
     @MethodSource()
-    void write_read_gamemapobject(ByteBuffer b, int offset, long id, int kid, int oid, long map, int x, int y, int z, int p, int t, int l, def expected) {
+    void write_read_gamemapobject(ByteBuffer b, int offset, long id, int kid, int oid, long map, int x, int y, int z, int w, int h, int d, int p, int t, int l, def expected) {
         def o = new GameMapObject(id, new GameBlockPos(x, y, z)) {
 
                     @Override
@@ -59,6 +59,9 @@ class GameMapObjectBufferTest {
                         return 0;
                     }
                 }
+        o.size.x = w
+        o.size.y = h
+        o.size.z = d
         o.kid = kid
         o.oid = oid
         o.map = map
@@ -82,6 +85,9 @@ class GameMapObjectBufferTest {
         assert thato.pos.x == x
         assert thato.pos.y == y
         assert thato.pos.z == z
+        assert thato.size.x == w
+        assert thato.size.y == h
+        assert thato.size.z == d
         assert thato.p.bits == p
         assert thato.temp == t
         assert thato.lux == l

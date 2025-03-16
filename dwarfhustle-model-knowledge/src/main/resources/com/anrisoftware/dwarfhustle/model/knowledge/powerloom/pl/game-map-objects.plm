@@ -23,8 +23,24 @@
 (defconcept BlockObject (?t ObjectType)
   :documentation "Object type.")
 
+(defconcept Building (?t ObjectType)
+  :documentation "Building.")
+
 (defrelation object-properties (?a ?b ?c))
   :documentation "Load object properties for the child type a from the parent type b."
+
+(deffunction object-width ((?o ObjectType)) :-> (?result INTEGER))
+  :documentation "Returns the width of the object."
+
+(deffunction object-height ((?o ObjectType)) :-> (?result INTEGER))
+  :documentation "Returns the height of the object."
+
+(deffunction object-depth ((?o ObjectType)) :-> (?result INTEGER))
+  :documentation "Returns the depth of the object."
+
+(assert (= (object-width BlockObject) 1))
+(assert (= (object-height BlockObject) 1))
+(assert (= (object-depth BlockObject) 1))
 
 (assert (BlockObject block-normal)) :documentation "Not mined out block block."
 (assert (BlockObject block-water)) :documentation "Water block."

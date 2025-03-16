@@ -15,10 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api.map;
-
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
-import com.anrisoftware.dwarfhustle.model.api.objects.ObjectType;
+package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -27,9 +24,8 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Block object.
+ * Object type.
  *
- * @see Block
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @NoArgsConstructor
@@ -37,29 +33,23 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-public class BlockObject extends ObjectType {
+public abstract class ObjectType extends KnowledgeObject {
 
-    public static final int OBJECT_TYPE = BlockObject.class.getSimpleName().hashCode();
+    public static final int OBJECT_TYPE = ObjectType.class.getSimpleName().hashCode();
 
-    public static final String TYPE = BlockObject.class.getSimpleName();
+    public static final String TYPE = "ObjectType";
 
-    public BlockObject(int kid) {
+    public ObjectType(int kid) {
         super(kid);
     }
 
     @Override
     public int getObjectType() {
-        return BlockObject.OBJECT_TYPE;
+        return ObjectType.OBJECT_TYPE;
     }
 
     @Override
     public String getKnowledgeType() {
-        return BlockObject.TYPE;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T extends GameObject> T createObject(byte[] id) {
-        return (T) new Block(id);
+        return ObjectType.TYPE;
     }
 }
