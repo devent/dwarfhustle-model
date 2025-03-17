@@ -21,16 +21,16 @@ import static com.anrisoftware.dwarfhustle.model.actor.CreateActorMessage.create
 import static edu.isi.stella.InputStringStream.newInputStringStream;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.exception.ContextedException;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.primitive.IntObjectMap;
 import org.eclipse.collections.impl.factory.Lists;
@@ -93,36 +93,41 @@ public class PowerLoomKnowledgeActor implements KnowledgeGetter {
     /**
      * Initialize the {@link PLI} and loads all {@code *.plm} files.
      */
-    public static void loadPowerLoom() {
-        var resources = new ArrayList<InputStream>();
-        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials.plm"));
-        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-sedimentary-stones.plm"));
-        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-igneous-intrusive-stones.plm"));
-        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-igneous-extrusive-stones.plm"));
-        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-metamorphic-stones.plm"));
-        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-metals.plm"));
-        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-metals-ores.plm"));
-        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-metals-alloys.plm"));
-        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-clays.plm"));
-        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-sands.plm"));
-        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-seabeds.plm"));
-        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-topsoils.plm"));
-        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-gases.plm"));
-        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("materials-liquids.plm"));
-        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("game-map.plm"));
-        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("game-map-objects.plm"));
-        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("game-map-objects-vegetation.plm"));
-        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("game-vegetation-grasses.plm"));
-        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("game-vegetation-shrubs.plm"));
-        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("game-vegetation-trees.plm"));
-        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("game-buildings.plm"));
-        resources.add(PowerLoomKnowledgeActor.class.getResourceAsStream("working.plm"));
+    public static void loadPowerLoom() throws ContextedException {
+        var resources = new HashMap<String, InputStream>();
+        resources.put("materials.plm", null);
+        resources.put("materials-sedimentary-stones.plm", null);
+        resources.put("materials-igneous-intrusive-stones.plm", null);
+        resources.put("materials-igneous-extrusive-stones.plm", null);
+        resources.put("materials-metamorphic-stones.plm", null);
+        resources.put("materials-metals.plm", null);
+        resources.put("materials-metals-ores.plm", null);
+        resources.put("materials-metals-alloys.plm", null);
+        resources.put("materials-clays.plm", null);
+        resources.put("materials-sands.plm", null);
+        resources.put("materials-seabeds.plm", null);
+        resources.put("materials-topsoils.plm", null);
+        resources.put("materials-gases.plm", null);
+        resources.put("materials-liquids.plm", null);
+        resources.put("materials-other.plm", null);
+        resources.put("game-map.plm", null);
+        resources.put("game-map-objects.plm", null);
+        // resources.put("game-concepts.plm", null);
+        resources.put("game-map-objects-vegetation.plm", null);
+        resources.put("game-vegetation-grasses.plm", null);
+        resources.put("game-vegetation-shrubs.plm", null);
+        resources.put("game-vegetation-trees.plm", null);
+        resources.put("game-buildings.plm", null);
+        resources.put("working.plm", null);
+        for (var name : resources.keySet()) {
+            resources.put(name, PowerLoomKnowledgeActor.class.getResourceAsStream(name));
+        }
         PLI.initialize();
-        for (InputStream res : resources) {
+        for (var entry : resources.entrySet()) {
             try {
-                PLI.loadStream(newInputStringStream(IOUtils.toString(res, UTF_8)), null);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+                PLI.loadStream(newInputStringStream(IOUtils.toString(entry.getValue(), UTF_8)), null);
+            } catch (Exception e) {
+                throw new ContextedException("PLI.loadStream", e).addContextValue("resource", entry.getKey());
             }
         }
     }
@@ -191,7 +196,12 @@ public class PowerLoomKnowledgeActor implements KnowledgeGetter {
 
     private static CompletionStage<Boolean> loadKnowledgeBase0(Injector injector) {
         return CompletableFuture.supplyAsync(() -> {
-            loadPowerLoom();
+            try {
+                loadPowerLoom();
+            } catch (Exception e) {
+                log.error("loadPowerLoom", e);
+                return false;
+            }
             return true;
         });
     }
