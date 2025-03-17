@@ -1,0 +1,34 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Author: Erwin Mueller
+;;; Version: game-map.plm,v 1.0
+
+;;; Using Modules
+
+(defmodule "DWARFHUSTLE-GAME-CONCEPTS"
+  :documentation "Defines job orders and other concepts."
+  :includes ("PL-USER")
+  :uses ("LOGIC" "STELLA"
+    "DWARFHUSTLE-GAME-MAP-OBJECTS"
+    "DWARFHUSTLE-MATERIALS")
+  )
+
+(in-module "DWARFHUSTLE-GAME-CONCEPTS")
+
+;; clear any info from previous runs:
+(clear-module "DWARFHUSTLE-GAME-CONCEPTS")
+(reset-features)
+
+(defconcept work-job (?name))
+
+(defrelation work-building ((?w work-job) (?b Building)))
+
+(defrelation work-input-material ((?w work-job) (?m Material)))
+
+(defrelation work-output-material ((?w work-job) (?m Material)))
+
+(defrelation work-input-units ((?w work-job) (?m Material) (?n INTEGER)))
+
+(defrelation work-output-units ((?w work-job) (?m Material) (?n INTEGER)))
+
+(deffunction work-duration ((?w work-job)) :-> (?hours INTEGER))

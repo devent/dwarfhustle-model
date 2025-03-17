@@ -1,0 +1,27 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Author: Erwin Mueller
+;;; Version: materials-other.plm,v 0.1.0
+;;; Descriptions used from https://en.wikipedia.org/
+;;; Specific heat capacity taken from http://www.endmemo.com/chem/specificheatsearch.php
+;;; Properties taken from https://www.chemicalbook.com/
+;;; Properties taken from https://www.periodic-table.org/
+
+;;; Using Modules
+
+(defmodule "DWARFHUSTLE-MATERIALS-OTHER"
+  :documentation "Defines other materials."
+  :includes ("PL-USER")
+  :uses ("LOGIC" "STELLA" "DWARFHUSTLE-MATERIALS")
+  )
+
+(in-module "DWARFHUSTLE-MATERIALS-OTHER")
+
+;; clear any info from previous runs:
+(clear-module "DWARFHUSTLE-MATERIALS-OTHER")
+(reset-features)
+
+(defconcept Salt (?material Material)) :documentation "Salt material."
+(assert (= (melting-point-material Salt) 800.70))
+
+(assert (Salt Salt-Lump)) :documentation "Salt lump."

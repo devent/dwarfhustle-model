@@ -23,7 +23,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.InputStream;
 import java.time.Duration;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -33,7 +33,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.exception.ContextedException;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.primitive.IntObjectMap;
+import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.lable.oss.uniqueid.GeneratorException;
 import org.lable.oss.uniqueid.IDGenerator;
 
@@ -94,40 +96,41 @@ public class PowerLoomKnowledgeActor implements KnowledgeGetter {
      * Initialize the {@link PLI} and loads all {@code *.plm} files.
      */
     public static void loadPowerLoom() throws ContextedException {
-        var resources = new HashMap<String, InputStream>();
-        resources.put("materials.plm", null);
-        resources.put("materials-sedimentary-stones.plm", null);
-        resources.put("materials-igneous-intrusive-stones.plm", null);
-        resources.put("materials-igneous-extrusive-stones.plm", null);
-        resources.put("materials-metamorphic-stones.plm", null);
-        resources.put("materials-metals.plm", null);
-        resources.put("materials-metals-ores.plm", null);
-        resources.put("materials-metals-alloys.plm", null);
-        resources.put("materials-clays.plm", null);
-        resources.put("materials-sands.plm", null);
-        resources.put("materials-seabeds.plm", null);
-        resources.put("materials-topsoils.plm", null);
-        resources.put("materials-gases.plm", null);
-        resources.put("materials-liquids.plm", null);
-        resources.put("materials-other.plm", null);
-        resources.put("game-map.plm", null);
-        resources.put("game-map-objects.plm", null);
-        // resources.put("game-concepts.plm", null);
-        resources.put("game-map-objects-vegetation.plm", null);
-        resources.put("game-vegetation-grasses.plm", null);
-        resources.put("game-vegetation-shrubs.plm", null);
-        resources.put("game-vegetation-trees.plm", null);
-        resources.put("game-buildings.plm", null);
-        resources.put("working.plm", null);
-        for (var name : resources.keySet()) {
-            resources.put(name, PowerLoomKnowledgeActor.class.getResourceAsStream(name));
+        var resources = new ArrayList<Pair<String, InputStream>>();
+        var names = new ArrayList<String>();
+        names.add("materials.plm");
+        names.add("materials-sedimentary-stones.plm");
+        names.add("materials-igneous-intrusive-stones.plm");
+        names.add("materials-igneous-extrusive-stones.plm");
+        names.add("materials-metamorphic-stones.plm");
+        names.add("materials-metals.plm");
+        names.add("materials-metals-ores.plm");
+        names.add("materials-metals-alloys.plm");
+        names.add("materials-clays.plm");
+        names.add("materials-sands.plm");
+        names.add("materials-seabeds.plm");
+        names.add("materials-topsoils.plm");
+        names.add("materials-gases.plm");
+        names.add("materials-liquids.plm");
+        names.add("materials-other.plm");
+        names.add("game-map.plm");
+        names.add("game-map-objects.plm");
+        names.add("game-concepts.plm");
+        names.add("game-map-objects-vegetation.plm");
+        names.add("game-vegetation-grasses.plm");
+        names.add("game-vegetation-shrubs.plm");
+        names.add("game-vegetation-trees.plm");
+        names.add("game-buildings.plm");
+        names.add("working.plm");
+        for (var name : names) {
+            resources.add(Tuples.pair(name, PowerLoomKnowledgeActor.class.getResourceAsStream(name)));
         }
         PLI.initialize();
-        for (var entry : resources.entrySet()) {
+        for (var entry : resources) {
             try {
-                PLI.loadStream(newInputStringStream(IOUtils.toString(entry.getValue(), UTF_8)), null);
+                PLI.loadStream(newInputStringStream(IOUtils.toString(entry.getTwo(), UTF_8)), null);
             } catch (Exception e) {
-                throw new ContextedException("PLI.loadStream", e).addContextValue("resource", entry.getKey());
+                throw new ContextedException("PLI.loadStream", e).addContextValue("resource", entry.getOne());
             }
         }
     }

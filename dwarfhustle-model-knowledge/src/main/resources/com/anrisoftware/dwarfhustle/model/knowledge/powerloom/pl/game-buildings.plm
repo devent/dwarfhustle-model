@@ -8,7 +8,7 @@
 (defmodule "DWARFHUSTLE-OBJECTS-BUILDING"
   :documentation "Defines buildings."
   :includes ("PL-USER")
-  :uses ("LOGIC" "STELLA" "DWARFHUSTLE-GAME-MAP-OBJECTS")
+  :uses ("LOGIC" "STELLA" "DWARFHUSTLE-GAME-MAP-OBJECTS" "DWARFHUSTLE-GAME-CONCEPTS")
   )
 
 (in-module "DWARFHUSTLE-OBJECTS-BUILDING")
@@ -21,6 +21,22 @@
 (assert (= (object-width building-salt-works) 3))
 (assert (= (object-height building-salt-works) 3))
 (assert (= (object-depth building-salt-works) 1))
+;;
+(assert (work-job job-saltmaking-seawater))
+(assert (work-building job-saltmaking-seawater building-salt-works))
+(assert (work-input-material job-saltmaking-seawater DWARFHUSTLE-MATERIALS-LIQUIDS/Sea-Water))
+(assert (work-output-material job-saltmaking-seawater DWARFHUSTLE-MATERIALS-OTHER/Salt-Lump))
+(assert (work-input-units job-saltmaking-seawater DWARFHUSTLE-MATERIALS-LIQUIDS/Sea-Water 1))
+(assert (work-output-units job-saltmaking-seawater DWARFHUSTLE-MATERIALS-OTHER/Salt-Lump 3))
+(assert (= (work-duration job-saltmaking-seawater) 3))
+;;
+(assert (work-job job-saltmaking-brine))
+(assert (work-building job-saltmaking-brine building-salt-works))
+(assert (work-input-material job-saltmaking-brine DWARFHUSTLE-MATERIALS-LIQUIDS/Brine))
+(assert (work-output-material job-saltmaking-brine DWARFHUSTLE-MATERIALS-OTHER/Salt-Lump))
+(assert (work-input-units job-saltmaking-brine DWARFHUSTLE-MATERIALS-LIQUIDS/Brine 1))
+(assert (work-output-units job-saltmaking-brine DWARFHUSTLE-MATERIALS-OTHER/Salt-Lump 3))
+(assert (= (work-duration job-saltmaking-brine) 3))
 
 (assert (Building building-apothecary)) :documentation "Workshop for medical professional who formulates and dispenses materia medica (medicine) to physicians, surgeons and patients."
 (assert (= (object-width building-apothecary) 3))

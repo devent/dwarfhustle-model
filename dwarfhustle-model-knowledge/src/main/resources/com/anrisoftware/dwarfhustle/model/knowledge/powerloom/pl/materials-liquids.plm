@@ -26,7 +26,23 @@
 (assert (= (DWARFHUSTLE-MATERIALS/density-of-material Water) 2.25 ))
 (assert (= (DWARFHUSTLE-MATERIALS/specific-heat-capacity-of-material Water) 0.999))
 (assert (= (DWARFHUSTLE-MATERIALS/thermal-conductivity-of-material Water) 0.6065))
-(assert (DWARFHUSTLE-MATERIALS/material-color Magma "blue"))
+(assert (DWARFHUSTLE-MATERIALS/material-color Water "blue"))
+
+(assert (Liquid Sea-Water)) :documentation "Seawater with salt concentration of 3.5%."
+(assert (= (melting-point-material Sea-Water) 0.00))
+(assert (= (boiling-point-material Sea-Water) 99.98))
+(assert (= (density-of-material Sea-Water) 2.25 ))
+(assert (= (specific-heat-capacity-of-material Sea-Water) 0.999))
+(assert (= (thermal-conductivity-of-material Sea-Water) 0.6065))
+(assert (material-color Sea-Water "blue"))
+
+(assert (Liquid Brine)) :documentation "Water with salt concentration of 26%."
+(assert (= (melting-point-material Brine) 0.00))
+(assert (= (boiling-point-material Brine) 99.98))
+(assert (= (density-of-material Brine) 2.25 ))
+(assert (= (specific-heat-capacity-of-material Brine) 0.999))
+(assert (= (thermal-conductivity-of-material Brine) 0.6065))
+(assert (material-color Brine "white"))
 
 (assert (DWARFHUSTLE-MATERIALS/Liquid Magma)) :documentation "Magma (from Ancient Greek μάγμα (mágma) 'thick unguent')[1] is the molten or semi-molten natural material from which all igneous rocks are formed."
 (assert (= (DWARFHUSTLE-MATERIALS/melting-point-material Magma) 2300.00))

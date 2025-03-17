@@ -129,7 +129,7 @@ class ListKnowledges {
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockObject.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeBuilding.TYPE))
-        while (ko.size() != 89) {
+        while (ko.size() != 130) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
         }
