@@ -206,7 +206,14 @@ public class GameMap extends GameObject implements StoredObject {
      */
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    public long selectedObject = 0;
+    public long selectedObjectId = 0;
+
+    /**
+     * Sets the type of the selected object.
+     */
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    public int selectedObjectType = 0;
 
     public GameMap() {
         final MutableIntObjectMap<AtomicInteger> filledBlocks = IntObjectMaps.mutable.withInitialCapacity(100);
@@ -370,7 +377,8 @@ public class GameMap extends GameObject implements StoredObject {
         writeStreamIntCollection(out, selectedBlocks.size(), selectedBlocks);
         out.writeLong(this.cursorObject);
         writeStreamIntIntMap(out, cids);
-        out.writeLong(selectedObject);
+        out.writeInt(selectedObjectType);
+        out.writeLong(selectedObjectId);
     }
 
     @SneakyThrows
@@ -410,7 +418,8 @@ public class GameMap extends GameObject implements StoredObject {
         this.selectedBlocks = selectedBlocks.asSynchronized();
         this.cursorObject = in.readLong();
         this.cids = readStreamIntIntMap(in);
-        this.selectedObject = in.readLong();
+        this.selectedObjectType = in.readInt();
+        this.selectedObjectId = in.readLong();
     }
 
     @SneakyThrows
@@ -459,16 +468,18 @@ public class GameMap extends GameObject implements StoredObject {
     }
 
     /**
-     * Toggle the selected object on the position.
+     * Sets the selected object.
      */
-    @SneakyThrows
-    public void toggleSelectedObject(GameBlockPos pos) {
+    public void setSelectedObject(int type, long id) {
+        this.selectedObjectId = id;
+        this.selectedObjectType = type;
     }
 
     /**
      * Clears any selected object.
      */
     public void clearSelectedObject() {
-        this.selectedObject = 0;
+        this.selectedObjectId = 0;
+        this.selectedObjectType = 0;
     }
 }

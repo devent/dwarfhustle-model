@@ -40,9 +40,9 @@ import lombok.ToString;
 @Setter
 public class KnowledgeBuilding extends ObjectType {
 
-    public static final int OBJECT_TYPE = KnowledgeBuilding.class.getSimpleName().hashCode();
-
     public static final String TYPE = "Building";
+
+    public static final int OBJECT_TYPE = TYPE.hashCode();
 
     private GameBlockPos size = new GameBlockPos(1, 1, 1);
 
@@ -63,6 +63,10 @@ public class KnowledgeBuilding extends ObjectType {
     @SuppressWarnings("unchecked")
     @Override
     public <T extends GameObject> T createObject(byte[] id) {
-        return (T) new Building(id);
+        var go = new Building(id);
+        go.setVisible(true);
+        go.setHaveModel(true);
+        go.setHaveTex(false);
+        return (T) go;
     }
 }

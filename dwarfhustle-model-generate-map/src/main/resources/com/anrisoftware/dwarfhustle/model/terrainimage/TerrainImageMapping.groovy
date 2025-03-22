@@ -2,88 +2,97 @@
 rid = [:]
 
 // Clay
-rid["FIRE-CLAY"] = 845
-rid["SILTY-CLAY"] = 844
-rid["SANDY-CLAY"] = 843
-rid["CLAY-LOAM"] = 842
+rid["FIRE-CLAY"] = 848
+rid["SILTY-CLAY"] = 847
+rid["SANDY-CLAY"] = 846
+rid["CLAY-LOAM"] = 845
 rid["CLAY"] = 779
 
 // Gas
-rid["SULFUR-DIOXIDE"] = 872
-rid["CARBON-DIOXIDE"] = 871
-rid["POLLUTED-OXYGEN"] = 869
-rid["OXYGEN"] = 867
-rid["VACUUM"] = 866
+rid["SULFUR-DIOXIDE"] = 875
+rid["CARBON-DIOXIDE"] = 874
+rid["POLLUTED-OXYGEN"] = 872
+rid["OXYGEN"] = 870
+rid["VACUUM"] = 869
 
 // Igneous-Extrusive
-rid["RHYOLITE"] = 810
-rid["OBSIDIAN"] = 809
-rid["DACITE"] = 808
-rid["BASALT"] = 807
-rid["ANDESITE"] = 806
+rid["RHYOLITE"] = 813
+rid["OBSIDIAN"] = 812
+rid["DACITE"] = 811
+rid["BASALT"] = 810
+rid["ANDESITE"] = 809
 
 // Igneous-Intrusive
-rid["GRANITE"] = 804
-rid["GABBRO"] = 803
-rid["DIORITE"] = 802
+rid["GRANITE"] = 807
+rid["GABBRO"] = 806
+rid["DIORITE"] = 805
 
 // Metamorphic
-rid["SLATE"] = 817
-rid["SCHIST"] = 816
-rid["QUARTZITE"] = 815
-rid["PHYLLITE"] = 814
-rid["MARBLE"] = 813
-rid["GNEISS"] = 812
+rid["SLATE"] = 820
+rid["SCHIST"] = 819
+rid["QUARTZITE"] = 818
+rid["PHYLLITE"] = 817
+rid["MARBLE"] = 816
+rid["GNEISS"] = 815
 
 // Sand
-rid["YELLOW-SAND"] = 850
-rid["WHITE-SAND"] = 849
-rid["RED-SAND"] = 848
-rid["BLACK-SAND"] = 847
+rid["YELLOW-SAND"] = 853
+rid["WHITE-SAND"] = 852
+rid["RED-SAND"] = 851
+rid["BLACK-SAND"] = 850
 rid["SAND"] = 778
 
 // Seabed
-rid["CALCAREOUS-OOZE"] = 854
-rid["SILICEOUS-OOZE"] = 853
-rid["PELAGIC-CLAY"] = 852
+rid["CALCAREOUS-OOZE"] = 857
+rid["SILICEOUS-OOZE"] = 856
+rid["PELAGIC-CLAY"] = 855
 
 // Sedimentary
-rid["SILTSTONE"] = 800
-rid["SHALE"] = 799
-rid["SANDSTONE"] = 798
-rid["ROCK-SALT"] = 797
-rid["MUDSTONE"] = 796
-rid["LIMESTONE"] = 795
-rid["DOLOMITE"] = 794
-rid["CONGLOMERATE"] = 793
-rid["CLAYSTONE"] = 792
-rid["CHERT"] = 791
-rid["CHALK"] = 790
+rid["SILTSTONE"] = 803
+rid["SHALE"] = 802
+rid["SANDSTONE"] = 801
+rid["ROCK-SALT"] = 800
+rid["MUDSTONE"] = 799
+rid["LIMESTONE"] = 798
+rid["DOLOMITE"] = 797
+rid["CONGLOMERATE"] = 796
+rid["CLAYSTONE"] = 795
+rid["CHERT"] = 794
+rid["CHALK"] = 793
 
 // Liquid
-rid["MAGMA"] = 875
-rid["WATER"] = 874
+rid["MAGMA"] = 880
+rid["BRINE"] = 879
+rid["SEA-WATER"] = 878
+rid["WATER"] = 877
 
 // Topsoil
-rid["SILT-LOAM"] = 864
-rid["SILTY-CLAY-LOAM"] = 863
-rid["SILT"] = 862
-rid["SANDY-LOAM"] = 861
-rid["SANDY-CLAY-LOAM"] = 860
-rid["PEAT"] = 859
-rid["LOAMY-SAND"] = 858
-rid["LOAM"] = 857
+rid["SILT-LOAM"] = 867
+rid["SILTY-CLAY-LOAM"] = 866
+rid["SILT"] = 865
+rid["SANDY-LOAM"] = 864
+rid["SANDY-CLAY-LOAM"] = 863
+rid["PEAT"] = 862
+rid["LOAMY-SAND"] = 861
+rid["LOAM"] = 860
 
 // Wood
-rid["BIRCH-WOOD"] = 1043
-rid["PINE-WOOD"] = 1035
+rid["BIRCH-WOOD"] = 1063
+rid["PINE-WOOD"] = 1055
 
 // Grass
-rid["RED-POPPY"] = 1024
-rid["DAISY"] = 1023
-rid["CARROT"] = 1022
-rid["WHEAT"] = 1020
-rid["MEADOW-GRASS"] = 1019
+rid["RED-POPPY"] = 1044
+rid["DAISY"] = 1043
+rid["CARROT"] = 1042
+rid["WHEAT"] = 1040
+rid["MEADOW-GRASS"] = 1039
+
+// Shrub
+rid["BLUEBERRIES"] = 1046
+
+// Tree-Sapling
+rid["BIRCH-SAPLING"] = 1057
+rid["PINE-SAPLING"] = 1049
 
 rid["UNKNOWN"] = 0xffff
 

@@ -23,10 +23,6 @@
 
 (defrelation work-building ((?w work-job) (?b Building)))
 
-(defrelation work-input-material ((?w work-job) (?m Material)))
-
-(defrelation work-output-material ((?w work-job) (?m Material)))
-
 (defrelation work-input-units ((?w work-job) (?m Material) (?n INTEGER)))
 
 (defrelation work-output-units ((?w work-job) (?m Material) (?n INTEGER)))

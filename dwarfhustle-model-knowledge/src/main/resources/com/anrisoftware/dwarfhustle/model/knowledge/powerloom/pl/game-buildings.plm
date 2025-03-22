@@ -24,19 +24,15 @@
 ;;
 (assert (work-job job-saltmaking-seawater))
 (assert (work-building job-saltmaking-seawater building-salt-works))
-(assert (work-input-material job-saltmaking-seawater DWARFHUSTLE-MATERIALS-LIQUIDS/Sea-Water))
-(assert (work-output-material job-saltmaking-seawater DWARFHUSTLE-MATERIALS-OTHER/Salt-Lump))
 (assert (work-input-units job-saltmaking-seawater DWARFHUSTLE-MATERIALS-LIQUIDS/Sea-Water 1))
 (assert (work-output-units job-saltmaking-seawater DWARFHUSTLE-MATERIALS-OTHER/Salt-Lump 3))
-(assert (= (work-duration job-saltmaking-seawater) 3))
+(assert (= (work-duration job-saltmaking-seawater) 6))
 ;;
 (assert (work-job job-saltmaking-brine))
 (assert (work-building job-saltmaking-brine building-salt-works))
-(assert (work-input-material job-saltmaking-brine DWARFHUSTLE-MATERIALS-LIQUIDS/Brine))
-(assert (work-output-material job-saltmaking-brine DWARFHUSTLE-MATERIALS-OTHER/Salt-Lump))
 (assert (work-input-units job-saltmaking-brine DWARFHUSTLE-MATERIALS-LIQUIDS/Brine 1))
 (assert (work-output-units job-saltmaking-brine DWARFHUSTLE-MATERIALS-OTHER/Salt-Lump 3))
-(assert (= (work-duration job-saltmaking-brine) 3))
+(assert (= (work-duration job-saltmaking-brine) 6))
 
 (assert (Building building-apothecary)) :documentation "Workshop for medical professional who formulates and dispenses materia medica (medicine) to physicians, surgeons and patients."
 (assert (= (object-width building-apothecary) 3))
@@ -62,11 +58,27 @@
 (assert (= (object-width building-carpenter) 3))
 (assert (= (object-height building-carpenter) 3))
 (assert (= (object-depth building-carpenter) 1))
+(assert (= (object-passable building-carpenter) 306)) :documentation "Passable tiles top to bottom: 100 110 010."
+;;
+(assert (work-job job-carpenter-plank))
+(assert (work-building job-carpenter-plank building-carpenter))
+(assert (work-input-units job-carpenter-plank DWARFHUSTLE-MATERIALS/Wood-Log 1))
+(assert (work-output-units job-carpenter-plank DWARFHUSTLE-MATERIALS/Wood-Plank 3))
+(assert (= (work-duration job-carpenter-plank) 3))
 
-(assert (Building building-saw-mill)) :documentation "Saw mill with power produces planks."
-(assert (= (object-width building-saw-mill) 3))
-(assert (= (object-height building-saw-mill) 3))
-(assert (= (object-depth building-saw-mill) 1))
+(assert (Building building-sawmill)) :documentation "Sawmill with power produces planks."
+(assert (= (object-width building-sawmill) 5))
+(assert (= (object-height building-sawmill) 5))
+(assert (= (object-depth building-sawmill) 1))
+(assert (= (object-build-input-units building-sawmill giant-sawblade) 1))
+(assert (= (object-build-input-units building-sawmill mechanism) 3))
+(assert (= (object-passable building-sawmill) 33080895)) :documentation "Passable tiles top to bottom: 11111 10001 10001 10001 11111."
+;;
+(assert (work-job job-sawmill-plank))
+(assert (work-building job-sawmill-plank building-sawmill))
+(assert (work-input-units job-sawmill-plank DWARFHUSTLE-MATERIALS/Wood-Log 1))
+(assert (work-output-units job-sawmill-plank DWARFHUSTLE-MATERIALS/Wood-Plank 3))
+(assert (= (work-duration job-sawmill-plank) 1))
 
 (assert (Building building-craft)) :documentation "Workshop to make art and crafts."
 (assert (= (object-width building-craft) 3))
