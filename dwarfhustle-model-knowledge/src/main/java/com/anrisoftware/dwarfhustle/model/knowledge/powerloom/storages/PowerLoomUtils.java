@@ -19,18 +19,21 @@ package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
 import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor.WORKING_MODULE;
 
+import org.eclipse.collections.api.map.primitive.IntIntMap;
+import org.eclipse.collections.api.map.primitive.MutableIntIntMap;
 import org.eclipse.collections.api.set.primitive.IntSet;
 import org.eclipse.collections.api.set.primitive.MutableIntSet;
 
 import edu.isi.powerloom.PLI;
 import edu.isi.powerloom.logic.LogicObject;
+import edu.isi.stella.Cons;
 import edu.isi.stella.FloatWrapper;
 import edu.isi.stella.IntegerWrapper;
 import edu.isi.stella.List;
 import edu.isi.stella.Stella_Object;
 
 /**
- * 
+ *
  */
 public class PowerLoomUtils {
 
@@ -105,6 +108,43 @@ public class PowerLoomUtils {
             if (next instanceof LogicObject lo) {
                 store.add(lo.surrogateValueInverse.symbolId);
             }
+        }
+        return store;
+    }
+
+    /**
+     * Retrieves the id of the object returned by the function.
+     */
+    public static int retrieveIdFunc(String function, String name) {
+        var buff = new StringBuilder();
+        buff.append("?x (");
+        buff.append(function);
+        buff.append(" ");
+        buff.append(name);
+        buff.append(" ?x)");
+        var answer = PLI.sRetrieve(buff.toString(), WORKING_MODULE, null);
+        LogicObject next;
+        while ((next = (LogicObject) answer.pop()) != null) {
+            return next.surrogateValueInverse.symbolId;
+        }
+        return -1;
+    }
+
+    /**
+     * Retrieves the (object, int) mappings from a function.
+     */
+    public static IntIntMap retrieveIdIntFunc(String function, String name, MutableIntIntMap store) {
+        var buff = new StringBuilder();
+        buff.append("all (");
+        buff.append(function);
+        buff.append(" ");
+        buff.append(name);
+        buff.append(" ?x ?y)");
+        var answer = PLI.sRetrieve(buff.toString(), WORKING_MODULE, null);
+        Cons next;
+        while ((next = (Cons) answer.pop()) != null) {
+            store.put(((LogicObject) next.value).surrogateValueInverse.symbolId,
+                    ((IntegerWrapper) next.rest.value).wrapperValue);
         }
         return store;
     }

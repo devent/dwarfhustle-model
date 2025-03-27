@@ -199,7 +199,7 @@ public class ExternalizableUtils {
     /**
      * Reads the keys and values of the {@link IntObjectMap} from stream.
      */
-    public static <T extends StreamStorage> MutableIntObjectMap<T> readStreamIntObjectMap(DataInput in,
+    public static <T extends StreamStorage> MutableIntObjectMap<T> readStreamIntObjectMapSupplier(DataInput in,
             Supplier<T> supplier) throws IOException {
         final int size = in.readInt();
         final MutableIntObjectMap<T> map = IntObjectMaps.mutable.ofInitialCapacity(size);
@@ -227,7 +227,7 @@ public class ExternalizableUtils {
     /**
      * Reads the keys and values of the {@link IntObjectMap} from stream.
      */
-    public static <T> MutableIntObjectMap<T> readStreamIntObjectMap(DataInput in, Function<DataInput, T> read)
+    public static <T> MutableIntObjectMap<T> readStreamIntObjectMapReader(DataInput in, Function<DataInput, T> read)
             throws IOException {
         final int size = in.readInt();
         final MutableIntObjectMap<T> map = IntObjectMaps.mutable.ofInitialCapacity(size);

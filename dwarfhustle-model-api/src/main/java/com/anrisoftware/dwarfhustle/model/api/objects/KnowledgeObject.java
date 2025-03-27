@@ -17,6 +17,10 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -75,5 +79,19 @@ public abstract class KnowledgeObject extends GameObject {
      * Creates the {@link GameObject} for this {@link KnowledgeObject}.
      */
     public abstract <T extends GameObject> T createObject(byte[] id);
+
+    @Override
+    public void writeStream(DataOutput out) throws IOException {
+        super.writeStream(out);
+        out.writeInt(kid);
+        out.writeUTF(name);
+    }
+
+    @Override
+    public void readStream(DataInput in) throws IOException {
+        super.readStream(in);
+        this.kid = in.readInt();
+        this.name = in.readUTF();
+    }
 
 }

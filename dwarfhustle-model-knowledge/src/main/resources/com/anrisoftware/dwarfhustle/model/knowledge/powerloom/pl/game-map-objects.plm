@@ -41,6 +41,9 @@
 (deffunction object-passable ((?o ObjectType)) :-> (?result INTEGER))
   :documentation "Returns the depth of the object."
 
+(deffunction object-build-input-units ((?o ObjectType) (?m ObjectType)) :-> (?result INTEGER))
+  :documentation "Returns a required object to build the object."
+
 (assert (= (object-width BlockObject) 1))
 (assert (= (object-height BlockObject) 1))
 (assert (= (object-depth BlockObject) 1))

@@ -17,18 +17,19 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.buildings;
 
-import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamIntObjectMapSupplier;
-import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamIntObjectMap;
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamLongIntMap;
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamLongIntMap;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.Serializable;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 
-import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
-import org.eclipse.collections.api.map.primitive.IntObjectMap;
+import org.eclipse.collections.api.map.primitive.LongIntMap;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.google.auto.service.AutoService;
 
@@ -38,33 +39,35 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
- * Building.
+ * Work job.
  */
 @NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Data
 @AutoService(StoredObject.class)
-public class Building extends GameMapObject {
+public class WorkJob extends GameObject implements StoredObject {
 
-    public static final int OBJECT_TYPE = "Building".hashCode();
+    public static final int OBJECT_TYPE = "work-job".hashCode();
 
-    private IntObjectMap<WorkJob> workJobs = IntObjectMaps.mutable.empty();
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private Serializable rid;
 
-    public Building(long id) {
+    private long building;
+
+    private LongIntMap inputUnits;
+
+    private LongIntMap outputUnits;
+
+    private Duration duration;
+
+    public WorkJob(long id) {
         super(id);
     }
 
-    public Building(byte[] idbuf) {
+    public WorkJob(byte[] idbuf) {
         super(idbuf);
-    }
-
-    public Building(long id, GameBlockPos pos) {
-        super(id, pos);
-    }
-
-    public Building(byte[] idbuf, GameBlockPos pos) {
-        super(idbuf, pos);
     }
 
     @Override
@@ -75,13 +78,18 @@ public class Building extends GameMapObject {
     @Override
     public void writeStream(DataOutput out) throws IOException {
         super.writeStream(out);
-        writeStreamIntObjectMap(out, workJobs);
+        out.writeLong(building);
+        writeStreamLongIntMap(out, inputUnits);
+        writeStreamLongIntMap(out, outputUnits);
+        out.writeInt((int) duration.getSeconds());
     }
 
     @Override
     public void readStream(DataInput in) throws IOException {
         super.readStream(in);
-        this.workJobs = readStreamIntObjectMapSupplier(in, WorkJob::new);
+        this.building = in.readLong();
+        this.inputUnits = readStreamLongIntMap(in);
+        this.outputUnits = readStreamLongIntMap(in);
+        this.duration = Duration.of(in.readInt(), ChronoUnit.SECONDS);
     }
-
 }

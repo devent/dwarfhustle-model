@@ -77,22 +77,22 @@ rid["LOAMY-SAND"] = 861
 rid["LOAM"] = 860
 
 // Wood
-rid["BIRCH-WOOD"] = 1063
-rid["PINE-WOOD"] = 1055
+rid["BIRCH-WOOD"] = 1064
+rid["PINE-WOOD"] = 1056
 
 // Grass
-rid["RED-POPPY"] = 1044
-rid["DAISY"] = 1043
-rid["CARROT"] = 1042
-rid["WHEAT"] = 1040
-rid["MEADOW-GRASS"] = 1039
+rid["RED-POPPY"] = 1045
+rid["DAISY"] = 1044
+rid["CARROT"] = 1043
+rid["WHEAT"] = 1041
+rid["MEADOW-GRASS"] = 1040
 
 // Shrub
-rid["BLUEBERRIES"] = 1046
+rid["BLUEBERRIES"] = 1047
 
 // Tree-Sapling
-rid["BIRCH-SAPLING"] = 1057
-rid["PINE-SAPLING"] = 1049
+rid["BIRCH-SAPLING"] = 1058
+rid["PINE-SAPLING"] = 1050
 
 rid["UNKNOWN"] = 0xffff
 

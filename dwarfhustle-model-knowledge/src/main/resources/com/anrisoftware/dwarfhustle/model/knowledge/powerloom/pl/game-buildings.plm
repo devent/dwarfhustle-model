@@ -62,8 +62,8 @@
 ;;
 (assert (work-job job-carpenter-plank))
 (assert (work-building job-carpenter-plank building-carpenter))
-(assert (work-input-units job-carpenter-plank DWARFHUSTLE-MATERIALS/Wood-Log 1))
-(assert (work-output-units job-carpenter-plank DWARFHUSTLE-MATERIALS/Wood-Plank 3))
+(assert (= (work-input-units job-carpenter-plank DWARFHUSTLE-MATERIALS/Wood-Log) 1))
+(assert (= (work-output-units job-carpenter-plank DWARFHUSTLE-MATERIALS/Wood-Plank) 3))
 (assert (= (work-duration job-carpenter-plank) 3))
 
 (assert (Building building-sawmill)) :documentation "Sawmill with power produces planks."
@@ -76,8 +76,8 @@
 ;;
 (assert (work-job job-sawmill-plank))
 (assert (work-building job-sawmill-plank building-sawmill))
-(assert (work-input-units job-sawmill-plank DWARFHUSTLE-MATERIALS/Wood-Log 1))
-(assert (work-output-units job-sawmill-plank DWARFHUSTLE-MATERIALS/Wood-Plank 3))
+(assert (= (work-input-units job-sawmill-plank DWARFHUSTLE-MATERIALS/Wood-Log) 1))
+(assert (= (work-output-units job-sawmill-plank DWARFHUSTLE-MATERIALS/Wood-Plank) 3))
 (assert (= (work-duration job-sawmill-plank) 1))
 
 (assert (Building building-craft)) :documentation "Workshop to make art and crafts."

@@ -206,13 +206,13 @@ class MapObjectsLmbdStorageTest {
     }
 
     @Test
-    //@org.junit.jupiter.api.Disabled
+    @org.junit.jupiter.api.Disabled
     void read_objects_test() {
         int xx = 32
         int yy = 32
         int zz = 32
         int cc = 8
-        def gm = new GameMap(141466792457623, xx, yy, zz)
+        def gm = new GameMap(141465681857598, xx, yy, zz)
         Path tmp = Path.of("/home/devent/Projects/dwarf-hustle/terrain-maps/game/", "terrain_${xx}_${yy}_${zz}_${cc}", "map-${gm.id}")
         long mapSize = 200 * (long) pow(10, 6);
         def storage = injector.getInstance(MapObjectsLmbdStorageFactory).create(tmp, gm, mapSize)

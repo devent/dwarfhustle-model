@@ -23,8 +23,8 @@
 
 (defrelation work-building ((?w work-job) (?b Building)))
 
-(defrelation work-input-units ((?w work-job) (?m Material) (?n INTEGER)))
+(deffunction work-input-units ((?w work-job) (?m Material)) :-> (?n INTEGER))
 
-(defrelation work-output-units ((?w work-job) (?m Material) (?n INTEGER)))
+(deffunction work-output-units ((?w work-job) (?m Material)) :-> (?n INTEGER))
 
 (deffunction work-duration ((?w work-job)) :-> (?hours INTEGER))

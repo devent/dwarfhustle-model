@@ -20,7 +20,7 @@ package com.anrisoftware.dwarfhustle.model.api.objects;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readExternalMutableIntIntMultimap;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamIntCollection;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamIntIntMap;
-import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamIntObjectMap;
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamIntObjectMapSupplier;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeExternalMutableIntIntMultimap;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamIntCollection;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamIntIntMap;
@@ -410,7 +410,7 @@ public class GameMap extends GameObject implements StoredObject {
         this.sunPos[1] = in.readFloat();
         this.sunPos[2] = in.readFloat();
         this.climateZone = in.readInt();
-        final var filledBlocks = readStreamIntObjectMap(in, this::readAtomicInt);
+        final var filledBlocks = readStreamIntObjectMapReader(in, this::readAtomicInt);
         this.filledBlocks = filledBlocks.asSynchronized();
         final var filledChunks = readExternalMutableIntIntMultimap(in, () -> Multimaps.mutable.set.empty());
         this.filledChunks = filledChunks.asSynchronized();

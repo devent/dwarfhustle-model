@@ -88,6 +88,7 @@ class PowerLoomKnowledgeActorTest {
 
     @ParameterizedTest
     @ValueSource(strings = [
+        "all (WORK-INPUT-UNITS JOB-SAWMILL-PLANK ?X ?Y)",
         "all (Liquid ?type)",
         "all (Gas ?type)",
         "all (Stone ?type)",
@@ -162,6 +163,7 @@ class PowerLoomKnowledgeActorTest {
 
     @ParameterizedTest
     @CsvSource([
+        "work-job,4,144650654533550080",
         "Sedimentary,11,7339558917942280192",
         "Shrub,1,343012349004742656",
         "BlockObject,28,-8047195809780858880"
@@ -192,6 +194,7 @@ class PowerLoomKnowledgeActorTest {
         lock.await()
         assert go.id == id
         assert go.objects.size() == size
+        println go
     }
 
     @ParameterizedTest
