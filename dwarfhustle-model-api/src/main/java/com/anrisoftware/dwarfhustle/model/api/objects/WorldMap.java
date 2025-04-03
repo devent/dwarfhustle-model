@@ -17,8 +17,15 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamLongCollection;
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamLongCollection;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 import org.eclipse.collections.api.factory.primitive.LongSets;
 import org.eclipse.collections.api.set.primitive.MutableLongSet;
@@ -51,38 +58,38 @@ public class WorldMap extends GameObject implements StoredObject {
     /**
      * Record ID set after the object was once stored in the backend.
      */
-    public Serializable rid;
+    private Serializable rid;
 
     /**
      * The name of the world.
      */
-    public String name;
+    private long name;
 
     /**
      * The distance of 1° latitude in km.
      */
-    public float distanceLat;
+    private float distanceLat;
 
     /**
      * The distance of 1° longitude in km.
      */
-    public float distanceLon;
+    private float distanceLon;
 
     /**
      * The world time at UTC+00:00. Each game map must convert the time to the
      * specific time zone.
      */
-    public LocalDateTime time = LocalDateTime.now();
+    private LocalDateTime time = LocalDateTime.now();
 
     /**
      * Ids of the {@link GameMap} game maps of the world.
      */
-    public MutableLongSet maps = LongSets.mutable.empty();
+    private MutableLongSet maps = LongSets.mutable.empty();
 
     /**
      * The current {@link GameMap} id.
      */
-    public long currentMap = 0;
+    private long currentMap = 0;
 
     public WorldMap(long id) {
         super(id);
@@ -124,8 +131,27 @@ public class WorldMap extends GameObject implements StoredObject {
     }
 
     public void addMap(GameMap map) {
-        this.maps.add(map.id);
-        map.setWorld(id);
+        this.maps.add(map.getId());
+        map.setWorld(getId());
     }
 
+    @Override
+    public void writeStream(DataOutput out) throws IOException {
+        super.writeStream(out);
+        out.writeLong(name);
+        out.writeFloat(distanceLat);
+        out.writeFloat(distanceLon);
+        out.writeLong(time.toInstant(ZoneOffset.UTC).getEpochSecond());
+        writeStreamLongCollection(out, maps.size(), maps);
+    }
+
+    @Override
+    public void readStream(DataInput in) throws IOException {
+        super.readStream(in);
+        this.name = in.readLong();
+        this.distanceLat = in.readFloat();
+        this.distanceLon = in.readFloat();
+        this.time = LocalDateTime.ofEpochSecond(in.readLong(), 0, ZoneOffset.UTC);
+        this.maps = LongSets.mutable.ofAll(readStreamLongCollection(in));
+    }
 }

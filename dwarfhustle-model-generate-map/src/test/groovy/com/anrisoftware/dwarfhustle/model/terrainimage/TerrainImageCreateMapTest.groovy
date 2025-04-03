@@ -136,7 +136,9 @@ class TerrainImageCreateMapTest {
                         injector, ofSeconds(1), supplyAsync({
                             cache
                         }),
-                        supplyAsync({ { type, key ->
+                        supplyAsync({
+                            {
+                                type, key ->
                             } as ObjectsGetter
                         })).
                         whenComplete({ knowledge, pex ->

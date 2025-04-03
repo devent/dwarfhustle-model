@@ -63,7 +63,7 @@ public abstract class GameObject implements Externalizable, StreamStorage {
      * Unique ID of the object.
      */
     @EqualsAndHashCode.Include
-    public long id;
+    private long id;
 
     public GameObject(long id) {
         this.id = id;

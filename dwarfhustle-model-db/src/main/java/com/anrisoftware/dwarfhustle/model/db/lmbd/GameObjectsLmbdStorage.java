@@ -301,7 +301,7 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
             System.out.printf("[GameObjectsLmbdStorage] %s - go.type=%d - type=%d%n", go, go.getObjectType(), type); // TODO
             assert soBuffer != null;
         }
-        putObject(type, go.id, soBuffer.getSize((StoredObject) go), b -> {
+        putObject(type, go.getId(), soBuffer.getSize((StoredObject) go), b -> {
             soBuffer.write(b, (StoredObject) go);
         });
     }
@@ -310,7 +310,7 @@ public class GameObjectsLmbdStorage implements GameObjectsStorage {
     public void set(int type, Iterable<GameObject> values) throws ObjectsSetterException {
         final var soBuffer = readBuffers.get(type);
         for (final var go : values) {
-            putObject(type, go.id, soBuffer.getSize((StoredObject) go), b -> {
+            putObject(type, go.getId(), soBuffer.getSize((StoredObject) go), b -> {
                 soBuffer.write(b, (StoredObject) go);
             });
         }

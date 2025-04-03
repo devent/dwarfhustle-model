@@ -91,9 +91,9 @@ public class MapObjectsLmbdStorage implements MapObjectsStorage, ObjectsGetter, 
      */
     @Inject
     protected MapObjectsLmbdStorage(@Assisted Path file, @Assisted GameMap gm, @Assisted long mapSize) {
-        w = gm.width;
-        h = gm.height;
-        d = gm.depth;
+        w = gm.getWidth();
+        h = gm.getHeight();
+        d = gm.getDepth();
         env = create(PROXY_DB).setMapSize(mapSize).setMaxDbs(1).open(file.toFile());
         db = env.openDbi("pos-ids", MDB_CREATE, MDB_DUPSORT, MDB_DUPFIXED, MDB_INTEGERDUP);
         readTxn = env.txnRead();

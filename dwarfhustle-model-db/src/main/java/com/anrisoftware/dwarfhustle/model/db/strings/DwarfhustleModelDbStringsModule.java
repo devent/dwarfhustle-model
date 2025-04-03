@@ -15,12 +15,21 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.db.cache
+package com.anrisoftware.dwarfhustle.model.db.strings;
+
+import com.anrisoftware.dwarfhustle.model.db.strings.StringsLuceneStorage.StringsLuceneStorageFactory;
+import com.google.inject.AbstractModule;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 
 /**
- * @see MapObject
- * 
- * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
+ * @see StringsLuceneStorageFactory
  */
-class MapObjectTest {
+public class DwarfhustleModelDbStringsModule extends AbstractModule {
+
+    @Override
+    protected void configure() {
+        install(new FactoryModuleBuilder().implement(StringsLuceneStorage.class, StringsLuceneStorage.class)
+                .build(StringsLuceneStorageFactory.class));
+    }
+
 }

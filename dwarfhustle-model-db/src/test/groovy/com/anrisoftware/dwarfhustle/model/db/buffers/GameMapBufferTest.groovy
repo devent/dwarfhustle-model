@@ -28,7 +28,6 @@ import org.agrona.concurrent.UnsafeBuffer
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 
-import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
 import com.anrisoftware.dwarfhustle.model.api.objects.MapArea
 import com.anrisoftware.dwarfhustle.model.api.objects.MapCoordinate
@@ -42,8 +41,7 @@ class GameMapBufferTest {
 
     static Stream set_get_gamemap_properties() {
         int offset = 0
-        def name = "Fantastic Map"
-        def b = new UnsafeBuffer(allocate(offset + GameMapBuffer.MIN_SIZE + name.length() * 2));
+        def b = new UnsafeBuffer(allocate(offset + GameMapBuffer.SIZE));
         def a = [:]
         a.id = 200
         a.world = 100
@@ -62,55 +60,13 @@ class GameMapBufferTest {
         a.cy = 2
         a.cz = 3
         a.s = [17f, 18f, 19f]
+        a.climate = 500
         a.time = 3600
-        a.name = name
+        a.name = 55
         a.co = 140914002486087
         Stream.of(
-                of(b, offset, a, "c800000000000000 6400000000000000 47e30f1929800000 0002 0002 0002 1000 492a 26fe4b4256bc2f4149dd4b42c9e53041 000020410000304100004041 00005041000060410000704100008041 0100 0200 0300 00008841 00009041 00009841 100e0000 0d00000046616e746173746963204d61700000000000000000000000000000000000000000000000"),
+                of(b, offset, a, "c800 0000 0000 0000 6400 0000 0000 0000 47e3 0f19 2980 0000 0002 0002 0002 1000 492a 26fe 4b42 56bc 2f41 49dd 4b42 c9e5 3041 0000 2041 0000 3041 0000 4041 0000 5041 0000 6041 0000 7041 0000 8041 0100 0200 0300 0000 8841 0000 9041 0000 9841 f401 100e 0000 3700 0000 0000 0000"),
                 )
-    }
-
-    @ParameterizedTest
-    @MethodSource()
-    void set_get_gamemap_properties(UnsafeBuffer b, int offset, Map a, def expected) {
-        GameMapBuffer.setId(b, offset, a.id)
-        GameMapBuffer.setWorld(b, offset, a.world)
-        GameMapBuffer.setWidth(b, offset, a.w)
-        GameMapBuffer.setHeight(b, offset, a.h)
-        GameMapBuffer.setDepth(b, offset, a.d)
-        GameMapBuffer.setChunkSize(b, offset, a.cs)
-        GameMapBuffer.setChunksCount(b, offset, a.cc)
-        GameMapBuffer.setArea(b, offset, a.nwlat, a.nwlon, a.selat, a.selon)
-        GameMapBuffer.setCameraPos(b, offset, a.cpos as float[])
-        GameMapBuffer.setCameraRot(b, offset, a.crot as float[])
-        GameMapBuffer.setCursor(b, offset, a.cx, a.cy, a.cz)
-        GameMapBuffer.setSunPos(b, offset, a.s as float[])
-        GameMapBuffer.setTimeZone(b, offset, a.time)
-        GameMapBuffer.setName(b, offset, a.name)
-        GameMapBuffer.setCursorObject(b, offset, a.co)
-        assert BufferUtils.toHex(b) == replace(expected, " ", "")
-        assert GameMapBuffer.getId(b, offset) == a.id
-        assert GameMapBuffer.getWorld(b, offset) == a.world
-        assert GameMapBuffer.getWidth(b, offset) == a.w
-        assert GameMapBuffer.getHeight(b, offset) == a.h
-        assert GameMapBuffer.getDepth(b, offset) == a.d
-        assert GameMapBuffer.getChunkSize(b, offset) == a.cs
-        assert GameMapBuffer.getChunksCount(b, offset) == a.cc
-        def area = GameMapBuffer.getArea(b, offset, new MapArea())
-        assert area.nw.lat == a.nwlat
-        assert area.nw.lon == a.nwlon
-        assert area.se.lat == a.selat
-        assert area.se.lon == a.selon
-        assert GameMapBuffer.getCameraPos(b, offset, new float[3]) == a.cpos as float[]
-        assert GameMapBuffer.getCameraRot(b, offset, new float[4]) == a.crot as float[]
-        def cursor = GameMapBuffer.getCursor(b, offset, new GameBlockPos())
-        assert cursor.x == a.cx
-        assert cursor.y == a.cy
-        assert cursor.z == a.cz
-        assert GameMapBuffer.getSunPos(b, offset, a.s as float[]) == a.s as float[]
-        assert GameMapBuffer.getTimeZone(b, offset).totalSeconds == a.time
-        assert GameMapBuffer.getName(b, offset) == a.name
-        assert GameMapBuffer.getCursorObject(b, offset) == a.co
     }
 
     @ParameterizedTest
@@ -127,6 +83,7 @@ class GameMapBufferTest {
         gm.cursor.y = a.cy
         gm.cursor.z = a.cz
         gm.sunPos = a.s
+        gm.climateZone = a.climate
         gm.timeZone = ZoneOffset.ofTotalSeconds(a.time)
         gm.name = a.name
         gm.cursorObject = a.co

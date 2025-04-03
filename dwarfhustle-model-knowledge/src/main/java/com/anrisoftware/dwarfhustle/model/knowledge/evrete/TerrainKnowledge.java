@@ -57,14 +57,15 @@ public class TerrainKnowledge extends AbstractKnowledge {
     public <T extends BlockFact> void runTerrainUpdateRules(ObjectsGetter og, ObjectsSetter os, Knowledge knowledge,
             GameMap gm) {
         var session = knowledge.newStatefulSession();
-        for (int i = 0; i < gm.chunksCount; i++) {
+        for (int i = 0; i < gm.getChunksCount(); i++) {
             MapChunk chunk = og.get(MapChunk.OBJECT_TYPE, MapChunk.cid2Id(i));
             if (chunk.isLeaf()) {
                 var pos = chunk.getPos();
                 for (int z = pos.z; z < pos.ep.z; z++) {
                     for (int y = pos.y; y < pos.ep.y; y++) {
                         for (int x = pos.x; x < pos.ep.x; x++) {
-                            session.insert(new BlockFact(og, os, chunk, x, y, z, gm.width, gm.height, gm.depth));
+                            session.insert(new BlockFact(og, os, chunk, x, y, z, gm.getWidth(), gm.getHeight(),
+                                    gm.getDepth()));
                         }
                     }
                 }

@@ -26,7 +26,6 @@ import java.util.stream.Stream
 
 import org.agrona.concurrent.UnsafeBuffer
 import org.eclipse.collections.api.factory.primitive.LongSets
-import org.eclipse.collections.api.set.primitive.LongSet
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 
@@ -41,51 +40,32 @@ class WorldMapBufferTest {
 
     static Stream set_get_worldmap_properties() {
         int offset = 0
-        def name = "Endless World"
-        def b = new UnsafeBuffer(allocate(offset + WorldMapBuffer.MIN_SIZE + name.length() * 2));
+        def maps = LongSets.mutable.of(5000100)
+        def b = new UnsafeBuffer(allocate(offset + WorldMapBuffer.MIN_SIZE + maps.size() * 8));
         Stream.of(
-                of(b, offset, 100, name, 1.0, 1.0, 3033, 5, 21, 13, 30, 5, 5000100, LongSets.mutable.of(5000100), "6400000000000000 0000803f 0000803f d90b 0500 1500 0d00 1e00 0500 a44b4c0000000000 01000000 a44b4c0000000000 0d000000 456e646c65737320576f726c640000000000"),
+                of(b, offset, 100, 55, 1.0, 2.0, LocalDateTime.of(3033, 5, 21, 13, 30, 5), 5000100, maps, "6400 0000 0000 0000 3700 0000 0000 0000 0000 803f 0000 0040 5d4b 2ad0 0700 0000 a44b 4c00 0000 0000 0100 0000 a44b 4c00 0000 0000"),
                 )
     }
 
     @ParameterizedTest
-    @MethodSource()
-    void set_get_worldmap_properties(UnsafeBuffer b, int offset, long id, def name, def dlat, def dlon, int year, int month, int dayOfMonth, int hour, int minute, int second, long currentMap, LongSet maps, def expected) {
-        WorldMapBuffer.setId(b, offset, id)
-        WorldMapBuffer.setName(b, offset, name, maps.size())
-        WorldMapBuffer.setDistanceLat(b, offset, dlat)
-        WorldMapBuffer.setDistanceLon(b, offset, dlon)
-        WorldMapBuffer.setLocalDateTime(b, offset, year, month, dayOfMonth, hour, minute, second)
-        WorldMapBuffer.setCurrentMap(b, offset, currentMap)
-        WorldMapBuffer.setMaps(b, offset, maps)
-        assert BufferUtils.toHex(b) == replace(expected, " ", "")
-        assert WorldMapBuffer.getId(b, offset) == id
-        assert WorldMapBuffer.getName(b, offset, maps.size()) == name
-        assert WorldMapBuffer.getDistanceLat(b, offset) == dlat
-        assert WorldMapBuffer.getDistanceLon(b, offset) == dlon
-        assert WorldMapBuffer.getLocalDateTimeYear(b, offset) == year
-        assert WorldMapBuffer.getLocalDateTimeMonth(b, offset) == month
-        assert WorldMapBuffer.getLocalDateTimeDay(b, offset) == dayOfMonth
-        assert WorldMapBuffer.getLocalDateTimeHour(b, offset) == hour
-        assert WorldMapBuffer.getLocalDateTimeMinute(b, offset) == minute
-        assert WorldMapBuffer.getLocalDateTimeSecond(b, offset) == second
-        assert WorldMapBuffer.getCurrentMap(b, offset) == currentMap
-        assert WorldMapBuffer.getMaps(b, offset, null) == maps
-    }
-
-    @ParameterizedTest
     @MethodSource("set_get_worldmap_properties")
-    void set_get_worldmap(UnsafeBuffer b, int offset, long id, def name, def dlat, def dlon, int year, int month, int dayOfMonth, int hour, int minute, int second, long currentMap, LongSet maps, def expected) {
+    void set_get_worldmap(UnsafeBuffer b, int offset, long id, long name, def dlat, def dlon, def time, long currentMap, def maps, def expected) {
         def wm = new WorldMap(id)
         wm.maps = maps
         wm.name = name
         wm.distanceLat = dlat
         wm.distanceLon = dlon
-        wm.time = LocalDateTime.of(year, month, dayOfMonth, hour, minute, second)
+        wm.time = time
         wm.currentMap = currentMap
         WorldMapBuffer.setWorldMap(b, offset, wm)
         assert BufferUtils.toHex(b) == replace(expected, " ", "")
         def thatWm = WorldMapBuffer.getWorldMap(b, offset, new WorldMap())
         assert wm == thatWm
+        assert wm.maps == thatWm.maps
+        assert wm.name == thatWm.name
+        assert wm.distanceLat == thatWm.distanceLat
+        assert wm.distanceLon == thatWm.distanceLon
+        assert wm.time == thatWm.time
+        assert wm.currentMap == thatWm.currentMap
     }
 }

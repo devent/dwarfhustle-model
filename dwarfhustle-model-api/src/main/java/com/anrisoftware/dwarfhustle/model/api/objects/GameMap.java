@@ -20,7 +20,7 @@ package com.anrisoftware.dwarfhustle.model.api.objects;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readExternalMutableIntIntMultimap;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamIntCollection;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamIntIntMap;
-import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamIntObjectMapSupplier;
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamIntObjectMapReader;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeExternalMutableIntIntMultimap;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamIntCollection;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamIntIntMap;
@@ -125,45 +125,45 @@ public class GameMap extends GameObject implements StoredObject {
      */
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    public Serializable rid;
+    private Serializable rid;
 
-    public String name;
+    private long name;
 
-    public int width;
+    private int width;
 
-    public int height;
+    private int height;
 
-    public int depth;
+    private int depth;
 
-    public int chunkSize;
+    private int chunkSize;
 
-    public int chunksCount;
+    private int chunksCount;
 
     /**
      * The {@link WorldMap} ID of the map.
      */
-    public long world;
+    private long world;
 
-    public ZoneOffset timeZone = ZoneOffset.of("Z");
+    private ZoneOffset timeZone = ZoneOffset.of("Z");
 
-    public MapArea area = new MapArea();
+    private MapArea area = new MapArea();
 
-    public float[] cameraPos = new float[3];
+    private float[] cameraPos = new float[3];
 
-    public float[] cameraRot = new float[4];
+    private float[] cameraRot = new float[4];
 
-    public GameBlockPos cursor = new GameBlockPos(0, 0, 0);
+    private GameBlockPos cursor = new GameBlockPos(0, 0, 0);
 
-    public float[] sunPos = new float[3];
+    private float[] sunPos = new float[3];
 
-    public int climateZone;
+    private int climateZone;
 
     /**
      * Contains the chunks and block indices that have objects.
      */
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    public MutableMultimap<Integer, Integer> filledChunks;
+    private MutableMultimap<Integer, Integer> filledChunks;
 
     /**
      * Contains the indices of blocks that have at least one {@link GameMapObject},
@@ -171,28 +171,28 @@ public class GameMap extends GameObject implements StoredObject {
      */
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    public IntObjectMap<AtomicInteger> filledBlocks;
+    private IntObjectMap<AtomicInteger> filledBlocks;
 
     /**
      * A list of the selected blocks indices.
      */
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    public MutableIntList selectedBlocks;
+    private MutableIntList selectedBlocks;
 
     /**
      * Sets the OID of the cursor object.
      */
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    public long cursorObject = 0;
+    private long cursorObject = 0;
 
     /**
      * Cashes the chunk ID for the block index.
      */
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    public IntIntMap cids;
+    private IntIntMap cids;
 
     /**
      * Lock to get game map objects.
@@ -206,14 +206,14 @@ public class GameMap extends GameObject implements StoredObject {
      */
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    public long selectedObjectId = 0;
+    private long selectedObjectId = 0;
 
     /**
      * Sets the type of the selected object.
      */
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    public int selectedObjectType = 0;
+    private int selectedObjectType = 0;
 
     public GameMap() {
         final MutableIntObjectMap<AtomicInteger> filledBlocks = IntObjectMaps.mutable.withInitialCapacity(100);
@@ -351,7 +351,7 @@ public class GameMap extends GameObject implements StoredObject {
     @Override
     public void writeStream(DataOutput out) throws IOException {
         super.writeStream(out);
-        out.writeUTF(this.name);
+        out.writeLong(this.name);
         out.writeInt(this.width);
         out.writeInt(this.height);
         out.writeInt(this.depth);
@@ -389,7 +389,7 @@ public class GameMap extends GameObject implements StoredObject {
     @Override
     public void readStream(DataInput in) throws IOException {
         super.readStream(in);
-        this.name = in.readUTF();
+        this.name = in.readLong();
         this.width = in.readInt();
         this.height = in.readInt();
         this.depth = in.readInt();

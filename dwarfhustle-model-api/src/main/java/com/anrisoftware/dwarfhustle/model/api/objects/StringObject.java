@@ -15,21 +15,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api.buildings;
-
-import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamIntObjectMapSupplier;
-import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamIntObjectMap;
+package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.Serializable;
 
-import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
-import org.eclipse.collections.api.map.primitive.IntObjectMap;
-
-import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
-import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
-import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.google.auto.service.AutoService;
 
 import lombok.Data;
@@ -38,35 +30,47 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
- * Building.
+ * String object. Contains a {@link String}.
  */
 @NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Data
 @AutoService(StoredObject.class)
-public class Building extends GameMapObject {
+public class StringObject extends GameObject implements StoredObject {
 
-    public static final int OBJECT_TYPE = "Building".hashCode();
+    public static final int OBJECT_TYPE = "string".hashCode();
 
-    private IntObjectMap<WorkJob> workJobs = IntObjectMaps.mutable.empty();
+    public static StringObject getStringObject(ObjectsGetter og, long id) {
+        return og.get(OBJECT_TYPE, id);
+    }
 
-    private long name;
+    public static void setStringObject(ObjectsSetter os, StringObject gm) {
+        os.set(OBJECT_TYPE, gm);
+    }
 
-    public Building(long id) {
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private Serializable rid;
+
+    private String s;
+
+    public StringObject(long id) {
         super(id);
     }
 
-    public Building(byte[] idbuf) {
+    public StringObject(byte[] idbuf) {
         super(idbuf);
     }
 
-    public Building(long id, GameBlockPos pos) {
-        super(id, pos);
+    public StringObject(long id, String s) {
+        super(id);
+        this.s = s;
     }
 
-    public Building(byte[] idbuf, GameBlockPos pos) {
-        super(idbuf, pos);
+    public StringObject(byte[] idbuf, String s) {
+        super(idbuf);
+        this.s = s;
     }
 
     @Override
@@ -77,15 +81,13 @@ public class Building extends GameMapObject {
     @Override
     public void writeStream(DataOutput out) throws IOException {
         super.writeStream(out);
-        writeStreamIntObjectMap(out, workJobs);
-        out.writeLong(name);
+        out.writeUTF(s);
     }
 
     @Override
     public void readStream(DataInput in) throws IOException {
         super.readStream(in);
-        this.workJobs = readStreamIntObjectMapSupplier(in, WorkJob::new);
-        this.name = in.readLong();
+        this.s = in.readUTF();
     }
 
 }

@@ -49,7 +49,7 @@ public class MapChunk extends GameObject {
     public static final int OBJECT_TYPE = MapChunk.class.getSimpleName().hashCode();
 
     public static Function<Long, MapChunk> getMapChunkRetriever(ObjectsGetter og) {
-        return (id) -> og.get(OBJECT_TYPE, id);
+        return id -> og.get(OBJECT_TYPE, id);
     }
 
     public static MapChunk getChunk(ObjectsGetter og, long id) {
@@ -103,8 +103,8 @@ public class MapChunk extends GameObject {
     private LongObjectMap<GameChunkPos> chunks;
 
     /**
-	 * The chunk CIDs of {@link NeighboringDir} neighbours of this chunk.
-	 */
+     * The chunk CIDs of {@link NeighboringDir} neighbours of this chunk.
+     */
     @ToString.Exclude
     public long[] neighbors = new long[NeighboringDir.values().length];
 
@@ -169,7 +169,7 @@ public class MapChunk extends GameObject {
     }
 
     public int getCid() {
-        return id2Cid(id);
+        return id2Cid(getId());
     }
 
     public boolean isRoot() {

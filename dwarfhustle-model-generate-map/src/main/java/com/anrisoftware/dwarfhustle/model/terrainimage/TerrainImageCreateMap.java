@@ -141,19 +141,19 @@ public class TerrainImageCreateMap {
         this.cidCounter = new AtomicInteger(0);
         this.terrain = image.load(url);
         this.chunkSize = image.chunkSize;
-        this.mcRoot = new MapChunk(nextId(), 0, chunkSize, gm.width, gm.height,
-                new GameChunkPos(0, 0, 0, gm.width, gm.height, gm.depth));
+        this.mcRoot = new MapChunk(nextId(), 0, chunkSize, gm.getWidth(), gm.getHeight(),
+                new GameChunkPos(0, 0, 0, gm.getWidth(), gm.getHeight(), gm.getDepth()));
         setChunk(storage, mcRoot);
         this.gm = gm;
         this.chunksCount = 0;
         this.blocksCount = 0;
         this.chunksDone = new AtomicInteger(0);
         this.chunksCount++;
-        createMap(mcRoot, 0, 0, 0, gm.width, gm.height, gm.depth, updateTerrainBlock);
+        createMap(mcRoot, 0, 0, 0, gm.getWidth(), gm.getHeight(), gm.getDepth(), updateTerrainBlock);
         createNeighbors(mcRoot);
         updateTerrain();
         log.debug("startImport done chunks {} blocks {}", chunksCount, blocksCount);
-        gm.chunksCount = chunksCount;
+        gm.setChunksCount(chunksCount);
     }
 
     @SneakyThrows
@@ -199,7 +199,8 @@ public class TerrainImageCreateMap {
         for (int z = pos.z; z < pos.ep.z; z++) {
             for (int y = pos.y; y < pos.ep.y; y++) {
                 for (int x = pos.x; x < pos.ep.x; x++) {
-                    session.insert(new BlockFact(getter, setter, chunk, x, y, z, gm.width, gm.height, gm.depth));
+                    session.insert(new BlockFact(getter, setter, chunk, x, y, z, gm.getWidth(), gm.getHeight(),
+                            gm.getDepth()));
                 }
             }
         }
@@ -231,7 +232,7 @@ public class TerrainImageCreateMap {
     @SneakyThrows
     private void createChunk(MapChunk parent, MutableLongObjectMap<GameChunkPos> chunks, int x, int y, int z, int ex,
             int ey, int ez, UpdateTerrainBlock updateTerrainBlock) throws GeneratorException {
-        var chunk = new MapChunk(nextId(), parent.getCid(), chunkSize, gm.width, gm.height,
+        var chunk = new MapChunk(nextId(), parent.getCid(), chunkSize, gm.getWidth(), gm.getHeight(),
                 new GameChunkPos(x, y, z, ex, ey, ez));
         storage.set(MapChunk.OBJECT_TYPE, chunk);
         chunksCount++;
@@ -297,7 +298,7 @@ public class TerrainImageCreateMap {
         var pos = rootc.getPos();
         int xs = (pos.ep.x - pos.x) / 2;
         int ys = (pos.ep.y - pos.y) / 2;
-        int zs = (pos.ep.z - pos.z) > gm.chunkSize ? (pos.ep.z - pos.z) / 2 : gm.chunkSize;
+        int zs = (pos.ep.z - pos.z) > gm.getChunkSize() ? (pos.ep.z - pos.z) / 2 : gm.getChunkSize();
         for (int x = pos.x; x < pos.ep.x; x += xs) {
             for (int y = pos.y; y < pos.ep.y; y += ys) {
                 for (int z = pos.z; z < pos.ep.z; z += zs) {
@@ -305,13 +306,13 @@ public class TerrainImageCreateMap {
                     assert chunkid != 0;
                     MapChunk chunk = getter.get(MapChunk.OBJECT_TYPE, cid2Id(chunkid));
                     assert chunk != null;
-                    if (xs > gm.chunkSize || ys > gm.chunkSize || zs > gm.chunkSize) {
+                    if (xs > gm.getChunkSize() || ys > gm.getChunkSize() || zs > gm.getChunkSize()) {
                         createNeighbors(chunk);
                     }
                     long[] neighbors = new long[NeighboringDir.values().length];
                     long b = 0;
                     for (NeighboringDir dir : NeighboringDir.values()) {
-                        var dp = (GameChunkPos) chunk.pos.add(dir.pos.mul(gm.chunkSize));
+                        var dp = (GameChunkPos) chunk.pos.add(dir.pos.mul(gm.getChunkSize()));
                         if ((b = findChild(mcRoot, dp.x, dp.y, dp.z, dp.ep.x, dp.ep.y, dp.ep.z, getter)) != 0) {
                             neighbors[dir.ordinal()] = b;
                         }

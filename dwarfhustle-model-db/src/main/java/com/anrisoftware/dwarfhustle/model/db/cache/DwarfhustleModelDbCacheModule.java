@@ -20,14 +20,16 @@ package com.anrisoftware.dwarfhustle.model.db.cache;
 import com.anrisoftware.dwarfhustle.model.db.cache.MapChunksJcsCacheActor.MapChunksJcsCacheActorFactory;
 import com.anrisoftware.dwarfhustle.model.db.cache.MapObjectsJcsCacheActor.MapObjectsJcsCacheActorFactory;
 import com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor.StoredObjectsJcsCacheActorFactory;
+import com.anrisoftware.dwarfhustle.model.db.cache.StringObjectsJcsCacheActor.StringObjectsJcsCacheActorFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 
 /**
- * 
+ *
  * @see MapObjectsJcsCacheActorFactory
  * @see StoredObjectsJcsCacheActorFactory
  * @see MapChunksJcsCacheActorFactory
+ * @see StringObjectsJcsCacheActorFactory
  * @author Erwin Müller
  */
 public class DwarfhustleModelDbCacheModule extends AbstractModule {
@@ -40,6 +42,8 @@ public class DwarfhustleModelDbCacheModule extends AbstractModule {
                 .build(StoredObjectsJcsCacheActorFactory.class));
         install(new FactoryModuleBuilder().implement(MapChunksJcsCacheActor.class, MapChunksJcsCacheActor.class)
                 .build(MapChunksJcsCacheActorFactory.class));
+        install(new FactoryModuleBuilder().implement(StringObjectsJcsCacheActor.class, StringObjectsJcsCacheActor.class)
+                .build(StringObjectsJcsCacheActorFactory.class));
     }
 
 }

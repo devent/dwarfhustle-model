@@ -147,7 +147,7 @@ public class MapChunkBuffer {
                 }
             }
         });
-        gm.cids = map.toImmutable();
+        gm.setCids(map.toImmutable());
     }
 
     public static void write(MutableDirectBuffer b, int offset, MapChunk chunk) {

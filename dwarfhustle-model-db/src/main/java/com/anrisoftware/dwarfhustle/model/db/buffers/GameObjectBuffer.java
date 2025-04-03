@@ -24,11 +24,11 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 
 /**
  * Writes and reads {@link GameObject} in a byte buffer.
- * 
+ *
  * <ul>
  * <li>@{code i} the ID;
  * </ul>
- * 
+ *
  * <pre>
  * long  0
  * int   0         1         2         3
@@ -54,11 +54,11 @@ public class GameObjectBuffer {
     }
 
     public static void writeObject(MutableDirectBuffer b, int off, GameObject o) {
-        setId(b, off, o.id);
+        setId(b, off, o.getId());
     }
 
     public static GameObject readObject(DirectBuffer b, int off, GameObject o) {
-        o.id = getId(b, off);
+        o.setId(getId(b, off));
         return o;
     }
 }

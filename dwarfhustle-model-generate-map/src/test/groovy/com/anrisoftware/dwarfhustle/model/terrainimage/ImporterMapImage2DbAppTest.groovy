@@ -34,6 +34,7 @@ import com.anrisoftware.dwarfhustle.model.actor.DwarfhustleModelActorsModule
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
 import com.anrisoftware.dwarfhustle.model.db.cache.DwarfhustleModelDbCacheModule
 import com.anrisoftware.dwarfhustle.model.db.lmbd.DwarfhustleModelDbLmbdModule
+import com.anrisoftware.dwarfhustle.model.db.strings.DwarfhustleModelDbStringsModule
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DwarfhustleModelKnowledgePowerloomPlModule
 import com.anrisoftware.dwarfhustle.model.objects.DwarfhustleModelObjectsModule
 import com.google.inject.Guice
@@ -57,6 +58,7 @@ class ImporterMapImage2DbAppTest {
                 new DwarfhustleModelDbLmbdModule(),
                 new DwarfhustleModelDbCacheModule(),
                 new DwarfhustleModelObjectsModule(),
+                new DwarfhustleModelDbStringsModule(),
                 )
     }
 
@@ -97,11 +99,13 @@ class ImporterMapImage2DbAppTest {
     void test_start_import_db(TerrainImage image, Properties mapProperties) {
         def actor = injector.getInstance(ActorSystemProvider)
         def importer = injector.getInstance(ImporterMapImage2DbApp)
-        def wm = importer.createWorldMap(mapProperties)
-        def gm = importer.createGameMap(mapProperties, image.terrain, image.chunksCount, wm)
+        def wmName = importer.createString(mapProperties.getProperty("world_name"))
+        def gmName = importer.createString(mapProperties.getProperty("map_name"))
+        def wm = importer.createWorldMap(mapProperties, wmName.id)
+        def gm = importer.createGameMap(mapProperties, image.terrain, image.chunksCount, wm, gmName.id)
         def subtmp = new File(tmp, image.name())
         subtmp.mkdir()
-        importer.init(injector, subtmp, wm, gm).get()
+        importer.init(injector, subtmp, wm, gm, [wmName, gmName]).get()
         importer.startImport(ImporterMapImage2DbAppTest.class.getResource(image.imageName), image.terrain, subtmp, gm.id)
         importer.close()
         println "done"

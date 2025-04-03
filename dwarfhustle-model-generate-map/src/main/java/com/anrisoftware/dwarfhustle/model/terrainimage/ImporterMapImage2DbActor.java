@@ -46,7 +46,9 @@ import com.anrisoftware.dwarfhustle.model.db.buffers.MapChunkBuffer;
 import com.anrisoftware.dwarfhustle.model.db.cache.AbstractJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.db.cache.MapChunksJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.db.cache.StoredObjectsJcsCacheActor;
+import com.anrisoftware.dwarfhustle.model.db.cache.StringObjectsJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.db.lmbd.MapChunksLmbdStorage.MapChunksLmbdStorageFactory;
+import com.anrisoftware.dwarfhustle.model.db.strings.StringsLuceneStorage.StringsLuceneStorageFactory;
 import com.anrisoftware.dwarfhustle.model.knowledge.evrete.TerrainKnowledge;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.DefaultLoadKnowledges;
 import com.anrisoftware.dwarfhustle.model.objects.InsertObjectMessage.InsertObjectSuccessMessage;
@@ -65,6 +67,7 @@ import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.receptionist.ServiceKey;
 import jakarta.inject.Inject;
 import lombok.SneakyThrows;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -128,7 +131,10 @@ public class ImporterMapImage2DbActor {
     private IDGenerator gen;
 
     @Inject
-    private MapChunksLmbdStorageFactory storageFactory;
+    private MapChunksLmbdStorageFactory chunksStorageFactory;
+
+    @Inject
+    private StringsLuceneStorageFactory stringsStorageFactory;
 
     @Inject
     private TerrainImageCreateMapFactory terrainImageCreateMap;
@@ -160,14 +166,23 @@ public class ImporterMapImage2DbActor {
     @SneakyThrows
     private void importImage(ImportImageMessage m) {
         var gm = getGameMap(og, m.mapid);
-        var wm = getWorldMap(og, gm.world);
-        var path = Path.of(m.root, format("%d-%d", wm.id, gm.id));
-        path.toFile().mkdir();
+        var wm = getWorldMap(og, gm.getWorld());
+        var chunksPath = Path.of(m.root, format("%d-%d", wm.getId(), gm.getId()));
+        chunksPath.toFile().mkdir();
         final long mapSize = 10 * (long) Math.pow(10, 9);
-        var storage = storageFactory.create(path, mapSize);
-        ImporterChunksJcsCacheActor.create(injector, ofSeconds(1), storage, storage).whenComplete((cache, ex) -> {
+        var chunksStorage = chunksStorageFactory.create(chunksPath, mapSize);
+        ImporterChunksJcsCacheActor.create(injector, ofSeconds(1), chunksStorage, chunksStorage)
+                .whenComplete((cache, ex) -> {
+                    if (ex != null) {
+                        log.error("ChunksJcsCacheActor", ex);
+                    }
+                }).toCompletableFuture().get();
+        var stringsPath = Path.of(m.root, format("strings"));
+        stringsPath.toFile().mkdir();
+        val soStorage = stringsStorageFactory.create(stringsPath);
+        StringObjectsJcsCacheActor.create(injector, ofSeconds(1), soStorage, soStorage).whenComplete((cache, ex) -> {
             if (ex != null) {
-                log.error("ChunksJcsCacheActor", ex);
+                log.error("StringObjectsJcsCacheActorFactory", ex);
             }
         }).toCompletableFuture().get();
         ObjectsActor.create(injector, ofSeconds(1)).whenComplete((cache, ex) -> {
@@ -181,11 +196,12 @@ public class ImporterMapImage2DbActor {
         knowledge.setLoadedKnowledges(loaded);
         terrainImageCreateMap
                 .create(actor.getObjectGetterAsyncNow(MapChunksJcsCacheActor.ID),
-                        actor.getObjectSetterAsyncNow(MapChunksJcsCacheActor.ID), storage, knowledge)
+                        actor.getObjectSetterAsyncNow(MapChunksJcsCacheActor.ID), chunksStorage, knowledge)
                 .startImportMapping(m.url, m.image, gm);
-        MapChunkBuffer.cacheCids(gm, storage);
+        MapChunkBuffer.cacheCids(gm, chunksStorage);
         createObjects(gm.getId(), gm.getCursor(), gm);
-        storage.shrinkCopyClose();
+        chunksStorage.shrinkCopyClose();
+        soStorage.close();
         m.replyTo.tell(new ImportImageSuccessMessage());
     }
 

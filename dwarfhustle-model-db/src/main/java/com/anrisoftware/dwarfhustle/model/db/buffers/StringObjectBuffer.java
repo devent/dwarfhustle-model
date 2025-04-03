@@ -17,44 +17,52 @@
  */
 package com.anrisoftware.dwarfhustle.model.db.buffers;
 
-import java.time.ZoneOffset;
-
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
+import com.anrisoftware.dwarfhustle.model.api.objects.StringObject;
+
 /**
- * Writes and reads {@link ZoneOffset} in a byte buffer.
- *
+ * Writes and reads {@link StringObject} in a byte buffer.
  *
  * <ul>
- * <li>@{code s} the total seconds;
+ * <li>@{code i} the ID;
+ * <li>@{code l} the length of the string;
+ * <li>@{code s} the string;
  * </ul>
  *
  * <pre>
  * long  0
  * int   0         1         2         3
- * short 0    1    2    3    4    5    6    7
- *       ssss ssss
+ * short 0    1    2    3    4    5    6
+ *       iiii iiii iiii iiii llll llll ssss ....
  * </pre>
  */
-public class ZoneOffsetBuffer {
+public class StringObjectBuffer {
 
     /**
      * Size in bytes.
      */
-    public static final int SIZE = //
-            1 * 4;
+    public static final int SIZE_MIN = GameObjectBuffer.SIZE + DirectBuffer.STR_HEADER_LEN;
 
-    public static void setZoneOffset(MutableDirectBuffer b, int off, ZoneOffset zone) {
-        setZoneOffset(b, off, zone.getTotalSeconds());
+    private static final int S_INDEX = 6 * 4;
+
+    public static void setString(MutableDirectBuffer b, int off, String s) {
+        b.putStringUtf8(S_INDEX + off, s);
     }
 
-    public static void setZoneOffset(MutableDirectBuffer b, int off, int seconds) {
-        b.putInt(off, seconds);
+    public static String getString(DirectBuffer b, int off) {
+        return b.getStringUtf8(S_INDEX + off);
     }
 
-    public static ZoneOffset getZoneOffset(DirectBuffer b, int off) {
-        return ZoneOffset.ofTotalSeconds(b.getInt(off));
+    public static void writeStringObject(MutableDirectBuffer b, int off, StringObject o) {
+        GameObjectBuffer.writeObject(b, off, o);
+        setString(b, off, o.getS());
     }
 
+    public static StringObject readStringObject(DirectBuffer b, int off, StringObject o) {
+        GameObjectBuffer.readObject(b, off, o);
+        o.setS(getString(b, off));
+        return o;
+    }
 }

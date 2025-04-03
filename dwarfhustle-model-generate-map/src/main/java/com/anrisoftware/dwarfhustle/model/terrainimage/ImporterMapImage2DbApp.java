@@ -45,6 +45,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.IdsObjectsProvider.IdsObje
 import com.anrisoftware.dwarfhustle.model.api.objects.MapArea;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsGetter;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectsSetter;
+import com.anrisoftware.dwarfhustle.model.api.objects.StringObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap;
 import com.anrisoftware.dwarfhustle.model.db.buffers.GameMapBuffer;
 import com.anrisoftware.dwarfhustle.model.db.buffers.WorldMapBuffer;
@@ -54,6 +55,7 @@ import com.anrisoftware.dwarfhustle.model.db.lmbd.GameObjectsLmbdStorage;
 import com.anrisoftware.dwarfhustle.model.db.lmbd.GameObjectsLmbdStorage.GameObjectsLmbdStorageFactory;
 import com.anrisoftware.dwarfhustle.model.db.lmbd.MapObjectsLmbdStorage;
 import com.anrisoftware.dwarfhustle.model.db.lmbd.MapObjectsLmbdStorage.MapObjectsLmbdStorageFactory;
+import com.anrisoftware.dwarfhustle.model.db.strings.StringsLuceneStorage.StringsLuceneStorageFactory;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.KnowledgeJcsCacheActor;
 import com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor;
 import com.anrisoftware.dwarfhustle.model.terrainimage.ImportImageMessage.ImportImageErrorMessage;
@@ -65,6 +67,7 @@ import akka.Done;
 import akka.actor.typed.ActorRef;
 import jakarta.inject.Inject;
 import lombok.SneakyThrows;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -85,10 +88,13 @@ public class ImporterMapImage2DbApp {
     private IDGenerator gen;
 
     @Inject
-    private GameObjectsLmbdStorageFactory gameObjectsFactory;
+    private GameObjectsLmbdStorageFactory goStorageFactory;
 
     @Inject
-    private MapObjectsLmbdStorageFactory mapObjectsFactory;
+    private MapObjectsLmbdStorageFactory moStorageFactory;
+
+    @Inject
+    private StringsLuceneStorageFactory soStorageFactory;
 
     private GameObjectsLmbdStorage gameObjectsStorage;
 
@@ -103,8 +109,9 @@ public class ImporterMapImage2DbApp {
      *
      * @param injector the {@link Injector} with external modules.
      */
-    public CompletableFuture<Void> init(Injector injector, File root, WorldMap wm, GameMap gm) {
-        initStorage(root, wm, gm);
+    public CompletableFuture<Void> init(Injector injector, File root, WorldMap wm, GameMap gm,
+            Iterable<StringObject> strings) {
+        initStorage(root, wm, gm, strings);
         var childInjector = injector.createChildInjector(new AbstractModule() {
             @Override
             protected void configure() {
@@ -112,7 +119,7 @@ public class ImporterMapImage2DbApp {
 
         });
         return CompletableFuture.allOf( //
-                createObjectsCacheStage(injector).thenAccept((a) -> {
+                createObjectsCacheStage(injector).thenAccept(a -> {
                     this.cacheActor = a;
                     createMapObjectsCacheWait(injector, mapObjectsStorage, mapObjectsStorage);
                     createKnowledgeWait(injector, wm, gm);
@@ -195,22 +202,29 @@ public class ImporterMapImage2DbApp {
     /**
      * Init storages.
      */
-    private void initStorage(File root, WorldMap wm, GameMap gm) {
+    private void initStorage(File root, WorldMap wm, GameMap gm, Iterable<StringObject> strings) {
         var gameObjectsPath = new File(root, "objects");
         if (!gameObjectsPath.isDirectory()) {
             gameObjectsPath.mkdir();
         }
         final long mapSize = 200 * (long) pow(10, 6);
-        this.gameObjectsStorage = gameObjectsFactory.create(gameObjectsPath.toPath(), mapSize);
-        var mapObjectsPath = new File(root, "map-" + gm.id);
+        this.gameObjectsStorage = goStorageFactory.create(gameObjectsPath.toPath(), mapSize);
+        var mapObjectsPath = new File(root, "map-" + gm.getId());
         if (!mapObjectsPath.isDirectory()) {
             mapObjectsPath.mkdir();
         }
-        this.mapObjectsStorage = mapObjectsFactory.create(mapObjectsPath.toPath(), gm, mapSize);
-        gameObjectsStorage.putObject(WorldMap.OBJECT_TYPE, wm.id, WorldMapBuffer.calcSize(wm),
-                (b) -> WorldMapBuffer.setWorldMap(b, 0, wm));
-        gameObjectsStorage.putObject(GameMap.OBJECT_TYPE, gm.id, GameMapBuffer.calcSize(gm),
-                (b) -> GameMapBuffer.setGameMap(b, 0, gm));
+        this.mapObjectsStorage = moStorageFactory.create(mapObjectsPath.toPath(), gm, mapSize);
+        gameObjectsStorage.putObject(WorldMap.OBJECT_TYPE, wm.getId(), WorldMapBuffer.calcSize(wm),
+                b -> WorldMapBuffer.setWorldMap(b, 0, wm));
+        gameObjectsStorage.putObject(GameMap.OBJECT_TYPE, gm.getId(), GameMapBuffer.SIZE,
+                b -> GameMapBuffer.setGameMap(b, 0, gm));
+        var stringsPath = new File(root, "strings");
+        if (!stringsPath.isDirectory()) {
+            stringsPath.mkdir();
+        }
+        val soStorage = soStorageFactory.create(stringsPath.toPath());
+        soStorage.addObject(strings);
+        soStorage.close();
     }
 
     private CompletionStage<ActorRef<Message>> createImporter(Injector injector) {
@@ -292,33 +306,43 @@ public class ImporterMapImage2DbApp {
      * @param image the {@link TerrainLoadImage}
      * @return the ID of the {@link GameMap}
      */
-    public GameMap createGameMap(Properties p, TerrainLoadImage image, int chunksCount, WorldMap wm)
+    public GameMap createGameMap(Properties p, TerrainLoadImage image, int chunksCount, WorldMap wm, long name)
             throws GeneratorException {
         var gm = new GameMap(gen.generate(), image.width, image.height, image.depth);
         wm.addMap(gm);
-        wm.currentMap = gm.id;
-        gm.world = wm.id;
-        gm.chunkSize = image.chunkSize;
-        gm.chunksCount = chunksCount;
-        gm.area = MapArea.create(50.99819f, 10.98348f, 50.96610f, 11.05610f);
-        gm.timeZone = ZoneOffset.ofHours(1);
+        wm.setCurrentMap(gm.getId());
+        gm.setWorld(wm.getId());
+        gm.setChunkSize(image.chunkSize);
+        gm.setChunksCount(chunksCount);
+        gm.setArea(MapArea.create(50.99819f, 10.98348f, 50.96610f, 11.05610f));
+        gm.setTimeZone(ZoneOffset.ofHours(1));
         gm.setCameraPos(0.0f, 0.0f, 83.0f);
         // gm.setCameraPos(0.0f, 0.0f, 12.0f);
         gm.setCameraRot(0.0f, 1.0f, 0.0f, 0.0f);
         gm.setCursorZ(0);
-        gm.setName(p.getProperty("map_name"));
+        gm.setName(name);
+        // gm.setName(p.getProperty("map_name"));
         return gm;
     }
 
     /**
      * Creates the {@link WorldMap} map properties.
      */
-    public WorldMap createWorldMap(Properties p) throws GeneratorException {
+    public WorldMap createWorldMap(Properties p, long name) throws GeneratorException {
         var wm = new WorldMap(gen.generate());
-        wm.setName(p.getProperty("world_name"));
-        wm.time = LocalDateTime.of(2023, Month.APRIL, 15, 12, 0);
-        wm.distanceLat = 100f;
-        wm.distanceLon = 100f;
+        wm.setName(name);
+        // wm.setName(p.getProperty("world_name"));
+        wm.setTime(LocalDateTime.of(2023, Month.APRIL, 15, 12, 0));
+        wm.setDistanceLat(100f);
+        wm.setDistanceLon(100f);
         return wm;
+    }
+
+    /**
+     * Creates a {@link StringObject}.
+     */
+    public StringObject createString(String s) throws GeneratorException {
+        var so = new StringObject(gen.generate(), s);
+        return so;
     }
 }

@@ -34,7 +34,8 @@ import com.google.auto.service.AutoService;
  *
  * <ul>
  * <li>@{code i} the ID;
- * <li>@{code w} the ID of the {@link GameMap#world};
+ * <li>@{code w} the ID of the {@link GameMap#world}
+ * <li>@{code O} the ID of the {@link GameMap#getCursorObject()}
  * <li>@{code W} the {@link GameMap#width};
  * <li>@{code H} the {@link GameMap#height};
  * <li>@{code D} the {@link GameMap#depth};
@@ -46,15 +47,16 @@ import com.google.auto.service.AutoService;
  * <li>@{code r} the {@link GameMap#cameraRot};
  * <li>@{code c} the {@link GameMap#cursor};
  * <li>@{code s} the {@link GameMap#sunPos};
+ * <li>@{code C} the {@link GameMap#getClimateZone()};
  * <li>@{code t} the {@link GameMap#timeZone};
  * <li>@{code n} the {@link GameMap#name};
  * </ul>
  *
  * <pre>
- * long  0                   1                   2                   3                   4                   5                   6
- * int   0         1         2         3         4         5         6         7         8         9         10        11        12
- * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21   22   23   24   25   26   27   28   29   30   31
- *       iiii iiii iiii iiii wwww wwww wwww wwww OOOO OOOO OOOO OOOO WWWW HHHH DDDD SSSS CCCC aaaa aaaa aaaa aaaa aaaa aaaa aaaa aaaa pppp pppp pppp pppp pppp pppp rrrr rrrr rrrr rrrr rrrr rrrr rrrr rrrr cccc cccc cccc ssss ssss ssss ssss ssss ssss tttt tttt nnnn nnnn ....
+ * long  0                   1                   2                   3                   4                   5                   6                   7                   8                   9                   10                  11                  12                  13
+ * int   0         1         2         3         4         5         6         7         8         9         10        11        12        13        14        15        16        17        18        19        20        21        22        23        24        25        26        27
+ * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21   22   23   24   25   26   27   28   29   30   31   32   33   34   35   36   37   38   39   40   41   42   43   44   45   46   47   48   49   50   51   52   53   54
+ *       iiii iiii iiii iiii wwww wwww wwww wwww OOOO OOOO OOOO OOOO WWWW HHHH DDDD SSSS CCCC aaaa aaaa aaaa aaaa aaaa aaaa aaaa aaaa pppp pppp pppp pppp pppp pppp rrrr rrrr rrrr rrrr rrrr rrrr rrrr rrrr cccc cccc cccc ssss ssss ssss ssss ssss ssss CCCC tttt tttt nnnn nnnn nnnn nnnn
  * </pre>
  */
 @AutoService(StoredObjectBuffer.class)
@@ -63,7 +65,7 @@ public class GameMapBuffer extends GameObjectBuffer implements StoredObjectBuffe
     /**
      * Size in bytes.
      */
-    public static final int MIN_SIZE = //
+    public static final int SIZE = //
             GameObjectBuffer.SIZE + //
                     8 + // world
                     8 + // cursorObject
@@ -71,14 +73,15 @@ public class GameMapBuffer extends GameObjectBuffer implements StoredObjectBuffe
                     MapAreaBuffer.SIZE + // area
                     3 * 4 + // cameraPos
                     4 * 4 + // cameraRot
-                    3 * 4 + // cursor
+                    GameBlockPosBuffer.SIZE + // cursor
                     3 * 4 + // sunPos
+                    2 + // climate zone
                     ZoneOffsetBuffer.SIZE + //
-                    1 * 4; // name
+                    8; // name
 
-    private static final int WORLD_BYTES = 4 * 2;
+    private static final int WORLD_BYTES = 1 * 8;
 
-    private static final int CURSOR_OBJECT_BYTES = 8 * 2;
+    private static final int CURSOR_OBJECT_BYTES = 2 * 8;
 
     private static final int WIDTH_BYTES = 12 * 2;
 
@@ -100,16 +103,11 @@ public class GameMapBuffer extends GameObjectBuffer implements StoredObjectBuffe
 
     private static final int SUN_POS_BYTES = 42 * 2;
 
-    private static final int TIME_BYTES = 48 * 2;
+    private static final int CLIMATE_BYTES = 48 * 2;
 
-    private static final int NAME_BYTES = 50 * 2;
+    private static final int TIME_BYTES = 49 * 2;
 
-    /**
-     * Calculates the size in bytes.
-     */
-    public static int calcSize(GameMap gm) {
-        return MIN_SIZE + BufferUtils.getSizeStringUtf8(gm.name);
-    }
+    private static final int NAME_BYTES = 51 * 2;
 
     public static void setWorld(MutableDirectBuffer b, int off, long w) {
         b.putLong(WORLD_BYTES + off, w);
@@ -242,6 +240,14 @@ public class GameMapBuffer extends GameObjectBuffer implements StoredObjectBuffe
         return p;
     }
 
+    public static int getClimateZone(DirectBuffer b, int off) {
+        return b.getShort(CLIMATE_BYTES + off);
+    }
+
+    public static void setClimateZone(MutableDirectBuffer b, int off, int z) {
+        b.putShort(CLIMATE_BYTES + off, (short) z);
+    }
+
     public static void setTimeZone(MutableDirectBuffer b, int off, ZoneOffset z) {
         ZoneOffsetBuffer.setZoneOffset(b, TIME_BYTES + off, z);
     }
@@ -254,48 +260,50 @@ public class GameMapBuffer extends GameObjectBuffer implements StoredObjectBuffe
         return ZoneOffsetBuffer.getZoneOffset(b, TIME_BYTES + off);
     }
 
-    public static void setName(MutableDirectBuffer b, int off, String name) {
-        b.putStringUtf8(NAME_BYTES + off, name);
+    public static void setName(MutableDirectBuffer b, int off, long name) {
+        b.putLong(NAME_BYTES + off, name);
     }
 
-    public static String getName(DirectBuffer b, int off) {
-        return b.getStringUtf8(NAME_BYTES + off);
+    public static long getName(DirectBuffer b, int off) {
+        return b.getLong(NAME_BYTES + off);
     }
 
     public static void setGameMap(MutableDirectBuffer b, int off, GameMap gm) {
-        setId(b, off, gm.id);
-        setWorld(b, off, gm.world);
-        setCursorObject(b, off, gm.cursorObject);
-        setWidth(b, off, gm.width);
-        setHeight(b, off, gm.height);
-        setDepth(b, off, gm.depth);
-        setChunkSize(b, off, gm.chunkSize);
-        setChunksCount(b, off, gm.chunksCount);
-        setArea(b, off, gm.area);
-        setCameraPos(b, off, gm.cameraPos);
-        setCameraRot(b, off, gm.cameraRot);
-        setCursor(b, off, gm.cursor);
-        setSunPos(b, off, gm.sunPos);
-        setTimeZone(b, off, gm.timeZone);
-        setName(b, off, gm.name);
+        setId(b, off, gm.getId());
+        setWorld(b, off, gm.getWorld());
+        setCursorObject(b, off, gm.getCursorObject());
+        setWidth(b, off, gm.getWidth());
+        setHeight(b, off, gm.getHeight());
+        setDepth(b, off, gm.getDepth());
+        setChunkSize(b, off, gm.getChunkSize());
+        setChunksCount(b, off, gm.getChunksCount());
+        setArea(b, off, gm.getArea());
+        setCameraPos(b, off, gm.getCameraPos());
+        setCameraRot(b, off, gm.getCameraRot());
+        setCursor(b, off, gm.getCursor());
+        setSunPos(b, off, gm.getSunPos());
+        setClimateZone(b, off, gm.getClimateZone());
+        setTimeZone(b, off, gm.getTimeZone());
+        setName(b, off, gm.getName());
     }
 
     public static GameMap getGameMap(DirectBuffer b, int off, GameMap gm) {
-        gm.id = getId(b, off);
-        gm.world = getWorld(b, off);
-        gm.cursorObject = getCursorObject(b, off);
-        gm.width = getWidth(b, off);
-        gm.height = getHeight(b, off);
-        gm.depth = getDepth(b, off);
-        gm.chunkSize = getChunkSize(b, off);
-        gm.chunksCount = getChunksCount(b, off);
-        getArea(b, off, gm.area);
-        getCameraPos(b, off, gm.cameraPos);
-        getCameraRot(b, off, gm.cameraRot);
-        getCursor(b, off, gm.cursor);
-        getSunPos(b, off, gm.sunPos);
-        gm.timeZone = getTimeZone(b, off);
-        gm.name = getName(b, off);
+        gm.setId(getId(b, off));
+        gm.setWorld(getWorld(b, off));
+        gm.setCursorObject(getCursorObject(b, off));
+        gm.setWidth(getWidth(b, off));
+        gm.setHeight(getHeight(b, off));
+        gm.setDepth(getDepth(b, off));
+        gm.setChunkSize(getChunkSize(b, off));
+        gm.setChunksCount(getChunksCount(b, off));
+        getArea(b, off, gm.getArea());
+        getCameraPos(b, off, gm.getCameraPos());
+        getCameraRot(b, off, gm.getCameraRot());
+        getCursor(b, off, gm.getCursor());
+        getSunPos(b, off, gm.getSunPos());
+        gm.setClimateZone(getClimateZone(b, off));
+        gm.setTimeZone(getTimeZone(b, off));
+        gm.setName(getName(b, off));
         return gm;
     }
 
@@ -311,7 +319,7 @@ public class GameMapBuffer extends GameObjectBuffer implements StoredObjectBuffe
 
     @Override
     public int getSize(StoredObject go) {
-        return GameMapBuffer.calcSize((GameMap) go);
+        return SIZE;
     }
 
     @Override

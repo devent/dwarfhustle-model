@@ -58,9 +58,9 @@ public class VegetationKnowledge extends AbstractKnowledge {
         final var root = getChunk(og, 0);
         final int x = v.getPos().getX(), y = v.getPos().getY(), z = v.getPos().getZ();
         final int wh = (int) floor(k.getWidthMax() / 2f), hh = (int) floor(k.getHeightMax() / 2f);
-        final int x0 = max(x - wh, 0), x1 = min(x + wh, gm.width - 1);
-        final int y0 = max(y - hh, 0), y1 = min(y + hh, gm.height - 1);
-        final int z0 = max(z - k.getDepthMax(), 0), z1 = min(v.getPos().getZ() + k.rootMaxSize, gm.depth - 1);
+        final int x0 = max(x - wh, 0), x1 = min(x + wh, gm.getWidth() - 1);
+        final int y0 = max(y - hh, 0), y1 = min(y + hh, gm.getHeight() - 1);
+        final int z0 = max(z - k.getDepthMax(), 0), z1 = min(v.getPos().getZ() + k.rootMaxSize, gm.getDepth() - 1);
         var chunk = findChunk(root, x0, y0, z0, og);
         final var done = new AtomicBoolean(false);
         int radius = 1, x0r, y0r, z0r, x1r, y1r, z1r;
@@ -79,7 +79,7 @@ public class VegetationKnowledge extends AbstractKnowledge {
                             chunk = findChunk(root, xx, yy, zz, og);
                         }
                         session.insert(new VegetationBlockFact(done, v, k, getObjects(), getMaterials(), og, os, root,
-                                xx, yy, zz, gm.width, gm.height, gm.depth));
+                                xx, yy, zz, gm.getWidth(), gm.getHeight(), gm.getDepth()));
                     }
                 }
             }
