@@ -29,6 +29,7 @@ import org.eclipse.collections.api.map.primitive.IntObjectMap;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
+import com.anrisoftware.dwarfhustle.model.api.objects.NamedObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.google.auto.service.AutoService;
 
@@ -45,7 +46,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @AutoService(StoredObject.class)
-public class Building extends GameMapObject {
+public class Building extends GameMapObject implements NamedObject {
 
     public static final int OBJECT_TYPE = "Building".hashCode();
 

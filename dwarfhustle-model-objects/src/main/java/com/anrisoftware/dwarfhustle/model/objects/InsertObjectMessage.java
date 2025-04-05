@@ -90,18 +90,18 @@ public class InsertObjectMessage<T extends ObjectResponseMessage> extends Messag
 
     public final GameBlockPos pos;
 
-    public final Consumer<GameMapObject> consumer;
+    public final Consumer<GameMapObject> setup;
 
     public final Runnable onInserted;
 
     public InsertObjectMessage(ActorRef<T> replyTo, long gm, int cid, KnowledgeObject ko, GameBlockPos pos,
-            Consumer<GameMapObject> consumer, Runnable onInserted) {
+            Consumer<GameMapObject> setup, Runnable onInserted) {
         this.replyTo = replyTo;
         this.gm = gm;
         this.cid = cid;
         this.ko = ko;
         this.pos = pos;
-        this.consumer = consumer;
+        this.setup = setup;
         this.onInserted = onInserted;
     }
 

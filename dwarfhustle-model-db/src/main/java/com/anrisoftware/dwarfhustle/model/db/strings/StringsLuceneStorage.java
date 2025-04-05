@@ -92,6 +92,9 @@ public class StringsLuceneStorage implements GameObjectsStorage {
 
     @SneakyThrows
     public StringObject getObject(int type, long key) {
+        if (key == 141190622128845l) {
+            System.out.println(); // TODO
+        }
         searcher.maybeRefresh();
         reader.maybeRefresh();
         val o = new StringObject();

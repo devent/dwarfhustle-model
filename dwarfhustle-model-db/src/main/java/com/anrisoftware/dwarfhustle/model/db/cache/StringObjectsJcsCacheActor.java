@@ -27,10 +27,6 @@ import java.util.function.Consumer;
 import org.apache.commons.jcs3.JCS;
 import org.apache.commons.jcs3.access.CacheAccess;
 import org.apache.commons.jcs3.access.exception.CacheException;
-import org.eclipse.collections.api.factory.primitive.LongLists;
-import org.eclipse.collections.api.factory.primitive.LongSets;
-import org.eclipse.collections.api.list.primitive.MutableLongList;
-import org.eclipse.collections.api.set.primitive.MutableLongSet;
 
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
@@ -123,16 +119,6 @@ public class StringObjectsJcsCacheActor extends AbstractJcsCacheActor {
         return initCache;
     }
 
-    private MutableLongSet objects;
-
-    @Override
-    protected Behavior<Message> initialStage(InitialStateMessage m) {
-        log.debug("initialStage {}", m);
-        final MutableLongSet objects = LongSets.mutable.withInitialCapacity(100);
-        this.objects = objects.asSynchronized();
-        return super.initialStage(m);
-    }
-
     @Override
     protected int getId() {
         return ID;
@@ -140,16 +126,12 @@ public class StringObjectsJcsCacheActor extends AbstractJcsCacheActor {
 
     @Override
     protected void storeValueBackend(GameObject go) {
-        objects.add(go.getId());
+        os.set(go.getObjectType(), go);
     }
 
     @Override
     protected void storeValuesBackend(int type, Iterable<GameObject> values) {
-        MutableLongList v = LongLists.mutable.withInitialCapacity(100);
-        for (val go : values) {
-            v.add(go.getId());
-        }
-        objects.addAll(v);
+        os.set(type, values);
     }
 
     @Override
@@ -165,7 +147,6 @@ public class StringObjectsJcsCacheActor extends AbstractJcsCacheActor {
 
     @Override
     protected void removeValueBackend(int type, GameObject go) {
-        objects.remove(go.getId());
         os.remove(StringObject.OBJECT_TYPE, go);
     }
 
@@ -173,11 +154,6 @@ public class StringObjectsJcsCacheActor extends AbstractJcsCacheActor {
      * @see ShutdownMessage
      */
     protected Behavior<Message> onShutdown(ShutdownMessage m) {
-        for (final var it = objects.longIterator(); it.hasNext();) {
-            val next = it.next();
-            val go = cache.get(next);
-            os.set(StringObject.OBJECT_TYPE, go);
-        }
         return Behaviors.stopped();
     }
 

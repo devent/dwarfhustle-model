@@ -33,10 +33,10 @@ import com.google.auto.service.AutoService;
  * </ul>
  *
  * <pre>
- * long  0                   1                   2                   3                   4                   5
- * int   0         1         2         3         4         5         6         7         8         9         10
- * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21
- *       iiii iiii iiii iiii kkkk kkkk oooo oooo mmmm mmmm mmmm mmmm xxxx yyyy zzzz tttt wwww hhhh dddd llll pppp pppp
+ * long  0                   1                   2                   3                   4                   5                   6
+ * int   0         1         2         3         4         5         6         7         8         9         10        11        12
+ * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21   22   23   24   25
+ *       iiii iiii iiii iiii kkkk kkkk oooo oooo mmmm mmmm mmmm mmmm xxxx yyyy zzzz tttt wwww hhhh dddd llll pppp pppp nnnn nnnn nnnn nnnn
  * </pre>
  */
 @AutoService(StoredObjectBuffer.class)
@@ -45,14 +45,28 @@ public class BuildingBuffer implements StoredObjectBuffer {
     /**
      * Size in bytes.
      */
-    public static final int SIZE = GameMapObjectBuffer.SIZE;
+    public static final int SIZE = GameMapObjectBuffer.SIZE //
+            + 8 // name
+    ;
+
+    private static final int NAME_BYTES = 22 * 2;
+
+    public static void setName(MutableDirectBuffer b, int off, long name) {
+        b.putLong(NAME_BYTES + off, name);
+    }
+
+    public static long getName(DirectBuffer b, int off) {
+        return b.getLong(NAME_BYTES + off);
+    }
 
     public static void setBuilding(MutableDirectBuffer b, int off, Building o) {
         GameMapObjectBuffer.writeObject(b, off, o);
+        setName(b, off, o.getName());
     }
 
     public static Building getBuilding(DirectBuffer b, int off, Building o) {
         GameMapObjectBuffer.readObject(b, off, o);
+        o.setName(getName(b, off));
         return o;
     }
 

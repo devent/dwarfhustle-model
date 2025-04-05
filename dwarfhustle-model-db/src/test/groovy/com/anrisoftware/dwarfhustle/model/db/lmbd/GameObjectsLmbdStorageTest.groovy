@@ -22,10 +22,10 @@ import static java.lang.Math.pow
 import java.nio.file.Path
 
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
+import com.anrisoftware.dwarfhustle.model.api.buildings.Building
 import com.anrisoftware.dwarfhustle.model.api.map.Block
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap
 import com.anrisoftware.dwarfhustle.model.api.objects.WorldMap
@@ -97,7 +97,7 @@ class GameObjectsLmbdStorageTest {
     }
 
     @Test
-    @Disabled
+    //@org.junit.jupiter.api.Disabled
     void read_objects_test() {
         Path tmp = Path.of("/home/devent/Projects/dwarf-hustle/terrain-maps/game/", "terrain_32_32_32_8", "objects")
         long mapSize = 200 * (long) pow(10, 6);
@@ -109,6 +109,9 @@ class GameObjectsLmbdStorageTest {
             println it
         })
         storage.getObjects(Block.OBJECT_TYPE, {
+            println it
+        })
+        storage.getObjects(Building.OBJECT_TYPE, {
             println it
         })
         storage.close()

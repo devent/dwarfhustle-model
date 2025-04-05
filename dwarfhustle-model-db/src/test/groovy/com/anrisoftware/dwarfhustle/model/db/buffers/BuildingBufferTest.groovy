@@ -42,16 +42,16 @@ class BuildingBufferTest {
         def args = []
         int offset = 0
         def b = ByteBuffer.allocate(offset + BuildingBuffer.SIZE)
-        args << of(b, offset, 1, 2, 3, 4, 10, 20, 30, 0b0001, 22, 100, "0100 0000 0000 0000 0200 0000 0300 0000 0400 0000 0000 0000 0a00 1400 1e00 1680 0100 0100 0100 6480 0100 0000")
+        args << of(b, offset, 1, 55, 2, 3, 4, 10, 20, 30, 0b0001, 22, 100, "0100 0000 0000 0000 0200 0000 0300 0000 0400 0000 0000 0000 0a00 1400 1e00 1680 0100 0100 0100 6480 0100 0000 3700 0000 0000 0000")
         offset = 3
         b = ByteBuffer.allocate(offset + BuildingBuffer.SIZE)
-        args << of(b, offset, 1, 2, 3, 4, 10, 20, 30, 0b0001, 22, 100, "000000 0100 0000 0000 0000 0200 0000 0300 0000 0400 0000 0000 0000 0a00 1400 1e00 1680 0100 0100 0100 6480 0100 0000")
+        args << of(b, offset, 1, 55, 2, 3, 4, 10, 20, 30, 0b0001, 22, 100, "000000 0100 0000 0000 0000 0200 0000 0300 0000 0400 0000 0000 0000 0a00 1400 1e00 1680 0100 0100 0100 6480 0100 0000 3700 0000 0000 0000")
         Stream.of(args as Object[])
     }
 
     @ParameterizedTest
     @MethodSource()
-    void write_read_Building(ByteBuffer b, int offset, long id, int kid, int oid, long map, int x, int y, int z, int p, int t, int l, def expected) {
+    void write_read_Building(ByteBuffer b, int offset, long id, long name, int kid, int oid, long map, int x, int y, int z, int p, int t, int l, def expected) {
         def o = new Building(id, new GameBlockPos(x, y, z)) {
 
                     @Override
@@ -59,6 +59,7 @@ class BuildingBufferTest {
                         return 0;
                     }
                 }
+        o.name = name
         o.kid = kid
         o.oid = oid
         o.map = map
@@ -76,6 +77,7 @@ class BuildingBufferTest {
                 }
         BuildingBuffer.getBuilding(new UnsafeBuffer(b), offset, thato)
         assert thato.id == id
+        assert thato.name == name
         assert thato.kid == kid
         assert thato.oid == oid
         assert thato.map == map

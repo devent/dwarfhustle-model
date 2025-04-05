@@ -219,7 +219,7 @@ public class ObjectsActor {
         go.setOid(m.ko.getKnowledgeType().hashCode());
         go.setVisible(true);
         go.setCanSelect(true);
-        m.consumer.accept(go);
+        m.setup.accept(go);
         is.os.set(go.getObjectType(), go);
         final var gm = getGameMap(is.og, m.gm);
         try (var lock = gm.acquireLockMapObjects()) {
