@@ -35,7 +35,7 @@ import org.eclipse.collections.api.list.primitive.MutableIntList;
 import org.eclipse.collections.api.map.primitive.MutableIntIntMap;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 
-import com.anrisoftware.dwarfhustle.model.api.materials.BlockMaterial;
+import com.anrisoftware.dwarfhustle.model.api.materials.KnowledgeMaterial;
 import com.anrisoftware.dwarfhustle.model.api.materials.Wood;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeBranch;
@@ -104,7 +104,7 @@ public class VegetationLoadKnowledges extends DefaultLoadKnowledges {
     private void materialsGetFilterName(String name, ListIterable<KnowledgeObject> res, int hash) {
         var materials = (MutableIntObjectMap<IntList>) this.materials;
         knowledgeGet(res, IntLists.mutable.empty(), (o) -> {
-            var ot = (BlockMaterial) o;
+            var ot = (KnowledgeMaterial) o;
             if (startsWithIgnoreCase(ot.getName(), name)) {
                 var m = (MutableIntList) materials.get(hash);
                 m.add(o.getKid());

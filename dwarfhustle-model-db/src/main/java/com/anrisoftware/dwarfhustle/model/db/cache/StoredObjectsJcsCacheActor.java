@@ -170,7 +170,7 @@ public class StoredObjectsJcsCacheActor extends AbstractJcsCacheActor {
                 final List<GameObject> list = Lists.mutable.ofAll(queue.values());
                 queue.clear();
                 for (final var go : list) {
-                    System.out.println(go); // TODO
+                    // System.out.println(go); // TODO
                     os.set(go.getObjectType(), go);
                 }
                 queueLock.release();

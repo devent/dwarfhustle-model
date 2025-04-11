@@ -31,7 +31,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Getter
-public class MetalOre extends BlockMaterial {
+public class MetalOre extends KnowledgeMaterial {
 
     public static final int OBJECT_TYPE = MetalOre.class.getSimpleName().hashCode();
 

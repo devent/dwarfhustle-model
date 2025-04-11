@@ -36,9 +36,9 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-public class BlockMaterial extends KnowledgeObject {
+public class KnowledgeMaterial extends KnowledgeObject {
 
-    public static final int OBJECT_TYPE = BlockMaterial.class.getSimpleName().hashCode();
+    public static final int OBJECT_TYPE = KnowledgeMaterial.class.getSimpleName().hashCode();
 
     public static final String TYPE = "Material";
 
@@ -50,18 +50,18 @@ public class BlockMaterial extends KnowledgeObject {
 
     private float thermalConductivity;
 
-    public BlockMaterial(int kid) {
+    public KnowledgeMaterial(int kid) {
         super(kid);
     }
 
     @Override
     public int getObjectType() {
-        return BlockMaterial.OBJECT_TYPE;
+        return KnowledgeMaterial.OBJECT_TYPE;
     }
 
     @Override
     public String getKnowledgeType() {
-        return BlockMaterial.TYPE;
+        return KnowledgeMaterial.TYPE;
     }
 
     @Override

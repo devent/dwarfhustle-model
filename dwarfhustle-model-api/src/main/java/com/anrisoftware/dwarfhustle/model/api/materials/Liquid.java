@@ -31,7 +31,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Getter
-public class Liquid extends BlockMaterial {
+public class Liquid extends KnowledgeMaterial {
 
     public static final int OBJECT_TYPE = Liquid.class.getSimpleName().hashCode();
 

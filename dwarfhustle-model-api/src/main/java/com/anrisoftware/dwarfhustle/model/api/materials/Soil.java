@@ -31,7 +31,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Getter
-public class Soil extends BlockMaterial {
+public class Soil extends KnowledgeMaterial {
 
     public static final int OBJECT_TYPE = Soil.class.getSimpleName().hashCode();
 

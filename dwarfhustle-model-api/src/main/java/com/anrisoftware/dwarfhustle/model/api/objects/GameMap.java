@@ -17,13 +17,15 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.objects;
 
-import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readExternalMutableIntIntMultimap;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamIntCollection;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamIntIntMap;
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamIntIntMultimap;
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamIntLongMultimap;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamIntObjectMapReader;
-import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeExternalMutableIntIntMultimap;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamIntCollection;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamIntIntMap;
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamIntIntMultimap;
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamIntLongMultimap;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamIntObjectMap;
 import static com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos.calcIndex;
 
@@ -37,6 +39,7 @@ import java.time.ZoneOffset;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.eclipse.collections.api.collection.MutableCollection;
 import org.eclipse.collections.api.factory.primitive.IntIntMaps;
 import org.eclipse.collections.api.factory.primitive.IntLists;
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
@@ -215,6 +218,13 @@ public class GameMap extends GameObject implements StoredObject {
     @ToString.Exclude
     private int selectedObjectType = 0;
 
+    /**
+     * Cashes the existing object types to the object.
+     */
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private MutableMultimap<Integer, Long> typesObjects;
+
     public GameMap() {
         final MutableIntObjectMap<AtomicInteger> filledBlocks = IntObjectMaps.mutable.withInitialCapacity(100);
         this.filledBlocks = filledBlocks.asSynchronized();
@@ -224,6 +234,8 @@ public class GameMap extends GameObject implements StoredObject {
         this.selectedBlocks = selectedBlocks.asSynchronized();
         this.cids = IntIntMaps.immutable.empty();
         this.objectsLock = new Semaphore(1);
+        final MutableMultimap<Integer, Long> typesObjects = Multimaps.mutable.set.empty();
+        this.typesObjects = typesObjects.asSynchronized();
     }
 
     public GameMap(long id, int width, int height, int depth) {
@@ -239,6 +251,8 @@ public class GameMap extends GameObject implements StoredObject {
         final MutableIntList selectedBlocks = IntLists.mutable.empty();
         this.selectedBlocks = selectedBlocks.asSynchronized();
         this.objectsLock = new Semaphore(1);
+        final MutableMultimap<Integer, Long> typesObjects = Multimaps.mutable.set.empty();
+        this.typesObjects = typesObjects.asSynchronized();
     }
 
     public GameMap(byte[] idbuf, int width, int height, int depth) {
@@ -373,12 +387,13 @@ public class GameMap extends GameObject implements StoredObject {
         out.writeFloat(this.sunPos[2]);
         out.writeInt(this.climateZone);
         writeStreamIntObjectMap(out, this.filledBlocks, this::writeAtomicInt);
-        writeExternalMutableIntIntMultimap(out, this.filledChunks);
+        writeStreamIntIntMultimap(out, this.filledChunks);
         writeStreamIntCollection(out, selectedBlocks.size(), selectedBlocks);
         out.writeLong(this.cursorObject);
         writeStreamIntIntMap(out, cids);
         out.writeInt(selectedObjectType);
         out.writeLong(selectedObjectId);
+        writeStreamIntLongMultimap(out, typesObjects);
     }
 
     @SneakyThrows
@@ -412,7 +427,7 @@ public class GameMap extends GameObject implements StoredObject {
         this.climateZone = in.readInt();
         final var filledBlocks = readStreamIntObjectMapReader(in, this::readAtomicInt);
         this.filledBlocks = filledBlocks.asSynchronized();
-        final var filledChunks = readExternalMutableIntIntMultimap(in, () -> Multimaps.mutable.set.empty());
+        final var filledChunks = readStreamIntIntMultimap(in, () -> Multimaps.mutable.set.empty());
         this.filledChunks = filledChunks.asSynchronized();
         final MutableIntList selectedBlocks = (MutableIntList) readStreamIntCollection(in);
         this.selectedBlocks = selectedBlocks.asSynchronized();
@@ -420,6 +435,8 @@ public class GameMap extends GameObject implements StoredObject {
         this.cids = readStreamIntIntMap(in);
         this.selectedObjectType = in.readInt();
         this.selectedObjectId = in.readLong();
+        final var typesObjects = readStreamIntLongMultimap(in, () -> Multimaps.mutable.set.empty());
+        this.typesObjects = typesObjects.asSynchronized();
     }
 
     @SneakyThrows
@@ -481,5 +498,17 @@ public class GameMap extends GameObject implements StoredObject {
     public void clearSelectedObject() {
         this.selectedObjectId = 0;
         this.selectedObjectType = 0;
+    }
+
+    public void addTypeObject(int type, long id) {
+        typesObjects.put(type, id);
+    }
+
+    public void removeTypeObject(int type, long id) {
+        typesObjects.remove(type, id);
+    }
+
+    public MutableCollection<Long> getObjectForType(int type) {
+        return typesObjects.get(type);
     }
 }

@@ -1,0 +1,40 @@
+;;; -*- Mode: Lisp; Package: STELLA; Syntax: COMMON-LISP; Base: 10 -*-
+
+;;; Author: Erwin Mueller
+;;; Version: game-map-objects-misc.plm,v 1.0
+
+;;; Using Modules
+
+(defmodule "DWARFHUSTLE-OBJECTS-MISC"
+  :documentation "Furniture, etc."
+  :includes ("PL-USER")
+  :uses ("LOGIC" "STELLA" "DWARFHUSTLE-GAME-MAP" "DWARFHUSTLE-GAME-MAP-OBJECTS" "DWARFHUSTLE-MATERIALS")
+  )
+
+(in-module "DWARFHUSTLE-OBJECTS-MISC")
+
+;; clear any info from previous runs:
+(clear-module "DWARFHUSTLE-OBJECTS-MISC")
+(reset-features)
+
+(defconcept Salt-Lump (?v ObjectType))
+
+(defconcept bucket (?v ObjectType))
+(defconcept bucket-sea-water (?v bucket))
+(defconcept bucket-brine (?v bucket))
+(defconcept bucket-water (?v bucket))
+
+(defconcept Furniture (?type ObjectType))
+  :documentation "Tables, chair, shelvs, etc."
+
+(defconcept Furniture-Table (?v Furniture))
+(assert (= (object-width Furniture-Table) 1))
+(assert (= (object-height Furniture-Table) 1))
+(assert (= (object-depth Furniture-Table) 1))
+(assert (= (object-passable Furniture-Table) 1)) :documentation "Passable tiles top to bottom: 1."
+
+(defconcept Furniture-Chair (?v Furniture))
+(assert (= (object-width Furniture-Chair) 1))
+(assert (= (object-height Furniture-Chair) 1))
+(assert (= (object-depth Furniture-Chair) 1))
+(assert (= (object-passable Furniture-Chair) 1)) :documentation "Passable tiles top to bottom: 1."

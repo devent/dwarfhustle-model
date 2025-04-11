@@ -17,7 +17,9 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.buildings;
 
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamIntCollection;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamIntIntMap;
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamIntCollection;
 import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamIntIntMap;
 
 import java.io.DataInput;
@@ -25,7 +27,9 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.time.Duration;
 
+import org.eclipse.collections.api.factory.primitive.IntSets;
 import org.eclipse.collections.api.map.primitive.IntIntMap;
+import org.eclipse.collections.api.set.primitive.IntSet;
 
 import com.anrisoftware.dwarfhustle.model.api.map.Block;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
@@ -57,6 +61,8 @@ public class KnowledgeWorkJob extends ObjectType {
     private int building;
 
     private IntIntMap inputUnits;
+
+    private IntSet inputTypes;
 
     private IntIntMap outputUnits;
 
@@ -91,6 +97,7 @@ public class KnowledgeWorkJob extends ObjectType {
         out.writeInt(building);
         writeStreamIntIntMap(out, inputUnits);
         writeStreamIntIntMap(out, outputUnits);
+        writeStreamIntCollection(out, inputTypes.size(), inputUnits);
         out.writeLong(duration.getSeconds());
     }
 
@@ -100,6 +107,7 @@ public class KnowledgeWorkJob extends ObjectType {
         this.building = in.readInt();
         this.inputUnits = readStreamIntIntMap(in);
         this.outputUnits = readStreamIntIntMap(in);
+        this.inputTypes = IntSets.immutable.ofAll(readStreamIntCollection(in));
         this.duration = Duration.ofSeconds(in.readLong());
     }
 

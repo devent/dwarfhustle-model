@@ -24,14 +24,16 @@
 ;;
 (assert (work-job job-saltmaking-seawater))
 (assert (work-building job-saltmaking-seawater building-salt-works))
-(assert (work-input-units job-saltmaking-seawater DWARFHUSTLE-MATERIALS-LIQUIDS/Sea-Water 1))
-(assert (work-output-units job-saltmaking-seawater DWARFHUSTLE-MATERIALS-OTHER/Salt-Lump 3))
+(assert (= (work-input-units job-saltmaking-seawater DWARFHUSTLE-MATERIALS-LIQUIDS/Sea-Water) 1))
+(assert (work-input-types job-saltmaking-seawater DWARFHUSTLE-OBJECTS-MISC/bucket-sea-water))
+(assert (= (work-output-units job-saltmaking-seawater DWARFHUSTLE-OBJECTS-MISC/Salt-Lump) 3))
 (assert (= (work-duration job-saltmaking-seawater) 6))
 ;;
 (assert (work-job job-saltmaking-brine))
 (assert (work-building job-saltmaking-brine building-salt-works))
-(assert (work-input-units job-saltmaking-brine DWARFHUSTLE-MATERIALS-LIQUIDS/Brine 1))
-(assert (work-output-units job-saltmaking-brine DWARFHUSTLE-MATERIALS-OTHER/Salt-Lump 3))
+(assert (= (work-input-units job-saltmaking-brine DWARFHUSTLE-MATERIALS-LIQUIDS/Brine) 1))
+(assert (work-input-types job-saltmaking-seawater DWARFHUSTLE-OBJECTS-MISC/bucket-brine))
+(assert (= (work-output-units job-saltmaking-brine DWARFHUSTLE-OBJECTS-MISC/Salt-Lump) 3))
 (assert (= (work-duration job-saltmaking-brine) 6))
 
 (assert (Building building-apothecary)) :documentation "Workshop for medical professional who formulates and dispenses materia medica (medicine) to physicians, surgeons and patients."
@@ -63,8 +65,18 @@
 (assert (work-job job-carpenter-plank))
 (assert (work-building job-carpenter-plank building-carpenter))
 (assert (= (work-input-units job-carpenter-plank DWARFHUSTLE-MATERIALS/Wood-Log) 1))
+(assert (work-input-types job-carpenter-plank DWARFHUSTLE-OBJECTS-MISC/Wood-Log-Pine-Wood))
+(assert (work-input-types job-carpenter-plank DWARFHUSTLE-OBJECTS-MISC/Wood-Log-Pine-Birch))
 (assert (= (work-output-units job-carpenter-plank DWARFHUSTLE-MATERIALS/Wood-Plank) 3))
 (assert (= (work-duration job-carpenter-plank) 3))
+;;
+(assert (work-job job-carpenter-table))
+(assert (work-building job-carpenter-table building-carpenter))
+(assert (= (work-input-units job-carpenter-table DWARFHUSTLE-MATERIALS/Wood-Plank) 1))
+(assert (work-input-types job-carpenter-table DWARFHUSTLE-OBJECTS-MISC/Wood-Plank-Pine-Wood))
+(assert (work-input-types job-carpenter-table DWARFHUSTLE-OBJECTS-MISC/Wood-Plank-Pine-Birch))
+(assert (= (work-output-units job-carpenter-table DWARFHUSTLE-OBJECTS-MISC/Furniture-Table) 1))
+(assert (= (work-duration job-carpenter-table) 12))
 
 (assert (Building building-sawmill)) :documentation "Sawmill with power produces planks."
 (assert (= (object-width building-sawmill) 5))
@@ -77,6 +89,8 @@
 (assert (work-job job-sawmill-plank))
 (assert (work-building job-sawmill-plank building-sawmill))
 (assert (= (work-input-units job-sawmill-plank DWARFHUSTLE-MATERIALS/Wood-Log) 1))
+(assert (work-input-types job-sawmill-plank DWARFHUSTLE-OBJECTS-MISC/Wood-Log-Pine-Wood))
+(assert (work-input-types job-sawmill-plank DWARFHUSTLE-OBJECTS-MISC/Wood-Log-Pine-Birch))
 (assert (= (work-output-units job-sawmill-plank DWARFHUSTLE-MATERIALS/Wood-Plank) 3))
 (assert (= (work-duration job-sawmill-plank) 1))
 

@@ -19,28 +19,28 @@ package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
 import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.PowerLoomUtils.retrieveFloat;
 
-import com.anrisoftware.dwarfhustle.model.api.materials.BlockMaterial;
+import com.anrisoftware.dwarfhustle.model.api.materials.KnowledgeMaterial;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.google.auto.service.AutoService;
 
 /**
- * Storage for {@link BlockMaterial}.
+ * Storage for {@link KnowledgeMaterial}.
  *
- * @see BlockMaterial
+ * @see KnowledgeMaterial
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @AutoService(GameObjectKnowledge.class)
-public class MaterialStorage extends AbstractMaterialStorage {
+public class MaterialStorage extends AbstractKnowledgeObjectStorage {
 
     @Override
     public String getType() {
-        return BlockMaterial.TYPE;
+        return KnowledgeMaterial.TYPE;
     }
 
     @Override
     public KnowledgeObject retrieve(Object o, KnowledgeObject go) {
         super.retrieve(o, go);
-        var m = (BlockMaterial) go;
+        var m = (KnowledgeMaterial) go;
         m.setMeltingPoint(retrieveFloat("melting-point-material", m.getName()));
         m.setDensity(retrieveFloat("density-of-material", m.getName()));
         m.setSpecificHeatCapacity(retrieveFloat("specific-heat-capacity-of-material", m.getName()));
@@ -50,6 +50,6 @@ public class MaterialStorage extends AbstractMaterialStorage {
 
     @Override
     public KnowledgeObject create() {
-        return new BlockMaterial();
+        return new KnowledgeMaterial();
     }
 }

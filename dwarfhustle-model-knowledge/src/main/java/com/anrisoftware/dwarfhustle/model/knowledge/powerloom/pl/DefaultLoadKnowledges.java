@@ -36,7 +36,7 @@ import org.eclipse.collections.api.map.primitive.MutableIntIntMap;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 
 import com.anrisoftware.dwarfhustle.model.api.map.BlockObject;
-import com.anrisoftware.dwarfhustle.model.api.materials.BlockMaterial;
+import com.anrisoftware.dwarfhustle.model.api.materials.KnowledgeMaterial;
 import com.anrisoftware.dwarfhustle.model.api.materials.Gas;
 import com.anrisoftware.dwarfhustle.model.api.materials.Liquid;
 import com.anrisoftware.dwarfhustle.model.api.materials.Soil;
@@ -166,7 +166,7 @@ public class DefaultLoadKnowledges {
                 }).toCompletableFuture(), //
                 ask.doAskAsync(ASK_TIMEOUT, Gas.TYPE).whenComplete((res, ex) -> {
                     knowledgeGet(res, gases, (o) -> {
-                        var mo = (BlockMaterial) o;
+                        var mo = (KnowledgeMaterial) o;
                         if (mo.getName().equalsIgnoreCase("oxygen")) {
                             oxygen.add(o.getKid());
                         }

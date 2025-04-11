@@ -17,22 +17,22 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
-import com.anrisoftware.dwarfhustle.model.api.materials.BlockMaterial;
+import com.anrisoftware.dwarfhustle.model.api.materials.KnowledgeMaterial;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 
 import edu.isi.powerloom.logic.LogicObject;
 
 /**
- * Retrieves the KID.
+ * Retrieves the KID and name.
  *
  * @see KnowledgeObject
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-public abstract class AbstractMaterialStorage implements GameObjectKnowledge {
+public abstract class AbstractKnowledgeObjectStorage implements GameObjectKnowledge {
 
     @Override
     public String getType() {
-        return BlockMaterial.TYPE;
+        return KnowledgeMaterial.TYPE;
     }
 
     @Override
@@ -47,10 +47,5 @@ public abstract class AbstractMaterialStorage implements GameObjectKnowledge {
     @Override
     public KnowledgeObject overrideProperties(String parent, KnowledgeObject go) {
         return go;
-    }
-
-    @Override
-    public KnowledgeObject create() {
-        return new BlockMaterial();
     }
 }

@@ -25,6 +25,8 @@
 
 (deffunction work-input-units ((?w work-job) (?m Material)) :-> (?n INTEGER))
 
-(deffunction work-output-units ((?w work-job) (?m Material)) :-> (?n INTEGER))
+(defrelation work-input-types ((?w work-job) (?o ObjectType)))
+
+(deffunction work-output-units ((?w work-job) (?m ObjectType)) :-> (?n INTEGER))
 
 (deffunction work-duration ((?w work-job)) :-> (?hours INTEGER))

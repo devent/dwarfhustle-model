@@ -211,7 +211,8 @@ public class ImporterMapImage2DbActor {
         var cg = actor.getObjectGetterAsyncNow(MapChunksJcsCacheActor.ID);
         var chunk = MapChunk.getChunk(cg, 0);
         var mb = MapChunkBuffer.findBlock(chunk, cursor, cg);
-        var ko = askKnowledgeObjectName(actor.getActorSystem(), ofSeconds(10), BlockObject.TYPE, "block-focus");
+        var ko = askKnowledgeObjectName(actor.getActorSystem(), ofSeconds(10), BlockObject.class, BlockObject.TYPE,
+                "block-focus");
         var iret = askInsertObject(actor.getActorSystem(), mid, mb.getParent(), ko, cursor, ofSeconds(1), (o) -> {
             o.setElevated(true);
             o.setCanSelect(false);

@@ -104,8 +104,9 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
      * @see KnowledgeObject
      */
     public static <T extends KnowledgeObject> T askKnowledgeObject(ActorSystem<Message> a, Duration timeout,
-            String type, Predicate<T> predicate) throws InterruptedException, ExecutionException, TimeoutException {
-        return askKnowledgeObject(a, timeout, a.scheduler(), type, predicate);
+            Class<T> clazz, String type, Predicate<T> predicate)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        return askKnowledgeObject(a, timeout, a.scheduler(), clazz, type, predicate);
     }
 
     /**
@@ -115,7 +116,7 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
      */
     @SuppressWarnings("unchecked")
     public static <T extends KnowledgeObject> T askKnowledgeObject(ActorRef<Message> a, Duration timeout,
-            Scheduler scheduler, String type, Predicate<T> predicate)
+            Scheduler scheduler, Class<T> clazz, String type, Predicate<T> predicate)
             throws InterruptedException, ExecutionException, TimeoutException {
         return askKnowledgeObjects(a, timeout, scheduler, type).toCompletableFuture()
                 .get(timeout.toMillis(), MILLISECONDS).collectIf(o -> {
@@ -129,9 +130,37 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
      *
      * @see KnowledgeObject
      */
+    public static <T extends KnowledgeObject> ListIterable<T> askKnowledgeObjects(ActorSystem<Message> a,
+            Duration timeout, Class<T> clazz, String type, Predicate<T> predicate)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        return askKnowledgeObjects(a, timeout, a.scheduler(), clazz, type, predicate);
+    }
+
+    /**
+     * Ask the actor to retrieve the specific {@link KnowledgeObject}.
+     *
+     * @see KnowledgeObject
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends KnowledgeObject> ListIterable<T> askKnowledgeObjects(ActorRef<Message> a, Duration timeout,
+            Scheduler scheduler, Class<T> clazz, String type, Predicate<T> predicate)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        return askKnowledgeObjects(a, timeout, scheduler, type).toCompletableFuture()
+                .get(timeout.toMillis(), MILLISECONDS).collectIf(o -> {
+                    final var ko = (T) o;
+                    return predicate.test(ko);
+                }, ko -> (T) ko.getAsType());
+    }
+
+    /**
+     * Ask the actor to retrieve the specific {@link KnowledgeObject}.
+     *
+     * @see KnowledgeObject
+     */
     public static <T extends KnowledgeObject> T askKnowledgeObjectName(ActorSystem<Message> a, Duration timeout,
-            String type, String name) throws InterruptedException, ExecutionException, TimeoutException {
-        return askKnowledgeObjectName(a, timeout, a.scheduler(), type, name);
+            Class<T> clazz, String type, String name)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        return askKnowledgeObjectName(a, timeout, a.scheduler(), clazz, type, name);
     }
 
     /**
@@ -140,9 +169,9 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
      * @see KnowledgeObject
      */
     public static <T extends KnowledgeObject> T askKnowledgeObjectName(ActorRef<Message> a, Duration timeout,
-            Scheduler scheduler, String type, String name)
+            Scheduler scheduler, Class<T> clazz, String type, String name)
             throws InterruptedException, ExecutionException, TimeoutException {
-        return askKnowledgeObject(a, timeout, scheduler, type, ko -> ko.getName().equalsIgnoreCase(name));
+        return askKnowledgeObject(a, timeout, scheduler, clazz, type, ko -> ko.getName().equalsIgnoreCase(name));
     }
 
     /**
@@ -150,9 +179,10 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
      *
      * @see KnowledgeObject
      */
-    public static <T extends KnowledgeObject> long askKnowledgeId(ActorSystem<Message> a, Duration timeout, String type,
-            Predicate<T> predicate) throws InterruptedException, ExecutionException, TimeoutException {
-        return askKnowledgeId(a, timeout, a.scheduler(), type, predicate);
+    public static <T extends KnowledgeObject> long askKnowledgeId(ActorSystem<Message> a, Duration timeout,
+            Class<T> clazz, String type, Predicate<T> predicate)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        return askKnowledgeId(a, timeout, a.scheduler(), clazz, type, predicate);
     }
 
     /**
@@ -161,7 +191,7 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
      * @see KnowledgeObject
      */
     public static <T extends KnowledgeObject> long askKnowledgeId(ActorRef<Message> a, Duration timeout,
-            Scheduler scheduler, String type, Predicate<T> predicate)
+            Scheduler scheduler, Class<T> clazz, String type, Predicate<T> predicate)
             throws InterruptedException, ExecutionException, TimeoutException {
         return askKnowledgeObjects(a, timeout, scheduler, type).toCompletableFuture()
                 .get(timeout.toMillis(), MILLISECONDS).collectIf(o -> {
@@ -188,7 +218,8 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
      */
     public static long askKnowledgeIdByName(ActorRef<Message> a, Duration timeout, Scheduler scheduler, String type,
             String name) throws InterruptedException, ExecutionException, TimeoutException {
-        return askKnowledgeId(a, timeout, scheduler, type, (KnowledgeObject ko) -> ko.getName().equalsIgnoreCase(name));
+        return askKnowledgeId(a, timeout, scheduler, KnowledgeObject.class, type,
+                ko -> ko.getName().equalsIgnoreCase(name));
     }
 
     /**
@@ -216,4 +247,5 @@ public class KnowledgeGetMessage<T extends Message> extends KnowledgeMessage<T> 
         this.type = type;
         this.onSuccess = onSuccess;
     }
+
 }

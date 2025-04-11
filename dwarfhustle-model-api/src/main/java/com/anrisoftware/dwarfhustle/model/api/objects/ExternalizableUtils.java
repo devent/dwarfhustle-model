@@ -56,6 +56,7 @@ import org.eclipse.collections.api.map.primitive.MutableObjectIntMap;
 import org.eclipse.collections.api.map.primitive.MutableObjectLongMap;
 import org.eclipse.collections.api.map.primitive.ObjectIntMap;
 import org.eclipse.collections.api.map.primitive.ObjectLongMap;
+import org.eclipse.collections.api.multimap.Multimap;
 import org.eclipse.collections.api.multimap.MutableMultimap;
 
 /**
@@ -330,10 +331,9 @@ public class ExternalizableUtils {
     }
 
     /**
-     * Writes the keys and values of the {@link MutableMultimap} to stream.
+     * Writes the keys and values of the {@link Multimap} to stream.
      */
-    public static void writeExternalMutableLongIntMultimap(DataOutput out, MutableMultimap<Long, Integer> map)
-            throws IOException {
+    public static void writeExternalLongIntMultimap(DataOutput out, Multimap<Long, Integer> map) throws IOException {
         out.writeInt(map.size());
         for (final var keysValues : map.keyMultiValuePairsView()) {
             out.writeInt(keysValues.getTwo().size());
@@ -347,7 +347,7 @@ public class ExternalizableUtils {
     /**
      * Reads the keys and values of the {@link MutableMultimap} from stream.
      */
-    public static MutableMultimap<Long, Integer> readExternalMutableLongIntMultimap(DataInput in,
+    public static MutableMultimap<Long, Integer> readExternalLongIntMultimap(DataInput in,
             Supplier<MutableMultimap<Long, Integer>> supplier) throws IOException {
         final int size = in.readInt();
         final MutableMultimap<Long, Integer> map = supplier.get();
@@ -364,10 +364,42 @@ public class ExternalizableUtils {
     }
 
     /**
-     * Writes the keys and values of the {@link MutableMultimap} to stream.
+     * Writes the keys and values of the {@link Multimap} to stream.
      */
-    public static void writeExternalMutableIntIntMultimap(DataOutput out, MutableMultimap<Integer, Integer> map)
-            throws IOException {
+    public static void writeStreamIntLongMultimap(DataOutput out, Multimap<Integer, Long> map) throws IOException {
+        out.writeInt(map.size());
+        for (final var keysValues : map.keyMultiValuePairsView()) {
+            out.writeInt(keysValues.getTwo().size());
+            out.writeInt(keysValues.getOne());
+            for (final var value : keysValues.getTwo()) {
+                out.writeLong(value);
+            }
+        }
+    }
+
+    /**
+     * Reads the keys and values of the {@link MutableMultimap} from stream.
+     */
+    public static MutableMultimap<Integer, Long> readStreamIntLongMultimap(DataInput in,
+            Supplier<MutableMultimap<Integer, Long>> supplier) throws IOException {
+        final int size = in.readInt();
+        final MutableMultimap<Integer, Long> map = supplier.get();
+        for (int i = 0; i < size; i++) {
+            final int vsize = in.readInt();
+            final List<Long> values = Lists.mutable.withInitialCapacity(vsize);
+            final int key = in.readInt();
+            for (int j = 0; j < vsize; j++) {
+                values.add(in.readLong());
+            }
+            map.putAll(key, values);
+        }
+        return map;
+    }
+
+    /**
+     * Writes the keys and values of the {@link Multimap} to stream.
+     */
+    public static void writeStreamIntIntMultimap(DataOutput out, Multimap<Integer, Integer> map) throws IOException {
         out.writeInt(map.size());
         for (final var keysValues : map.keyMultiValuePairsView()) {
             out.writeInt(keysValues.getTwo().size());
@@ -381,7 +413,7 @@ public class ExternalizableUtils {
     /**
      * Reads the keys and values of the {@link MutableMultimap} from stream.
      */
-    public static MutableMultimap<Integer, Integer> readExternalMutableIntIntMultimap(DataInput in,
+    public static MutableMultimap<Integer, Integer> readStreamIntIntMultimap(DataInput in,
             Supplier<MutableMultimap<Integer, Integer>> supplier) throws IOException {
         final int size = in.readInt();
         final MutableMultimap<Integer, Integer> map = supplier.get();

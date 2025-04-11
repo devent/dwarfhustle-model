@@ -149,4 +149,19 @@ public class PowerLoomUtils {
         return store;
     }
 
+    public static IntSet retrieveIdFunc(String function, String name, MutableIntSet store) {
+        var buff = new StringBuilder();
+        buff.append("all (");
+        buff.append(function);
+        buff.append(" ");
+        buff.append(name);
+        buff.append(" ?x)");
+        var answer = PLI.sRetrieve(buff.toString(), WORKING_MODULE, null);
+        LogicObject next;
+        while ((next = (LogicObject) answer.pop()) != null) {
+            store.add(next.surrogateValueInverse.symbolId);
+        }
+        return store;
+    }
+
 }

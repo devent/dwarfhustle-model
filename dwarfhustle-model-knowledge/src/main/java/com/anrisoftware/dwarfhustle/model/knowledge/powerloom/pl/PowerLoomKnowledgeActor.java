@@ -67,6 +67,7 @@ import akka.actor.typed.javadsl.StashBuffer;
 import akka.actor.typed.javadsl.StashOverflowException;
 import akka.actor.typed.receptionist.ServiceKey;
 import edu.isi.powerloom.PLI;
+import edu.isi.powerloom.PlIterator;
 import edu.isi.powerloom.logic.LogicObject;
 import edu.isi.stella.Cons;
 import jakarta.inject.Inject;
@@ -116,6 +117,7 @@ public class PowerLoomKnowledgeActor implements KnowledgeGetter {
         names.add("game-map.plm");
         names.add("game-map-objects.plm");
         names.add("game-concepts.plm");
+        names.add("game-map-objects-misc.plm");
         names.add("game-map-objects-vegetation.plm");
         names.add("game-vegetation-grasses.plm");
         names.add("game-vegetation-shrubs.plm");
@@ -227,6 +229,13 @@ public class PowerLoomKnowledgeActor implements KnowledgeGetter {
         return createNamedActor(system, timeout, ID, KEY, NAME, create(injector, knowledgesCache, objectsGetter));
     }
 
+    /**
+     * Retrieves the results of the query.
+     */
+    public static PlIterator pliRetrieve(String query) {
+        return PLI.sRetrieve(query, PowerLoomKnowledgeActor.WORKING_MODULE, null);
+    }
+
     @Inject
     @Assisted
     private ActorContext<Message> context;
@@ -318,7 +327,8 @@ public class PowerLoomKnowledgeActor implements KnowledgeGetter {
     private Behavior<Message> onKnowledgeGet(KnowledgeGetMessage<?> m) {
         log.debug("onKnowledgeGet {}", m);
         var tid = m.type.hashCode();
-        knowledgesCache.tell(new CacheGetMessage<>(cacheResponseAdapter, KnowledgeLoadedObject.OBJECT_TYPE, tid, go -> {
+        long id = KnowledgeLoadedObject.kid2Id(tid);
+        knowledgesCache.tell(new CacheGetMessage<>(cacheResponseAdapter, KnowledgeLoadedObject.OBJECT_TYPE, id, go -> {
             cacheHit(m, go);
         }, () -> {
             cacheMiss(m);

@@ -23,5 +23,3 @@
 
 (defconcept Salt (?material Material)) :documentation "Salt material."
 (assert (= (melting-point-material Salt) 800.70))
-
-(assert (Salt Salt-Lump)) :documentation "Salt lump."

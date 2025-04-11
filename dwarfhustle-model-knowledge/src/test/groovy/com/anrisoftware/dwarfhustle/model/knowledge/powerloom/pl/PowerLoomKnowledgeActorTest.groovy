@@ -88,6 +88,9 @@ class PowerLoomKnowledgeActorTest {
 
     @ParameterizedTest
     @ValueSource(strings = [
+        "all (work-input-types job-saltmaking-seawater ?x)",
+        "all (MATERIAL ?x)",
+        "?x (work-building ?x building-carpenter)",
         "all (WORK-INPUT-UNITS JOB-SAWMILL-PLANK ?X ?Y)",
         "all (Liquid ?type)",
         "all (Gas ?type)",
