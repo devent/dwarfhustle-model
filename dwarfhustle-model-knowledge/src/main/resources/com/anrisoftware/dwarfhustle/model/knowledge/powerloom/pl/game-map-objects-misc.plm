@@ -17,12 +17,17 @@
 (clear-module "DWARFHUSTLE-OBJECTS-MISC")
 (reset-features)
 
+(defconcept Wood-Log (?v ObjectType))
+
+(defconcept Wood-Plank (?v ObjectType))
+
 (defconcept Salt-Lump (?v ObjectType))
 
-(defconcept bucket (?v ObjectType))
-(defconcept bucket-sea-water (?v bucket))
-(defconcept bucket-brine (?v bucket))
-(defconcept bucket-water (?v bucket))
+(defconcept Container (?v ObjectType))
+
+(defconcept Bucket (?v Container))
+
+(defconcept Sack (?v Container))
 
 (defconcept Furniture (?type ObjectType))
   :documentation "Tables, chair, shelvs, etc."

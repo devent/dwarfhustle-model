@@ -127,9 +127,3 @@
 
 (defconcept Wood (?material Material)
   :documentation "Wood material.")
-
-(defconcept Wood-Log (?material Material)
-  :documentation "Wood log material.")
-
-(defconcept Wood-Plank (?material Material)
-  :documentation "Wood plank material.")

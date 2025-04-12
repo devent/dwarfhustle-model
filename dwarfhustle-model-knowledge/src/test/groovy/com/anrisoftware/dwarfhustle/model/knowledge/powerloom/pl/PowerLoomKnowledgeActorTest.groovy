@@ -88,10 +88,11 @@ class PowerLoomKnowledgeActorTest {
 
     @ParameterizedTest
     @ValueSource(strings = [
-        "all (work-input-types job-saltmaking-seawater ?x)",
+        "all (work-parent-job ?X)",
+        "all (work-same-job JOB-SAWMILL-PLANK ?Y)",
         "all (MATERIAL ?x)",
         "?x (work-building ?x building-carpenter)",
-        "all (WORK-INPUT-UNITS JOB-SAWMILL-PLANK ?X ?Y)",
+        "all (WORK-INPUT-UNITS JOB-SAWMILL-PLANK ?X ?Y ?Z)",
         "all (Liquid ?type)",
         "all (Gas ?type)",
         "all (Stone ?type)",
@@ -166,7 +167,7 @@ class PowerLoomKnowledgeActorTest {
 
     @ParameterizedTest
     @CsvSource([
-        "work-job,4,144650654533550080",
+        "work-parent-job,5,4561570647800545280",
         "Sedimentary,11,7339558917942280192",
         "Shrub,1,343012349004742656",
         "BlockObject,28,-8047195809780858880"

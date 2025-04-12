@@ -20,50 +20,50 @@ package com.anrisoftware.dwarfhustle.model.db.buffers;
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
+import com.anrisoftware.dwarfhustle.model.api.miscobjects.WoodPlank;
 import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
-import com.anrisoftware.dwarfhustle.model.api.vegetations.TreeTwig;
 import com.google.auto.service.AutoService;
 
 /**
- * Writes and reads {@link TreeTwig} in a byte buffer.
+ * Writes and reads {@link WoodPlank} in a byte buffer.
  * <p>
- * See properties from {@link GameMapObjectBuffer}.
+ * See properties from {@link GameMapMaterialObjectBuffer}.
  * <ul>
  * <li>
  * </ul>
  *
  * <pre>
- * long  0                   1                   2                   3                   4
- * int   0         1         2         3         4         5         6         7         8
- * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16
- *       iiii iiii iiii iiii kkkk kkkk oooo oooo mmmm mmmm mmmm mmmm xxxx yyyy zzzz pppp pppp
+ * long  0                   1                   2                   3                   4                   5                   6
+ * int   0         1         2         3         4         5         6         7         8         9         10        11        12
+ * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21   22   23   24   25
+ *       iiii iiii iiii iiii kkkk kkkk oooo oooo mmmm mmmm mmmm mmmm xxxx yyyy zzzz tttt wwww hhhh dddd llll pppp pppp MMMM MMMM MMMM MMMM
  * </pre>
  */
 @AutoService(StoredObjectBuffer.class)
-public class TreeTwigBuffer implements StoredObjectBuffer {
+public class WoodPlankBuffer implements StoredObjectBuffer {
 
     /**
      * Size in bytes.
      */
-    public static final int SIZE = GameObjectBuffer.SIZE;
+    public static final int SIZE = GameMapMaterialObjectBuffer.SIZE;
 
-    public static void setTreeTwig(MutableDirectBuffer b, int off, TreeTwig o) {
-        GameObjectBuffer.writeObject(b, off, o);
+    public static void setWoodPlank(MutableDirectBuffer b, int off, WoodPlank o) {
+        GameMapMaterialObjectBuffer.writeMaterialObject(b, off, o);
     }
 
-    public static TreeTwig getTreeTwig(DirectBuffer b, int off, TreeTwig o) {
-        GameObjectBuffer.readObject(b, off, o);
+    public static WoodPlank getWoodPlank(DirectBuffer b, int off, WoodPlank o) {
+        GameMapMaterialObjectBuffer.readMaterialObject(b, off, o);
         return o;
     }
 
     @Override
     public StoredObject read(DirectBuffer b) {
-        return getTreeTwig(b, 0, new TreeTwig());
+        return getWoodPlank(b, 0, new WoodPlank());
     }
 
     @Override
     public int getObjectType() {
-        return TreeTwig.OBJECT_TYPE;
+        return WoodPlank.OBJECT_TYPE;
     }
 
     @Override
@@ -73,7 +73,6 @@ public class TreeTwigBuffer implements StoredObjectBuffer {
 
     @Override
     public void write(MutableDirectBuffer b, StoredObject go) {
-        setTreeTwig(b, 0, (TreeTwig) go);
+        setWoodPlank(b, 0, (WoodPlank) go);
     }
-
 }

@@ -17,21 +17,19 @@
  */
 package com.anrisoftware.dwarfhustle.model.api.buildings;
 
-import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamIntCollection;
-import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamIntIntMap;
-import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamIntCollection;
-import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamIntIntMap;
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.readStreamIntObjectMapReader;
+import static com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils.writeStreamIntObjectMap;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.time.Duration;
 
-import org.eclipse.collections.api.factory.primitive.IntSets;
 import org.eclipse.collections.api.map.primitive.IntIntMap;
-import org.eclipse.collections.api.set.primitive.IntSet;
+import org.eclipse.collections.api.map.primitive.IntObjectMap;
 
 import com.anrisoftware.dwarfhustle.model.api.map.Block;
+import com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.ObjectType;
 
@@ -54,17 +52,31 @@ import lombok.ToString;
 @Setter
 public class KnowledgeWorkJob extends ObjectType {
 
-    public static final String TYPE = "work-job";
+    public static final String TYPE = "work-parent-job";
 
     public static final int OBJECT_TYPE = TYPE.hashCode();
 
     private int building;
 
-    private IntIntMap inputUnits;
+    /**
+     * Container := [Material := Count]
+     */
+    private IntObjectMap<IntIntMap> inputContainers;
 
-    private IntSet inputTypes;
+    /**
+     * Container := [Material := Count]
+     */
+    private IntObjectMap<IntIntMap> outputContainers;
 
-    private IntIntMap outputUnits;
+    /**
+     * Object := [Material := Count]
+     */
+    private IntObjectMap<IntIntMap> inputObjects;
+
+    /**
+     * Object := [Material := Count]
+     */
+    private IntObjectMap<IntIntMap> outputObjects;
 
     private Duration duration;
 
@@ -95,9 +107,10 @@ public class KnowledgeWorkJob extends ObjectType {
     public void writeStream(DataOutput out) throws IOException {
         super.writeStream(out);
         out.writeInt(building);
-        writeStreamIntIntMap(out, inputUnits);
-        writeStreamIntIntMap(out, outputUnits);
-        writeStreamIntCollection(out, inputTypes.size(), inputUnits);
+        writeStreamIntObjectMap(out, inputContainers, ExternalizableUtils::writeStreamIntIntMapNoThrow);
+        writeStreamIntObjectMap(out, outputContainers, ExternalizableUtils::writeStreamIntIntMapNoThrow);
+        writeStreamIntObjectMap(out, inputObjects, ExternalizableUtils::writeStreamIntIntMapNoThrow);
+        writeStreamIntObjectMap(out, outputObjects, ExternalizableUtils::writeStreamIntIntMapNoThrow);
         out.writeLong(duration.getSeconds());
     }
 
@@ -105,9 +118,10 @@ public class KnowledgeWorkJob extends ObjectType {
     public void readStream(DataInput in) throws IOException {
         super.readStream(in);
         this.building = in.readInt();
-        this.inputUnits = readStreamIntIntMap(in);
-        this.outputUnits = readStreamIntIntMap(in);
-        this.inputTypes = IntSets.immutable.ofAll(readStreamIntCollection(in));
+        this.inputContainers = readStreamIntObjectMapReader(in, ExternalizableUtils::readStreamIntIntMapNoThrow);
+        this.outputContainers = readStreamIntObjectMapReader(in, ExternalizableUtils::readStreamIntIntMapNoThrow);
+        this.inputObjects = readStreamIntObjectMapReader(in, ExternalizableUtils::readStreamIntIntMapNoThrow);
+        this.outputObjects = readStreamIntObjectMapReader(in, ExternalizableUtils::readStreamIntIntMapNoThrow);
         this.duration = Duration.ofSeconds(in.readLong());
     }
 

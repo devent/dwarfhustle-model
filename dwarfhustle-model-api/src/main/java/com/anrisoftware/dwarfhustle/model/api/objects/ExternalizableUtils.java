@@ -59,6 +59,8 @@ import org.eclipse.collections.api.map.primitive.ObjectLongMap;
 import org.eclipse.collections.api.multimap.Multimap;
 import org.eclipse.collections.api.multimap.MutableMultimap;
 
+import lombok.SneakyThrows;
+
 /**
  * Utils to write/read external.
  *
@@ -218,10 +220,14 @@ public class ExternalizableUtils {
      */
     public static <T> void writeStreamIntObjectMap(DataOutput out, IntObjectMap<T> map, BiConsumer<DataOutput, T> write)
             throws IOException {
-        out.writeInt(map.size());
-        for (final var view : map.keyValuesView()) {
-            out.writeInt(view.getOne());
-            write.accept(out, view.getTwo());
+        if (map != null) {
+            out.writeInt(map.size());
+            for (final var view : map.keyValuesView()) {
+                out.writeInt(view.getOne());
+                write.accept(out, view.getTwo());
+            }
+        } else {
+            out.writeInt(0);
         }
     }
 
@@ -319,6 +325,14 @@ public class ExternalizableUtils {
     }
 
     /**
+     * Writes the keys and values of the {@link IntIntMap} to stream.
+     */
+    @SneakyThrows
+    public static void writeStreamIntIntMapNoThrow(DataOutput o, IntIntMap v) {
+        writeStreamIntIntMap(o, v);
+    }
+
+    /**
      * Reads the keys and values of the {@link IntIntMap} from stream.
      */
     public static IntIntMap readStreamIntIntMap(DataInput in) throws IOException {
@@ -331,9 +345,17 @@ public class ExternalizableUtils {
     }
 
     /**
+     * Reads the keys and values of the {@link IntIntMap} from stream.
+     */
+    @SneakyThrows
+    public static IntIntMap readStreamIntIntMapNoThrow(DataInput in) {
+        return readStreamIntIntMap(in);
+    }
+
+    /**
      * Writes the keys and values of the {@link Multimap} to stream.
      */
-    public static void writeExternalLongIntMultimap(DataOutput out, Multimap<Long, Integer> map) throws IOException {
+    public static void writeStreamLongIntMultimap(DataOutput out, Multimap<Long, Integer> map) throws IOException {
         out.writeInt(map.size());
         for (final var keysValues : map.keyMultiValuePairsView()) {
             out.writeInt(keysValues.getTwo().size());
@@ -347,7 +369,7 @@ public class ExternalizableUtils {
     /**
      * Reads the keys and values of the {@link MutableMultimap} from stream.
      */
-    public static MutableMultimap<Long, Integer> readExternalLongIntMultimap(DataInput in,
+    public static MutableMultimap<Long, Integer> readStreamLongIntMultimap(DataInput in,
             Supplier<MutableMultimap<Long, Integer>> supplier) throws IOException {
         final int size = in.readInt();
         final MutableMultimap<Long, Integer> map = supplier.get();
@@ -432,7 +454,7 @@ public class ExternalizableUtils {
     /**
      * Writes the keys and values of the {@link List} to stream.
      */
-    public static <T> void writeExternalList(DataOutput out, List<T> list, BiConsumer<DataOutput, T> write)
+    public static <T> void writeStreamList(DataOutput out, List<T> list, BiConsumer<DataOutput, T> write)
             throws IOException {
         out.writeInt(list.size());
         for (final var value : list) {
@@ -443,8 +465,7 @@ public class ExternalizableUtils {
     /**
      * Reads the values of the {@link List} from stream.
      */
-    public static <T> MutableList<T> readExternalMutableList(DataInput in, Function<DataInput, T> supplier)
-            throws IOException {
+    public static <T> MutableList<T> readStreamList(DataInput in, Function<DataInput, T> supplier) throws IOException {
         final int size = in.readInt();
         final MutableList<T> list = Lists.mutable.withInitialCapacity(size);
         for (int i = 0; i < size; i++) {

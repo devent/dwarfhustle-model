@@ -17,18 +17,27 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
+import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.PowerLoomUtils.retrieve3ToStore;
 import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.PowerLoomUtils.retrieveIdFunc;
-import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.PowerLoomUtils.retrieveIdIntFunc;
 import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.PowerLoomUtils.retrieveInt;
 
 import java.time.Duration;
 
 import org.eclipse.collections.api.factory.primitive.IntIntMaps;
-import org.eclipse.collections.api.factory.primitive.IntSets;
+import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
+import org.eclipse.collections.api.map.primitive.IntIntMap;
+import org.eclipse.collections.api.map.primitive.MutableIntIntMap;
+import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 
 import com.anrisoftware.dwarfhustle.model.api.buildings.KnowledgeWorkJob;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.google.auto.service.AutoService;
+
+import edu.isi.powerloom.logic.LogicObject;
+import edu.isi.powerloom.logic.NamedDescription;
+import edu.isi.stella.Cons;
+import edu.isi.stella.IntegerWrapper;
+import lombok.val;
 
 /**
  *
@@ -62,10 +71,37 @@ public class WorkJobStorage extends AbstractObjectTypeStorage {
 
     private void retrieveProperties(KnowledgeWorkJob m, String name) {
         m.setBuilding(retrieveIdFunc("work-building", name));
-        m.setInputUnits(retrieveIdIntFunc("work-input-units", name, IntIntMaps.mutable.empty()));
-        m.setInputTypes(retrieveIdFunc("work-input-types", name, IntSets.mutable.empty()));
-        m.setOutputUnits(retrieveIdIntFunc("work-output-units", name, IntIntMaps.mutable.empty()));
+        m.setInputContainers(retrieve3ToStore("work-input-container-units", name, () -> IntObjectMaps.mutable.empty(),
+                this::putObjectMaterialCount));
+        m.setOutputContainers(retrieve3ToStore("work-output-container-units", name, () -> IntObjectMaps.mutable.empty(),
+                this::putObjectMaterialCount));
+        m.setInputObjects(retrieve3ToStore("work-input-units", name, () -> IntObjectMaps.mutable.empty(),
+                this::putObjectMaterialCount));
+        m.setOutputObjects(retrieve3ToStore("work-output-units", name, () -> IntObjectMaps.mutable.empty(),
+                this::putObjectMaterialCount));
+        val sameJobs = PowerLoomUtils.retrieveStrings("work-same-job", name);
+        for (String samejob : sameJobs) {
+            retrieve3ToStore("work-input-container-units", samejob,
+                    () -> (MutableIntObjectMap<IntIntMap>) m.getInputContainers(), this::putObjectMaterialCount);
+            retrieve3ToStore("work-output-container-units", samejob,
+                    () -> (MutableIntObjectMap<IntIntMap>) m.getOutputContainers(), this::putObjectMaterialCount);
+            retrieve3ToStore("work-input-units", samejob, () -> (MutableIntObjectMap<IntIntMap>) m.getInputObjects(),
+                    this::putObjectMaterialCount);
+            retrieve3ToStore("work-output-units", samejob, () -> (MutableIntObjectMap<IntIntMap>) m.getOutputObjects(),
+                    this::putObjectMaterialCount);
+        }
         m.setDuration(Duration.ofHours(retrieveInt("work-duration", name)));
+
+    }
+
+    private void putObjectMaterialCount(MutableIntObjectMap<IntIntMap> store, Cons o) {
+        val object = ((NamedDescription) o.value).surrogateValueInverse.symbolId;
+        MutableIntIntMap map = (MutableIntIntMap) store.getIfAbsentPut(object, () -> IntIntMaps.mutable.empty());
+        o = o.rest;
+        val material = ((LogicObject) o.value).surrogateValueInverse.symbolId;
+        o = o.rest;
+        val count = ((IntegerWrapper) o.value).wrapperValue;
+        map.put(material, count);
     }
 
     @Override

@@ -19,6 +19,12 @@ package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
 import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.pl.PowerLoomKnowledgeActor.WORKING_MODULE;
 
+import java.util.function.BiConsumer;
+import java.util.function.Supplier;
+
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.primitive.IntIntMap;
 import org.eclipse.collections.api.map.primitive.MutableIntIntMap;
 import org.eclipse.collections.api.set.primitive.IntSet;
@@ -31,6 +37,7 @@ import edu.isi.stella.FloatWrapper;
 import edu.isi.stella.IntegerWrapper;
 import edu.isi.stella.List;
 import edu.isi.stella.Stella_Object;
+import lombok.val;
 
 /**
  *
@@ -71,6 +78,25 @@ public class PowerLoomUtils {
             return next.surrogateValueInverse.symbolName;
         }
         return null;
+    }
+
+    /**
+     * Retrieves multiple strings.
+     */
+    public static ImmutableList<String> retrieveStrings(String function, String name) {
+        MutableList<String> list = Lists.mutable.empty();
+        var buff = new StringBuilder();
+        buff.append("all (");
+        buff.append(function);
+        buff.append(" ");
+        buff.append(name);
+        buff.append(" ?x)");
+        var answer = PLI.sRetrieve(buff.toString(), WORKING_MODULE, null);
+        LogicObject next;
+        while ((next = (LogicObject) answer.pop()) != null) {
+            list.add(next.surrogateValueInverse.symbolName);
+        }
+        return list.toImmutable();
     }
 
     /**
@@ -160,6 +186,23 @@ public class PowerLoomUtils {
         LogicObject next;
         while ((next = (LogicObject) answer.pop()) != null) {
             store.add(next.surrogateValueInverse.symbolId);
+        }
+        return store;
+    }
+
+    public static <T> T retrieve3ToStore(String function, String name, Supplier<T> supplier,
+            BiConsumer<T, Cons> consumer) {
+        var buff = new StringBuilder();
+        buff.append("all (");
+        buff.append(function);
+        buff.append(" ");
+        buff.append(name);
+        buff.append(" ?x ?y ?z)");
+        var answer = PLI.sRetrieve(buff.toString(), WORKING_MODULE, null);
+        Cons next;
+        val store = supplier.get();
+        while ((next = (Cons) answer.pop()) != null) {
+            consumer.accept(store, next);
         }
         return store;
     }

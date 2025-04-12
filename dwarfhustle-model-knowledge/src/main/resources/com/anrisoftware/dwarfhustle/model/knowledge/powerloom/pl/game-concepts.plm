@@ -21,12 +21,20 @@
 
 (defconcept work-job (?name))
 
+(defconcept work-parent-job (?w work-job))
+
+(defconcept work-sub-job (?w work-job))
+
+(defrelation work-same-job ((?w work-job) (?s work-sub-job)))
+
 (defrelation work-building ((?w work-job) (?b Building)))
 
-(deffunction work-input-units ((?w work-job) (?m Material)) :-> (?n INTEGER))
+(deffunction work-input-units ((?w work-job) (?o ObjectType) (?m Material)) :-> (?n INTEGER))
 
-(defrelation work-input-types ((?w work-job) (?o ObjectType)))
+(deffunction work-output-units ((?w work-job) (?o ObjectType) (?m Material)) :-> (?n INTEGER))
 
-(deffunction work-output-units ((?w work-job) (?m ObjectType)) :-> (?n INTEGER))
+(deffunction work-input-container-units ((?w work-job) (?o ObjectType) (?m Material)) :-> (?n INTEGER))
+
+(deffunction work-output-container-units ((?w work-job) (?o ObjectType) (?m Material)) :-> (?n INTEGER))
 
 (deffunction work-duration ((?w work-job)) :-> (?hours INTEGER))
