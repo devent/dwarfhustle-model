@@ -17,28 +17,36 @@
 (clear-module "DWARFHUSTLE-OBJECTS-MISC")
 (reset-features)
 
-(defconcept Wood-Log (?v ObjectType))
+(defconcept Misc-Object (?v ObjectType))
 
-(defconcept Wood-Plank (?v ObjectType))
-
-(defconcept Salt-Lump (?v ObjectType))
+(assert (Misc-Object Wood-Log))
+(assert (Misc-Object Wood-Plank))
+(assert (Misc-Object Salt-Lump))
 
 (defconcept Container (?v ObjectType))
 
-(defconcept Bucket (?v Container))
-
-(defconcept Sack (?v Container))
+(assert (Container Basket)) :documentation "Made of fibers and are used to carry fruits, vegetables, nutts, beries."
+(assert (Container Bucket)) :documentation "Buckets are used to carry fluids like water."
+(assert (Container Sack)) :documentation "Made of leather, cloth, wool, silk and are used to carry grainy materials like sand, grain and wheat."
+(assert (Container Bin)) :documentation "Made of wood or metal, multi-purpose containers can contain non-food manufactured items like planks, blocks, clothes, and other containers like buckets and sacks."
+(assert (Container Barrel)) :documentation "Made of wood or metal, multi-purpose containers can contain food items, drinks, and other containers like wheat sacks."
+(assert (Container Large-Jug)) :documentation "Made of ceramic and can contain liquids and drinks."
+(assert (Container Bottle)) :documentation "Made of metal and can contain drinks."
+(assert (Container Waterskin)) :documentation "Made of leather and can contain drinks."
+(assert (Container Jug)) :documentation "Made of ceramic and can contain one drink."
+(assert (Container Mug)) :documentation "Made of wood or stone and can contain one drink."
+(assert (Container Vial)) :documentation "Made of glass and can contain one drink."
 
 (defconcept Furniture (?type ObjectType))
   :documentation "Tables, chair, shelvs, etc."
 
-(defconcept Furniture-Table (?v Furniture))
+(assert (Furniture Furniture-Table))
 (assert (= (object-width Furniture-Table) 1))
 (assert (= (object-height Furniture-Table) 1))
 (assert (= (object-depth Furniture-Table) 1))
 (assert (= (object-passable Furniture-Table) 1)) :documentation "Passable tiles top to bottom: 1."
 
-(defconcept Furniture-Chair (?v Furniture))
+(assert (Furniture Furniture-Chair))
 (assert (= (object-width Furniture-Chair) 1))
 (assert (= (object-height Furniture-Chair) 1))
 (assert (= (object-depth Furniture-Chair) 1))

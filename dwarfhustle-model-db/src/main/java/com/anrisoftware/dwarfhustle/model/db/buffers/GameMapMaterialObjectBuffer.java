@@ -71,7 +71,7 @@ public class GameMapMaterialObjectBuffer {
 
     public static void writeMaterialObject(MutableDirectBuffer b, int off, GameMapMaterialObject o) {
         GameMapObjectBuffer.writeObject(b, off, o);
-        setMaterial(b, off, o.getLux());
+        setMaterial(b, off, o.getMaterial());
     }
 
     public static GameMapObject readMaterialObject(DirectBuffer b, int off, GameMapMaterialObject o) {

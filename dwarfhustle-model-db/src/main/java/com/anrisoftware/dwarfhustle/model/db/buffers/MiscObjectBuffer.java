@@ -20,12 +20,12 @@ package com.anrisoftware.dwarfhustle.model.db.buffers;
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
-import com.anrisoftware.dwarfhustle.model.api.miscobjects.WoodLog;
+import com.anrisoftware.dwarfhustle.model.api.miscobjects.MiscObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.google.auto.service.AutoService;
 
 /**
- * Writes and reads {@link WoodLog} in a byte buffer.
+ * Writes and reads {@link MiscObject} in a byte buffer.
  * <p>
  * See properties from {@link GameMapMaterialObjectBuffer}.
  * <ul>
@@ -40,30 +40,30 @@ import com.google.auto.service.AutoService;
  * </pre>
  */
 @AutoService(StoredObjectBuffer.class)
-public class WoodLogBuffer implements StoredObjectBuffer {
+public class MiscObjectBuffer implements StoredObjectBuffer {
 
     /**
      * Size in bytes.
      */
     public static final int SIZE = GameMapMaterialObjectBuffer.SIZE;
 
-    public static void setWoodLog(MutableDirectBuffer b, int off, WoodLog o) {
+    public static void setMiscObject(MutableDirectBuffer b, int off, MiscObject o) {
         GameMapMaterialObjectBuffer.writeMaterialObject(b, off, o);
     }
 
-    public static WoodLog getWoodLog(DirectBuffer b, int off, WoodLog o) {
+    public static MiscObject getMiscObject(DirectBuffer b, int off, MiscObject o) {
         GameMapMaterialObjectBuffer.readMaterialObject(b, off, o);
         return o;
     }
 
     @Override
     public StoredObject read(DirectBuffer b) {
-        return getWoodLog(b, 0, new WoodLog());
+        return getMiscObject(b, 0, new MiscObject());
     }
 
     @Override
     public int getObjectType() {
-        return WoodLog.OBJECT_TYPE;
+        return MiscObject.OBJECT_TYPE;
     }
 
     @Override
@@ -73,6 +73,6 @@ public class WoodLogBuffer implements StoredObjectBuffer {
 
     @Override
     public void write(MutableDirectBuffer b, StoredObject go) {
-        setWoodLog(b, 0, (WoodLog) go);
+        setMiscObject(b, 0, (MiscObject) go);
     }
 }

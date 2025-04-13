@@ -27,9 +27,9 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Wood plank.
+ * Miscellaneous Objects.
  *
- * @see WoodPlank
+ * @see MiscObject
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @NoArgsConstructor
@@ -37,30 +37,30 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-public class KnowledgeWoodPlank extends ObjectType {
+public abstract class KnowledgeMisc extends ObjectType {
 
-    public static final String TYPE = "wood-plank";
+    public static final String TYPE = "Misc-Object";
 
     public static final int OBJECT_TYPE = TYPE.hashCode();
 
-    public KnowledgeWoodPlank(int kid) {
+    public KnowledgeMisc(int kid) {
         super(kid);
     }
 
     @Override
     public int getObjectType() {
-        return KnowledgeWoodPlank.OBJECT_TYPE;
+        return KnowledgeMisc.OBJECT_TYPE;
     }
 
     @Override
     public String getKnowledgeType() {
-        return KnowledgeWoodPlank.TYPE;
+        return KnowledgeMisc.TYPE;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public <T extends GameObject> T createObject(byte[] id) {
-        var go = new WoodPlank(id);
+        var go = new MiscObject(id);
         go.setVisible(true);
         go.setHaveModel(false);
         go.setHaveTex(true);

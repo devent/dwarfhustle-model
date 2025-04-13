@@ -34,7 +34,6 @@ import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.google.auto.service.AutoService;
 
 import edu.isi.powerloom.logic.LogicObject;
-import edu.isi.powerloom.logic.NamedDescription;
 import edu.isi.stella.Cons;
 import edu.isi.stella.IntegerWrapper;
 import lombok.val;
@@ -95,7 +94,7 @@ public class WorkJobStorage extends AbstractObjectTypeStorage {
     }
 
     private void putObjectMaterialCount(MutableIntObjectMap<IntIntMap> store, Cons o) {
-        val object = ((NamedDescription) o.value).surrogateValueInverse.symbolId;
+        val object = ((LogicObject) o.value).surrogateValueInverse.symbolId;
         MutableIntIntMap map = (MutableIntIntMap) store.getIfAbsentPut(object, () -> IntIntMaps.mutable.empty());
         o = o.rest;
         val material = ((LogicObject) o.value).surrogateValueInverse.symbolId;

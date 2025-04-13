@@ -20,12 +20,12 @@ package com.anrisoftware.dwarfhustle.model.db.buffers;
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
-import com.anrisoftware.dwarfhustle.model.api.miscobjects.WoodPlank;
+import com.anrisoftware.dwarfhustle.model.api.miscobjects.Furniture;
 import com.anrisoftware.dwarfhustle.model.api.objects.StoredObject;
 import com.google.auto.service.AutoService;
 
 /**
- * Writes and reads {@link WoodPlank} in a byte buffer.
+ * Writes and reads {@link Furniture} in a byte buffer.
  * <p>
  * See properties from {@link GameMapMaterialObjectBuffer}.
  * <ul>
@@ -40,30 +40,30 @@ import com.google.auto.service.AutoService;
  * </pre>
  */
 @AutoService(StoredObjectBuffer.class)
-public class WoodPlankBuffer implements StoredObjectBuffer {
+public class FurnitureBuffer implements StoredObjectBuffer {
 
     /**
      * Size in bytes.
      */
     public static final int SIZE = GameMapMaterialObjectBuffer.SIZE;
 
-    public static void setWoodPlank(MutableDirectBuffer b, int off, WoodPlank o) {
+    public static void setFurniture(MutableDirectBuffer b, int off, Furniture o) {
         GameMapMaterialObjectBuffer.writeMaterialObject(b, off, o);
     }
 
-    public static WoodPlank getWoodPlank(DirectBuffer b, int off, WoodPlank o) {
+    public static Furniture getFurniture(DirectBuffer b, int off, Furniture o) {
         GameMapMaterialObjectBuffer.readMaterialObject(b, off, o);
         return o;
     }
 
     @Override
     public StoredObject read(DirectBuffer b) {
-        return getWoodPlank(b, 0, new WoodPlank());
+        return getFurniture(b, 0, new Furniture());
     }
 
     @Override
     public int getObjectType() {
-        return WoodPlank.OBJECT_TYPE;
+        return Furniture.OBJECT_TYPE;
     }
 
     @Override
@@ -73,6 +73,6 @@ public class WoodPlankBuffer implements StoredObjectBuffer {
 
     @Override
     public void write(MutableDirectBuffer b, StoredObject go) {
-        setWoodPlank(b, 0, (WoodPlank) go);
+        setFurniture(b, 0, (Furniture) go);
     }
 }

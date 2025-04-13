@@ -43,7 +43,7 @@ import com.anrisoftware.dwarfhustle.model.api.objects.PropertiesSet;
  * <li>@{code d} the depth;
  * <li>@{code p} the object properties;
  * <li>@{code t} temperature;
- * <li>@{code t} light lux;
+ * <li>@{code l} light lux;
  * </ul>
  *
  * <pre>

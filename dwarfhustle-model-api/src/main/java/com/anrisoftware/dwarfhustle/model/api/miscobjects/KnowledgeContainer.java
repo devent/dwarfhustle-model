@@ -27,9 +27,9 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Wood Log.
+ * Container.
  *
- * @see WoodLog
+ * @see Furniture
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @NoArgsConstructor
@@ -37,30 +37,30 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-public class KnowledgeWoodLog extends ObjectType {
+public class KnowledgeContainer extends ObjectType {
 
-    public static final String TYPE = "wood-log";
+    public static final String TYPE = "Container";
 
     public static final int OBJECT_TYPE = TYPE.hashCode();
 
-    public KnowledgeWoodLog(int kid) {
+    public KnowledgeContainer(int kid) {
         super(kid);
     }
 
     @Override
     public int getObjectType() {
-        return KnowledgeWoodLog.OBJECT_TYPE;
+        return KnowledgeContainer.OBJECT_TYPE;
     }
 
     @Override
     public String getKnowledgeType() {
-        return KnowledgeWoodLog.TYPE;
+        return KnowledgeContainer.TYPE;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public <T extends GameObject> T createObject(byte[] id) {
-        var go = new WoodLog(id);
+        var go = new ContainerObject(id);
         go.setVisible(true);
         go.setHaveModel(false);
         go.setHaveTex(true);

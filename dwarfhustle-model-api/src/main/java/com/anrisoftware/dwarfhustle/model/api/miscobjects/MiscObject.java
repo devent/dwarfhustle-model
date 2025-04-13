@@ -32,30 +32,30 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
- * Wood Log.
+ * Miscellaneous Object.
  */
 @NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Data
 @AutoService(StoredObject.class)
-public class WoodLog extends GameMapMaterialObject {
+public class MiscObject extends GameMapMaterialObject {
 
-    public static final int OBJECT_TYPE = "wood-log".hashCode();
+    public static final int OBJECT_TYPE = "Misc-Object".hashCode();
 
-    public WoodLog(long id) {
+    public MiscObject(long id) {
         super(id);
     }
 
-    public WoodLog(byte[] idbuf) {
+    public MiscObject(byte[] idbuf) {
         super(idbuf);
     }
 
-    public WoodLog(long id, GameBlockPos pos, long material) {
+    public MiscObject(long id, GameBlockPos pos, long material) {
         super(id, pos, material);
     }
 
-    public WoodLog(byte[] idbuf, GameBlockPos pos, long material) {
+    public MiscObject(byte[] idbuf, GameBlockPos pos, long material) {
         super(idbuf, pos, material);
     }
 

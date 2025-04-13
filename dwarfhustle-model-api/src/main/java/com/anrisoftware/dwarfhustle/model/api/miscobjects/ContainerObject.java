@@ -32,31 +32,35 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
- * Wood Plank.
+ * Container.
  */
 @NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Data
 @AutoService(StoredObject.class)
-public class WoodPlank extends GameMapMaterialObject {
+public class ContainerObject extends GameMapMaterialObject {
 
-    public static final int OBJECT_TYPE = "wood-plank".hashCode();
+    public static final int OBJECT_TYPE = "Container".hashCode();
 
-    public WoodPlank(long id) {
+    private long table;
+
+    public ContainerObject(long id) {
         super(id);
     }
 
-    public WoodPlank(byte[] idbuf) {
+    public ContainerObject(byte[] idbuf) {
         super(idbuf);
     }
 
-    public WoodPlank(long id, GameBlockPos pos, long material) {
+    public ContainerObject(long id, GameBlockPos pos, long material, long table) {
         super(id, pos, material);
+        this.table = table;
     }
 
-    public WoodPlank(byte[] idbuf, GameBlockPos pos, long material) {
+    public ContainerObject(byte[] idbuf, GameBlockPos pos, long material, long table) {
         super(idbuf, pos, material);
+        this.table = table;
     }
 
     @Override
@@ -67,11 +71,13 @@ public class WoodPlank extends GameMapMaterialObject {
     @Override
     public void writeStream(DataOutput out) throws IOException {
         super.writeStream(out);
+        out.writeLong(table);
     }
 
     @Override
     public void readStream(DataInput in) throws IOException {
         super.readStream(in);
+        this.table = in.readLong();
     }
 
 }

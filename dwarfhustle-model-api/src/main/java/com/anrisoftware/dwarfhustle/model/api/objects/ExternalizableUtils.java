@@ -36,6 +36,7 @@ import org.eclipse.collections.api.factory.primitive.IntLongMaps;
 import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.factory.primitive.LongIntMaps;
 import org.eclipse.collections.api.factory.primitive.LongLists;
+import org.eclipse.collections.api.factory.primitive.LongLongMaps;
 import org.eclipse.collections.api.factory.primitive.LongObjectMaps;
 import org.eclipse.collections.api.factory.primitive.ObjectIntMaps;
 import org.eclipse.collections.api.factory.primitive.ObjectLongMaps;
@@ -46,11 +47,13 @@ import org.eclipse.collections.api.map.primitive.IntIntMap;
 import org.eclipse.collections.api.map.primitive.IntLongMap;
 import org.eclipse.collections.api.map.primitive.IntObjectMap;
 import org.eclipse.collections.api.map.primitive.LongIntMap;
+import org.eclipse.collections.api.map.primitive.LongLongMap;
 import org.eclipse.collections.api.map.primitive.LongObjectMap;
 import org.eclipse.collections.api.map.primitive.MutableIntIntMap;
 import org.eclipse.collections.api.map.primitive.MutableIntLongMap;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.eclipse.collections.api.map.primitive.MutableLongIntMap;
+import org.eclipse.collections.api.map.primitive.MutableLongLongMap;
 import org.eclipse.collections.api.map.primitive.MutableLongObjectMap;
 import org.eclipse.collections.api.map.primitive.MutableObjectIntMap;
 import org.eclipse.collections.api.map.primitive.MutableObjectLongMap;
@@ -151,6 +154,30 @@ public class ExternalizableUtils {
         final MutableIntLongMap map = IntLongMaps.mutable.ofInitialCapacity(size);
         for (int i = 0; i < size; i++) {
             map.put(in.readInt(), in.readLong());
+        }
+        return map;
+    }
+
+    /**
+     * Writes the keys and values of the {@link LongLongMap} to stream.
+     */
+    public static void writeStreamLongLongMap(DataOutput out, LongLongMap map) throws IOException {
+        out.writeInt(map.size());
+        for (final var view : map.keyValuesView()) {
+            out.writeLong(view.getOne());
+            out.writeLong(view.getTwo());
+        }
+    }
+
+    /**
+     * Read a {@link LongLongMap}. This creates a new map with initial capacity of
+     * size to avoid a re-hash of the map.
+     */
+    public static MutableLongLongMap readStreamLongLongMap(DataInput in) throws IOException {
+        final int size = in.readInt();
+        final MutableLongLongMap map = LongLongMaps.mutable.ofInitialCapacity(size);
+        for (int i = 0; i < size; i++) {
+            map.put(in.readLong(), in.readLong());
         }
         return map;
     }
