@@ -18,7 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.api.miscobjects;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
-import com.anrisoftware.dwarfhustle.model.api.objects.ObjectType;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObjectType;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -37,24 +37,24 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-public abstract class KnowledgeMisc extends ObjectType {
+public class KnowledgeMiscObject extends KnowledgeObjectType {
 
     public static final String TYPE = "Misc-Object";
 
     public static final int OBJECT_TYPE = TYPE.hashCode();
 
-    public KnowledgeMisc(int kid) {
+    public KnowledgeMiscObject(int kid) {
         super(kid);
     }
 
     @Override
     public int getObjectType() {
-        return KnowledgeMisc.OBJECT_TYPE;
+        return KnowledgeMiscObject.OBJECT_TYPE;
     }
 
     @Override
     public String getKnowledgeType() {
-        return KnowledgeMisc.TYPE;
+        return KnowledgeMiscObject.TYPE;
     }
 
     @SuppressWarnings("unchecked")

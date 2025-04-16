@@ -17,26 +17,26 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
-import com.anrisoftware.dwarfhustle.model.api.materials.Soil;
+import com.anrisoftware.dwarfhustle.model.api.miscobjects.Furniture;
+import com.anrisoftware.dwarfhustle.model.api.miscobjects.KnowledgeFurniture;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.google.auto.service.AutoService;
 
 /**
- * Soil material.
  *
- * @see Soil
+ * @see Furniture
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @AutoService(GameObjectKnowledge.class)
-public class SoilStorage extends AbstractMaterialStorage {
+public class FurnitureStorage extends AbstractKnowledgeObjectStorage {
 
     @Override
     public String getType() {
-        return Soil.TYPE;
+        return Furniture.TYPE;
     }
 
     @Override
     public KnowledgeObject create() {
-        return new Soil();
+        return new KnowledgeFurniture();
     }
 }

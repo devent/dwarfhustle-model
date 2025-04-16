@@ -18,26 +18,21 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
-import com.anrisoftware.dwarfhustle.model.api.objects.ObjectType;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObjectType;
 
 import edu.isi.powerloom.logic.LogicObject;
 
 /**
  *
- * @see ObjectType
+ * @see KnowledgeObjectType
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 public abstract class AbstractObjectTypeStorage implements GameObjectKnowledge {
 
     @Override
-    public String getType() {
-        return ObjectType.TYPE;
-    }
-
-    @Override
     public KnowledgeObject retrieve(Object o, KnowledgeObject go) {
         var next = (LogicObject) o;
-        var ko = (ObjectType) go;
+        var ko = (KnowledgeObjectType) go;
         ko.setKid(next.surrogateValueInverse.symbolId);
         ko.setName(next.surrogateValueInverse.symbolName);
         return ko;

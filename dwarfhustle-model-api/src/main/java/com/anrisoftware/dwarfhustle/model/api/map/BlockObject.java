@@ -18,7 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.api.map;
 
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
-import com.anrisoftware.dwarfhustle.model.api.objects.ObjectType;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObjectType;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -37,7 +37,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-public class BlockObject extends ObjectType {
+public class BlockObject extends KnowledgeObjectType {
 
     public static final int OBJECT_TYPE = BlockObject.class.getSimpleName().hashCode();
 

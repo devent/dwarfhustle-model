@@ -55,7 +55,7 @@ import com.anrisoftware.dwarfhustle.model.api.materials.Stone
 import com.anrisoftware.dwarfhustle.model.api.materials.Topsoil
 import com.anrisoftware.dwarfhustle.model.api.materials.Wood
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
-import com.anrisoftware.dwarfhustle.model.api.objects.ObjectType
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObjectType
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeGrass
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeShrub
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeBranch
@@ -247,7 +247,7 @@ class ListKnowledges {
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, LightType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, RoofType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockType.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, ObjectType.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeObjectType.TYPE))
         while (ko.size() != 118) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)

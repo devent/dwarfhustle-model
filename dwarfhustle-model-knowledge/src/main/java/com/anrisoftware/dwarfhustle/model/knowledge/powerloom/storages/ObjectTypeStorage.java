@@ -19,12 +19,12 @@ package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
 import com.anrisoftware.dwarfhustle.model.api.map.BlockObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
-import com.anrisoftware.dwarfhustle.model.api.objects.ObjectType;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObjectType;
 import com.google.auto.service.AutoService;
 
 /**
  *
- * @see ObjectType
+ * @see KnowledgeObjectType
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @AutoService(GameObjectKnowledge.class)
@@ -32,7 +32,7 @@ public class ObjectTypeStorage extends AbstractObjectTypeStorage {
 
     @Override
     public String getType() {
-        return ObjectType.TYPE;
+        return KnowledgeObjectType.TYPE;
     }
 
     @Override

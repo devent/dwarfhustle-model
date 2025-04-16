@@ -17,27 +17,27 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
-import com.anrisoftware.dwarfhustle.model.api.materials.Liquid;
-import com.anrisoftware.dwarfhustle.model.api.materials.Stone;
+import com.anrisoftware.dwarfhustle.model.api.miscobjects.ContainerObject;
+import com.anrisoftware.dwarfhustle.model.api.miscobjects.KnowledgeContainer;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.google.auto.service.AutoService;
 
 /**
- * Liquid material.
+ * Container.
  *
- * @see Stone
+ * @see ContainerObject
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @AutoService(GameObjectKnowledge.class)
-public class LiqiudStorage extends MaterialStorage {
+public class ContainerObjectStorage extends AbstractKnowledgeObjectStorage {
 
     @Override
     public String getType() {
-        return Liquid.TYPE;
+        return ContainerObject.TYPE;
     }
 
     @Override
     public KnowledgeObject create() {
-        return new Liquid();
+        return new KnowledgeContainer();
     }
 }

@@ -19,7 +19,7 @@ package com.anrisoftware.dwarfhustle.model.api.vegetations;
 
 import org.eclipse.collections.api.set.primitive.IntSet;
 
-import com.anrisoftware.dwarfhustle.model.api.objects.ObjectType;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObjectType;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -33,7 +33,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @Data
-public abstract class KnowledgeVegetation extends ObjectType {
+public abstract class KnowledgeVegetation extends KnowledgeObjectType {
 
     public static final int OBJECT_TYPE = KnowledgeVegetation.class.getSimpleName().hashCode();
 

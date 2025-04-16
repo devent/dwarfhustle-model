@@ -28,7 +28,7 @@ import com.google.auto.service.AutoService;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @AutoService(GameObjectKnowledge.class)
-public class MetalOreStorage extends MaterialStorage {
+public class MetalOreStorage extends AbstractMaterialStorage {
 
     @Override
     public String getType() {

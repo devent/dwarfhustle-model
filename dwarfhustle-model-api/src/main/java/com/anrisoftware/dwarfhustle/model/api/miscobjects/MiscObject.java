@@ -33,6 +33,8 @@ import lombok.ToString;
 
 /**
  * Miscellaneous Object.
+ *
+ * @see KnowledgeMiscObject
  */
 @NoArgsConstructor
 @ToString(callSuper = true)
@@ -41,7 +43,9 @@ import lombok.ToString;
 @AutoService(StoredObject.class)
 public class MiscObject extends GameMapMaterialObject {
 
-    public static final int OBJECT_TYPE = "Misc-Object".hashCode();
+    public static final String TYPE = "Misc-Object";
+
+    public static final int OBJECT_TYPE = TYPE.hashCode();
 
     public MiscObject(long id) {
         super(id);

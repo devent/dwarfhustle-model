@@ -1,5 +1,5 @@
 /*
- * dwarfhustle-model-api - Manages the compile dependencies for the model.
+ * dwarfhustle-model-knowledge - Manages the compile dependencies for the model.
  * Copyright © 2022-2025 Erwin Müller (erwin.mueller@anrisoftware.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,41 +15,29 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api.objects;
+package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import com.anrisoftware.dwarfhustle.model.api.materials.Liquid;
+import com.anrisoftware.dwarfhustle.model.api.materials.Stone;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
+import com.google.auto.service.AutoService;
 
 /**
- * Object type.
+ * Liquid material.
  *
+ * @see Stone
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@NoArgsConstructor
-@ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
-@Getter
-@Setter
-public abstract class ObjectType extends KnowledgeObject {
+@AutoService(GameObjectKnowledge.class)
+public class LiquidStorage extends AbstractMaterialStorage {
 
-    public static final int OBJECT_TYPE = ObjectType.class.getSimpleName().hashCode();
-
-    public static final String TYPE = "ObjectType";
-
-    public ObjectType(int kid) {
-        super(kid);
+    @Override
+    public String getType() {
+        return Liquid.TYPE;
     }
 
     @Override
-    public int getObjectType() {
-        return ObjectType.OBJECT_TYPE;
-    }
-
-    @Override
-    public String getKnowledgeType() {
-        return ObjectType.TYPE;
+    public KnowledgeObject create() {
+        return new Liquid();
     }
 }

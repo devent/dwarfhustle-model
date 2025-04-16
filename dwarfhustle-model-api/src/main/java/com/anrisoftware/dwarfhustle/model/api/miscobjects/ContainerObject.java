@@ -41,7 +41,9 @@ import lombok.ToString;
 @AutoService(StoredObject.class)
 public class ContainerObject extends GameMapMaterialObject {
 
-    public static final int OBJECT_TYPE = "Container".hashCode();
+    public static final String TYPE = "Container";
+
+    public static final int OBJECT_TYPE = TYPE.hashCode();
 
     private long table;
 

@@ -27,7 +27,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
- * Base for all knowledge objects.
+ * Base class for all object properties like the material an object is made of.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
@@ -56,9 +56,12 @@ public abstract class KnowledgeObject extends GameObject {
     /**
      * Knowledge KID.
      */
-    public int kid;
+    private int kid;
 
-    public String name;
+    /**
+     * The name of the object, i.e. log, block, rock, boulder, plank, sword, etc.
+     */
+    private String name;
 
     public KnowledgeObject(int kid) {
         super(kid2Id(kid));

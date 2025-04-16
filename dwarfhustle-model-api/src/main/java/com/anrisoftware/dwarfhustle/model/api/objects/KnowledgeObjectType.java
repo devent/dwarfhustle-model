@@ -15,10 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.anrisoftware.dwarfhustle.model.api.map;
-
-import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
-import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObjectType;
+package com.anrisoftware.dwarfhustle.model.api.objects;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -27,7 +24,8 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Floor type.
+ * Knowledge object type is the base class of all physically real objects and
+ * buildings.
  *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
@@ -36,28 +34,23 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-public class FloorType extends KnowledgeObjectType {
+public abstract class KnowledgeObjectType extends KnowledgeObject {
 
-    public static final int OBJECT_TYPE = FloorType.class.getSimpleName().hashCode();
+    public static final String TYPE = "ObjectType";
 
-    public static final String TYPE = "FloorType";
+    public static final int OBJECT_TYPE = TYPE.hashCode();
 
-    public FloorType(int kid) {
+    public KnowledgeObjectType(int kid) {
         super(kid);
     }
 
     @Override
     public int getObjectType() {
-        return FloorType.OBJECT_TYPE;
+        return KnowledgeObjectType.OBJECT_TYPE;
     }
 
     @Override
     public String getKnowledgeType() {
-        return FloorType.TYPE;
-    }
-
-    @Override
-    public <T extends GameObject> T createObject(byte[] id) {
-        return null;
+        return KnowledgeObjectType.TYPE;
     }
 }

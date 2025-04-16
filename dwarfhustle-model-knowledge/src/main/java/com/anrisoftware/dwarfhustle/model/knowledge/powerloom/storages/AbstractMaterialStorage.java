@@ -21,21 +21,20 @@ import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.Po
 
 import com.anrisoftware.dwarfhustle.model.api.materials.KnowledgeMaterial;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
-import com.google.auto.service.AutoService;
 
 /**
- * Storage for {@link KnowledgeMaterial}.
+ * Storage for {@link KnowledgeMaterial}. Retrieves the material properties:
+ * <ul>
+ * <li>{@code melting-point-material}
+ * <li>{@code density-of-material}
+ * <li>{@code specific-heat-capacity-of-material}
+ * <li>{@code thermal-conductivity-of-material}
+ * </ul>
  *
  * @see KnowledgeMaterial
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-@AutoService(GameObjectKnowledge.class)
-public class MaterialStorage extends AbstractKnowledgeObjectStorage {
-
-    @Override
-    public String getType() {
-        return KnowledgeMaterial.TYPE;
-    }
+public abstract class AbstractMaterialStorage extends AbstractKnowledgeObjectStorage {
 
     @Override
     public KnowledgeObject retrieve(Object o, KnowledgeObject go) {

@@ -41,7 +41,9 @@ import lombok.ToString;
 @AutoService(StoredObject.class)
 public class Furniture extends GameMapMaterialObject {
 
-    public static final int OBJECT_TYPE = "Furniture".hashCode();
+    public static final String TYPE = "Furniture";
+
+    public static final int OBJECT_TYPE = TYPE.hashCode();
 
     public Furniture(long id) {
         super(id);
