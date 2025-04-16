@@ -38,9 +38,9 @@ import lombok.ToString;
 @Setter
 public class KnowledgeMaterial extends KnowledgeObject {
 
-    public static final int OBJECT_TYPE = KnowledgeMaterial.class.getSimpleName().hashCode();
-
     public static final String TYPE = "Material";
+
+    public static final int OBJECT_TYPE = TYPE.hashCode();
 
     private float meltingPoint;
 

@@ -70,18 +70,12 @@ public class MapBlock implements Serializable {
     public int parent = 0;
 
     /**
-     * RID of the material type (gas, liquid, metal, alloy, ore, soil, stone or
-     * wood).
-     */
-    public int type = -1;
-
-    /**
-     * RID of the material (air, peat, sandstone, etc).
+     * RID of the material.
      */
     public int material = -1;
 
     /**
-     * RID of the object (block, ramp, etc).
+     * RID of the object.
      */
     public int object = -1;
 
@@ -97,7 +91,7 @@ public class MapBlock implements Serializable {
 
     /**
      * Bit field that defines the properties of the map block.
-     *
+     * 
      * <pre>
      * Exclusive Flags:
      * 00000000 00000000 Block is hidden.

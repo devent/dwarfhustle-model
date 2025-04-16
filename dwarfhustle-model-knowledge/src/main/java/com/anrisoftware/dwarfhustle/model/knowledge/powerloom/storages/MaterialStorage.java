@@ -21,6 +21,7 @@ import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.Po
 
 import com.anrisoftware.dwarfhustle.model.api.materials.KnowledgeMaterial;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
+import com.google.auto.service.AutoService;
 
 /**
  * Storage for {@link KnowledgeMaterial}. Retrieves the material properties:
@@ -34,7 +35,8 @@ import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
  * @see KnowledgeMaterial
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-public abstract class AbstractMaterialStorage extends AbstractKnowledgeObjectStorage {
+@AutoService(GameObjectKnowledge.class)
+public class MaterialStorage extends AbstractKnowledgeObjectStorage {
 
     @Override
     public KnowledgeObject retrieve(Object o, KnowledgeObject go) {
@@ -50,5 +52,10 @@ public abstract class AbstractMaterialStorage extends AbstractKnowledgeObjectSto
     @Override
     public KnowledgeObject create() {
         return new KnowledgeMaterial();
+    }
+
+    @Override
+    public String getType() {
+        return KnowledgeMaterial.TYPE;
     }
 }

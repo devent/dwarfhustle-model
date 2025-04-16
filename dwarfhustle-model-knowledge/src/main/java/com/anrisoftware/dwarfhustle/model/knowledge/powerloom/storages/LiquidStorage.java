@@ -29,7 +29,7 @@ import com.google.auto.service.AutoService;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @AutoService(GameObjectKnowledge.class)
-public class LiquidStorage extends AbstractMaterialStorage {
+public class LiquidStorage extends MaterialStorage {
 
     @Override
     public String getType() {

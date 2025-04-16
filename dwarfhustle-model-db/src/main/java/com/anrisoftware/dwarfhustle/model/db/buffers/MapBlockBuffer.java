@@ -40,18 +40,16 @@ import com.anrisoftware.dwarfhustle.model.api.objects.PropertiesSet;
  * <ul>
  * <li>@{code p} tile properties;
  * <li>@{code P} parent chunk CID;
- * <li>@{code t} type KID;
  * <li>@{code m} material KID;
  * <li>@{code o} object KID;
- * <li>@{code T} temperature;
- * <li>@{code l} light lux;
+ * <li>@{code t} temperature;
+ * <li>@{code t} light lux;
  * </ul>
  *
  * <pre>
- * long  0                   1                   2
  * int   0         1         2         3
- * short 0    1    2    3    4    5    6    7
- *       pppp pppp PPPP tttt mmmm oooo TTTT llll
+ * short 0    1    2    3    4    5    6
+ *       pppp pppp PPPP mmmm oooo tttt llll
  * </pre>
  */
 public class MapBlockBuffer {
@@ -61,7 +59,6 @@ public class MapBlockBuffer {
      */
     public static final int SIZE = 4 // properties
             + 2 // parent chunk CID
-            + 2 // type KID
             + 2 // material KID
             + 2 // object KID
             + 2 // temperature
@@ -70,17 +67,15 @@ public class MapBlockBuffer {
 
     private static final int PARENT_BYTE = 2 * 2;
 
-    private static final int TYPE_BYTE = 3 * 2;
+    private static final int MATERIAL_BYTE = 3 * 2;
 
-    private static final int MATERIAL_BYTE = 4 * 2;
-
-    private static final int OBJECT_BYTE = 5 * 2;
+    private static final int OBJECT_BYTE = 4 * 2;
 
     private static final int PROP_BYTE = 0 * 4;
 
-    private static final int TEMP_BYTE = 6 * 2;
+    private static final int TEMP_BYTE = 5 * 2;
 
-    private static final int LUX_BYTE = 7 * 2;
+    private static final int LUX_BYTE = 6 * 2;
 
     /**
      * Returns the size of the {@link MapBlock}'s buffer for the chunk width, height
@@ -110,14 +105,6 @@ public class MapBlockBuffer {
 
     public static int getParent(DirectBuffer b, int off) {
         return b.getShort(PARENT_BYTE + off);
-    }
-
-    public static void setType(MutableDirectBuffer b, int off, int t) {
-        b.putShort(TYPE_BYTE + off, (short) t);
-    }
-
-    public static int getType(DirectBuffer b, int off) {
-        return b.getShort(TYPE_BYTE + off);
     }
 
     public static void setMaterial(MutableDirectBuffer b, int off, int m) {
@@ -196,7 +183,6 @@ public class MapBlockBuffer {
     public static void write(MutableDirectBuffer b, int offset, MapBlock block) {
         b.putInt(PROP_BYTE + offset, block.p.bits);
         b.putShort(PARENT_BYTE + offset, (short) block.parent);
-        b.putShort(TYPE_BYTE + offset, (short) block.type);
         b.putShort(MATERIAL_BYTE + offset, (short) block.material);
         b.putShort(OBJECT_BYTE + offset, (short) block.object);
         b.putShort(TEMP_BYTE + offset, (int2short(block.temp)));
@@ -214,7 +200,6 @@ public class MapBlockBuffer {
         var block = new MapBlock(pos);
         block.p = new PropertiesSet(b.getInt(PROP_BYTE + offset));
         block.parent = b.getShort(PARENT_BYTE + offset);
-        block.type = b.getShort(TYPE_BYTE + offset);
         block.material = b.getShort(MATERIAL_BYTE + offset);
         block.object = b.getShort(OBJECT_BYTE + offset);
         block.temp = short2int(b.getShort(TEMP_BYTE + offset));
