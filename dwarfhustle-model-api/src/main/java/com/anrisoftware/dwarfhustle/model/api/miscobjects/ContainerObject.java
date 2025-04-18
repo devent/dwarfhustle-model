@@ -55,14 +55,12 @@ public class ContainerObject extends GameMapMaterialObject {
         super(idbuf);
     }
 
-    public ContainerObject(long id, GameBlockPos pos, long material, long table) {
-        super(id, pos, material);
-        this.table = table;
+    public ContainerObject(long id, GameBlockPos pos, long material, int type) {
+        super(id, pos, material, type);
     }
 
-    public ContainerObject(byte[] idbuf, GameBlockPos pos, long material, long table) {
-        super(idbuf, pos, material);
-        this.table = table;
+    public ContainerObject(byte[] idbuf, GameBlockPos pos, long material, int type) {
+        super(idbuf, pos, material, type);
     }
 
     @Override

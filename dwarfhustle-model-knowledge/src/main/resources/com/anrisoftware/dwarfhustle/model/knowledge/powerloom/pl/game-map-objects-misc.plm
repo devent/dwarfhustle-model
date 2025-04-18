@@ -22,6 +22,12 @@
 (assert (Misc-Object Wood-Log))
 (assert (Misc-Object Wood-Plank))
 (assert (Misc-Object Salt-Lump))
+(assert (Misc-Object Rock-Stone))
+(assert (Misc-Object Rock-Block))
+(assert (Misc-Object Metal-Ore))
+(assert (Misc-Object Metal-Bar))
+(assert (Misc-Object Giant-Sawblade))
+(assert (Misc-Object Mechanism))
 
 (defconcept Container (?v ObjectType))
 

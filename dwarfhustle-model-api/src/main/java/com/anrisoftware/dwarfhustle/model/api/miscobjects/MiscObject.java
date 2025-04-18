@@ -55,12 +55,12 @@ public class MiscObject extends GameMapMaterialObject {
         super(idbuf);
     }
 
-    public MiscObject(long id, GameBlockPos pos, long material) {
-        super(id, pos, material);
+    public MiscObject(long id, GameBlockPos pos, long material, int type) {
+        super(id, pos, material, type);
     }
 
-    public MiscObject(byte[] idbuf, GameBlockPos pos, long material) {
-        super(idbuf, pos, material);
+    public MiscObject(byte[] idbuf, GameBlockPos pos, long material, int type) {
+        super(idbuf, pos, material, type);
     }
 
     @Override

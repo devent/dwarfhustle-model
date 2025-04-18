@@ -53,12 +53,12 @@ public class Furniture extends GameMapMaterialObject {
         super(idbuf);
     }
 
-    public Furniture(long id, GameBlockPos pos, long material) {
-        super(id, pos, material);
+    public Furniture(long id, GameBlockPos pos, long material, int type) {
+        super(id, pos, material, type);
     }
 
-    public Furniture(byte[] idbuf, GameBlockPos pos, long material) {
-        super(idbuf, pos, material);
+    public Furniture(byte[] idbuf, GameBlockPos pos, long material, int type) {
+        super(idbuf, pos, material, type);
     }
 
     @Override

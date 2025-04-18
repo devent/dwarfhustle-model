@@ -42,6 +42,12 @@ public abstract class GameMapMaterialObject extends GameMapObject {
      */
     private long material;
 
+    /**
+     * Material type like igneous-intrusive, igneous-extrusive, liquid, sand, etc.
+     * for the texture to load.
+     */
+    private int type;
+
     public GameMapMaterialObject(long id) {
         super(id);
     }
@@ -50,14 +56,16 @@ public abstract class GameMapMaterialObject extends GameMapObject {
         super(idbuf);
     }
 
-    public GameMapMaterialObject(long id, GameBlockPos pos, long material) {
+    public GameMapMaterialObject(long id, GameBlockPos pos, long material, int type) {
         super(id, pos);
         this.material = material;
+        this.type = type;
     }
 
-    public GameMapMaterialObject(byte[] idbuf, GameBlockPos pos, long material) {
+    public GameMapMaterialObject(byte[] idbuf, GameBlockPos pos, long material, int type) {
         super(idbuf, pos);
         this.material = material;
+        this.type = type;
     }
 
     @Override

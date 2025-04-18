@@ -21,6 +21,11 @@
 (assert (= (object-width building-salt-works) 3))
 (assert (= (object-height building-salt-works) 3))
 (assert (= (object-depth building-salt-works) 1))
+(assert (= (object-build-input-units-or building-salt-works DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-salt-works DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-salt-works DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-salt-works DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-salt-works DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 ;;
 (assert (work-parent-job job-saltmaking-seawater))
 (assert (work-building job-saltmaking-seawater building-salt-works))
@@ -38,27 +43,52 @@
 (assert (= (object-width building-apothecary) 3))
 (assert (= (object-height building-apothecary) 3))
 (assert (= (object-depth building-apothecary) 1))
+(assert (= (object-build-input-units-or building-apothecary DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-apothecary DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-apothecary DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-apothecary DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-apothecary DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-apiary)) :documentation "Workshop that produces beeswax for candles."
 (assert (= (object-width building-apiary) 3))
 (assert (= (object-height building-apiary) 3))
 (assert (= (object-depth building-apiary) 1))
+(assert (= (object-build-input-units-or building-apiary DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-apiary DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-apiary DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-apiary DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-apiary DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-ashery)) :documentation "Workshop that converts ashes into lye, potash, or pearlash."
 (assert (= (object-width building-ashery) 3))
 (assert (= (object-height building-ashery) 3))
 (assert (= (object-depth building-ashery) 1))
+(assert (= (object-build-input-units-or building-ashery DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-ashery DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-ashery DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-ashery DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-ashery DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-bowyer)) :documentation "Workshop that produces bows and crossbows."
 (assert (= (object-width building-bowyer) 3))
 (assert (= (object-height building-bowyer) 3))
 (assert (= (object-depth building-bowyer) 1))
+(assert (= (object-build-input-units-or building-bowyer DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-bowyer DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-bowyer DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-bowyer DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-bowyer DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-carpenter)) :documentation "Workshop carpenter."
 (assert (= (object-width building-carpenter) 3))
 (assert (= (object-height building-carpenter) 3))
 (assert (= (object-depth building-carpenter) 1))
 (assert (= (object-passable building-carpenter) 306)) :documentation "Passable tiles top to bottom: 100 110 010."
+(assert (= (object-build-input-units-or building-carpenter DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-carpenter DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-carpenter DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-carpenter DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-carpenter DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 ;;
 (assert (work-parent-job job-carpenter-plank))
 (assert (work-building job-carpenter-plank building-carpenter))
@@ -88,8 +118,13 @@
 (assert (= (object-width building-sawmill) 5))
 (assert (= (object-height building-sawmill) 5))
 (assert (= (object-depth building-sawmill) 1))
-(assert (= (object-build-input-units building-sawmill giant-sawblade) 1))
-(assert (= (object-build-input-units building-sawmill mechanism) 3))
+(assert (= (object-build-input-units building-sawmill DWARFHUSTLE-OBJECTS-MISC/Giant-Sawblade) 1))
+(assert (= (object-build-input-units building-sawmill DWARFHUSTLE-OBJECTS-MISC/Mechanism) 3))
+(assert (= (object-build-input-units-or building-sawmill DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 3))
+(assert (= (object-build-input-units-or building-sawmill DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 3))
+(assert (= (object-build-input-units-or building-sawmill DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 3))
+(assert (= (object-build-input-units-or building-sawmill DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 3))
+(assert (= (object-build-input-units-or building-sawmill DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 3))
 (assert (= (object-passable building-sawmill) 33080895)) :documentation "Passable tiles top to bottom: 11111 10001 10001 10001 11111."
 ;;
 (assert (work-parent-job job-sawmill-plank))
@@ -109,61 +144,121 @@
 (assert (= (object-width building-craft) 3))
 (assert (= (object-height building-craft) 3))
 (assert (= (object-depth building-craft) 1))
+(assert (= (object-build-input-units-or building-craft DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-craft DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-craft DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-craft DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-craft DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-jeweler)) :documentation "Workshop Jeweler."
 (assert (= (object-width building-jeweler) 3))
 (assert (= (object-height building-jeweler) 3))
 (assert (= (object-depth building-jeweler) 1))
+(assert (= (object-build-input-units-or building-jeweler DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-jeweler DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-jeweler DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-jeweler DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-jeweler DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-stonemason)) :documentation "Workshop Stonemason."
 (assert (= (object-width building-stonemason) 3))
 (assert (= (object-height building-stonemason) 3))
 (assert (= (object-depth building-stonemason) 1))
+(assert (= (object-build-input-units-or building-stonemason DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-stonemason DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-stonemason DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-stonemason DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-stonemason DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-metalsmith)) :documentation "Workshop Metalsmith's forge."
 (assert (= (object-width building-metalsmith) 3))
 (assert (= (object-height building-metalsmith) 3))
 (assert (= (object-depth building-metalsmith) 1))
+(assert (= (object-build-input-units-or building-metalsmith DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-metalsmith DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-metalsmith DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-metalsmith DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-metalsmith DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-screw-press)) :documentation "Workshop Screw press."
 (assert (= (object-width building-screw-press) 1))
 (assert (= (object-height building-screw-press) 1))
 (assert (= (object-depth building-screw-press) 1))
+(assert (= (object-build-input-units-or building-screw-press DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-screw-press DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-screw-press DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-screw-press DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-screw-press DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-siege-workshop)) :documentation "Siege workshop."
 (assert (= (object-width building-siege-workshop) 5))
 (assert (= (object-height building-siege-workshop) 5))
 (assert (= (object-depth building-siege-workshop) 1))
+(assert (= (object-build-input-units-or building-siege-workshop DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 3))
+(assert (= (object-build-input-units-or building-siege-workshop DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 3))
+(assert (= (object-build-input-units-or building-siege-workshop DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 3))
+(assert (= (object-build-input-units-or building-siege-workshop DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 3))
+(assert (= (object-build-input-units-or building-siege-workshop DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 3))
 
 (assert (Building building-soap-maker)) :documentation "Workshop Soap maker."
 (assert (= (object-width building-soap-maker) 3))
 (assert (= (object-height building-soap-maker) 3))
 (assert (= (object-depth building-soap-maker) 1))
+(assert (= (object-build-input-units-or building-soap-maker DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-soap-maker DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-soap-maker DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-soap-maker DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-soap-maker DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-tailor)) :documentation "Workshop Tailor."
 (assert (= (object-width building-tailor) 3))
 (assert (= (object-height building-tailor) 3))
 (assert (= (object-depth building-tailor) 1))
+(assert (= (object-build-input-units-or building-tailor DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-tailor DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-tailor DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-tailor DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-tailor DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-dyer)) :documentation "Workshop Dyer."
 (assert (= (object-width building-dyer) 3))
 (assert (= (object-height building-dyer) 3))
 (assert (= (object-depth building-dyer) 1))
+(assert (= (object-build-input-units-or building-dyer DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-dyer DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-dyer DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-dyer DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-dyer DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-tannery)) :documentation "Workshop Tannery."
 (assert (= (object-width building-tannery) 3))
 (assert (= (object-height building-tannery) 3))
 (assert (= (object-depth building-tannery) 1))
+(assert (= (object-build-input-units-or building-tannery DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-tannery DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-tannery DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-tannery DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-tannery DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-loom)) :documentation "Workshop Loom."
 (assert (= (object-width building-loom) 3))
 (assert (= (object-height building-loom) 3))
 (assert (= (object-depth building-loom) 1))
+(assert (= (object-build-input-units-or building-loom DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-loom DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-loom DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-loom DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-loom DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-weaving-mill)) :documentation "Weaving mill with power produces cloth."
-(assert (= (object-width building-weaving-mill) 3))
-(assert (= (object-height building-weaving-mill) 3))
+(assert (= (object-width building-weaving-mill) 5))
+(assert (= (object-height building-weaving-mill) 5))
 (assert (= (object-depth building-weaving-mill) 1))
+(assert (= (object-build-input-units-or building-weaving-mill DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 3))
+(assert (= (object-build-input-units-or building-weaving-mill DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 3))
+(assert (= (object-build-input-units-or building-weaving-mill DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 3))
+(assert (= (object-build-input-units-or building-weaving-mill DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 3))
+(assert (= (object-build-input-units-or building-weaving-mill DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 3))
 
 (assert (Building building-farm-plot)) :documentation "Farm plot."
 (assert (= (object-width building-farm-plot) 1))
@@ -174,93 +269,188 @@
 (assert (= (object-width building-butcher) 3))
 (assert (= (object-height building-butcher) 3))
 (assert (= (object-depth building-butcher) 1))
+(assert (= (object-build-input-units-or building-butcher DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-butcher DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-butcher DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-butcher DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-butcher DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-farmer)) :documentation "Workshop Farmer."
 (assert (= (object-width building-farmer) 3))
 (assert (= (object-height building-farmer) 3))
 (assert (= (object-depth building-farmer) 1))
+(assert (= (object-build-input-units-or building-farmer DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-farmer DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-farmer DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-farmer DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-farmer DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-fishery)) :documentation "Workshop Fishery."
 (assert (= (object-width building-fishery) 3))
 (assert (= (object-height building-fishery) 3))
 (assert (= (object-depth building-fishery) 1))
+(assert (= (object-build-input-units-or building-fishery DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-fishery DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-fishery DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-fishery DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-fishery DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-kitchen)) :documentation "Workshop Kitchen."
 (assert (= (object-width building-kitchen) 3))
 (assert (= (object-height building-kitchen) 3))
 (assert (= (object-depth building-kitchen) 1))
+(assert (= (object-build-input-units-or building-kitchen DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-kitchen DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-kitchen DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-kitchen DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-kitchen DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-quern)) :documentation "Workshop Quern."
 (assert (= (object-width building-quern) 1))
 (assert (= (object-height building-quern) 1))
 (assert (= (object-depth building-quern) 1))
+(assert (= (object-build-input-units-or building-quern DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-quern DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-quern DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-quern DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-quern DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-still)) :documentation "Workshop Still."
 (assert (= (object-width building-still) 3))
 (assert (= (object-height building-still) 3))
 (assert (= (object-depth building-still) 1))
+(assert (= (object-build-input-units-or building-still DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-still DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-still DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-still DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-still DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-tanner)) :documentation "Workshop Tanner."
 (assert (= (object-width building-tanner) 3))
 (assert (= (object-height building-tanner) 3))
 (assert (= (object-depth building-tanner) 1))
+(assert (= (object-build-input-units-or building-tanner DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-tanner DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-tanner DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-tanner DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-tanner DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-kennel)) :documentation "Kennel for vermin."
 (assert (= (object-width building-kennel) 5))
 (assert (= (object-height building-kennel) 5))
 (assert (= (object-depth building-kennel) 1))
+(assert (= (object-build-input-units-or building-kennel DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-kennel DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-kennel DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-kennel DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-kennel DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-nest-box)) :documentation "Nest box."
 (assert (= (object-width building-nest-box) 1))
 (assert (= (object-height building-nest-box) 1))
 (assert (= (object-depth building-nest-box) 1))
+(assert (= (object-build-input-units-or building-nest-box DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-nest-box DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-nest-box DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-nest-box DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-nest-box DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-hive)) :documentation "Hive."
 (assert (= (object-width building-hive) 1))
 (assert (= (object-height building-hive) 1))
 (assert (= (object-depth building-hive) 1))
+(assert (= (object-build-input-units-or building-hive DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-hive DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-hive DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-hive DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-hive DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-millstone)) :documentation "Millstone with power."
 (assert (= (object-width building-millstone) 1))
 (assert (= (object-height building-millstone) 1))
 (assert (= (object-depth building-millstone) 1))
+(assert (= (object-build-input-units-or building-millstone DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-millstone DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-millstone DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-millstone DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-millstone DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-trade-depot)) :documentation "Trade depot."
 (assert (= (object-width building-trade-depot) 5))
 (assert (= (object-height building-trade-depot) 5))
 (assert (= (object-depth building-trade-depot) 1))
+(assert (= (object-build-input-units-or building-trade-depot DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 3))
+(assert (= (object-build-input-units-or building-trade-depot DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 3))
+(assert (= (object-build-input-units-or building-trade-depot DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 3))
+(assert (= (object-build-input-units-or building-trade-depot DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 3))
+(assert (= (object-build-input-units-or building-trade-depot DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 3))
 
 (assert (Building building-glass-furnace)) :documentation "Glass furnace."
 (assert (= (object-width building-glass-furnace) 3))
 (assert (= (object-height building-glass-furnace) 3))
 (assert (= (object-depth building-glass-furnace) 1))
+(assert (= (object-build-input-units-or building-glass-furnace DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-glass-furnace DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-glass-furnace DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-glass-furnace DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-glass-furnace DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-magma-glass-furnace)) :documentation "Magma glass furnace."
 (assert (= (object-width building-magma-glass-furnace) 3))
 (assert (= (object-height building-magma-glass-furnace) 3))
 (assert (= (object-depth building-magma-glass-furnace) 1))
+(assert (= (object-build-input-units-or building-magma-glass-furnace DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-magma-glass-furnace DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-magma-glass-furnace DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-magma-glass-furnace DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-magma-glass-furnace DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-kilt)) :documentation "Kilt."
 (assert (= (object-width building-kilt) 3))
 (assert (= (object-height building-kilt) 3))
 (assert (= (object-depth building-kilt) 1))
+(assert (= (object-build-input-units-or building-kilt DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-kilt DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-kilt DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-kilt DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-kilt DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-magma-kilt)) :documentation "Magma kilt."
 (assert (= (object-width building-magma-kilt) 3))
 (assert (= (object-height building-magma-kilt) 3))
 (assert (= (object-depth building-magma-kilt) 1))
+(assert (= (object-build-input-units-or building-magma-kilt DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-magma-kilt DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-magma-kilt DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-magma-kilt DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-magma-kilt DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-smelter)) :documentation "Smelter."
 (assert (= (object-width building-smelter) 3))
 (assert (= (object-height building-smelter) 3))
 (assert (= (object-depth building-smelter) 1))
+(assert (= (object-build-input-units-or building-smelter DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-smelter DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-smelter DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-smelter DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-smelter DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-magma-smelter)) :documentation "Magma smelter."
 (assert (= (object-width building-magma-smelter) 3))
 (assert (= (object-height building-magma-smelter) 3))
 (assert (= (object-depth building-magma-smelter) 1))
+(assert (= (object-build-input-units-or building-magma-smelter DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-magma-smelter DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-magma-smelter DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-magma-smelter DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-magma-smelter DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
 
 (assert (Building building-wood-furnance)) :documentation "Wood furnance."
 (assert (= (object-width building-wood-furnance) 3))
 (assert (= (object-height building-wood-furnance) 3))
 (assert (= (object-depth building-wood-furnance) 1))
+(assert (= (object-build-input-units-or building-wood-furnance DWARFHUSTLE-OBJECTS-MISC/Wood-Log) 1))
+(assert (= (object-build-input-units-or building-wood-furnance DWARFHUSTLE-OBJECTS-MISC/Wood-Plank) 1))
+(assert (= (object-build-input-units-or building-wood-furnance DWARFHUSTLE-OBJECTS-MISC/Rock-Stone) 1))
+(assert (= (object-build-input-units-or building-wood-furnance DWARFHUSTLE-OBJECTS-MISC/Rock-Block) 1))
+(assert (= (object-build-input-units-or building-wood-furnance DWARFHUSTLE-OBJECTS-MISC/Metal-Bar) 1))
