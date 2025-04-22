@@ -30,14 +30,14 @@ import com.google.auto.service.AutoService;
  * <p>
  * See properties from {@link GameMapMaterialObjectBuffer}.
  * <ul>
- * <li>@{code T} {@link TableObject} ID;
+ * <li>@{code t} {@link TableObject} ID;
  * </ul>
  *
  * <pre>
  * long  0                   1                   2                   3                   4                   5                   6                   7
- * int   0         1         2         3         4         5         6         7         8         9         10        11        12        13        14
- * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21   22   23   24   25   26   27   28   29
- *       iiii iiii iiii iiii kkkk kkkk oooo oooo mmmm mmmm mmmm mmmm xxxx yyyy zzzz tttt wwww hhhh dddd llll pppp pppp MMMM MMMM MMMM MMMM TTTT TTTT TTTT TTTT
+ * int   0         1         2         3         4         5         6         7         8         9         10        11        12        13        14        15
+ * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21   22   23   24   25   26   27   28   29   30   31
+ *       iiii iiii iiii iiii kkkk kkkk oooo oooo mmmm mmmm mmmm mmmm xxxx yyyy zzzz tttt wwww hhhh dddd llll pppp pppp MMMM MMMM MMMM MMMM TTTT TTTT tttt tttt tttt tttt
  * </pre>
  */
 @AutoService(StoredObjectBuffer.class)
@@ -47,10 +47,10 @@ public class ContainerObjectBuffer implements StoredObjectBuffer {
      * Size in bytes.
      */
     public static final int SIZE = GameMapMaterialObjectBuffer.SIZE //
-            + 8 // storage ID
+            + 8 // table object ID
     ;
 
-    private static final int TABLE_BYTES = 13 * 4;
+    private static final int TABLE_BYTES = 14 * 4;
 
     public static void setTable(MutableDirectBuffer b, int off, long tid) {
         b.putLong(TABLE_BYTES + off, tid);

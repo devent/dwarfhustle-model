@@ -8,7 +8,11 @@
 (defmodule "DWARFHUSTLE-OBJECTS-MISC"
   :documentation "Furniture, etc."
   :includes ("PL-USER")
-  :uses ("LOGIC" "STELLA" "DWARFHUSTLE-GAME-MAP" "DWARFHUSTLE-GAME-MAP-OBJECTS" "DWARFHUSTLE-MATERIALS")
+  :uses (
+    "LOGIC" "STELLA"
+    "DWARFHUSTLE-GAME-MAP"
+    "DWARFHUSTLE-GAME-MAP-OBJECTS"
+    "DWARFHUSTLE-MATERIALS")
   )
 
 (in-module "DWARFHUSTLE-OBJECTS-MISC")
@@ -19,17 +23,43 @@
 
 (defconcept Misc-Object (?v ObjectType))
 
+(assert (= (object-have-model Misc-Object) FALSE))
+(assert (= (object-have-texture Misc-Object) TRUE))
+(assert (= (object-is-visible Misc-Object) TRUE))
+(assert (= (object-can-select Misc-Object) TRUE))
+
 (assert (Misc-Object Wood-Log))
+(assert (object-material Wood-Log Wood))
+
 (assert (Misc-Object Wood-Plank))
-(assert (Misc-Object Salt-Lump))
+(assert (object-material Wood-Plank Wood))
+
 (assert (Misc-Object Rock-Stone))
+(assert (object-material Rock-Stone Stone))
+
 (assert (Misc-Object Rock-Block))
+(assert (object-material Rock-Block Stone))
+
 (assert (Misc-Object Metal-Ore))
+(assert (object-material Metal-Ore Metal-Ore))
+
 (assert (Misc-Object Metal-Bar))
+(assert (object-material Metal-Bar Metal))
+
 (assert (Misc-Object Giant-Sawblade))
+(assert (object-material Metal-Bar Metal))
+
 (assert (Misc-Object Mechanism))
+(assert (object-material Metal-Bar Wood))
+(assert (object-material Metal-Bar Stone))
+(assert (object-material Metal-Bar Metal))
 
 (defconcept Container (?v ObjectType))
+
+(assert (= (object-have-model Container) FALSE))
+(assert (= (object-have-texture Container) TRUE))
+(assert (= (object-is-visible Container) TRUE))
+(assert (= (object-can-select Container) TRUE))
 
 (assert (Container Basket)) :documentation "Made of fibers and are used to carry fruits, vegetables, nutts, beries."
 (assert (Container Bucket)) :documentation "Buckets are used to carry fluids like water."
@@ -45,6 +75,11 @@
 
 (defconcept Furniture (?type ObjectType))
   :documentation "Tables, chair, shelvs, etc."
+
+(assert (= (object-have-model Furniture) FALSE))
+(assert (= (object-have-texture Furniture) TRUE))
+(assert (= (object-is-visible Furniture) TRUE))
+(assert (= (object-can-select Furniture) TRUE))
 
 (assert (Furniture Furniture-Table))
 (assert (= (object-width Furniture-Table) 1))

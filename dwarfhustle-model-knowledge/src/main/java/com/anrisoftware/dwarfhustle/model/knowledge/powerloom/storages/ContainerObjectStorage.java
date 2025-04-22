@@ -29,7 +29,7 @@ import com.google.auto.service.AutoService;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @AutoService(GameObjectKnowledge.class)
-public class ContainerObjectStorage extends AbstractKnowledgeObjectStorage {
+public class ContainerObjectStorage extends AbstractObjectTypeStorage {
 
     @Override
     public String getType() {

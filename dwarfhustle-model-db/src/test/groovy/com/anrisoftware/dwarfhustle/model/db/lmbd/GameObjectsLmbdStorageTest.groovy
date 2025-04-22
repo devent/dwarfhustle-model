@@ -53,11 +53,11 @@ class GameObjectsLmbdStorageTest {
     @Test
     void putObject_test(@TempDir Path tmp) {
         def wm = new WorldMap(1)
-        wm.name = "Big Endless World"
+        wm.name = 5001
         wm.distanceLat = 1
         wm.distanceLon = 1
         def gm = new GameMap(2, 32, 32, 32)
-        gm.name = "Timeless Fortress"
+        gm.name = 5002
         wm.maps.add(gm.id)
         wm.currentMap = gm.id
         long mapSize = 200 * (long) pow(10, 6);
@@ -65,7 +65,7 @@ class GameObjectsLmbdStorageTest {
         storage.putObject(WorldMap.OBJECT_TYPE, wm.id, WorldMapBuffer.calcSize(wm), { b ->
             WorldMapBuffer.setWorldMap(b, 0, wm)
         })
-        storage.putObject(GameMap.OBJECT_TYPE, gm.id, GameMapBuffer.calcSize(gm), { b ->
+        storage.putObject(GameMap.OBJECT_TYPE, gm.id, GameMapBuffer.SIZE, { b ->
             GameMapBuffer.setGameMap(b, 0, gm)
         })
         def that_wm = storage.getObject(WorldMap.OBJECT_TYPE, wm.id)

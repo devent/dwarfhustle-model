@@ -17,39 +17,58 @@
 (clear-module "DWARFHUSTLE-GAME-MAP-OBJECTS")
 (reset-features)
 
-(defconcept ObjectType (?type)
-  :documentation "Object type.")
+(defconcept ObjectType (?type))
+  :documentation "Object type."
 
-(defconcept BlockObject (?t ObjectType)
-  :documentation "Object type.")
+(defconcept BlockObject (?t ObjectType))
+  :documentation "Object type."
 
-(defconcept Building (?t ObjectType)
-  :documentation "Building.")
+(defconcept Building (?t ObjectType))
+  :documentation "Building."
 
 (defrelation object-properties (?a ?b ?c))
   :documentation "Load object properties for the child type a from the parent type b."
 
-(deffunction object-width ((?o ObjectType)) :-> (?result INTEGER))
+(deffunction object-width (?o) :-> (?result INTEGER))
   :documentation "Returns the width of the object."
 
-(deffunction object-height ((?o ObjectType)) :-> (?result INTEGER))
+(deffunction object-height (?o) :-> (?result INTEGER))
   :documentation "Returns the height of the object."
 
-(deffunction object-depth ((?o ObjectType)) :-> (?result INTEGER))
+(deffunction object-depth (?o) :-> (?result INTEGER))
   :documentation "Returns the depth of the object."
 
-(deffunction object-passable ((?o ObjectType)) :-> (?result INTEGER))
+(deffunction object-passable (?o) :-> (?result INTEGER))
   :documentation "Returns the depth of the object."
 
-(deffunction object-build-input-units ((?o ObjectType) (?m ObjectType)) :-> (?result INTEGER))
+(deffunction object-have-model (?o) :-> (?result BOOLEAN))
+  :documentation "Returns true if thr object have a model."
+
+(deffunction object-have-texture (?o) :-> (?result BOOLEAN))
+  :documentation "Returns true if thr object have a texture."
+
+(deffunction object-is-visible (?o) :-> (?result BOOLEAN))
+  :documentation "Returns true if thr object is visible."
+
+(deffunction object-can-select (?o) :-> (?result BOOLEAN))
+  :documentation "Returns true if thr object is selectable."
+
+(defrelation object-material (?a ?b))
+  :documentation "Relates which material the object is made of."
+
+(deffunction object-build-input-units (?o ?m) :-> (?result INTEGER))
   :documentation "Returns a required object to build the object."
 
-(deffunction object-build-input-units-or ((?o ObjectType) (?m ObjectType)) :-> (?result INTEGER))
+(deffunction object-build-input-units-or (?o ?m) :-> (?result INTEGER))
   :documentation "Returns a required object to build the object."
 
 (assert (= (object-width BlockObject) 1))
 (assert (= (object-height BlockObject) 1))
 (assert (= (object-depth BlockObject) 1))
+(assert (= (object-have-model BlockObject) TRUE))
+(assert (= (object-have-texture BlockObject) FALSE))
+(assert (= (object-is-visible BlockObject) TRUE))
+(assert (= (object-can-select BlockObject) TRUE))
 
 (assert (BlockObject block-normal)) :documentation "Not mined out block block."
 (assert (BlockObject block-water)) :documentation "Water block."

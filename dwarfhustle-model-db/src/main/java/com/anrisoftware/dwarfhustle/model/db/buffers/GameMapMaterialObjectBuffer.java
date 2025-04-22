@@ -40,14 +40,15 @@ import com.anrisoftware.dwarfhustle.model.api.objects.GameMapObject;
  * <li>@{code p} the object properties;
  * <li>@{code t} temperature;
  * <li>@{code t} light lux;
- * <li>@{code M} light material;
+ * <li>@{code M} material;
+ * <li>@{code T} type;
  * </ul>
  *
  * <pre>
  * long  0                   1                   2                   3                   4                   5                   6
- * int   0         1         2         3         4         5         6         7         8         9         10        11        12
- * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21   22   23   24   25
- *       iiii iiii iiii iiii kkkk kkkk oooo oooo mmmm mmmm mmmm mmmm xxxx yyyy zzzz tttt wwww hhhh dddd llll pppp pppp MMMM MMMM MMMM MMMM
+ * int   0         1         2         3         4         5         6         7         8         9         10        11        12        13
+ * short 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21   22   23   24   25   26   27
+ *       iiii iiii iiii iiii kkkk kkkk oooo oooo mmmm mmmm mmmm mmmm xxxx yyyy zzzz tttt wwww hhhh dddd llll pppp pppp MMMM MMMM MMMM MMMM TTTT TTTT
  * </pre>
  */
 public class GameMapMaterialObjectBuffer {
@@ -57,9 +58,12 @@ public class GameMapMaterialObjectBuffer {
      */
     public static final int SIZE = GameMapObjectBuffer.SIZE // 44
             + 8 // M
+            + 4 // T
     ;
 
     private static final int MATERIAL_BYTES = 11 * 4;
+
+    private static final int TYPE_BYTES = 13 * 4;
 
     public static void setMaterial(MutableDirectBuffer b, int off, long id) {
         b.putLong(MATERIAL_BYTES + off, id);
@@ -69,14 +73,24 @@ public class GameMapMaterialObjectBuffer {
         return b.getLong(MATERIAL_BYTES + off);
     }
 
+    public static void setType(MutableDirectBuffer b, int off, int type) {
+        b.putInt(TYPE_BYTES + off, type);
+    }
+
+    public static int getType(DirectBuffer b, int off) {
+        return b.getInt(TYPE_BYTES + off);
+    }
+
     public static void writeMaterialObject(MutableDirectBuffer b, int off, GameMapMaterialObject o) {
         GameMapObjectBuffer.writeObject(b, off, o);
         setMaterial(b, off, o.getMaterial());
+        setType(b, off, o.getType());
     }
 
     public static GameMapObject readMaterialObject(DirectBuffer b, int off, GameMapMaterialObject o) {
         GameMapObjectBuffer.readObject(b, off, o);
         o.setMaterial(getMaterial(b, off));
+        o.setType(getType(b, off));
         return o;
     }
 }

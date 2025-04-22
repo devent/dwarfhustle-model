@@ -45,7 +45,7 @@ import lombok.val;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @AutoService(GameObjectKnowledge.class)
-public class WorkJobStorage extends AbstractObjectTypeStorage {
+public class WorkJobStorage extends AbstractKnowledgeObjectStorage {
 
     @Override
     public String getType() {

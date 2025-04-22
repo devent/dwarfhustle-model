@@ -35,7 +35,7 @@ import org.eclipse.collections.api.map.primitive.IntObjectMap;
 import org.eclipse.collections.api.map.primitive.MutableIntIntMap;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 
-import com.anrisoftware.dwarfhustle.model.api.map.BlockObject;
+import com.anrisoftware.dwarfhustle.model.api.map.KnowledgeBlock;
 import com.anrisoftware.dwarfhustle.model.api.materials.KnowledgeMaterial;
 import com.anrisoftware.dwarfhustle.model.api.materials.Gas;
 import com.anrisoftware.dwarfhustle.model.api.materials.Liquid;
@@ -172,9 +172,9 @@ public class DefaultLoadKnowledges {
                         }
                     });
                 }).toCompletableFuture(), //
-                ask.doAskAsync(ASK_TIMEOUT, BlockObject.TYPE).whenComplete((res, ex) -> {
+                ask.doAskAsync(ASK_TIMEOUT, KnowledgeBlock.TYPE).whenComplete((res, ex) -> {
                     knowledgeGet(res, IntLists.mutable.empty(), (o) -> {
-                        var ot = (BlockObject) o;
+                        var ot = (KnowledgeBlock) o;
                         switch (ot.getName()) {
                         case "BLOCK-RAMP-TRI-N":
                             objects.put(OBJECT_RAMP_TRI_N_NAME, o.getKid());

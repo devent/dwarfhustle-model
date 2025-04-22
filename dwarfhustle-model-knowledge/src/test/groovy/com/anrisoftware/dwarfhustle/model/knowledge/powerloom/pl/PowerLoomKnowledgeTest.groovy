@@ -26,7 +26,7 @@ import groovy.util.logging.Slf4j
 
 /**
  * Tests loading the knowledge base.
- * 
+ *
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @Slf4j
@@ -41,6 +41,9 @@ class PowerLoomKnowledgeTest {
 
     @ParameterizedTest
     @ValueSource(strings = [
+        "?x (?x building-salt-works)",
+        "all ?x (?x Wood-Log)",
+        "all ?x (?x Salt-Lump)",
         "all (growing-climate Wheat ?x)",
         "all (BlockObject ?x)",
     ])

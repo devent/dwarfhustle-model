@@ -22,6 +22,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.val;
 
 /**
  * Knowledge object type is the base class of all physically real objects and
@@ -34,11 +35,13 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-public abstract class KnowledgeObjectType extends KnowledgeObject {
+public abstract class KnowledgeObjectType extends KnowledgeObject implements GameMapObjectProperties {
 
     public static final String TYPE = "ObjectType";
 
     public static final int OBJECT_TYPE = TYPE.hashCode();
+
+    private PropertiesSet p = new PropertiesSet();
 
     public KnowledgeObjectType(int kid) {
         super(kid);
@@ -52,5 +55,17 @@ public abstract class KnowledgeObjectType extends KnowledgeObject {
     @Override
     public String getKnowledgeType() {
         return KnowledgeObjectType.TYPE;
+    }
+
+    @Override
+    protected void setupObject(GameObject go) {
+        super.setupObject(go);
+        val o = (GameMapObject) go;
+        o.setCanSelect(isCanSelect());
+        o.setElevated(isElevated());
+        o.setForbidden(isForbidden());
+        o.setHaveModel(isHaveModel());
+        o.setHaveTex(isHaveTex());
+        o.setHidden(isHidden());
     }
 }

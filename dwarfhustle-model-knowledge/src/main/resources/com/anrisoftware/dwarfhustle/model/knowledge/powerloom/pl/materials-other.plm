@@ -21,5 +21,8 @@
 (clear-module "DWARFHUSTLE-MATERIALS-OTHER")
 (reset-features)
 
-(defconcept Salt (?material Material)) :documentation "Salt material."
-(assert (= (melting-point-material Salt) 800.70))
+(assert (Salt Table-Salt))
+(assert (= (melting-point-material Table-Salt) 800.70))
+
+(assert (Salt Salt-Lump))
+(assert (= (melting-point-material Salt-Lump) 800.70))

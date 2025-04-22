@@ -45,19 +45,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Data
-public abstract class GameMapObject extends GameObject implements StoredObject {
-
-    public static final int VISIBLE_POS = 0;
-
-    public static final int FORBIDDEN_POS = 1;
-
-    public static final int MODEL_POS = 2;
-
-    public static final int TEX_POS = 3;
-
-    public static final int SELECT_POS = 9;
-
-    public static final int ELEVATED_POS = 10;
+public abstract class GameMapObject extends GameObject implements StoredObject, GameMapObjectProperties {
 
     /**
      * Record ID set after the object was once stored in the backend.
@@ -143,90 +131,6 @@ public abstract class GameMapObject extends GameObject implements StoredObject {
         this.pos.set(pos);
     }
 
-    public void setHidden(boolean flag) {
-        if (!flag) {
-            p.set(VISIBLE_POS);
-        } else {
-            p.clear(VISIBLE_POS);
-        }
-    }
-
-    public boolean isHidden() {
-        return !p.get(VISIBLE_POS);
-    }
-
-    public void setVisible(boolean flag) {
-        if (flag) {
-            p.set(VISIBLE_POS);
-        } else {
-            p.clear(VISIBLE_POS);
-        }
-    }
-
-    public boolean isVisible() {
-        return p.get(VISIBLE_POS);
-    }
-
-    public void setForbidden(boolean flag) {
-        if (flag) {
-            p.set(FORBIDDEN_POS);
-        } else {
-            p.clear(FORBIDDEN_POS);
-        }
-    }
-
-    public boolean isForbidden() {
-        return p.get(FORBIDDEN_POS);
-    }
-
-    public void setHaveModel(boolean flag) {
-        if (flag) {
-            p.set(MODEL_POS);
-        } else {
-            p.clear(MODEL_POS);
-        }
-    }
-
-    public boolean isHaveModel() {
-        return p.get(MODEL_POS);
-    }
-
-    public void setHaveTex(boolean flag) {
-        if (flag) {
-            p.set(TEX_POS);
-        } else {
-            p.clear(TEX_POS);
-        }
-    }
-
-    public boolean isHaveTex() {
-        return p.get(TEX_POS);
-    }
-
-    public void setCanSelect(boolean flag) {
-        if (flag) {
-            p.set(SELECT_POS);
-        } else {
-            p.clear(SELECT_POS);
-        }
-    }
-
-    public boolean isCanSelect() {
-        return p.get(SELECT_POS);
-    }
-
-    public void setElevated(boolean flag) {
-        if (flag) {
-            p.set(ELEVATED_POS);
-        } else {
-            p.clear(ELEVATED_POS);
-        }
-    }
-
-    public boolean isElevated() {
-        return p.get(ELEVATED_POS);
-    }
-
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
         writeStream(out);
@@ -244,6 +148,7 @@ public abstract class GameMapObject extends GameObject implements StoredObject {
         getPos().writeStream(out);
         out.writeInt(kid);
         out.writeInt(oid);
+        p.writeStream(out);
         out.writeInt(temp);
         out.writeInt(lux);
     }
@@ -255,6 +160,7 @@ public abstract class GameMapObject extends GameObject implements StoredObject {
         this.pos.readStream(in);
         this.kid = in.readInt();
         this.oid = in.readInt();
+        this.p.readStream(in);
         this.temp = in.readInt();
         this.lux = in.readInt();
     }

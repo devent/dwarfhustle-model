@@ -42,21 +42,20 @@ class MapBlockBufferTest {
         def args = []
         def offset = 0
         def b = ByteBuffer.allocate(offset + MapBlockBuffer.SIZE)
-        args << of(b, offset, 0, 1, 2, 3, 4, 0b10000101, 6, 7, 4, 4, 4, 0, 0, 0, '8500 0000 0100 0200 0300 0400 0680 0780')
+        args << of(b, offset, 0, 1, 2, 3, 0b10000101, 4, 5, 4, 4, 4, 0, 0, 0, '8500 0000 0100 0200 0300 0480 0580')
         //
         offset = 4
         b = ByteBuffer.allocate(offset + MapBlockBuffer.SIZE)
-        args << of(b, offset, 0, 1, 2, 3, 4, 0b10000101, 6, 7, 4, 4, 4, 0, 0, 0, '00000000 8500 0000 0100 0200 0300 0400 0680 0780')
+        args << of(b, offset, 0, 1, 2, 3, 0b10000101, 4, 5, 4, 4, 4, 0, 0, 0, '00000000 8500 0000 0100 0200 0300 0480 0580')
         //
         Stream.of(args as Object[])
     }
 
     @ParameterizedTest
     @MethodSource()
-    void set_get_map_block(ByteBuffer b, int offset, int i, int parent, int t, int m, int o, int p, int temp, int lux, int w, int h, int d, int sx, int sy, int sz, def expected) {
+    void set_get_map_block(ByteBuffer b, int offset, int i, int parent, int m, int o, int p, int temp, int lux, int w, int h, int d, int sx, int sy, int sz, def expected) {
         def mb = new UnsafeBuffer(b)
         MapBlockBuffer.setParent(mb, offset, parent)
-        MapBlockBuffer.setType(mb, offset, t)
         MapBlockBuffer.setMaterial(mb, offset, m)
         MapBlockBuffer.setObject(mb, offset, o)
         MapBlockBuffer.setProp(mb, offset, p)
@@ -64,7 +63,6 @@ class MapBlockBufferTest {
         MapBlockBuffer.setLux(mb, offset, lux)
         assert HexFormat.of().formatHex(b.array()) == replace(expected, " ", "")
         assert MapBlockBuffer.getParent(mb, offset) == parent
-        assert MapBlockBuffer.getType(mb, offset) == t
         assert MapBlockBuffer.getMaterial(mb, offset) == m
         assert MapBlockBuffer.getObject(mb, offset) == o
         assert MapBlockBuffer.getProp(mb, offset) == p
@@ -74,9 +72,8 @@ class MapBlockBufferTest {
 
     @ParameterizedTest
     @MethodSource("set_get_map_block")
-    void write_read_map_block(ByteBuffer b, int offset, int i, int parent, int t, int m, int o, int p, int temp, int lux, int w, int h, int d, int sx, int sy, int sz, def expected) {
+    void write_read_map_block(ByteBuffer b, int offset, int i, int parent, int m, int o, int p, int temp, int lux, int w, int h, int d, int sx, int sy, int sz, def expected) {
         def block = new MapBlock(parent, new GameBlockPos(GameBlockPos.calcX(i, w, sx), GameBlockPos.calcY(i, w, sy), GameBlockPos.calcZ(i, w, h, sz)))
-        block.type = t
         block.material = m
         block.object = o
         block.p = new PropertiesSet(p)
@@ -87,7 +84,6 @@ class MapBlockBufferTest {
         def thatBlock = MapBlockBuffer.readMapBlockIndex(new UnsafeBuffer(b), offset, i, w, h, d, sx, sy, sz)
         assert thatBlock.parent == parent
         assert thatBlock.pos == block.pos
-        assert thatBlock.type == t
         assert thatBlock.material == m
         assert thatBlock.object == o
         assert thatBlock.p.bits == p

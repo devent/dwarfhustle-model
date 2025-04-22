@@ -27,7 +27,7 @@ import com.google.auto.service.AutoService;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @AutoService(GameObjectKnowledge.class)
-public class LightTypeStorage extends AbstractObjectTypeStorage {
+public class LightTypeStorage extends AbstractKnowledgeObjectStorage {
 
     @Override
     public String getType() {

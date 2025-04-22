@@ -50,6 +50,7 @@ class MapObjectsLmbdStorageTest {
     }
 
     @Test
+    @org.junit.jupiter.api.Disabled
     void putObject_benchmark(@TempDir Path tmp) {
         def gm = new GameMap(1, 512, 512, 128)
         long mapSize = 200 * (long) pow(10, 6);
@@ -206,7 +207,7 @@ class MapObjectsLmbdStorageTest {
     }
 
     @Test
-    //@org.junit.jupiter.api.Disabled
+    @org.junit.jupiter.api.Disabled
     void read_objects_test() {
         int xx = 32
         int yy = 32

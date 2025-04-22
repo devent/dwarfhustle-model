@@ -36,9 +36,9 @@ import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider
 import com.anrisoftware.dwarfhustle.model.actor.DwarfhustleModelActorsModule
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message
 import com.anrisoftware.dwarfhustle.model.api.buildings.KnowledgeBuilding
-import com.anrisoftware.dwarfhustle.model.api.map.BlockObject
 import com.anrisoftware.dwarfhustle.model.api.map.BlockType
 import com.anrisoftware.dwarfhustle.model.api.map.FloorType
+import com.anrisoftware.dwarfhustle.model.api.map.KnowledgeBlock
 import com.anrisoftware.dwarfhustle.model.api.map.LightType
 import com.anrisoftware.dwarfhustle.model.api.map.RoofType
 import com.anrisoftware.dwarfhustle.model.api.materials.Clay
@@ -58,7 +58,6 @@ import com.anrisoftware.dwarfhustle.model.api.miscobjects.KnowledgeContainer
 import com.anrisoftware.dwarfhustle.model.api.miscobjects.KnowledgeFurniture
 import com.anrisoftware.dwarfhustle.model.api.miscobjects.KnowledgeMiscObject
 import com.anrisoftware.dwarfhustle.model.api.objects.DwarfhustleModelApiObjectsModule
-import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObjectType
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeGrass
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeShrub
 import com.anrisoftware.dwarfhustle.model.api.vegetations.KnowledgeTreeBranch
@@ -130,7 +129,7 @@ class ListKnowledges {
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Gas.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, Liquid.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockType.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockObject.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeBlock.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeBuilding.TYPE))
         while (ko.size() != 130) {
             log.info("Knowledge objects loaded {}", ko.size())
@@ -150,7 +149,7 @@ class ListKnowledges {
             }
         })
         def knowledgeResponseAdapter = ret[1]
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockObject.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeBlock.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeBranch.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeLeaf.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeTreeRoot.TYPE))
@@ -253,8 +252,11 @@ class ListKnowledges {
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, LightType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, RoofType.TYPE))
         knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, BlockType.TYPE))
-        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeObjectType.TYPE))
-        while (ko.size() != 118) {
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeBuilding.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeMiscObject.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeContainer.TYPE))
+        knowledgeActor.tell(new KnowledgeGetMessage<>(knowledgeResponseAdapter, KnowledgeFurniture.TYPE))
+        while (ko.size() != 132) {
             log.info("Knowledge objects loaded {}", ko.size())
             Thread.sleep(500)
         }

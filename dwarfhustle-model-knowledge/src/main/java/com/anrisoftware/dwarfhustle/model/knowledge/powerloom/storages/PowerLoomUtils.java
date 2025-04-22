@@ -32,6 +32,9 @@ import org.eclipse.collections.api.set.primitive.MutableIntSet;
 
 import edu.isi.powerloom.PLI;
 import edu.isi.powerloom.logic.LogicObject;
+import edu.isi.powerloom.logic.NamedDescription;
+import edu.isi.powerloom.logic.Proposition;
+import edu.isi.powerloom.logic.TruthValue;
 import edu.isi.stella.Cons;
 import edu.isi.stella.FloatWrapper;
 import edu.isi.stella.IntegerWrapper;
@@ -190,6 +193,9 @@ public class PowerLoomUtils {
         return store;
     }
 
+    /**
+     * Retrieves three values from a function.
+     */
     public static <T> T retrieve3ToStore(String function, String name, Supplier<T> supplier,
             BiConsumer<T, Cons> consumer) {
         var buff = new StringBuilder();
@@ -205,6 +211,44 @@ public class PowerLoomUtils {
             consumer.accept(store, next);
         }
         return store;
+    }
+
+    /**
+     * Retrieves a Boolean.
+     */
+    public static boolean retrieveBoolean(String name, String function, boolean recursive) {
+        var buff = new StringBuilder();
+        buff.append("?x (");
+        buff.append(function);
+        buff.append(" ");
+        buff.append(name);
+        buff.append(" ?x)");
+        var answer = PLI.sRetrieve(buff.toString(), WORKING_MODULE, null);
+        Proposition next;
+        while ((next = (Proposition) answer.pop()) != null) {
+            return TruthValue.trueTruthValueP((TruthValue) next.truthValue);
+        }
+        if (recursive) {
+            var p = retrieveParent(name);
+            if (p != null) {
+                return retrieveBoolean(NamedDescription.relationName(p), function, false);
+            }
+        }
+        return false;
+    }
+
+    private static NamedDescription retrieveParent(String name) {
+        var buff = new StringBuilder();
+        buff.append("?x (");
+        buff.append("?x ");
+        buff.append(name);
+        buff.append(" )");
+        var answer = PLI.sRetrieve(buff.toString(), WORKING_MODULE, null);
+        NamedDescription next;
+        while ((next = (NamedDescription) answer.pop()) != null) {
+            return next;
+        }
+        return null;
     }
 
 }

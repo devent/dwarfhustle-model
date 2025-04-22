@@ -31,7 +31,7 @@ import org.eclipse.collections.api.map.primitive.IntObjectMap;
 import com.anrisoftware.dwarfhustle.model.api.map.Block;
 import com.anrisoftware.dwarfhustle.model.api.objects.ExternalizableUtils;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameObject;
-import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObjectType;
+import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -50,7 +50,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-public class KnowledgeWorkJob extends KnowledgeObjectType {
+public class KnowledgeWorkJob extends KnowledgeObject {
 
     public static final String TYPE = "work-parent-job";
 

@@ -42,17 +42,17 @@ class GameMapMaterialObjectBufferTest {
         def args = []
         int offset = 0
         def b = ByteBuffer.allocate(offset + GameMapMaterialObjectBuffer.SIZE)
-        args << of(b, offset, 1, 2, 3, 4, 10, 20, 30, 1, 1, 1, 0b0001, 22, 100, 700, "0100 0000 0000 0000 0200 0000 0300 0000 0400 0000 0000 0000 0a00 1400 1e00 1680 0100 0100 0100 6480 0100 0000 bc02 0000 0000 0000")
+        args << of(b, offset, 1, 2, 3, 4, 10, 20, 30, 1, 1, 1, 0b0001, 22, 100, 700, 1000, "0100 0000 0000 0000 0200 0000 0300 0000 0400 0000 0000 0000 0a00 1400 1e00 1680 0100 0100 0100 6480 0100 0000 bc02 0000 0000 0000 e803 0000")
         offset = 3
         b = ByteBuffer.allocate(offset + GameMapMaterialObjectBuffer.SIZE)
-        args << of(b, offset, 1, 2, 3, 4, 10, 20, 30, 1, 1, 1, 0b0001, 22, 100, 700, "000000 0100 0000 0000 0000 0200 0000 0300 0000 0400 0000 0000 0000 0a00 1400 1e00 1680 0100 0100 0100 6480 0100 0000 bc02 0000 0000 0000")
+        args << of(b, offset, 1, 2, 3, 4, 10, 20, 30, 1, 1, 1, 0b0001, 22, 100, 700, 1000, "000000 0100 0000 0000 0000 0200 0000 0300 0000 0400 0000 0000 0000 0a00 1400 1e00 1680 0100 0100 0100 6480 0100 0000 bc02 0000 0000 0000 e803 0000")
         Stream.of(args as Object[])
     }
 
     @ParameterizedTest
     @MethodSource()
-    void write_read_gameMapMaterialObject(ByteBuffer b, int offset, long id, int kid, int oid, long map, int x, int y, int z, int w, int h, int d, int p, int t, int l, long m, def expected) {
-        def o = new GameMapMaterialObject(id, new GameBlockPos(x, y, z), m) {
+    void write_read_gameMapMaterialObject(ByteBuffer b, int offset, long id, int kid, int oid, long map, int x, int y, int z, int w, int h, int d, int p, int t, int l, long m, int type, def expected) {
+        def o = new GameMapMaterialObject(id, new GameBlockPos(x, y, z), m, type) {
 
                     @Override
                     public int getObjectType() {
@@ -68,7 +68,6 @@ class GameMapMaterialObjectBufferTest {
         o.p = new PropertiesSet(p)
         o.temp = t
         o.lux = l
-        o.material = m
         GameMapMaterialObjectBuffer.writeMaterialObject(new UnsafeBuffer(b), offset, o)
         assert HexFormat.of().formatHex(b.array()) == replace(expected, " ", "")
         def thato = new GameMapMaterialObject() {
@@ -93,5 +92,6 @@ class GameMapMaterialObjectBufferTest {
         assert thato.temp == t
         assert thato.lux == l
         assert thato.material == m
+        assert thato.type == type
     }
 }

@@ -70,21 +70,49 @@
 
 (defconcept Tree (?v Vegetation))
   :documentation "Plant with an elongated stem, or trunk, usually supporting branches and leaves."
+(assert (= (object-have-model Tree) FALSE))
+(assert (= (object-have-texture Tree) FALSE))
+(assert (= (object-is-visible Tree) FALSE))
+(assert (= (object-can-select Tree) FALSE))
 
 (defconcept Tree-Sapling (?t Vegetation))
   :documentation "Tree sapling."
+(assert (= (object-have-model Tree-Sapling) FALSE))
+(assert (= (object-have-texture Tree-Sapling) TRUE))
+(assert (= (object-is-visible Tree-Sapling) TRUE))
+(assert (= (object-can-select Tree-Sapling) TRUE))
 
 (defconcept Tree-Root (?t Vegetation))
   :documentation "Root of the tree."
+(assert (= (object-have-model Tree-Root) TRUE))
+(assert (= (object-have-texture Tree-Root) FALSE))
+(assert (= (object-is-visible Tree-Root) TRUE))
+(assert (= (object-can-select Tree-Root) TRUE))
 
 (defconcept Tree-Trunk (?t Vegetation))
   :documentation "Trunk of the tree."
+(assert (= (object-have-model Tree-Trunk) TRUE))
+(assert (= (object-have-texture Tree-Trunk) FALSE))
+(assert (= (object-is-visible Tree-Trunk) TRUE))
+(assert (= (object-can-select Tree-Trunk) TRUE))
 
 (defconcept Tree-Branch (?t Vegetation))
   :documentation "Branch of the tree."
+(assert (= (object-have-model Tree-Branch) TRUE))
+(assert (= (object-have-texture Tree-Branch) FALSE))
+(assert (= (object-is-visible Tree-Branch) TRUE))
+(assert (= (object-can-select Tree-Branch) TRUE))
 
 (defconcept Tree-Twig (?t Vegetation))
   :documentation "Twig of the tree."
+(assert (= (object-have-model Tree-Twig) TRUE))
+(assert (= (object-have-texture Tree-Twig) FALSE))
+(assert (= (object-is-visible Tree-Twig) TRUE))
+(assert (= (object-can-select Tree-Twig) TRUE))
 
 (defconcept Tree-Leaf (?t Vegetation))
   :documentation "Leaves of the tree."
+(assert (= (object-have-model Tree-Leaf) TRUE))
+(assert (= (object-have-texture Tree-Leaf) FALSE))
+(assert (= (object-is-visible Tree-Leaf) TRUE))
+(assert (= (object-can-select Tree-Leaf) TRUE))

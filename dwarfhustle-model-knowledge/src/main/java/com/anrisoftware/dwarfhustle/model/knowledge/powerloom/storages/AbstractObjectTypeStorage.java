@@ -17,25 +17,27 @@
  */
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
+import static com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages.PowerLoomUtils.retrieveBoolean;
+
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObjectType;
-
-import edu.isi.powerloom.logic.LogicObject;
 
 /**
  *
  * @see KnowledgeObjectType
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
-public abstract class AbstractObjectTypeStorage implements GameObjectKnowledge {
+public abstract class AbstractObjectTypeStorage extends AbstractKnowledgeObjectStorage {
 
     @Override
     public KnowledgeObject retrieve(Object o, KnowledgeObject go) {
-        var next = (LogicObject) o;
-        var ko = (KnowledgeObjectType) go;
-        ko.setKid(next.surrogateValueInverse.symbolId);
-        ko.setName(next.surrogateValueInverse.symbolName);
-        return ko;
+        super.retrieve(o, go);
+        var m = (KnowledgeObjectType) go;
+        m.setHaveModel(retrieveBoolean(m.getName(), "object-have-model", true));
+        m.setHaveTex(retrieveBoolean(m.getName(), "object-have-texture", true));
+        m.setVisible(retrieveBoolean(m.getName(), "object-is-visible", true));
+        m.setCanSelect(retrieveBoolean(m.getName(), "object-can-select", true));
+        return m;
     }
 
     @Override

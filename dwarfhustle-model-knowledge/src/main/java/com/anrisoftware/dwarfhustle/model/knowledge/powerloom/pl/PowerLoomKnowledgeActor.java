@@ -84,6 +84,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PowerLoomKnowledgeActor implements KnowledgeGetter {
 
+    private static boolean powerLoomLoaded = false;
+
     public static final ServiceKey<Message> KEY = ServiceKey.create(Message.class,
             PowerLoomKnowledgeActor.class.getSimpleName());
 
@@ -97,6 +99,9 @@ public class PowerLoomKnowledgeActor implements KnowledgeGetter {
      * Initialize the {@link PLI} and loads all {@code *.plm} files.
      */
     public static void loadPowerLoom() throws ContextedException {
+        if (powerLoomLoaded) {
+            return;
+        }
         var resources = new ArrayList<Pair<String, InputStream>>();
         var names = new ArrayList<String>();
         names.add("materials.plm");
@@ -135,6 +140,7 @@ public class PowerLoomKnowledgeActor implements KnowledgeGetter {
                 throw new ContextedException("PLI.loadStream", e).addContextValue("resource", entry.getOne());
             }
         }
+        powerLoomLoaded = true;
     }
 
     @RequiredArgsConstructor

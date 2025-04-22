@@ -37,29 +37,29 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-public class BlockObject extends KnowledgeObjectType {
+public class KnowledgeBlock extends KnowledgeObjectType {
 
-    public static final int OBJECT_TYPE = BlockObject.class.getSimpleName().hashCode();
+    public static final String TYPE = "BlockObject";
 
-    public static final String TYPE = BlockObject.class.getSimpleName();
+    public static final int OBJECT_TYPE = TYPE.hashCode();
 
-    public BlockObject(int kid) {
+    public KnowledgeBlock(int kid) {
         super(kid);
     }
 
     @Override
     public int getObjectType() {
-        return BlockObject.OBJECT_TYPE;
+        return KnowledgeBlock.OBJECT_TYPE;
     }
 
     @Override
     public String getKnowledgeType() {
-        return BlockObject.TYPE;
+        return KnowledgeBlock.TYPE;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends GameObject> T createObject(byte[] id) {
+    protected <T extends GameObject> T newObject(byte[] id) {
         return (T) new Block(id);
     }
 }

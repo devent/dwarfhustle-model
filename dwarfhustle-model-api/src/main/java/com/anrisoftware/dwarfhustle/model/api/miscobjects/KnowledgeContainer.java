@@ -59,11 +59,7 @@ public class KnowledgeContainer extends KnowledgeObjectType {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends GameObject> T createObject(byte[] id) {
-        var go = new ContainerObject(id);
-        go.setVisible(true);
-        go.setHaveModel(false);
-        go.setHaveTex(true);
-        return (T) go;
+    protected <T extends GameObject> T newObject(byte[] id) {
+        return (T) new ContainerObject(id);
     }
 }

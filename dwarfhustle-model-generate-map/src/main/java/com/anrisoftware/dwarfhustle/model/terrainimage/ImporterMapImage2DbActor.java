@@ -36,7 +36,7 @@ import org.lable.oss.uniqueid.IDGenerator;
 import com.anrisoftware.dwarfhustle.model.actor.ActorSystemProvider;
 import com.anrisoftware.dwarfhustle.model.actor.MessageActor.Message;
 import com.anrisoftware.dwarfhustle.model.actor.ShutdownMessage;
-import com.anrisoftware.dwarfhustle.model.api.map.BlockObject;
+import com.anrisoftware.dwarfhustle.model.api.map.KnowledgeBlock;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameBlockPos;
 import com.anrisoftware.dwarfhustle.model.api.objects.GameMap;
 import com.anrisoftware.dwarfhustle.model.api.objects.IdsObjectsProvider.IdsObjects;
@@ -211,7 +211,7 @@ public class ImporterMapImage2DbActor {
         var cg = actor.getObjectGetterAsyncNow(MapChunksJcsCacheActor.ID);
         var chunk = MapChunk.getChunk(cg, 0);
         var mb = MapChunkBuffer.findBlock(chunk, cursor, cg);
-        var ko = askKnowledgeObjectName(actor.getActorSystem(), ofSeconds(10), BlockObject.class, BlockObject.TYPE,
+        var ko = askKnowledgeObjectName(actor.getActorSystem(), ofSeconds(10), KnowledgeBlock.class, KnowledgeBlock.TYPE,
                 "block-focus");
         var iret = askInsertObject(actor.getActorSystem(), mid, mb.getParent(), ko, cursor, ofSeconds(1), (o) -> {
             o.setElevated(true);

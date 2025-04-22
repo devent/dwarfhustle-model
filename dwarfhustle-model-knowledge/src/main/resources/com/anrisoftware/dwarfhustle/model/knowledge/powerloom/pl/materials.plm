@@ -127,3 +127,6 @@
 
 (defconcept Wood (?material Material)
   :documentation "Wood material.")
+
+(defconcept Salt (?material Material)
+  :documentation "Salt material.")

@@ -18,7 +18,7 @@
 package com.anrisoftware.dwarfhustle.model.knowledge.powerloom.storages;
 
 import com.anrisoftware.dwarfhustle.model.api.map.Block;
-import com.anrisoftware.dwarfhustle.model.api.map.BlockObject;
+import com.anrisoftware.dwarfhustle.model.api.map.KnowledgeBlock;
 import com.anrisoftware.dwarfhustle.model.api.objects.KnowledgeObject;
 import com.google.auto.service.AutoService;
 
@@ -33,11 +33,11 @@ public class BlockStorage extends AbstractObjectTypeStorage {
 
     @Override
     public String getType() {
-        return BlockObject.TYPE;
+        return KnowledgeBlock.TYPE;
     }
 
     @Override
     public KnowledgeObject create() {
-        return new BlockObject();
+        return new KnowledgeBlock();
     }
 }

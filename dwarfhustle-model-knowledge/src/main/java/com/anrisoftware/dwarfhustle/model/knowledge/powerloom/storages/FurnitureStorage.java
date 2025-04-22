@@ -28,7 +28,7 @@ import com.google.auto.service.AutoService;
  * @author Erwin Müller, {@code <erwin@muellerpublic.de>}
  */
 @AutoService(GameObjectKnowledge.class)
-public class FurnitureStorage extends AbstractKnowledgeObjectStorage {
+public class FurnitureStorage extends AbstractObjectTypeStorage {
 
     @Override
     public String getType() {

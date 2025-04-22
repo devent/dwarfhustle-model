@@ -25,6 +25,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.val;
 
 /**
  * Base class for all object properties like the material an object is made of.
@@ -81,7 +82,27 @@ public abstract class KnowledgeObject extends GameObject {
     /**
      * Creates the {@link GameObject} for this {@link KnowledgeObject}.
      */
-    public abstract <T extends GameObject> T createObject(byte[] id);
+    public <T extends GameObject> T createObject(byte[] id) {
+        T go = newObject(id);
+        setupObject(go);
+        return go;
+    }
+
+    /**
+     * Creates the {@link GameObject} for this {@link KnowledgeObject}.
+     */
+    protected <T extends GameObject> T newObject(byte[] id) {
+        return null;
+    }
+
+    /**
+     * Sets properties on the object from the knowledge.
+     */
+    protected void setupObject(GameObject go) {
+        val o = (GameMapObject) go;
+        o.setKid(getKid());
+        o.setOid(getKnowledgeType().hashCode());
+    }
 
     @Override
     public void writeStream(DataOutput out) throws IOException {

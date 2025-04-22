@@ -29,12 +29,12 @@
 
 (defrelation work-building ((?w work-job) (?b Building)))
 
-(deffunction work-input-units ((?w work-job) (?o ObjectType) (?m Material)) :-> (?n INTEGER))
+(deffunction work-input-units ((?w work-job) ?o (?m Material)) :-> (?n INTEGER))
 
-(deffunction work-output-units ((?w work-job) (?o ObjectType) (?m Material)) :-> (?n INTEGER))
+(deffunction work-output-units ((?w work-job) ?o (?m Material)) :-> (?n INTEGER))
 
-(deffunction work-input-container-units ((?w work-job) (?o ObjectType) (?m Material)) :-> (?n INTEGER))
+(deffunction work-input-container-units ((?w work-job) ?o (?m Material)) :-> (?n INTEGER))
 
-(deffunction work-output-container-units ((?w work-job) (?o ObjectType) (?m Material)) :-> (?n INTEGER))
+(deffunction work-output-container-units ((?w work-job) ?o (?m Material)) :-> (?n INTEGER))
 
 (deffunction work-duration ((?w work-job)) :-> (?hours INTEGER))

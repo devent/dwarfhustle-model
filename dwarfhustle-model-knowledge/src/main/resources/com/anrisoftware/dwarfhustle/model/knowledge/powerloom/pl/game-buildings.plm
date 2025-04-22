@@ -17,6 +17,11 @@
 (clear-module "DWARFHUSTLE-OBJECTS-BUILDING")
 (reset-features)
 
+(assert (= (object-have-model Building) TRUE))
+(assert (= (object-have-texture Building) FALSE))
+(assert (= (object-is-visible Building) TRUE))
+(assert (= (object-can-select Building) TRUE))
+
 (assert (Building building-salt-works)) :documentation "Workshop that produces salt."
 (assert (= (object-width building-salt-works) 3))
 (assert (= (object-height building-salt-works) 3))
@@ -30,13 +35,13 @@
 (assert (work-parent-job job-saltmaking-seawater))
 (assert (work-building job-saltmaking-seawater building-salt-works))
 (assert (= (work-input-container-units job-saltmaking-seawater DWARFHUSTLE-OBJECTS-MISC/Bucket DWARFHUSTLE-MATERIALS-LIQUIDS/Sea-Water) 1))
-(assert (= (work-output-container-units job-saltmaking-seawater DWARFHUSTLE-OBJECTS-MISC/Sack DWARFHUSTLE-OBJECTS-MISC/Salt-Lump) 3))
+(assert (= (work-output-container-units job-saltmaking-seawater DWARFHUSTLE-OBJECTS-MISC/Sack DWARFHUSTLE-MATERIALS-OTHER/Salt-Lump) 3))
 (assert (= (work-duration job-saltmaking-seawater) 6))
 ;;
 (assert (work-parent-job job-saltmaking-brine))
 (assert (work-building job-saltmaking-brine building-salt-works))
 (assert (= (work-input-container-units job-saltmaking-brine DWARFHUSTLE-OBJECTS-MISC/Bucket DWARFHUSTLE-MATERIALS-LIQUIDS/Brine) 1))
-(assert (= (work-output-container-units job-saltmaking-brine DWARFHUSTLE-OBJECTS-MISC/Sack DWARFHUSTLE-OBJECTS-MISC/Salt-Lump) 3))
+(assert (= (work-output-container-units job-saltmaking-brine DWARFHUSTLE-OBJECTS-MISC/Sack DWARFHUSTLE-MATERIALS-OTHER/Salt-Lump) 3))
 (assert (= (work-duration job-saltmaking-brine) 6))
 
 (assert (Building building-apothecary)) :documentation "Workshop for medical professional who formulates and dispenses materia medica (medicine) to physicians, surgeons and patients."
